@@ -1,0 +1,11 @@
+.git
+.github
+**/bin
+**/obj
+**/node_modules
+**/.next
+TestResults
+coverage
+artifacts
+.tooling
+.env

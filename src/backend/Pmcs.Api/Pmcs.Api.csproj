@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Platform/Pmcs.Modules.Platform.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.IdentityAccess/Pmcs.Modules.IdentityAccess.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Projects/Pmcs.Modules.Projects.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.FieldOperations/Pmcs.Modules.FieldOperations.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Sync/Pmcs.Modules.Sync.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Planning/Pmcs.Modules.Planning.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.TechnicalOffice/Pmcs.Modules.TechnicalOffice.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+</Project>

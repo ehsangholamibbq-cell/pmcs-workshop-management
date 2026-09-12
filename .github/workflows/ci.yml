@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node tools/validate-repository.mjs
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore PMCS.slnx
+      - run: dotnet build PMCS.slnx --configuration Release --no-restore
+      - run: dotnet test PMCS.slnx --configuration Release --no-build --logger trx
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: pmcs_integration
+          POSTGRES_USER: pmcs
+          POSTGRES_PASSWORD: pmcs_integration_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pmcs -d pmcs_integration"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PMCS_TEST_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_integration;Username=pmcs;Password=pmcs_integration_only
+      PMCS_TEST_S3_ENDPOINT: http://127.0.0.1:9000
+      PMCS_TEST_S3_ACCESS_KEY: pmcs_integration
+      PMCS_TEST_S3_SECRET_KEY: pmcs_integration_only
+      PMCS_TEST_S3_BUCKET: pmcs-integration
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore PMCS.slnx
+      - run: dotnet build PMCS.slnx --configuration Release --no-restore
+      - name: Start isolated object storage
+        run: |
+          docker run --detach --name pmcs-integration-minio \
+            --publish 9000:9000 \
+            --env MINIO_ROOT_USER=pmcs_integration \
+            --env MINIO_ROOT_PASSWORD=pmcs_integration_only \
+            minio/minio:latest server /data
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pmcs-integration-minio
+          exit 1
+      - run: ./tools/integration-smoke.sh
+      - name: PostgreSQL backup and isolated restore drill
+        run: |
+          mkdir -p "${RUNNER_TEMP}/pmcs-backup"
+          docker run --rm --network host \
+            --volume "${GITHUB_WORKSPACE}:/workspace" \
+            --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
+            --workdir /workspace \
+            --env "PMCS_BACKUP_CONNECTION_STRING=${PMCS_TEST_CONNECTION_STRING}" \
+            --env PMCS_BACKUP_DIRECTORY=/backup \
+            postgres:17-alpine sh -c \
+            'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-backup.sh'
+          backup_file="$(find "${RUNNER_TEMP}/pmcs-backup" -maxdepth 1 -name '*.dump' -type f -print -quit)"
+          test -n "${backup_file}"
+          backup_name="$(basename "${backup_file}")"
+          docker run --rm --network host \
+            --volume "${GITHUB_WORKSPACE}:/workspace" \
+            --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
+            --workdir /workspace \
+            --env 'PMCS_RESTORE_ADMIN_CONNECTION_STRING=Host=127.0.0.1;Port=5432;Database=postgres;Username=pmcs;Password=pmcs_integration_only' \
+            --env 'PMCS_RESTORE_TARGET_CONNECTION_STRING=Host=127.0.0.1;Port=5432;Database=pmcs_restore_drill_ci;Username=pmcs;Password=pmcs_integration_only' \
+            --env PMCS_RESTORE_TARGET_DATABASE=pmcs_restore_drill_ci \
+            --env "PMCS_RESTORE_BACKUP_FILE=/backup/${backup_name}" \
+            postgres:17-alpine sh -c \
+            'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-restore-drill.sh'
+      - if: failure()
+        run: docker logs pmcs-integration-minio
+      - if: always()
+        run: docker rm --force pmcs-integration-minio || true
+
+  pilot-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test tools/tests/*.test.mjs
+      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh ops/backup/*.sh
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run check
+
+  identity-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: docker compose config --quiet
+      - run: docker compose up --detach --build keycloak web-auth-postgres
+      - name: Verify imported OIDC realm
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:8081/realms/pmcs/.well-known/openid-configuration >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              exit 1
+            fi
+            sleep 2
+          done
+          node --input-type=module -e '
+            const response = await fetch("http://localhost:8081/realms/pmcs/.well-known/openid-configuration");
+            const discovery = await response.json();
+            if (discovery.issuer !== "http://localhost:8081/realms/pmcs") process.exit(1);
+            if (!discovery.authorization_endpoint || !discovery.token_endpoint || !discovery.jwks_uri) process.exit(1);
+          '
+          node --input-type=module -e '
+            const tokenResponse = await fetch("http://localhost:8081/realms/pmcs/protocol/openid-connect/token", {
+              method: "POST",
+              headers: { "content-type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                grant_type: "client_credentials",
+                client_id: "pmcs-identity-admin",
+                client_secret: "identity_admin_dev_only",
+              }),
+            });
+            if (!tokenResponse.ok) process.exit(1);
+            const { access_token: token } = await tokenResponse.json();
+            const usersResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users?max=1", {
+              headers: { authorization: `Bearer ${token}` },
+            });
+            if (!usersResponse.ok) process.exit(1);
+            const userId = crypto.randomUUID();
+            const createResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users", {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${token}`,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({
+                id: userId,
+                username: `ci-${userId}@pmcs.invalid`,
+                email: `ci-${userId}@pmcs.invalid`,
+                enabled: false,
+              }),
+            });
+            if (createResponse.status !== 201) process.exit(1);
+            const deleteResponse = await fetch(`http://localhost:8081/admin/realms/pmcs/users/${userId}`, {
+              method: "DELETE",
+              headers: { authorization: `Bearer ${token}` },
+            });
+            if (deleteResponse.status !== 204) process.exit(1);
+          '
+      - if: failure()
+        run: docker compose logs keycloak keycloak-postgres web-auth-postgres
+      - if: always()
+        run: docker compose down --volumes

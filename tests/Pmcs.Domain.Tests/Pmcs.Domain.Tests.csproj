@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/backend/Pmcs.Api/Pmcs.Api.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.IdentityAccess/Pmcs.Modules.IdentityAccess.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Projects/Pmcs.Modules.Projects.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.FieldOperations/Pmcs.Modules.FieldOperations.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Sync/Pmcs.Modules.Sync.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Planning/Pmcs.Modules.Planning.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.TechnicalOffice/Pmcs.Modules.TechnicalOffice.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

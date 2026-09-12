@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/Pmcs.Api/Pmcs.Api.csproj" />
+    <Project Path="src/backend/Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Platform/Pmcs.Modules.Platform.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.IdentityAccess/Pmcs.Modules.IdentityAccess.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Projects/Pmcs.Modules.Projects.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.FieldOperations/Pmcs.Modules.FieldOperations.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Sync/Pmcs.Modules.Sync.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Planning/Pmcs.Modules.Planning.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.TechnicalOffice/Pmcs.Modules.TechnicalOffice.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,171 @@
+name: pmcs
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pmcs}
+      POSTGRES_USER: ${POSTGRES_USER:-pmcs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pmcs_dev_only}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pmcs-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pmcs} -d ${POSTGRES_DB:-pmcs}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB:-keycloak}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_dev_only}
+    volumes:
+      - pmcs-keycloak-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER:-keycloak} -d ${KEYCLOAK_DB:-keycloak}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web-auth-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${WEB_AUTH_DB:-pmcs_web_auth}
+      POSTGRES_USER: ${WEB_AUTH_DB_USER:-pmcs_web_auth}
+      POSTGRES_PASSWORD: ${WEB_AUTH_DB_PASSWORD:-web_auth_dev_only}
+    volumes:
+      - pmcs-web-auth-postgres:/var/lib/postgresql/data
+      - ./deploy/web-auth/init.sql:/docker-entrypoint-initdb.d/001-better-auth.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WEB_AUTH_DB_USER:-pmcs_web_auth} -d ${WEB_AUTH_DB:-pmcs_web_auth}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak:
+    build:
+      context: .
+      dockerfile: deploy/keycloak/Dockerfile
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_dev_only}
+      KC_HOSTNAME: ${PMCS_OIDC_PUBLIC_HOSTNAME:-http://localhost:8081}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-pmcs-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-keycloak_admin_dev_only}
+      PMCS_WEB_OIDC_CLIENT_SECRET: ${PMCS_WEB_OIDC_CLIENT_SECRET:-pmcs_web_client_dev_only}
+      PMCS_DEMO_USER_PASSWORD: ${PMCS_DEMO_USER_PASSWORD:-ChangeMe-dev-only-123!}
+      PMCS_IDENTITY_ADMIN_CLIENT_SECRET: ${PMCS_IDENTITY_ADMIN_CLIENT_SECRET:-identity_admin_dev_only}
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./deploy/keycloak/pmcs-realm.json:/opt/keycloak/data/import/pmcs-realm.json:ro
+    command: ["start", "--optimized", "--import-realm"]
+    depends_on:
+      keycloak-postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "{ printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&0; grep '200' <&0; } 0<>/dev/tcp/127.0.0.1/9000",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-pmcs_dev}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-pmcs_dev_only}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - pmcs-minio:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+      args:
+        PMCS_RELEASE_COMMIT: ${PMCS_RELEASE_COMMIT:-development}
+        PMCS_RELEASE_VERSION: ${PMCS_RELEASE_VERSION:-0.0.0-dev}
+        PMCS_RELEASE_BUILT_AT: ${PMCS_RELEASE_BUILT_AT:-unknown}
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Pmcs: ${ConnectionStrings__Pmcs:-Host=postgres;Port=5432;Database=pmcs;Username=pmcs;Password=pmcs_dev_only}
+      PMCS_DEV_IDENTITY_ENABLED: ${PMCS_DEV_IDENTITY_ENABLED:-true}
+      PMCS_SEED_ENABLED: ${PMCS_SEED_ENABLED:-true}
+      PMCS_WEB_ORIGIN: ${PMCS_WEB_ORIGIN:-http://localhost:3000}
+      Authentication__Authority: ${PMCS_OIDC_PUBLIC_ISSUER:-http://localhost:8081/realms/pmcs}
+      Authentication__MetadataAddress: ${PMCS_OIDC_METADATA_ADDRESS:-http://keycloak:8080/realms/pmcs/.well-known/openid-configuration}
+      Authentication__Audience: ${PMCS_OIDC_AUDIENCE:-pmcs-api}
+      IdentityProvisioning__Enabled: "true"
+      IdentityProvisioning__BaseUrl: ${PMCS_IDENTITY_ADMIN_BASE_URL:-http://keycloak:8080}
+      IdentityProvisioning__Realm: ${PMCS_IDENTITY_REALM:-pmcs}
+      IdentityProvisioning__ClientId: ${PMCS_IDENTITY_ADMIN_CLIENT_ID:-pmcs-identity-admin}
+      IdentityProvisioning__ClientSecret: ${PMCS_IDENTITY_ADMIN_CLIENT_SECRET:-identity_admin_dev_only}
+      IdentityProvisioning__WebClientId: ${PMCS_WEB_OIDC_CLIENT_ID:-pmcs-web}
+      IdentityProvisioning__WebReturnUrl: ${PMCS_WEB_URL:-http://localhost:3000}
+      ObjectStorage__ServiceUrl: ${S3_ENDPOINT:-http://minio:9000}
+      ObjectStorage__AccessKey: ${S3_ACCESS_KEY:-pmcs_dev}
+      ObjectStorage__SecretKey: ${S3_SECRET_KEY:-pmcs_dev_only}
+      ObjectStorage__BucketName: ${S3_BUCKET:-pmcs-dev}
+      ObjectStorage__Region: ${S3_REGION:-us-east-1}
+      ObjectStorage__ForcePathStyle: "true"
+      ObjectStorage__CreateBucketIfMissing: ${S3_CREATE_BUCKET_IF_MISSING:-true}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/docker/web.Dockerfile
+      args:
+        PMCS_RELEASE_COMMIT: ${PMCS_RELEASE_COMMIT:-development}
+        PMCS_RELEASE_VERSION: ${PMCS_RELEASE_VERSION:-0.0.0-dev}
+        PMCS_RELEASE_BUILT_AT: ${PMCS_RELEASE_BUILT_AT:-unknown}
+        PMCS_RELEASE_REQUIRED: ${PMCS_RELEASE_REQUIRED:-false}
+    environment:
+      PMCS_INTERNAL_API_URL: ${PMCS_INTERNAL_API_URL:-http://api:8080}
+      PMCS_WEB_URL: ${PMCS_WEB_URL:-http://localhost:3000}
+      PMCS_AUTH_ALLOW_INSECURE_HTTP: ${PMCS_AUTH_ALLOW_INSECURE_HTTP:-true}
+      PMCS_AUTH_SECRET: ${PMCS_AUTH_SECRET:-pmcs_dev_only_better_auth_secret_change_me_32_chars}
+      PMCS_WEB_AUTH_DATABASE_URL: ${PMCS_WEB_AUTH_DATABASE_URL:-postgresql://pmcs_web_auth:web_auth_dev_only@web-auth-postgres:5432/pmcs_web_auth}
+      PMCS_OIDC_PUBLIC_ISSUER: ${PMCS_OIDC_PUBLIC_ISSUER:-http://localhost:8081/realms/pmcs}
+      PMCS_OIDC_INTERNAL_ISSUER: ${PMCS_OIDC_INTERNAL_ISSUER:-http://keycloak:8080/realms/pmcs}
+      PMCS_WEB_OIDC_CLIENT_ID: ${PMCS_WEB_OIDC_CLIENT_ID:-pmcs-web}
+      PMCS_WEB_OIDC_CLIENT_SECRET: ${PMCS_WEB_OIDC_CLIENT_SECRET:-pmcs_web_client_dev_only}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+      web-auth-postgres:
+        condition: service_healthy
+
+volumes:
+  pmcs-postgres:
+  pmcs-minio:
+  pmcs-keycloak-postgres:
+  pmcs-web-auth-postgres:

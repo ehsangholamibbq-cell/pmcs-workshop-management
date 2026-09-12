@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "candidateMaximumLifetimeHours": 336,
+  "gates": [
+    { "id": "repository-validation", "maximumAgeHours": 24 },
+    { "id": "backend-tests", "maximumAgeHours": 24 },
+    { "id": "web-check", "maximumAgeHours": 24 },
+    { "id": "postgres-integration", "maximumAgeHours": 24 },
+    { "id": "object-storage-roundtrip", "maximumAgeHours": 24 },
+    { "id": "backup-restore-drill", "maximumAgeHours": 2160 },
+    { "id": "environment-smoke", "maximumAgeHours": 24 },
+    { "id": "device-uat", "maximumAgeHours": 336 }
+  ],
+  "approvalRoles": ["product", "security", "operations"]
+}

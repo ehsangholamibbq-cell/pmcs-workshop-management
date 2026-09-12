@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <PMCSReleaseCommit Condition="'$(PMCSReleaseCommit)' == ''">development</PMCSReleaseCommit>
+    <PMCSReleaseVersion Condition="'$(PMCSReleaseVersion)' == ''">0.0.0-dev</PMCSReleaseVersion>
+    <PMCSReleaseBuiltAt Condition="'$(PMCSReleaseBuiltAt)' == ''">unknown</PMCSReleaseBuiltAt>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="PMCS.ReleaseCommit" Value="$(PMCSReleaseCommit)" />
+    <AssemblyMetadata Include="PMCS.ReleaseVersion" Value="$(PMCSReleaseVersion)" />
+    <AssemblyMetadata Include="PMCS.ReleaseBuiltAt" Value="$(PMCSReleaseBuiltAt)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="سامانه کنترل مدیریت پروژه">
+  <rect width="512" height="512" rx="112" fill="#112a2a"/>
+  <path d="M142 382V130h126c68 0 110 36 110 96 0 62-42 100-112 100h-52v56h-72Zm72-116h47c29 0 44-13 44-38 0-24-15-36-44-36h-47v74Z" fill="#f2f4ef"/>
+  <circle cx="377" cy="377" r="47" fill="#75d4b5"/>
+</svg>
