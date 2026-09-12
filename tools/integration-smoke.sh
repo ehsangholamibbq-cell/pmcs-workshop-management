@@ -20,13 +20,21 @@ fi
 log_file="$(mktemp)"
 temporary_directory="$(mktemp -d)"
 api_pid=""
+current_step="starting PMCS API"
 cleanup() {
+  exit_code=$?
+  set +e
+  if (( exit_code != 0 )); then
+    echo "Integration smoke failed during: ${current_step}." >&2
+    sed -n '1,240p' "${log_file}" >&2
+  fi
   if [[ -n "${api_pid}" ]] && kill -0 "${api_pid}" 2>/dev/null; then
     kill "${api_pid}"
     wait "${api_pid}" 2>/dev/null || true
   fi
   rm -f -- "${log_file}"
   rm -rf -- "${temporary_directory}"
+  exit "${exit_code}"
 }
 trap cleanup EXIT
 
@@ -55,6 +63,7 @@ dotnet run \
   --no-launch-profile >"${log_file}" 2>&1 &
 api_pid=$!
 
+current_step="waiting for PMCS API readiness"
 ready=false
 for _ in {1..60}; do
   if ! kill -0 "${api_pid}" 2>/dev/null; then
@@ -76,6 +85,7 @@ if [[ "${ready}" != true ]]; then
   exit 1
 fi
 
+current_step="checking PMCS health and security headers"
 curl --silent --fail "http://127.0.0.1:${port}/health/live" | grep -q '"status":"Healthy"'
 curl --silent --fail "http://127.0.0.1:${port}/health/ready" | grep -q '"postgres"'
 curl --silent --fail --dump-header - --output /dev/null "http://127.0.0.1:${port}/api/v1/foundation" | \
@@ -88,6 +98,7 @@ if [[ "${unauthenticated_status}" != "401" ]]; then
   exit 1
 fi
 
+current_step="checking the development identity session"
 tenant_id="11111111-1111-1111-1111-111111111111"
 user_id="22222222-2222-2222-2222-222222222222"
 curl --silent --fail \
@@ -95,6 +106,7 @@ curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   "http://127.0.0.1:${port}/api/v1/session" | grep -q '"authentication":"development-adapter"'
 
+current_step="creating an offline sync session"
 project_id="33333333-3333-3333-3333-333333333333"
 device_id="integration-device-001"
 device_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -113,6 +125,7 @@ if [[ -z "${session_id}" || -z "${lease_id}" || -z "${authorization_version}" ]]
   exit 1
 fi
 
+current_step="pushing an offline operation"
 report_id="44444444-4444-4444-4444-444444444444"
 fact_id="55555555-5555-5555-5555-555555555555"
 operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1B"
@@ -126,6 +139,7 @@ push_response="$(curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 grep -q '"status":"Applied"' <<<"${push_response}"
 
+current_step="creating an evidence upload session"
 evidence_id="88888888-8888-8888-8888-888888888888"
 evidence_file="${temporary_directory}/integration-evidence.jpg"
 downloaded_file="${temporary_directory}/downloaded-evidence.jpg"
@@ -142,6 +156,7 @@ upload_session_response="$(curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/projects/${project_id}/evidence/upload-sessions")"
 grep -q '"status":"PendingUpload"' <<<"${upload_session_response}"
 
+current_step="uploading evidence content"
 curl --silent --fail \
   --request PUT \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -152,6 +167,7 @@ curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/projects/${project_id}/evidence/${evidence_id}/content" | \
   grep -q '"status":"Uploaded"'
 
+current_step="downloading and verifying evidence content"
 curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
@@ -162,6 +178,7 @@ if [[ "$(sha256sum "${downloaded_file}" | cut -d ' ' -f 1)" != "${evidence_sha}"
   exit 1
 fi
 
+current_step="pulling sync changes and accepting a checkpoint"
 pull_response="$(curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
@@ -182,6 +199,7 @@ curl --silent --fail \
   --data "{\"projectId\":\"${project_id}\",\"checkpointOffer\":\"${checkpoint_offer}\"}" \
   "http://127.0.0.1:${port}/api/v1/sync/checkpoints" | grep -q '"sequence":'
 
+current_step="creating and resolving a sync conflict"
 conflicting_report_id="66666666-6666-6666-6666-666666666666"
 conflicting_fact_id="77777777-7777-7777-7777-777777777777"
 conflicting_operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1C"
@@ -208,6 +226,7 @@ curl --silent --fail \
   --data '{"baseRevision":0,"resolution":"KeepServer","replacementOperationId":null,"comment":"Integration resolution"}' \
   "http://127.0.0.1:${port}/api/v1/sync/conflicts/${conflict_id}/resolve" | grep -q '"status":"Resolved"'
 
+current_step="checking the insight rate limit"
 insight_status=""
 for _ in {1..6}; do
   insight_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
@@ -223,6 +242,7 @@ if [[ "${insight_status}" != "429" ]]; then
   exit 1
 fi
 
+current_step="checking the anonymous API rate limit"
 rate_limited=false
 for _ in {1..25}; do
   status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
@@ -237,4 +257,5 @@ if [[ "${rate_limited}" != true ]]; then
   exit 1
 fi
 
+current_step="completed"
 printf 'PMCS PostgreSQL/API and object-storage roundtrip integration smoke test passed.\n'
