@@ -64,7 +64,7 @@ jobs:
             --publish 9000:9000 \
             --env MINIO_ROOT_USER=pmcs_integration \
             --env MINIO_ROOT_PASSWORD=pmcs_integration_only \
-            minio/minio:latest server /data
+            quay.io/minio/minio:RELEASE.2025-09-06T17-38-46Z server /data
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
               exit 0
@@ -99,7 +99,7 @@ jobs:
             postgres:17-alpine sh -c \
             'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-restore-drill.sh'
       - if: failure()
-        run: docker logs pmcs-integration-minio
+        run: docker logs pmcs-integration-minio || true
       - if: always()
         run: docker rm --force pmcs-integration-minio || true
 
@@ -184,7 +184,7 @@ jobs:
               console.error(`Admin users probe returned HTTP ${usersResponse.status}: ${await usersResponse.text()}`);
               process.exit(1);
             }
-            const userId = crypto.randomUUID();
+            const userNameSeed = crypto.randomUUID();
             const createResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users", {
               method: "POST",
               headers: {
@@ -192,9 +192,8 @@ jobs:
                 "content-type": "application/json",
               },
               body: JSON.stringify({
-                id: userId,
-                username: `ci-${userId}@pmcs.invalid`,
-                email: `ci-${userId}@pmcs.invalid`,
+                username: `ci-${userNameSeed}@pmcs.invalid`,
+                email: `ci-${userNameSeed}@pmcs.invalid`,
                 enabled: false,
               }),
             });
@@ -202,7 +201,13 @@ jobs:
               console.error(`Admin user creation returned HTTP ${createResponse.status}: ${await createResponse.text()}`);
               process.exit(1);
             }
-            const deleteResponse = await fetch(`http://localhost:8081/admin/realms/pmcs/users/${userId}`, {
+            const location = createResponse.headers.get("location");
+            const createdUserId = location?.split("/").filter(Boolean).at(-1);
+            if (!createdUserId) {
+              console.error("Admin user creation did not return a user Location header");
+              process.exit(1);
+            }
+            const deleteResponse = await fetch(`http://localhost:8081/admin/realms/pmcs/users/${encodeURIComponent(createdUserId)}`, {
               method: "DELETE",
               headers: { authorization: `Bearer ${token}` },
             });
