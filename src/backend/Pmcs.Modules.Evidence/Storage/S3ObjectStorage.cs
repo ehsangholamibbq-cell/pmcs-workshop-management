@@ -99,7 +99,8 @@ internal sealed class S3ObjectStorage : IObjectStorage, IDisposable
             }
 
             var buckets = await _client.ListBucketsAsync(cancellationToken);
-            if (!buckets.Buckets.Any(bucket => string.Equals(bucket.BucketName, _options.BucketName, StringComparison.Ordinal)))
+            if (buckets.Buckets?.Any(
+                    bucket => string.Equals(bucket.BucketName, _options.BucketName, StringComparison.Ordinal)) != true)
             {
                 if (!_options.CreateBucketIfMissing)
                 {
@@ -129,3 +130,4 @@ internal sealed class S3ObjectStorage : IObjectStorage, IDisposable
         }
     }
 }
+
