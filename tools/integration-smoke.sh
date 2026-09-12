@@ -217,13 +217,23 @@ if [[ -z "${conflict_id}" ]]; then
   echo "Conflicting operation did not create a conflict case." >&2
   exit 1
 fi
+conflicts_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/sync/conflicts?projectId=${project_id}")"
+grep -q "\"conflictId\":\"${conflict_id}\"" <<<"${conflicts_response}"
+conflict_revision="$(sed -n 's/.*\"revision\":\([0-9][0-9]*\).*/\1/p' <<<"${conflicts_response}")"
+if [[ -z "${conflict_revision}" ]]; then
+  echo "Conflict listing did not return its current revision." >&2
+  exit 1
+fi
 curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
   --header "X-Pmcs-Sync-Session: ${session_id}" \
   --header 'Content-Type: application/json' \
-  --data '{"baseRevision":0,"resolution":"KeepServer","replacementOperationId":null,"comment":"Integration resolution"}' \
+  --data "{\"baseRevision\":${conflict_revision},\"resolution\":\"KeepServer\",\"replacementOperationId\":null,\"comment\":\"Integration resolution\"}" \
   "http://127.0.0.1:${port}/api/v1/sync/conflicts/${conflict_id}/resolve" | grep -q '"status":"Resolved"'
 
 current_step="checking the insight rate limit"
@@ -259,3 +269,4 @@ fi
 
 current_step="completed"
 printf 'PMCS PostgreSQL/API and object-storage roundtrip integration smoke test passed.\n'
+
