@@ -68,7 +68,7 @@ if [[ ! "${migration_count}" =~ ^[1-9][0-9]*$ ]]; then
 fi
 
 required_relations="$(psql "${PMCS_RESTORE_TARGET_CONNECTION_STRING}" -X -v ON_ERROR_STOP=1 -tAc \
-  "select (to_regclass('foundation.audit_entries') is not null and to_regclass('projects.projects') is not null)::int;")"
+  "select (to_regclass('foundation.audit_events') is not null and to_regclass('projects.projects') is not null)::int;")"
 required_relations="${required_relations//[[:space:]]/}"
 if [[ "${required_relations}" != "1" ]]; then
   echo "Restore validation failed: required PMCS relations are missing." >&2
@@ -77,3 +77,4 @@ fi
 
 printf 'Restore drill passed for %s with %s migrations. The drill database was retained for inspection.\n' \
   "${PMCS_RESTORE_TARGET_DATABASE}" "${migration_count}"
+
