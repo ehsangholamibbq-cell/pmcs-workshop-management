@@ -48,7 +48,7 @@ internal sealed record ReleaseIdentity(
         }
     }
 
-    private static string Read(IReadOnlyDictionary<string, string> metadata, string key, string fallback) =>
+    private static string Read(Dictionary<string, string> metadata, string key, string fallback) =>
         metadata.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? value.Trim()
             : fallback;
