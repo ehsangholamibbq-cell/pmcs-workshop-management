@@ -20,7 +20,7 @@ Backup فقط زمانی معتبر است که checksum، نگهداری خار
 هر دو متغیر باید صریح باشند و مسیر Backup باید absolute و غیر root باشد:
 
 ```bash
-export PMCS_BACKUP_CONNECTION_STRING="<read-only-backup-connection>"
+export PMCS_BACKUP_CONNECTION_STRING="<PostgreSQL URI or libpq conninfo for a read-only backup account>"
 export PMCS_BACKUP_DIRECTORY="/srv/pmcs-backups/postgres"
 ./ops/backup/postgres-backup.sh
 ```
@@ -34,9 +34,9 @@ export PMCS_BACKUP_DIRECTORY="/srv/pmcs-backups/postgres"
 Restore فقط روی نام جدید با الگوی `pmcs_restore_drill_[a-z0-9_]+` مجاز است. Script دیتابیس موجود را حذف یا overwrite نمی‌کند و پس از آزمون نیز آن را برای بررسی نگه می‌دارد.
 
 ```bash
-export PMCS_RESTORE_ADMIN_CONNECTION_STRING="<maintenance-database-connection>"
+export PMCS_RESTORE_ADMIN_CONNECTION_STRING="<PostgreSQL URI or libpq conninfo for the maintenance database>"
 export PMCS_RESTORE_TARGET_DATABASE="pmcs_restore_drill_2026q3"
-export PMCS_RESTORE_TARGET_CONNECTION_STRING="<connection-to-pmcs_restore_drill_2026q3>"
+export PMCS_RESTORE_TARGET_CONNECTION_STRING="<PostgreSQL URI or libpq conninfo for pmcs_restore_drill_2026q3>"
 export PMCS_RESTORE_BACKUP_FILE="/srv/pmcs-backups/postgres/pmcs-....dump"
 ./ops/backup/postgres-restore-drill.sh
 ```

@@ -81,7 +81,7 @@ jobs:
             --volume "${GITHUB_WORKSPACE}:/workspace" \
             --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
             --workdir /workspace \
-            --env "PMCS_BACKUP_CONNECTION_STRING=${PMCS_TEST_CONNECTION_STRING}" \
+            --env 'PMCS_BACKUP_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
             --env PMCS_BACKUP_DIRECTORY=/backup \
             postgres:17-alpine sh -c \
             'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-backup.sh'
@@ -92,8 +92,8 @@ jobs:
             --volume "${GITHUB_WORKSPACE}:/workspace" \
             --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
             --workdir /workspace \
-            --env 'PMCS_RESTORE_ADMIN_CONNECTION_STRING=Host=127.0.0.1;Port=5432;Database=postgres;Username=pmcs;Password=pmcs_integration_only' \
-            --env 'PMCS_RESTORE_TARGET_CONNECTION_STRING=Host=127.0.0.1;Port=5432;Database=pmcs_restore_drill_ci;Username=pmcs;Password=pmcs_integration_only' \
+            --env 'PMCS_RESTORE_ADMIN_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/postgres' \
+            --env 'PMCS_RESTORE_TARGET_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_ci' \
             --env PMCS_RESTORE_TARGET_DATABASE=pmcs_restore_drill_ci \
             --env "PMCS_RESTORE_BACKUP_FILE=/backup/${backup_name}" \
             postgres:17-alpine sh -c \
