@@ -64,7 +64,7 @@ jobs:
             --publish 9000:9000 \
             --env MINIO_ROOT_USER=pmcs_integration \
             --env MINIO_ROOT_PASSWORD=pmcs_integration_only \
-            quay.io/minio/minio:RELEASE.2025-09-06T17-38-46Z server /data
+            quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z@sha256:d249d1fb6966de4d8ad26c04754b545205ff15a62e4fd19ebd0f26fa5baacbc0 server /data
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
               exit 0
