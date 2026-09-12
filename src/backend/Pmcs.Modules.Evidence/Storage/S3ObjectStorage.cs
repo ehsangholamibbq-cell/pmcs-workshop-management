@@ -130,4 +130,3 @@ internal sealed class S3ObjectStorage : IObjectStorage, IDisposable
         }
     }
 }
-

@@ -77,4 +77,3 @@ fi
 
 printf 'Restore drill passed for %s with %s migrations. The drill database was retained for inspection.\n' \
   "${PMCS_RESTORE_TARGET_DATABASE}" "${migration_count}"
-

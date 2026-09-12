@@ -269,4 +269,3 @@ fi
 
 current_step="completed"
 printf 'PMCS PostgreSQL/API and object-storage roundtrip integration smoke test passed.\n'
-
