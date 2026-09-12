@@ -1,3 +1,4 @@
+using System.Globalization;
 using Pmcs.BuildingBlocks.Domain;
 
 namespace Pmcs.Domain.Tests;
@@ -11,6 +12,8 @@ public sealed class PersianDateCodeTests
     [InlineData("2026-09-11T21:00:00Z", "14050621")]
     public void OfficialDateCodeUsesPersianCalendarAndTehranCivilBoundary(string instant, string expected)
     {
-        Assert.Equal(expected, PersianDateCode.FromInstant(DateTimeOffset.Parse(instant)));
+        Assert.Equal(
+            expected,
+            PersianDateCode.FromInstant(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture)));
     }
 }

@@ -148,9 +148,19 @@ jobs:
           done
           node --input-type=module -e '
             const response = await fetch("http://localhost:8081/realms/pmcs/.well-known/openid-configuration");
+            if (!response.ok) {
+              console.error(`OIDC discovery returned HTTP ${response.status}`);
+              process.exit(1);
+            }
             const discovery = await response.json();
-            if (discovery.issuer !== "http://localhost:8081/realms/pmcs") process.exit(1);
-            if (!discovery.authorization_endpoint || !discovery.token_endpoint || !discovery.jwks_uri) process.exit(1);
+            if (discovery.issuer !== "http://localhost:8081/realms/pmcs") {
+              console.error(`Unexpected OIDC issuer: ${discovery.issuer}`);
+              process.exit(1);
+            }
+            if (!discovery.authorization_endpoint || !discovery.token_endpoint || !discovery.jwks_uri) {
+              console.error("OIDC discovery is missing required endpoints");
+              process.exit(1);
+            }
           '
           node --input-type=module -e '
             const tokenResponse = await fetch("http://localhost:8081/realms/pmcs/protocol/openid-connect/token", {
@@ -162,12 +172,18 @@ jobs:
                 client_secret: "identity_admin_dev_only",
               }),
             });
-            if (!tokenResponse.ok) process.exit(1);
+            if (!tokenResponse.ok) {
+              console.error(`Client-credentials request returned HTTP ${tokenResponse.status}: ${await tokenResponse.text()}`);
+              process.exit(1);
+            }
             const { access_token: token } = await tokenResponse.json();
             const usersResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users?max=1", {
               headers: { authorization: `Bearer ${token}` },
             });
-            if (!usersResponse.ok) process.exit(1);
+            if (!usersResponse.ok) {
+              console.error(`Admin users probe returned HTTP ${usersResponse.status}: ${await usersResponse.text()}`);
+              process.exit(1);
+            }
             const userId = crypto.randomUUID();
             const createResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users", {
               method: "POST",
@@ -182,12 +198,18 @@ jobs:
                 enabled: false,
               }),
             });
-            if (createResponse.status !== 201) process.exit(1);
+            if (createResponse.status !== 201) {
+              console.error(`Admin user creation returned HTTP ${createResponse.status}: ${await createResponse.text()}`);
+              process.exit(1);
+            }
             const deleteResponse = await fetch(`http://localhost:8081/admin/realms/pmcs/users/${userId}`, {
               method: "DELETE",
               headers: { authorization: `Bearer ${token}` },
             });
-            if (deleteResponse.status !== 204) process.exit(1);
+            if (deleteResponse.status !== 204) {
+              console.error(`Admin user deletion returned HTTP ${deleteResponse.status}: ${await deleteResponse.text()}`);
+              process.exit(1);
+            }
           '
       - if: failure()
         run: docker compose logs keycloak keycloak-postgres web-auth-postgres
