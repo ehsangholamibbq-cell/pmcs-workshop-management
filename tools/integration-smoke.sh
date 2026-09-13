@@ -133,7 +133,8 @@ setup_replay="$(curl --silent --fail \
   --header 'Content-Type: application/json' \
   --data "${setup_payload}" \
   "http://127.0.0.1:${port}/api/v1/projects")"
-grep -q "\"id\":\"${setup_project_id}\"" <<<"${setup_replay}"
+# PostgreSQL jsonb may normalize whitespace in the persisted replay body.
+grep -Eq "\"id\"[[:space:]]*:[[:space:]]*\"${setup_project_id}\"" <<<"${setup_replay}"
 
 setup_locations="$(curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
