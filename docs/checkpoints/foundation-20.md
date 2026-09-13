@@ -15,6 +15,7 @@
 - required an active Location for all new direct and offline daily facts and propagated its stable identifier through Project State and intelligence context;
 - fixed the Field Operations EF mapping so `location_id` belongs to the Fact rather than the report;
 - hardened idempotency expiry, concurrent storage, key bounds and retention cleanup;
+- made the PostgreSQL integration assertion for idempotent replay semantic and resilient to valid `jsonb` whitespace normalization;
 - made core Sync handshake/checkpoint/conflict/device Audit writes atomic with their state changes;
 - fixed client conflict resolution to use the server conflict revision and to recover idempotently after interruption;
 - isolated in-flight sync/handshake promises by Tenant, User and Project;
