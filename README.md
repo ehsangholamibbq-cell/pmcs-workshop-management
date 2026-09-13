@@ -4,12 +4,15 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 20 integrity audit:
+Foundation Sprint — checkpoint 22 implementation:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
 - Platform foundations: audit، outbox، idempotency و migrations
 - Project Setup و Daily Report ساختاریافته با Submit/Return/Approve و Permission enforcement
+- اصلاح نسخه‌ای Daily Report بدون بازنویسی تاریخچه، با Fact lineage و Supersede اتمیک هنگام تأیید جایگزین
+- کارتابل permission-scoped «کارهای من» برای گزارش‌های نیازمند تصمیم/اصلاح و Actionهای محول‌شده
+- اعلان داخل سامانه با deduplication، Read/Acknowledge مستقل و ثبت تراکنشی همراه رویداد منبع
 - Next.js RTL/PWA با فرم پویا، IndexedDB operation queue، Sync واقعی و Exception review
 - transaction واحد Aggregate + Audit + Outbox + Idempotency
 - Project State قطعی و نسخه‌دار فقط از Factهای Approved

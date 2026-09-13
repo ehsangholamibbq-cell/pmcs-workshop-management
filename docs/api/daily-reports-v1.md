@@ -14,6 +14,9 @@
 | `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/submit` | `field.daily-reports.submit` | ارسال برای بازبینی |
 | `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/return` | `field.daily-reports.review` | عودت با دلیل الزامی |
 | `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/approve` | `field.daily-reports.review` | تأیید گزارش |
+| `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/corrections` | `field.daily-reports.review` | ایجاد Draft اصلاحی با دلیل و کپی ردیابی‌شده Factها |
+| `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/details` | مالک دارای Capture یا Reviewer | اصلاح metadata نسخه Draft/Returned |
+| `POST` | `/api/v1/projects/{projectId}/daily-reports/{reportId}/facts/{factId}/remove` | مالک دارای Capture یا Reviewer | حذف Fact فقط از نسخه Draft/Returned |
 
 همه POSTها به `Idempotency-Key` نیاز دارند. Headerهای Development در `development-identity.md` مستند شده‌اند و جای Authentication تولیدی نیستند.
 
@@ -28,6 +31,10 @@ stateDiagram-v2
     Submitted --> Returned: Return with reason
     Returned --> Submitted: Correct and resubmit
     Submitted --> Approved: Approve
+    Approved --> CorrectionDraft: Start correction
+    CorrectionDraft --> CorrectionSubmitted: Submit replacement
+    CorrectionSubmitted --> ApprovedReplacement: Approve replacement
+    Approved --> Superseded: Replacement approved atomically
 ```
 
 - Fact فقط در `Draft` یا `Returned` قابل افزودن است.
@@ -35,7 +42,10 @@ stateDiagram-v2
 - Return فقط از `Submitted` و با دلیل انجام می‌شود.
 - Approve فقط از `Submitted` انجام می‌شود.
 - هر تغییر Aggregate، Audit، Outbox و Idempotency Receipt را در یک transaction PostgreSQL می‌نویسد.
-- حالت `Superseded` در مدل داده رزرو شده، اما Command و زنجیره اصلاح آن هنوز پیاده‌سازی نشده و در ممیزی Checkpoint 20 یک Gap صریح MVP است.
+- گزارش Approved درجا ویرایش نمی‌شود. Correction دارای `rootReportId`، `versionNumber`، `supersedesReportId`، دلیل و آغازکننده است.
+- Factهای کپی‌شده شناسه تازه و `copiedFromFactId` دارند؛ حذف آن‌ها به نسخه قبلی آسیب نمی‌زند.
+- نسخه قبلی تا زمان Approval نسخه جایگزین همچنان Approved و منبع رسمی است. Approval جایگزین و Supersede قبلی در یک transaction انجام می‌شوند.
+- API زنجیره دوطرفه `supersedesReportId/supersededByReportId`، زمان Supersede و تمام نسخه‌ها را به UI برمی‌گرداند.
 
 ## Factهای ساختاریافته
 
