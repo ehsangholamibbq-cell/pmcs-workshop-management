@@ -11,7 +11,7 @@ internal sealed class ProjectPermissionService(
 {
     private const string PolicyVersion = "pmcs-rbac-v1";
 
-    private static readonly IReadOnlySet<string> AdministratorOnlyPermissions =
+    private static readonly HashSet<string> AdministratorOnlyPermissions =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "identity.manage",
@@ -25,7 +25,7 @@ internal sealed class ProjectPermissionService(
             "sync.devices.manage"
         };
 
-    private static readonly IReadOnlySet<string> OperationalRoles =
+    private static readonly HashSet<string> OperationalRoles =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "ProjectManager", "SiteSupervisor", "TechnicalOffice", "ProjectController",
@@ -615,7 +615,7 @@ internal sealed class ProjectPermissionService(
             decisions);
     }
 
-    private static IReadOnlyCollection<string> KnownOperations() => ProjectRolePermissions.Values
+    private static string[] KnownOperations() => ProjectRolePermissions.Values
         .SelectMany(permissions => permissions)
         .Where(permission => permission != "*")
         .Concat(AdministratorOnlyPermissions)
