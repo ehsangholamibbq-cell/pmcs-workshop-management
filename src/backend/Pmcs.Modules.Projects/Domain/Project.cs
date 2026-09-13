@@ -23,7 +23,19 @@ public sealed class Project : AggregateRoot
         DateTimeOffset createdAt,
         CapabilityMode financeMode,
         string baseCurrencyCode,
-        CapabilityMode procurementMode)
+        CapabilityMode procurementMode,
+        ProjectType projectType,
+        ProjectExecutionPhase executionPhase,
+        string countryCode,
+        string region,
+        DateOnly? startDate,
+        DateOnly? plannedFinishDate,
+        string shortDescription,
+        ProjectUnitSystem unitSystem,
+        TimeOnly? dailyCutoffLocalTime,
+        ReportingFrequency reportingFrequency,
+        DailyReportWorkflow dailyReportWorkflow,
+        bool offlinePolicyAccepted)
     {
         Id = id;
         TenantId = tenantId;
@@ -37,6 +49,19 @@ public sealed class Project : AggregateRoot
         FinanceMode = financeMode;
         ProcurementMode = procurementMode;
         BaseCurrencyCode = baseCurrencyCode;
+        ProjectType = projectType;
+        ExecutionPhase = executionPhase;
+        CountryCode = countryCode;
+        Region = region;
+        StartDate = startDate;
+        PlannedFinishDate = plannedFinishDate;
+        ShortDescription = shortDescription;
+        UnitSystem = unitSystem;
+        DailyCutoffLocalTime = dailyCutoffLocalTime;
+        ReportingFrequency = reportingFrequency;
+        DailyReportWorkflow = dailyReportWorkflow;
+        OfflinePolicyAccepted = offlinePolicyAccepted;
+        ConfigurationVersion = 1;
         CalendarMode = ProjectCalendarMode.NotConfigured;
         TimeZone = timeZone;
         Status = ProjectStatus.Draft;
@@ -67,6 +92,34 @@ public sealed class Project : AggregateRoot
     public CapabilityMode ProcurementMode { get; private set; }
 
     public string BaseCurrencyCode { get; private set; } = "IRR";
+
+    public ProjectType ProjectType { get; private set; }
+
+    public ProjectExecutionPhase ExecutionPhase { get; private set; }
+
+    public string CountryCode { get; private set; } = string.Empty;
+
+    public string Region { get; private set; } = string.Empty;
+
+    public DateOnly? StartDate { get; private set; }
+
+    public DateOnly? PlannedFinishDate { get; private set; }
+
+    public string ShortDescription { get; private set; } = string.Empty;
+
+    public ProjectUnitSystem UnitSystem { get; private set; }
+
+    public TimeOnly? DailyCutoffLocalTime { get; private set; }
+
+    public ReportingFrequency ReportingFrequency { get; private set; }
+
+    public DailyReportWorkflow DailyReportWorkflow { get; private set; }
+
+    public bool OfflinePolicyAccepted { get; private set; }
+
+    public long ConfigurationVersion { get; private set; } = 1;
+
+    public long? ActivatedConfigurationVersion { get; private set; }
 
     public ProjectCalendarMode CalendarMode { get; private set; }
 
@@ -101,7 +154,19 @@ public sealed class Project : AggregateRoot
         DateTimeOffset createdAt,
         CapabilityMode financeMode = CapabilityMode.Active,
         string baseCurrencyCode = "IRR",
-        CapabilityMode procurementMode = CapabilityMode.Active)
+        CapabilityMode procurementMode = CapabilityMode.Active,
+        ProjectType projectType = ProjectType.NotConfigured,
+        ProjectExecutionPhase executionPhase = ProjectExecutionPhase.NotConfigured,
+        string? countryCode = null,
+        string? region = null,
+        DateOnly? startDate = null,
+        DateOnly? plannedFinishDate = null,
+        string? shortDescription = null,
+        ProjectUnitSystem unitSystem = ProjectUnitSystem.NotConfigured,
+        TimeOnly? dailyCutoffLocalTime = null,
+        ReportingFrequency reportingFrequency = ReportingFrequency.NotConfigured,
+        DailyReportWorkflow dailyReportWorkflow = DailyReportWorkflow.NotConfigured,
+        bool offlinePolicyAccepted = false)
     {
         if (id == Guid.Empty || tenantId == Guid.Empty || createdBy == Guid.Empty)
         {
@@ -115,7 +180,10 @@ public sealed class Project : AggregateRoot
 
         if (!Enum.IsDefined(contractModel) || !Enum.IsDefined(planningMode) ||
             !Enum.IsDefined(budgetMode) || !Enum.IsDefined(qualityMode) || !Enum.IsDefined(hseMode) ||
-            !Enum.IsDefined(financeMode) || !Enum.IsDefined(procurementMode))
+            !Enum.IsDefined(financeMode) || !Enum.IsDefined(procurementMode) ||
+            !Enum.IsDefined(projectType) || !Enum.IsDefined(executionPhase) ||
+            !Enum.IsDefined(unitSystem) || !Enum.IsDefined(reportingFrequency) ||
+            !Enum.IsDefined(dailyReportWorkflow))
         {
             throw new DomainRuleException("project.configuration.invalid", "Project capability configuration is invalid.");
         }
@@ -143,6 +211,11 @@ public sealed class Project : AggregateRoot
             throw new DomainRuleException("project.currency.invalid", "Base currency must be a three-letter ISO-style code.");
         }
 
+        var normalizedCountry = NormalizeCountry(countryCode);
+        var normalizedRegion = NormalizeOptional(region, 200, "project.region.invalid");
+        var normalizedDescription = NormalizeOptional(shortDescription, 1000, "project.description.invalid");
+        ValidateDates(startDate, plannedFinishDate);
+
         return new Project(
             id,
             tenantId,
@@ -158,7 +231,115 @@ public sealed class Project : AggregateRoot
             createdAt,
             financeMode,
             normalizedCurrency,
-            procurementMode);
+            procurementMode,
+            projectType,
+            executionPhase,
+            normalizedCountry,
+            normalizedRegion,
+            startDate,
+            plannedFinishDate,
+            normalizedDescription,
+            unitSystem,
+            dailyCutoffLocalTime,
+            reportingFrequency,
+            dailyReportWorkflow,
+            offlinePolicyAccepted);
+    }
+
+    public void ConfigureSetup(
+        long baseRevision,
+        ContractModel contractModel,
+        PlanningMode planningMode,
+        CapabilityMode budgetMode,
+        CapabilityMode qualityMode,
+        CapabilityMode hseMode,
+        CapabilityMode financeMode,
+        CapabilityMode procurementMode,
+        ProjectCalendarMode calendarMode,
+        int? workingDaysMask,
+        ProjectType projectType,
+        ProjectExecutionPhase executionPhase,
+        string? countryCode,
+        string? region,
+        DateOnly? startDate,
+        DateOnly? plannedFinishDate,
+        string? shortDescription,
+        string timeZone,
+        string baseCurrencyCode,
+        ProjectUnitSystem unitSystem,
+        TimeOnly? dailyCutoffLocalTime,
+        ReportingFrequency reportingFrequency,
+        DailyReportWorkflow dailyReportWorkflow,
+        bool offlinePolicyAccepted,
+        DateTimeOffset changedAt,
+        bool allowSensitiveChange,
+        string? reason)
+    {
+        EnsureRevision(baseRevision);
+        if (Status != ProjectStatus.Draft && (!allowSensitiveChange || string.IsNullOrWhiteSpace(reason)))
+        {
+            throw new DomainRuleException(
+                "project.setup.sensitive_change_requires_reason",
+                "Post-activation setup changes require elevated permission and a reason.");
+        }
+
+        if (!Enum.IsDefined(contractModel) || !Enum.IsDefined(planningMode) ||
+            !Enum.IsDefined(budgetMode) || !Enum.IsDefined(qualityMode) || !Enum.IsDefined(hseMode) ||
+            !Enum.IsDefined(financeMode) || !Enum.IsDefined(procurementMode) || !Enum.IsDefined(calendarMode) ||
+            !Enum.IsDefined(projectType) || !Enum.IsDefined(executionPhase) ||
+            !Enum.IsDefined(unitSystem) || !Enum.IsDefined(reportingFrequency) || !Enum.IsDefined(dailyReportWorkflow))
+        {
+            throw new DomainRuleException("project.configuration.invalid", "Project setup configuration is invalid.");
+        }
+
+        var normalizedTimeZone = timeZone?.Trim() ?? string.Empty;
+        if (normalizedTimeZone.Length is 0 or > 100 || !IsKnownTimeZone(normalizedTimeZone))
+        {
+            throw new DomainRuleException("project.time_zone.invalid", "A valid time-zone identifier is required.");
+        }
+
+        var normalizedCurrency = baseCurrencyCode?.Trim().ToUpperInvariant() ?? string.Empty;
+        if (normalizedCurrency.Length != 3 || normalizedCurrency.Any(character => !char.IsAsciiLetterUpper(character)))
+        {
+            throw new DomainRuleException("project.currency.invalid", "Base currency must be a three-letter ISO-style code.");
+        }
+
+        ValidateDates(startDate, plannedFinishDate);
+        if (calendarMode == ProjectCalendarMode.NotConfigured && workingDaysMask.HasValue)
+        {
+            throw new DomainRuleException("project.calendar.days.unexpected", "Working days must be empty when the calendar is not configured.");
+        }
+        if (calendarMode == ProjectCalendarMode.WorkingWeek && (workingDaysMask is null or <= 0 or > 127))
+        {
+            throw new DomainRuleException("project.calendar.days.invalid", "At least one valid working weekday is required.");
+        }
+
+        ContractModel = contractModel;
+        PlanningMode = planningMode;
+        BudgetMode = budgetMode;
+        QualityMode = qualityMode;
+        HseMode = hseMode;
+        FinanceMode = financeMode;
+        ProcurementMode = procurementMode;
+        CalendarMode = calendarMode;
+        WorkingDaysMask = workingDaysMask;
+        ProjectType = projectType;
+        ExecutionPhase = executionPhase;
+        CountryCode = NormalizeCountry(countryCode);
+        Region = NormalizeOptional(region, 200, "project.region.invalid");
+        StartDate = startDate;
+        PlannedFinishDate = plannedFinishDate;
+        ShortDescription = NormalizeOptional(shortDescription, 1000, "project.description.invalid");
+        TimeZone = normalizedTimeZone;
+        BaseCurrencyCode = normalizedCurrency;
+        UnitSystem = unitSystem;
+        DailyCutoffLocalTime = dailyCutoffLocalTime;
+        ReportingFrequency = reportingFrequency;
+        DailyReportWorkflow = dailyReportWorkflow;
+        OfflinePolicyAccepted = offlinePolicyAccepted;
+        ConfigurationChangedAt = changedAt;
+        ConfigurationVersion++;
+        AdvanceRevision();
     }
 
     public void Activate(long baseRevision, Guid activatedBy, DateTimeOffset activatedAt)
@@ -182,6 +363,7 @@ public sealed class Project : AggregateRoot
         Status = ProjectStatus.Active;
         ActivatedBy = activatedBy;
         ActivatedAt = activatedAt;
+        ActivatedConfigurationVersion = ConfigurationVersion;
         ConfigurationChangedAt = activatedAt;
         AdvanceRevision();
     }
@@ -236,6 +418,7 @@ public sealed class Project : AggregateRoot
 
         CalendarMode = mode;
         ConfigurationChangedAt = changedAt;
+        ConfigurationVersion++;
         AdvanceRevision();
     }
 
@@ -252,6 +435,7 @@ public sealed class Project : AggregateRoot
 
         PlanningMode = mode;
         ConfigurationChangedAt = changedAt;
+        ConfigurationVersion++;
         AdvanceRevision();
     }
 
@@ -265,6 +449,37 @@ public sealed class Project : AggregateRoot
         if (Revision != baseRevision)
         {
             throw new DomainRuleException("project.revision.conflict", "The project configuration changed after it was loaded.");
+        }
+    }
+
+    private static string NormalizeCountry(string? countryCode)
+    {
+        var normalized = countryCode?.Trim().ToUpperInvariant() ?? string.Empty;
+        if (normalized.Length != 0 &&
+            (normalized.Length != 2 || normalized.Any(character => !char.IsAsciiLetterUpper(character))))
+        {
+            throw new DomainRuleException("project.country.invalid", "Country must be an ISO-style two-letter code.");
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizeOptional(string? value, int maximumLength, string code)
+    {
+        var normalized = value?.Trim() ?? string.Empty;
+        if (normalized.Length > maximumLength)
+        {
+            throw new DomainRuleException(code, $"Value must be at most {maximumLength} characters.");
+        }
+
+        return normalized;
+    }
+
+    private static void ValidateDates(DateOnly? startDate, DateOnly? plannedFinishDate)
+    {
+        if (startDate.HasValue && plannedFinishDate.HasValue && plannedFinishDate.Value < startDate.Value)
+        {
+            throw new DomainRuleException("project.dates.invalid", "Planned finish date cannot precede start date.");
         }
     }
 }
@@ -308,4 +523,44 @@ public enum ProjectCalendarMode
 {
     NotConfigured = 0,
     WorkingWeek = 1
+}
+
+public enum ProjectType
+{
+    NotConfigured = 0,
+    Building = 1,
+    Industrial = 2,
+    Infrastructure = 3,
+    Renovation = 4,
+    Landscaping = 5,
+    Mixed = 6
+}
+
+public enum ProjectExecutionPhase
+{
+    NotConfigured = 0,
+    PreConstruction = 1,
+    ActiveExecution = 2,
+    OnHold = 3,
+    Closing = 4
+}
+
+public enum ProjectUnitSystem
+{
+    NotConfigured = 0,
+    Metric = 1
+}
+
+public enum ReportingFrequency
+{
+    NotConfigured = 0,
+    Daily = 1,
+    WorkingDays = 2,
+    Weekly = 3
+}
+
+public enum DailyReportWorkflow
+{
+    NotConfigured = 0,
+    OneStepApproval = 1
 }

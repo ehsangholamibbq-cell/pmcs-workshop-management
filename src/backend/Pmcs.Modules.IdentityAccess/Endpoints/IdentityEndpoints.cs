@@ -27,6 +27,7 @@ internal static class IdentityEndpoints
             .WithTags("Identity administration")
             .RequireRateLimiting(ApiRateLimitPolicies.IdentityAdministration);
         group.MapGet("/directory", DirectoryAsync);
+        group.MapGet("/permissions/preview", PreviewPermissionsAsync);
         group.MapPost("/invitations", InviteAsync);
         group.MapPost("/invitations/{invitationId:guid}/resend", ResendAsync);
         group.MapPost("/invitations/{invitationId:guid}/revoke", RevokeInvitationAsync);
@@ -34,6 +35,42 @@ internal static class IdentityEndpoints
         group.MapPut("/users/{userId:guid}/tenant-role", ChangeTenantRoleAsync);
         group.MapPut("/users/{userId:guid}/memberships/{projectId:guid}", UpsertMembershipAsync);
         group.MapDelete("/users/{userId:guid}/memberships/{projectId:guid}", RevokeMembershipAsync);
+    }
+
+    private static async Task<IResult> PreviewPermissionsAsync(
+        Guid userId,
+        Guid projectId,
+        string? operation,
+        string? proposedRoleCode,
+        ICurrentActor actor,
+        IProjectPermissionService permissionService,
+        CancellationToken cancellationToken)
+    {
+        var denied = await RequireAdministratorAsync(actor, permissionService, cancellationToken);
+        if (denied is not null)
+        {
+            return denied;
+        }
+
+        if (userId == Guid.Empty || projectId == Guid.Empty)
+        {
+            return Problem("permission.preview.scope.required", "A user and project are required for permission preview.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(proposedRoleCode) && !ProjectRoleCatalog.IsSupported(proposedRoleCode))
+        {
+            return Problem("permission.preview.role.invalid", "The proposed project role is not supported.");
+        }
+
+        var operations = string.IsNullOrWhiteSpace(operation) ? null : new[] { operation };
+        var preview = await permissionService.PreviewProjectPermissionsAsync(
+            actor.TenantId,
+            userId,
+            projectId,
+            proposedRoleCode,
+            operations,
+            cancellationToken);
+        return Results.Ok(preview);
     }
 
     private static async Task<IResult> SessionAsync(

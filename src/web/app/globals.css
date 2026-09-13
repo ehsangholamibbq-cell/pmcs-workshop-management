@@ -238,6 +238,46 @@
   padding: 1rem 1.1rem;
 }
 
+.project-readiness {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.9rem 1.1rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #f8faf9;
+}
+
+.project-readiness-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.project-readiness ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-readiness li {
+  display: grid;
+  gap: 0.15rem;
+  padding-right: 0.6rem;
+  border-right: 0.2rem solid #b8862f;
+  font-size: 0.74rem;
+}
+
+.project-readiness li.readiness-blocked {
+  border-color: #a43d3d;
+}
+
+.project-readiness li span {
+  color: var(--muted);
+}
+
 .primary-link {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -269,8 +309,41 @@
 }
 
 .project-create-form input,
-.project-create-form select {
+.project-create-form select,
+.project-create-form textarea {
   width: 100%;
+}
+
+.project-description-field,
+.project-working-days,
+.project-policy-acceptance {
+  grid-column: 1 / -1;
+}
+
+.project-create-form textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.project-working-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+
+.project-working-days label,
+.project-policy-acceptance {
+  display: flex;
+  grid-auto-flow: column;
+  justify-content: start;
+  align-items: center;
+}
+
+.project-working-days input,
+.project-policy-acceptance input {
+  width: auto;
 }
 
 .project-create-actions {
@@ -2725,6 +2798,48 @@ output {
   border-radius: 1rem;
   background: #fff;
 }
+
+.permission-preview {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #f8faf9;
+}
+
+.permission-preview-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.permission-preview-message {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.permission-preview-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.permission-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+
+.permission-preview-table th,
+.permission-preview-table td {
+  padding: 0.55rem;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  vertical-align: top;
+}
+
+.permission-allowed { color: #075546; }
+.permission-denied { color: #8d2929; }
 
 .identity-card-heading {
   display: flex;

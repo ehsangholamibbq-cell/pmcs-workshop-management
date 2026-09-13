@@ -170,6 +170,7 @@ public sealed class InfrastructureBoundaryTests
     [InlineData("GET", "/api/v1/projects/33333333-3333-3333-3333-333333333333/daily-reports", false)]
     [InlineData("POST", "/api/v1/projects/33333333-3333-3333-3333-333333333333/activate", false)]
     [InlineData("PUT", "/api/v1/projects/33333333-3333-3333-3333-333333333333/calendar", false)]
+    [InlineData("PUT", "/api/v1/projects/33333333-3333-3333-3333-333333333333/setup", false)]
     [InlineData("POST", "/api/v1/identity/users/22222222-2222-2222-2222-222222222222/memberships/33333333-3333-3333-3333-333333333333", false)]
     public void ProjectLifecycleGuardSeparatesOperationalMutationsFromSetup(
         string method,

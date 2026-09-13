@@ -6,6 +6,7 @@ import {
   changeTenantRole,
   changeUserStatus,
   getIdentityDirectory,
+  getEffectivePermissionPreview,
   inviteUser,
   resendInvitation,
   revokeInvitation,
@@ -17,6 +18,7 @@ import {
   type TenantRole,
   type UserDirectoryModel,
   type UserStatus,
+  type EffectivePermissionPreviewModel,
 } from "@/lib/identity-administration";
 import { toUserMessage } from "@/lib/localization";
 import { formatPersianDateTime } from "@/lib/persian-date";
@@ -273,7 +275,25 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
 }) {
   const [projectId, setProjectId] = useState("");
   const [projectRole, setProjectRole] = useState("Observer");
+  const [preview, setPreview] = useState<EffectivePermissionPreviewModel | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState("");
   const projectNames = useMemo(() => new Map(projects.map((project) => [project.id, project.name])), [projects]);
+
+  async function loadPreview() {
+    if (!projectId) return;
+    setPreviewBusy(true);
+    setPreviewMessage("در حال محاسبهٔ مجوز مؤثر…");
+    try {
+      setPreview(await getEffectivePermissionPreview(apiBaseUrl, user.id, projectId, projectRole));
+      setPreviewMessage("نتیجه برای نقش انتخابی شبیه‌سازی شد؛ این نما مجوز جدیدی ایجاد یا ذخیره نمی‌کند.");
+    } catch (error) {
+      setPreview(null);
+      setPreviewMessage(toUserMessage(error, "محاسبهٔ مجوز مؤثر انجام نشد."));
+    } finally {
+      setPreviewBusy(false);
+    }
+  }
 
   return (
     <article className="identity-user-card">
@@ -307,10 +327,37 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
 
       {user.status !== "Deactivated" && (
         <div className="membership-editor">
-          <label><span>پروژه</span><select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+          <label><span>پروژه</span><select value={projectId} onChange={(event) => { setProjectId(event.target.value); setPreview(null); setPreviewMessage(""); }}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
           <label><span>نقش پروژه</span><select value={projectRole} onChange={(event) => setProjectRole(event.target.value)}>{projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}</select></label>
           <button type="button" disabled={disabled || !projectId} onClick={() => void onAction(`membership-${user.id}`, () => upsertMembership(apiBaseUrl, user.id, projectId, projectRole), "عضویت و نقش پروژه ثبت شد.")}>ثبت عضویت</button>
+          <button className="secondary-button" type="button" disabled={disabled || previewBusy || !projectId} onClick={() => void loadPreview()}>{previewBusy ? "در حال محاسبه…" : "پیش‌نمایش نقش انتخابی"}</button>
         </div>
+      )}
+      {previewMessage && <p className="permission-preview-message" aria-live="polite">{previewMessage}</p>}
+      {preview && (
+        <section className="permission-preview" aria-label="پیش‌نمایش دسترسی مؤثر">
+          <div className="permission-preview-summary">
+            <strong>{preview.decisions.filter((item) => item.allowed).length.toLocaleString("fa-IR")} مجاز</strong>
+            <span>{preview.decisions.filter((item) => !item.allowed).length.toLocaleString("fa-IR")} ردشده</span>
+            <small>نسخه سیاست: <bdi dir="ltr">{preview.policyVersion}</bdi></small>
+          </div>
+          <details>
+            <summary>مشاهده جزئیات عملیات‌ها</summary>
+            <div className="permission-preview-table-wrap">
+              <table className="permission-preview-table">
+                <thead><tr><th>عملیات</th><th>نتیجه</th><th>منبع و دامنه</th><th>شرط یا علت رد</th></tr></thead>
+                <tbody>{preview.decisions.map((decision) => (
+                  <tr key={decision.operation}>
+                    <td><bdi dir="ltr">{decision.operation}</bdi></td>
+                    <td className={decision.allowed ? "permission-allowed" : "permission-denied"}>{decision.allowed ? "مجاز" : "رد"}</td>
+                    <td><bdi dir="ltr">{decision.source}</bdi><br /><small>{scopeLabel(decision.scope)}</small></td>
+                    <td>{decision.allowed ? conditionLabel(decision.condition) : denyReasonLabel(decision.denyReason)}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </details>
+        </section>
       )}
     </article>
   );
@@ -338,4 +385,23 @@ export function membershipStatusLabel(status: MembershipStatus): string {
 
 function formatDateTime(value: string): string {
   return formatPersianDateTime(value);
+}
+
+function scopeLabel(scope: string): string {
+  return ({ Tenant: "کل سازمان", Project: "همین پروژه", None: "بدون دامنه" } as Record<string, string>)[scope] ?? scope;
+}
+
+function conditionLabel(condition: string): string {
+  return condition === "active date-bounded membership" ? "عضویت فعال و دارای بازه معتبر" : "حساب و سازمان فعال";
+}
+
+function denyReasonLabel(reason: string | null): string {
+  return ({
+    "account.not_found": "حساب پیدا نشد.",
+    "tenant.inactive": "سازمان فعال نیست.",
+    "account.inactive": "حساب فعال نیست.",
+    "membership.missing": "عضویت پروژه وجود ندارد.",
+    "membership.inactive_or_expired": "عضویت غیرفعال یا منقضی است.",
+    "permission.no_matching_grant": "نقش فعلی این عملیات را اعطا نمی‌کند.",
+  } as Record<string, string>)[reason ?? ""] ?? "قاعدهٔ مجازکننده‌ای پیدا نشد.";
 }

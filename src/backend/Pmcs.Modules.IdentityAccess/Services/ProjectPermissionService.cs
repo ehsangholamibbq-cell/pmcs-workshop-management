@@ -9,6 +9,29 @@ internal sealed class ProjectPermissionService(
     IdentityAccessDbContext dbContext,
     IClock clock) : IProjectPermissionService
 {
+    private const string PolicyVersion = "pmcs-rbac-v1";
+
+    private static readonly IReadOnlySet<string> AdministratorOnlyPermissions =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "identity.manage",
+            "identity.users.manage",
+            "projects.create",
+            "projects.activate",
+            "projects.locations.manage",
+            "projects.calendar.configure",
+            "projects.setup.configure",
+            "projects.setup.configure-sensitive",
+            "sync.devices.manage"
+        };
+
+    private static readonly IReadOnlySet<string> OperationalRoles =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "ProjectManager", "SiteSupervisor", "TechnicalOffice", "ProjectController",
+            "FinanceOperator", "FinanceManager", "ContractAdministrator", "ProcurementOperator",
+            "ProcurementManager", "QualityController", "HseOfficer"
+        };
     private static readonly Dictionary<string, IReadOnlySet<string>> ProjectRolePermissions =
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -454,6 +477,150 @@ internal sealed class ProjectPermissionService(
             .ToHashSet();
         return new ProjectPermissionScope(false, projectIds);
     }
+
+    public async Task<ProjectAccessReadiness> GetProjectAccessReadinessAsync(
+        Guid tenantId,
+        Guid projectId,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantIsActive = await dbContext.Tenants.AsNoTracking().AnyAsync(
+            tenant => tenant.Id == tenantId && tenant.Status == TenantStatus.Active,
+            cancellationToken);
+        if (!tenantIsActive)
+        {
+            return new ProjectAccessReadiness(0, 0, 0);
+        }
+
+        var administratorCount = await dbContext.Users.AsNoTracking().CountAsync(
+            user => user.TenantId == tenantId &&
+                user.Status == UserAccountStatus.Active &&
+                user.TenantRole == TenantRole.TenantAdministrator,
+            cancellationToken);
+
+        var now = clock.UtcNow;
+        var activeMemberships =
+            from membership in dbContext.ProjectMemberships.AsNoTracking()
+            join user in dbContext.Users.AsNoTracking()
+                on new { membership.TenantId, membership.UserId }
+                equals new { user.TenantId, UserId = user.Id }
+            where membership.TenantId == tenantId &&
+                membership.ProjectId == projectId &&
+                membership.Status == MembershipStatus.Active &&
+                membership.StartsAt <= now &&
+                (membership.EndsAt == null || membership.EndsAt > now) &&
+                user.Status == UserAccountStatus.Active
+            select new { membership.UserId, membership.RoleCode };
+
+        var rows = await activeMemberships.ToListAsync(cancellationToken);
+        return new ProjectAccessReadiness(
+            administratorCount,
+            rows.Count(item => string.Equals(item.RoleCode, "ProjectManager", StringComparison.OrdinalIgnoreCase)),
+            rows.Where(item => OperationalRoles.Contains(item.RoleCode)).Select(item => item.UserId).Distinct().Count());
+    }
+
+    public async Task<EffectivePermissionPreview> PreviewProjectPermissionsAsync(
+        Guid tenantId,
+        Guid userId,
+        Guid projectId,
+        string? proposedProjectRoleCode = null,
+        IReadOnlyCollection<string>? operations = null,
+        CancellationToken cancellationToken = default)
+    {
+        var evaluatedAt = clock.UtcNow;
+        var context = await (
+            from user in dbContext.Users.AsNoTracking()
+            join tenant in dbContext.Tenants.AsNoTracking() on user.TenantId equals tenant.Id
+            where user.TenantId == tenantId && user.Id == userId
+            select new { UserStatus = user.Status, user.TenantRole, TenantStatus = tenant.Status })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        var membership = await dbContext.ProjectMemberships.AsNoTracking()
+            .Where(item => item.TenantId == tenantId && item.UserId == userId && item.ProjectId == projectId)
+            .Select(item => new { item.RoleCode, item.Status, item.StartsAt, item.EndsAt })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        var requestedOperations = (operations is { Count: > 0 }
+                ? operations
+                : KnownOperations())
+            .Where(operation => !string.IsNullOrWhiteSpace(operation))
+            .Select(operation => operation.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(operation => operation, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var accountActive = context is not null &&
+            context.UserStatus == UserAccountStatus.Active &&
+            context.TenantStatus == TenantStatus.Active;
+        var membershipActive = membership is not null &&
+            membership.Status == MembershipStatus.Active &&
+            membership.StartsAt <= evaluatedAt &&
+            (membership.EndsAt is null || membership.EndsAt > evaluatedAt);
+        var proposedRole = string.IsNullOrWhiteSpace(proposedProjectRoleCode)
+            ? null
+            : proposedProjectRoleCode.Trim();
+        var effectiveRole = proposedRole ?? membership?.RoleCode;
+        var roleIsEffective = proposedRole is not null || membershipActive;
+
+        var decisions = requestedOperations.Select(operation =>
+        {
+            if (!accountActive)
+            {
+                return new EffectivePermissionDecision(
+                    operation, false, "DefaultDeny", "None", "active tenant and account required",
+                    context is null ? "account.not_found" :
+                        context.TenantStatus != TenantStatus.Active ? "tenant.inactive" : "account.inactive",
+                    null, "NotConfigured");
+            }
+
+            if (GrantsTenant(context!.TenantRole, operation))
+            {
+                return new EffectivePermissionDecision(
+                    operation, true, $"TenantRole:{context.TenantRole}", "Tenant",
+                    "active tenant and account", null, null, "NotConfigured");
+            }
+
+            if (roleIsEffective && effectiveRole is not null && GrantsRole(effectiveRole, operation))
+            {
+                return new EffectivePermissionDecision(
+                    operation, true,
+                    proposedRole is null ? $"ProjectRole:{effectiveRole}" : $"ProposedProjectRole:{effectiveRole}",
+                    "Project",
+                    proposedRole is null ? "active date-bounded membership" : "proposed role simulation; not persisted",
+                    null,
+                    proposedRole is null ? membership?.EndsAt : null,
+                    "NotConfigured");
+            }
+
+            var denyReason = proposedRole is not null
+                ? "permission.no_matching_grant"
+                : membership is null
+                ? "membership.missing"
+                : !membershipActive
+                    ? "membership.inactive_or_expired"
+                    : "permission.no_matching_grant";
+            return new EffectivePermissionDecision(
+                operation, false, "DefaultDeny", "Project", "matching active grant required",
+                denyReason, membership?.EndsAt, "NotConfigured");
+        }).ToArray();
+
+        return new EffectivePermissionPreview(
+            userId,
+            projectId,
+            context is null ? "NotFound" :
+                context.TenantStatus != TenantStatus.Active ? "TenantInactive" : context.UserStatus.ToString(),
+            context?.TenantRole.ToString(),
+            effectiveRole,
+            PolicyVersion,
+            evaluatedAt,
+            decisions);
+    }
+
+    private static IReadOnlyCollection<string> KnownOperations() => ProjectRolePermissions.Values
+        .SelectMany(permissions => permissions)
+        .Where(permission => permission != "*")
+        .Concat(AdministratorOnlyPermissions)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
 
     private async Task<TenantRole?> ActiveTenantRoleAsync(
         Guid tenantId,

@@ -6,6 +6,12 @@ export type ContractModel = "NotConfigured" | "GeneralContracting" | "Constructi
 export type CapabilityMode = "NotEnabled" | "SetupRequired" | "Active" | "Suspended";
 export type ProjectStatus = "Draft" | "Active" | "OnHold" | "Closing" | "Closed";
 export type ProjectLocationStatus = "Active" | "Retired";
+export type ProjectType = "NotConfigured" | "Building" | "Industrial" | "Infrastructure" | "Renovation" | "Landscaping" | "Mixed";
+export type ProjectExecutionPhase = "NotConfigured" | "PreConstruction" | "ActiveExecution" | "OnHold" | "Closing";
+export type ProjectUnitSystem = "NotConfigured" | "Metric";
+export type ReportingFrequency = "NotConfigured" | "Daily" | "WorkingDays" | "Weekly";
+export type DailyReportWorkflow = "NotConfigured" | "OneStepApproval";
+export type ProjectReadinessStatus = "Passed" | "Warning" | "Blocked";
 export type Weekday = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
 
 export interface ProjectModel {
@@ -20,6 +26,20 @@ export interface ProjectModel {
   readonly financeMode: CapabilityMode;
   readonly procurementMode: CapabilityMode;
   readonly baseCurrencyCode: string;
+  readonly projectType: ProjectType;
+  readonly executionPhase: ProjectExecutionPhase;
+  readonly countryCode: string;
+  readonly region: string;
+  readonly startDate: string | null;
+  readonly plannedFinishDate: string | null;
+  readonly shortDescription: string;
+  readonly unitSystem: ProjectUnitSystem;
+  readonly dailyCutoffLocalTime: string | null;
+  readonly reportingFrequency: ReportingFrequency;
+  readonly dailyReportWorkflow: DailyReportWorkflow;
+  readonly offlinePolicyAccepted: boolean;
+  readonly configurationVersion: number;
+  readonly activatedConfigurationVersion: number | null;
   readonly calendarMode: ProjectCalendarMode;
   readonly workingDays: readonly Weekday[];
   readonly configurationChangedAt: string | null;
@@ -42,6 +62,35 @@ export interface CreateProjectInput {
   readonly procurementMode: CapabilityMode;
   readonly baseCurrencyCode: string;
   readonly timeZone: string;
+  readonly projectType: ProjectType;
+  readonly executionPhase: ProjectExecutionPhase;
+  readonly countryCode: string;
+  readonly region: string;
+  readonly startDate: string;
+  readonly plannedFinishDate: string;
+  readonly shortDescription: string;
+  readonly unitSystem: ProjectUnitSystem;
+  readonly dailyCutoffLocalTime: string;
+  readonly reportingFrequency: ReportingFrequency;
+  readonly dailyReportWorkflow: DailyReportWorkflow;
+  readonly offlinePolicyAccepted: boolean;
+  readonly calendarMode: ProjectCalendarMode;
+  readonly workingDays: readonly Weekday[];
+}
+
+export interface ProjectReadinessItem {
+  readonly code: string;
+  readonly title: string;
+  readonly status: ProjectReadinessStatus;
+  readonly detail: string;
+}
+
+export interface ProjectReadinessModel {
+  readonly projectId: string;
+  readonly configurationVersion: number;
+  readonly isReady: boolean;
+  readonly completionPercent: number;
+  readonly items: readonly ProjectReadinessItem[];
 }
 
 export interface ProjectLocationModel {
@@ -96,7 +145,59 @@ export async function createProject(
       "Content-Type": "application/json",
       "Idempotency-Key": crypto.randomUUID(),
     },
-    body: JSON.stringify(input),
+    body: JSON.stringify({
+      ...input,
+      startDate: input.startDate || null,
+      plannedFinishDate: input.plannedFinishDate || null,
+      dailyCutoffLocalTime: normalizeTime(input.dailyCutoffLocalTime),
+    }),
+  });
+  await ensureApiSuccess(response);
+  return response.json() as Promise<ProjectModel>;
+}
+
+export async function configureProjectSetup(
+  apiBaseUrl: string,
+  identity: ApiIdentity,
+  projectId: string,
+  baseRevision: number,
+  input: CreateProjectInput,
+  reason: string | null = null,
+): Promise<ProjectModel> {
+  const response = await fetch(`${normalize(apiBaseUrl)}/api/v1/projects/${projectId}/setup`, {
+    method: "PUT",
+    headers: {
+      ...identityHeaders(identity),
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
+    body: JSON.stringify({
+      baseRevision,
+      contractModel: input.contractModel,
+      planningMode: input.planningMode,
+      budgetMode: input.budgetMode,
+      qualityMode: input.qualityMode,
+      hseMode: input.hseMode,
+      financeMode: input.financeMode,
+      procurementMode: input.procurementMode,
+      calendarMode: input.calendarMode,
+      workingDays: input.workingDays,
+      projectType: input.projectType,
+      executionPhase: input.executionPhase,
+      countryCode: input.countryCode,
+      region: input.region,
+      startDate: input.startDate || null,
+      plannedFinishDate: input.plannedFinishDate || null,
+      shortDescription: input.shortDescription,
+      timeZone: input.timeZone,
+      baseCurrencyCode: input.baseCurrencyCode,
+      unitSystem: input.unitSystem,
+      dailyCutoffLocalTime: normalizeTime(input.dailyCutoffLocalTime),
+      reportingFrequency: input.reportingFrequency,
+      dailyReportWorkflow: input.dailyReportWorkflow,
+      offlinePolicyAccepted: input.offlinePolicyAccepted,
+      reason,
+    }),
   });
   await ensureApiSuccess(response);
   return response.json() as Promise<ProjectModel>;
@@ -119,6 +220,19 @@ export async function activateProject(
   });
   await ensureApiSuccess(response);
   return response.json() as Promise<ProjectModel>;
+}
+
+export async function getProjectReadiness(
+  apiBaseUrl: string,
+  identity: ApiIdentity,
+  projectId: string,
+): Promise<ProjectReadinessModel> {
+  const response = await fetch(`${normalize(apiBaseUrl)}/api/v1/projects/${projectId}/readiness`, {
+    headers: identityHeaders(identity),
+    cache: "no-store",
+  });
+  await ensureApiSuccess(response);
+  return response.json() as Promise<ProjectReadinessModel>;
 }
 
 export async function listProjectLocations(
@@ -226,4 +340,8 @@ function identityHeaders(identity: ApiIdentity): Record<string, string> {
 
 function normalize(value: string): string {
   return value.replace(/\/$/, "");
+}
+
+function normalizeTime(value: string): string | null {
+  return /^\d{2}:\d{2}$/.test(value) ? `${value}:00` : value || null;
 }

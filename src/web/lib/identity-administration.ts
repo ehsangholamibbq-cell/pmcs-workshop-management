@@ -51,6 +51,28 @@ export interface IdentityDirectoryModel {
   readonly invitations: readonly InvitationModel[];
 }
 
+export interface EffectivePermissionDecisionModel {
+  readonly operation: string;
+  readonly allowed: boolean;
+  readonly source: string;
+  readonly scope: string;
+  readonly condition: string;
+  readonly denyReason: string | null;
+  readonly expiresAt: string | null;
+  readonly delegationEffect: string;
+}
+
+export interface EffectivePermissionPreviewModel {
+  readonly userId: string;
+  readonly projectId: string;
+  readonly accountStatus: string;
+  readonly tenantRole: string | null;
+  readonly projectRole: string | null;
+  readonly policyVersion: string;
+  readonly evaluatedAt: string;
+  readonly decisions: readonly EffectivePermissionDecisionModel[];
+}
+
 export interface InvitationProjectInput {
   readonly projectId: string;
   readonly roleCode: string;
@@ -67,6 +89,21 @@ export async function getIdentityDirectory(apiBaseUrl: string): Promise<Identity
   const response = await fetch(`${normalize(apiBaseUrl)}/api/v1/identity/directory`, { cache: "no-store" });
   await ensureApiSuccess(response);
   return response.json() as Promise<IdentityDirectoryModel>;
+}
+
+export async function getEffectivePermissionPreview(
+  apiBaseUrl: string,
+  userId: string,
+  projectId: string,
+  proposedRoleCode?: string,
+): Promise<EffectivePermissionPreviewModel> {
+  const query = new URLSearchParams({ userId, projectId });
+  if (proposedRoleCode) query.set("proposedRoleCode", proposedRoleCode);
+  const response = await fetch(`${normalize(apiBaseUrl)}/api/v1/identity/permissions/preview?${query}`, {
+    cache: "no-store",
+  });
+  await ensureApiSuccess(response);
+  return response.json() as Promise<EffectivePermissionPreviewModel>;
 }
 
 export async function inviteUser(apiBaseUrl: string, input: InviteUserInput): Promise<InvitationModel> {

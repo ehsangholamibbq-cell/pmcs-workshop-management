@@ -65,6 +65,7 @@ internal sealed class ProjectLifecycleMiddleware(RequestDelegate next)
         }
 
         return !string.Equals(segments[4], "activate", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(segments[4], "setup", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(segments[4], "calendar", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(segments[4], "planning-mode", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(segments[4], "locations", StringComparison.OrdinalIgnoreCase);

@@ -168,4 +168,108 @@ public sealed class ProjectConfigurationTests
         Assert.Equal("project.activate.contract_model.required", exception.Code);
         Assert.Equal(ProjectStatus.Draft, project.Status);
     }
+
+    [Fact]
+    public void CompleteSetupIsVersionedAndPreservesDateOrder()
+    {
+        var project = Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "SETUP-01", "Project setup",
+            ContractModel.GeneralContracting, PlanningMode.None, CapabilityMode.NotEnabled,
+            CapabilityMode.NotEnabled, CapabilityMode.NotEnabled, "Asia/Tehran",
+            Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var workingDays = (1 << (int)DayOfWeek.Saturday) | (1 << (int)DayOfWeek.Sunday);
+
+        project.ConfigureSetup(
+            project.Revision,
+            ContractModel.ConstructionManagement,
+            PlanningMode.SimpleWorkList,
+            CapabilityMode.SetupRequired,
+            CapabilityMode.SetupRequired,
+            CapabilityMode.NotEnabled,
+            CapabilityMode.SetupRequired,
+            CapabilityMode.SetupRequired,
+            ProjectCalendarMode.WorkingWeek,
+            workingDays,
+            ProjectType.Building,
+            ProjectExecutionPhase.PreConstruction,
+            "ir",
+            "Tehran",
+            new DateOnly(2026, 9, 1),
+            new DateOnly(2027, 9, 1),
+            "Controlled setup",
+            "Asia/Tehran",
+            "irr",
+            ProjectUnitSystem.Metric,
+            new TimeOnly(18, 0),
+            ReportingFrequency.WorkingDays,
+            DailyReportWorkflow.OneStepApproval,
+            true,
+            DateTimeOffset.UtcNow,
+            false,
+            null);
+
+        Assert.Equal(2, project.ConfigurationVersion);
+        Assert.Equal(2, project.Revision);
+        Assert.Equal("IR", project.CountryCode);
+        Assert.Equal("IRR", project.BaseCurrencyCode);
+        Assert.True(project.OfflinePolicyAccepted);
+        Assert.True(project.IsWorkingDay(DayOfWeek.Saturday));
+    }
+
+    [Fact]
+    public void PostActivationSetupChangeRequiresElevatedPermissionAndReason()
+    {
+        var project = Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "SETUP-02", "Project setup",
+            ContractModel.GeneralContracting, PlanningMode.SimpleWorkList, CapabilityMode.SetupRequired,
+            CapabilityMode.SetupRequired, CapabilityMode.NotEnabled, "Asia/Tehran",
+            Guid.NewGuid(), DateTimeOffset.UtcNow);
+        project.Activate(project.Revision, Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        var exception = Assert.Throws<DomainRuleException>(() => project.ConfigureSetup(
+            project.Revision,
+            project.ContractModel,
+            project.PlanningMode,
+            project.BudgetMode,
+            project.QualityMode,
+            project.HseMode,
+            project.FinanceMode,
+            project.ProcurementMode,
+            project.CalendarMode,
+            project.WorkingDaysMask,
+            ProjectType.Building,
+            ProjectExecutionPhase.ActiveExecution,
+            "IR",
+            "Tehran",
+            new DateOnly(2026, 9, 1),
+            new DateOnly(2027, 9, 1),
+            "Controlled setup",
+            "Asia/Tehran",
+            "IRR",
+            ProjectUnitSystem.Metric,
+            new TimeOnly(18, 0),
+            ReportingFrequency.WorkingDays,
+            DailyReportWorkflow.OneStepApproval,
+            true,
+            DateTimeOffset.UtcNow,
+            true,
+            null));
+
+        Assert.Equal("project.setup.sensitive_change_requires_reason", exception.Code);
+    }
+
+    [Fact]
+    public void SetupRejectsPlannedFinishBeforeStart()
+    {
+        var exception = Assert.Throws<DomainRuleException>(() => Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "SETUP-03", "Project setup",
+            ContractModel.GeneralContracting, PlanningMode.SimpleWorkList, CapabilityMode.SetupRequired,
+            CapabilityMode.SetupRequired, CapabilityMode.NotEnabled, "Asia/Tehran",
+            Guid.NewGuid(), DateTimeOffset.UtcNow,
+            projectType: ProjectType.Building,
+            startDate: new DateOnly(2027, 1, 1),
+            plannedFinishDate: new DateOnly(2026, 1, 1)));
+
+        Assert.Equal("project.dates.invalid", exception.Code);
+    }
 }

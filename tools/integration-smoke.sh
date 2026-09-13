@@ -108,7 +108,7 @@ curl --silent --fail \
 
 current_step="checking project creation, idempotent replay and activation boundary"
 setup_key="integration-project-setup"
-setup_payload='{"code":"CI-AUDIT-01","name":"Integration lifecycle project","contractModel":"GeneralContracting","planningMode":"SimpleWorkList","budgetMode":"SetupRequired","qualityMode":"SetupRequired","hseMode":"NotEnabled","timeZone":"Asia/Tehran","financeMode":"Active","baseCurrencyCode":"IRR","procurementMode":"SetupRequired"}'
+setup_payload='{"code":"CI-AUDIT-01","name":"Integration lifecycle project","contractModel":"GeneralContracting","planningMode":"SimpleWorkList","budgetMode":"SetupRequired","qualityMode":"SetupRequired","hseMode":"NotEnabled","timeZone":"Asia/Tehran","financeMode":"SetupRequired","baseCurrencyCode":"IRR","procurementMode":"SetupRequired","projectType":"Building","executionPhase":"PreConstruction","countryCode":"IR","region":"Tehran","startDate":"2026-09-01","plannedFinishDate":"2027-09-01","shortDescription":"Controlled integration lifecycle","unitSystem":"Metric","dailyCutoffLocalTime":"18:00:00","reportingFrequency":"WorkingDays","dailyReportWorkflow":"OneStepApproval","offlinePolicyAccepted":true,"calendarMode":"WorkingWeek","workingDays":["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday"]}'
 setup_response="$(curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -141,6 +141,30 @@ setup_locations="$(curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/locations")"
 grep -q '"code":"ROOT"' <<<"${setup_locations}"
+
+current_step="assigning project leadership and checking effective permissions"
+curl --silent --fail \
+  --request PUT \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-project-manager-membership' \
+  --header 'Content-Type: application/json' \
+  --data '{"roleCode":"ProjectManager"}' \
+  "http://127.0.0.1:${port}/api/v1/identity/users/${user_id}/memberships/${setup_project_id}" | grep -q '"roleCode":"ProjectManager"'
+
+permission_preview="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/identity/permissions/preview?userId=${user_id}&projectId=${setup_project_id}&operation=projects.read")"
+grep -q '"allowed":true' <<<"${permission_preview}"
+grep -q '"policyVersion":"pmcs-rbac-v1"' <<<"${permission_preview}"
+
+readiness_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/readiness")"
+grep -q '"isReady":true' <<<"${readiness_response}"
+grep -q '"completionPercent":100' <<<"${readiness_response}"
 
 draft_mutation_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
   --request POST \

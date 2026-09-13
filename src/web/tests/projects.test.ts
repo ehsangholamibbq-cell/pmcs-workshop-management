@@ -3,9 +3,11 @@ import test from "node:test";
 import {
   activateProject,
   configureProjectCalendar,
+  configureProjectSetup,
   configureProjectPlanningMode,
   createProject,
   createProjectLocation,
+  getProjectReadiness,
   listProjects,
   listProjectLocations,
   retireProjectLocation,
@@ -51,6 +53,20 @@ test("project setup creates a draft and activation is revision-controlled", asyn
       procurementMode: "SetupRequired",
       baseCurrencyCode: "IRR",
       timeZone: "Asia/Tehran",
+      projectType: "Building",
+      executionPhase: "PreConstruction",
+      countryCode: "IR",
+      region: "تهران",
+      startDate: "2026-09-01",
+      plannedFinishDate: "2027-09-01",
+      shortDescription: "راه‌اندازی کنترل‌شده",
+      unitSystem: "Metric",
+      dailyCutoffLocalTime: "18:00",
+      reportingFrequency: "WorkingDays",
+      dailyReportWorkflow: "OneStepApproval",
+      offlinePolicyAccepted: true,
+      calendarMode: "WorkingWeek",
+      workingDays: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
     });
     await activateProject(
       "https://pmcs.test",
@@ -62,9 +78,46 @@ test("project setup creates a draft and activation is revision-controlled", asyn
     assert.equal(calls[0]?.url, "https://pmcs.test/api/v1/projects");
     assert.equal(calls[0]?.init?.method, "POST");
     assert.ok(new Headers(calls[0]?.init?.headers).get("Idempotency-Key"));
+    assert.equal(JSON.parse(String(calls[0]?.init?.body)).dailyCutoffLocalTime, "18:00:00");
     assert.equal(calls[1]?.url, "https://pmcs.test/api/v1/projects/project-id/activate");
     assert.deepEqual(JSON.parse(String(calls[1]?.init?.body)), { baseRevision: 1 });
     assert.ok(new Headers(calls[1]?.init?.headers).get("Idempotency-Key"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("setup can resume from a saved draft and readiness is read from the server gate", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  globalThis.fetch = async (input, init) => {
+    calls.push({ url: String(input), init });
+    return calls.length === 1
+      ? Response.json({ id: "project-id", revision: 4, configurationVersion: 3 })
+      : Response.json({ projectId: "project-id", isReady: true, completionPercent: 100, items: [] });
+  };
+
+  try {
+    const identity = { tenantId: "tenant-id", userId: "user-id" };
+    await configureProjectSetup("https://pmcs.test", identity, "project-id", 3, {
+      code: "PRJ-01", name: "پروژه", contractModel: "GeneralContracting", planningMode: "SimpleWorkList",
+      budgetMode: "SetupRequired", qualityMode: "SetupRequired", hseMode: "NotEnabled",
+      financeMode: "SetupRequired", procurementMode: "SetupRequired", baseCurrencyCode: "IRR",
+      timeZone: "Asia/Tehran", projectType: "Building", executionPhase: "PreConstruction",
+      countryCode: "IR", region: "تهران", startDate: "2026-09-01", plannedFinishDate: "2027-09-01",
+      shortDescription: "راه‌اندازی کنترل‌شده", unitSystem: "Metric", dailyCutoffLocalTime: "18:00",
+      reportingFrequency: "WorkingDays", dailyReportWorkflow: "OneStepApproval", offlinePolicyAccepted: true,
+      calendarMode: "WorkingWeek", workingDays: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+    });
+    await getProjectReadiness("https://pmcs.test", identity, "project-id");
+
+    assert.equal(calls[0]?.url, "https://pmcs.test/api/v1/projects/project-id/setup");
+    assert.equal(calls[0]?.init?.method, "PUT");
+    assert.equal(JSON.parse(String(calls[0]?.init?.body)).baseRevision, 3);
+    assert.equal(JSON.parse(String(calls[0]?.init?.body)).dailyCutoffLocalTime, "18:00:00");
+    assert.ok(new Headers(calls[0]?.init?.headers).get("Idempotency-Key"));
+    assert.equal(calls[1]?.url, "https://pmcs.test/api/v1/projects/project-id/readiness");
+    assert.equal(calls[1]?.init?.cache, "no-store");
   } finally {
     globalThis.fetch = originalFetch;
   }

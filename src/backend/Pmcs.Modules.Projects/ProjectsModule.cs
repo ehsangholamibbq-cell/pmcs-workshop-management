@@ -31,6 +31,7 @@ public sealed class ProjectsModule : IModule
         services.AddSingleton<IDatabaseMigration, ProjectProcurementMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectLocationMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectActivationMetadataMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectSetupReadinessMigration>();
         services.AddHostedService<DevelopmentProjectSeeder>();
     }
 

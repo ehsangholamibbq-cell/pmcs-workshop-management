@@ -39,8 +39,8 @@ Static inspection cannot replace compilation, database migration execution, brow
 
 | Approved capability | Status | Evidence in repository | Remaining work |
 | --- | --- | --- | --- |
-| Identity, organization and membership | Implemented core / Partial scope model | OIDC/BFF, tenant/user activation, invite lifecycle, membership commands, device/session control | Effective Permission Preview; full Location/Contract/Party/Own/Assigned scope and explicit deny |
-| Project Setup Quick Start | Partial | actor-scoped project list, Draft create, controlled activation, calendar/planning/capability modes | project type, execution phase, main dates, units, cut-off, reporting frequency, initial organizations/users/workflow, configuration version and readiness preview |
+| Identity, organization and membership | Implemented core / Partial scope model | OIDC/BFF, tenant/user activation, invite lifecycle, membership commands, device/session control, explainable Effective Permission Preview | full Location/Contract/Party/Own/Assigned scope, explicit deny, Delegation and custom grants |
+| Project Setup Quick Start | Implemented core / Partial module readiness | save/resume, complete core metadata, Shamsi Web dates, versioned setup, leadership/access checks, exact readiness preview and server-enforced activation | dedicated module readiness providers and initial party/organization assignment |
 | Location/LBS base | Implemented for core Fact path | hierarchical module-owned Location, automatic ROOT, active-parent/child rules, stable ID in Fact and Project State | apply LBS identifiers to remaining modules that still use free-text Location; permission-scoped Location bootstrap |
 | Module activation/status | Partial | independent capability modes and state semantics | versioned module readiness prerequisites and explicit Ready/Activate/Suspend workflow |
 | Daily Site Operations | Partial | structured WorkProgress/Labor/Equipment/Material/Issue/Stoppage/SiteCondition/Note facts | richer project-day/weather/crew semantics and remaining blueprint reference dimensions |
@@ -50,7 +50,7 @@ Static inspection cannot replace compilation, database migration execution, brow
 | Attachment/Evidence | Partial | private S3-compatible content, SHA-256/size checks, metadata lineage, local attachment queue | resumable multipart upload, malware scan/quarantine/safe preview and real object-store lifecycle |
 | Audit and versioning | Implemented core / Partial platform | aggregate revisions, audit/outbox transactions for formal commands, release provenance | immutable retention policy, migration checksums and completion of atomic audit on every Sync rejection/conflict path |
 | Offline PWA and Sync | Partial | operation log, lease/session, push/pull/checkpoint, Daily Fact handler, conflict center, crash retry, scoped local stores | authenticated cold-start app shell; full project/location/task bootstrap; offline Issue/Action; quality/HSE through the common operation protocol; seven-day device endurance |
-| Permission Project/Module/Operation/Own/Assigned | Partial | operation permissions, project roles, own conflict filtering, assigned Action rules | explainable effective permission endpoint/UI, explicit deny and full scoped grants |
+| Permission Project/Module/Operation/Own/Assigned | Partial | operation permissions, project roles, own conflict filtering, assigned Action rules, explainable effective permission endpoint/UI | explicit deny, Delegation and full scoped grants |
 | Finance Control Lite | Partial | receipt/payment/petty-cash funding/expense, submit/post/return, optional budget baseline, financial state | petty-cash request/advance/reconciliation as distinct workflows, basic payable/receivable aging and optional management-fee rule |
 | Project State Lite | Implemented core | approved-fact-only deterministic calculation, coverage/freshness/confidence, no fake green/zero | broader dimensions and change summary against an official selected prior snapshot |
 | Command Center Lite | Implemented core / Partial offline | source drill-down, top exceptions, actions, financial/commercial optional states, trend | cached authenticated Project Pulse/My Work for true cold start |
@@ -105,7 +105,7 @@ These are not all release blockers, but must stay tracked:
 4. `GET /sync/pull` creates a short-lived checkpoint offer. Offer/session/feed retention and abuse limits need an explicit cleanup policy and load evidence.
 5. Older schemas rely mainly on application-level Tenant/Project validation; composite scoped constraints are not yet uniform across every historical table.
 6. Migration history records module/version/description but no SQL checksum. Applied migration drift must be prevented in a later foundation hardening step.
-7. Location management controls are visible before the Web has an Effective Permission Preview; the server remains authoritative and returns 403, but UI capability discovery is incomplete.
+7. Effective Permission Preview reflects the current static role policy; explicit deny, Delegation and custom Location/Contract/Party/Own/Assigned grants are not yet available.
 8. Legacy active projects correctly keep unknown activation and Location lineage as `null`; any backfill requires evidence and an approved migration process.
 
 ## Persian/Shamsi boundary result
@@ -142,11 +142,11 @@ Connected verification: GitHub Actions run [`34761372257`](https://github.com/eh
 
 ### Repository product work
 
-1. Complete Project Setup metadata, readiness/configuration version and Effective Permission Preview.
-2. Implement Daily Report supersession/correction lineage.
-3. Deliver consolidated My Work and in-app Notification.
-4. Complete MVP offline bootstrap/cold start and Issue/Action operations.
-5. Close the agreed Finance Lite gaps.
+1. Implement Daily Report supersession/correction lineage.
+2. Deliver consolidated My Work and in-app Notification.
+3. Complete MVP offline bootstrap/cold start and Issue/Action operations.
+4. Close the agreed Finance Lite gaps.
+5. Add explicit deny, Delegation, custom scoped grants and dedicated module readiness providers.
 
 ### Repository hardening work
 
@@ -165,10 +165,10 @@ Connected verification: GitHub Actions run [`34761372257`](https://github.com/eh
 
 ## Recommended implementation order
 
-1. Project Setup readiness + Effective Permission Preview.
-2. Daily Report Supersede + My Work/Notification.
-3. Complete offline bootstrap and Issue/Action/attachment recovery.
-4. Finance Lite completion and cross-module Location adoption.
+1. Daily Report Supersede + My Work/Notification.
+2. Complete offline bootstrap and Issue/Action/attachment recovery.
+3. Finance Lite completion and cross-module Location adoption.
+4. Explicit deny/scoped grants, module readiness providers and workflow templates.
 5. CI hardening, target-environment UAT and Pilot evidence closure.
 
 No item in the external-gate list may be replaced by a template, a local assertion or an unsigned report.

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   changeUserStatus,
+  getEffectivePermissionPreview,
   inviteUser,
   revokeMembership,
   upsertMembership,
@@ -33,6 +34,26 @@ test("invitation is sent as an idempotent server command", async () => {
       tenantRole: "Member",
       projects: [{ projectId: "project-id", roleCode: "Observer" }],
     });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("effective permission preview is a no-cache diagnostic read", async () => {
+  const originalFetch = globalThis.fetch;
+  let capturedUrl = "";
+  let capturedInit: RequestInit | undefined;
+  globalThis.fetch = async (input, init) => {
+    capturedUrl = String(input);
+    capturedInit = init;
+    return Response.json({ policyVersion: "pmcs-rbac-v1", decisions: [] });
+  };
+
+  try {
+    await getEffectivePermissionPreview("/api/pmcs/", "user-id", "project-id", "SiteSupervisor");
+    assert.equal(capturedUrl, "/api/pmcs/api/v1/identity/permissions/preview?userId=user-id&projectId=project-id&proposedRoleCode=SiteSupervisor");
+    assert.equal(capturedInit?.cache, "no-store");
+    assert.equal(capturedInit?.method, undefined);
   } finally {
     globalThis.fetch = originalFetch;
   }
