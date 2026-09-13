@@ -122,6 +122,8 @@ This result applies to implemented Web screens. PDF/Excel exports and future Not
 
 ## Automated evidence at audit close
 
+Connected verification: GitHub Actions run [`34761372257`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/34761372257) on commit `5dad38666befa71a2dd3cdc9ead60799c871c195` completed successfully across all six jobs.
+
 | Gate | Local result |
 | --- | --- |
 | Web unit/API contract | 102 passed |
@@ -133,8 +135,8 @@ This result applies to implemented Web screens. PDF/Excel exports and future Not
 | Architecture validation | 241 C# module files; passed |
 | Pilot policy tests | 8 passed |
 | Shell syntax | passed |
-| .NET build/domain tests | not runnable in this workspace; CI required |
-| PostgreSQL 17 + MinIO + restore drill | not runnable in this workspace; CI required |
+| .NET build/domain tests | Release build passed; 211 passed, 0 failed |
+| PostgreSQL 17 + MinIO + restore drill | API/object-storage roundtrip passed; isolated restore retained with 32 migrations |
 
 ## Release blockers and ownership
 
