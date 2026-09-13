@@ -109,6 +109,7 @@ internal static partial class ActionControlEndpoints
         ActionControlDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
+        ITransactionalNotificationWriter notificationWriter,
         IIdempotencyStore idempotencyStore,
         CancellationToken cancellationToken)
     {
@@ -184,6 +185,23 @@ internal static partial class ActionControlEndpoints
         dbContext.Actions.Add(action);
         dbContext.AttentionDispositions.Add(disposition);
         var response = ManagementActionResponse.From(action);
+        InAppNotificationDraft[] notifications = action.AssigneeUserId == actor.UserId
+            ? []
+            : new[]
+            {
+                new InAppNotificationDraft(
+                    Guid.NewGuid(),
+                    actor.TenantId,
+                    projectId,
+                    action.AssigneeUserId,
+                    $"management-action:{action.Id}:assigned:{action.Revision}",
+                    "ManagementActionAssigned",
+                    "اقدام جدید به شما واگذار شد",
+                    action.Title,
+                    "ManagementAction",
+                    action.Id,
+                    clock.UtcNow)
+            };
         await PersistAsync(
             dbContext,
             httpContext,
@@ -206,7 +224,9 @@ internal static partial class ActionControlEndpoints
             StatusCodes.Status201Created,
             sideEffectWriter,
             clock,
-            cancellationToken);
+            cancellationToken,
+            notificationWriter,
+            notifications);
         return Results.Created($"/api/v1/projects/{projectId}/actions/{action.Id}", response);
     }
 
@@ -375,7 +395,9 @@ internal static partial class ActionControlEndpoints
         int statusCode,
         ITransactionalSideEffectWriter sideEffectWriter,
         IClock clock,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        ITransactionalNotificationWriter? notificationWriter = null,
+        IReadOnlyCollection<InAppNotificationDraft>? notifications = null)
     {
         var responseJson = JsonSerializer.Serialize(response, SerializerOptions);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -407,6 +429,14 @@ internal static partial class ActionControlEndpoints
                     clock.UtcNow,
                     clock.UtcNow.AddDays(7))),
             cancellationToken);
+        if (notificationWriter is not null && notifications is { Count: > 0 })
+        {
+            await notificationWriter.WriteAsync(
+                dbContext.Database.GetDbConnection(),
+                transaction.GetDbTransaction(),
+                notifications,
+                cancellationToken);
+        }
         await transaction.CommitAsync(cancellationToken);
     }
 

@@ -81,6 +81,16 @@
 }
 
 @media (max-width: 900px) {
+  .my-work-center,
+  .correction-details {
+    grid-template-columns: 1fr;
+  }
+
+  .correction-fact {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .quality-safety-status-grid,
   .quality-safety-records,
   .quality-safety-workspace {
@@ -1283,6 +1293,126 @@ output {
   background: rgba(255, 255, 255, 0.88);
   box-shadow: var(--shadow);
   padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.my-work-center,
+.daily-report-history {
+  grid-column: 1 / -1;
+}
+
+.my-work-center {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  gap: 1.15rem;
+}
+
+.my-work-list,
+.notification-list,
+.report-version-list,
+.correction-facts {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.my-work-item,
+.notification-item,
+.report-version-item,
+.correction-fact {
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fbfcfa;
+}
+
+.my-work-item.overdue {
+  border-color: rgba(182, 64, 64, 0.42);
+  background: rgba(255, 245, 245, 0.9);
+}
+
+.work-summary,
+.notification-item > div:first-child,
+.report-version-item > div:first-child {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.work-summary small,
+.work-summary p,
+.notification-item small,
+.notification-item p,
+.report-version-item small,
+.report-version-item p,
+.correction-fact small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.75;
+}
+
+.work-review-controls,
+.correction-start {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.notification-item.read {
+  opacity: 0.72;
+}
+
+.inline-link {
+  display: inline-flex;
+  margin-top: 0.65rem;
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.correction-editor {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.correction-details {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.6fr) minmax(0, 1.4fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.correction-details label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.correction-fact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.correction-fact > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.correction-fact-form {
+  padding: 1rem;
+  border: 1px dashed rgba(23, 107, 98, 0.35);
+  border-radius: 1rem;
+  background: rgba(220, 238, 232, 0.24);
+}
+
+.correction-submit {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .finance-control {

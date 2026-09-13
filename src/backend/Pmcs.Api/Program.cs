@@ -25,6 +25,7 @@ using Pmcs.Modules.Planning;
 using Pmcs.Modules.TechnicalOffice;
 using Pmcs.Modules.QualitySafety;
 using Pmcs.Modules.Sync;
+using Pmcs.Modules.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 var releaseIdentity = ReleaseIdentity.FromAssembly(typeof(Program).Assembly);
@@ -54,7 +55,8 @@ IModule[] modules =
     new FinanceModule(),
     new QualitySafetyModule(),
     new ProjectIntelligenceModule(),
-    new IntelligenceModule()
+    new IntelligenceModule(),
+    new WorkManagementModule()
 ];
 
 builder.Services.AddProblemDetails();

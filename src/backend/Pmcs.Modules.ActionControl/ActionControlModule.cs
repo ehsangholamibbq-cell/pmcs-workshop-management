@@ -23,6 +23,7 @@ public sealed class ActionControlModule : IModule
         services.AddDbContext<ActionControlDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IAttentionDispositionSource, AttentionDispositionSource>();
         services.AddScoped<IPortfolioActionSource, PortfolioActionSource>();
+        services.AddScoped<IManagementActionWorkSource, ManagementActionWorkSource>();
         services.AddHostedService<GovernanceDeadlineWorker>();
         services.AddSingleton<IDatabaseMigration, ActionControlInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ActionGovernanceMigration>();

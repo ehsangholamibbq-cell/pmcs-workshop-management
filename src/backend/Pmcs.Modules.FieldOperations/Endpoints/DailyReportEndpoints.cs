@@ -29,6 +29,9 @@ internal static class DailyReportEndpoints
         group.MapPost("/{reportId:guid}/submit", SubmitAsync);
         group.MapPost("/{reportId:guid}/return", ReturnAsync);
         group.MapPost("/{reportId:guid}/approve", ApproveAsync);
+        group.MapPost("/{reportId:guid}/corrections", StartCorrectionAsync);
+        group.MapPost("/{reportId:guid}/details", ReviseDetailsAsync);
+        group.MapPost("/{reportId:guid}/facts/{factId:guid}/remove", RemoveFactAsync);
     }
 
     private static async Task<IResult> ListAsync(
@@ -53,6 +56,7 @@ internal static class DailyReportEndpoints
             .Include(report => report.Facts)
             .Where(report => report.TenantId == actor.TenantId && report.ProjectId == projectId)
             .OrderByDescending(report => report.ReportDate)
+            .ThenByDescending(report => report.VersionNumber)
             .Take(60)
             .ToListAsync(cancellationToken);
 
@@ -158,7 +162,8 @@ internal static class DailyReportEndpoints
         }
 
         if (await dbContext.DailyReports.AnyAsync(
-                report => report.TenantId == actor.TenantId && report.ProjectId == projectId && report.ReportDate == request.ReportDate,
+                report => report.TenantId == actor.TenantId && report.ProjectId == projectId &&
+                    report.ReportDate == request.ReportDate && report.SupersedesReportId == null,
                 cancellationToken))
         {
             return Results.Conflict(new { code = "daily_report.date.duplicate" });
@@ -316,9 +321,11 @@ internal static class DailyReportEndpoints
         HttpContext httpContext,
         ICurrentActor actor,
         IProjectPermissionService permissionService,
+        IProjectPermissionRecipientDirectory recipientDirectory,
         FieldOperationsDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
+        ITransactionalNotificationWriter notificationWriter,
         IIdempotencyStore idempotencyStore,
         CancellationToken cancellationToken)
     {
@@ -362,6 +369,21 @@ internal static class DailyReportEndpoints
 
         report.Submit(request.BaseRevision, clock.UtcNow);
         var response = DailyReportResponse.From(report, includeFacts: true);
+        var recipients = await recipientDirectory.ListAsync(
+            actor.TenantId,
+            projectId,
+            "field.daily-reports.review",
+            cancellationToken);
+        var notifications = recipients.Select(recipient => CreateNotification(
+            actor.TenantId,
+            projectId,
+            recipient.UserId,
+            $"daily-report:{report.Id}:submitted:{report.Revision}",
+            "DailyReportReview",
+            "گزارش روزانه جدید برای بازبینی",
+            "یک گزارش رسمی برای بررسی و تصمیم شما ارسال شده است.",
+            report.Id,
+            clock.UtcNow)).ToArray();
 
         await PersistOperationAsync(
             dbContext,
@@ -374,7 +396,9 @@ internal static class DailyReportEndpoints
             StatusCodes.Status200OK,
             sideEffectWriter,
             clock,
-            cancellationToken);
+            cancellationToken,
+            notificationWriter,
+            notifications);
 
         return Results.Ok(response);
     }
@@ -389,6 +413,7 @@ internal static class DailyReportEndpoints
         FieldOperationsDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
+        ITransactionalNotificationWriter notificationWriter,
         IIdempotencyStore idempotencyStore,
         CancellationToken cancellationToken)
     {
@@ -427,6 +452,21 @@ internal static class DailyReportEndpoints
 
         report.ReturnForCorrection(request.BaseRevision, request.Comment ?? string.Empty, actor.UserId, clock.UtcNow);
         var response = DailyReportResponse.From(report, includeFacts: true);
+        InAppNotificationDraft[] notifications = report.CreatedBy == actor.UserId
+            ? []
+            : new[]
+            {
+                CreateNotification(
+                    actor.TenantId,
+                    projectId,
+                    report.CreatedBy,
+                    $"daily-report:{report.Id}:returned:{report.Revision}",
+                    "DailyReportCorrection",
+                    "گزارش روزانه برای اصلاح عودت شد",
+                    report.ReviewComment ?? "گزارش برای اصلاح عودت شده است.",
+                    report.Id,
+                    clock.UtcNow)
+            };
         await PersistOperationAsync(
             dbContext,
             httpContext,
@@ -438,7 +478,9 @@ internal static class DailyReportEndpoints
             StatusCodes.Status200OK,
             sideEffectWriter,
             clock,
-            cancellationToken);
+            cancellationToken,
+            notificationWriter,
+            notifications);
 
         return Results.Ok(response);
     }
@@ -453,6 +495,7 @@ internal static class DailyReportEndpoints
         FieldOperationsDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
+        ITransactionalNotificationWriter notificationWriter,
         IIdempotencyStore idempotencyStore,
         CancellationToken cancellationToken)
     {
@@ -489,8 +532,42 @@ internal static class DailyReportEndpoints
             return RevisionConflict(report);
         }
 
-        report.Approve(request.BaseRevision, request.Comment, actor.UserId, clock.UtcNow);
+        var now = clock.UtcNow;
+        report.Approve(request.BaseRevision, request.Comment, actor.UserId, now);
+        if (report.SupersedesReportId.HasValue)
+        {
+            var predecessor = await LoadReportAsync(
+                dbContext,
+                actor.TenantId,
+                projectId,
+                report.SupersedesReportId.Value,
+                cancellationToken);
+            if (predecessor is null || predecessor.RootReportId != report.RootReportId ||
+                predecessor.VersionNumber + 1 != report.VersionNumber)
+            {
+                throw new DomainRuleException(
+                    "daily_report.correction.lineage.invalid",
+                    "The correction predecessor is unavailable or inconsistent.");
+            }
+
+            predecessor.SupersedeWith(report.Id, report.CorrectionReason ?? string.Empty, now);
+        }
         var response = DailyReportResponse.From(report, includeFacts: true);
+        InAppNotificationDraft[] notifications = report.CreatedBy == actor.UserId
+            ? []
+            : new[]
+            {
+                CreateNotification(
+                    actor.TenantId,
+                    projectId,
+                    report.CreatedBy,
+                    $"daily-report:{report.Id}:approved:{report.Revision}",
+                    "DailyReportApproved",
+                    "گزارش روزانه تأیید شد",
+                    report.ReviewComment ?? "گزارش روزانه پس از بازبینی تأیید شد.",
+                    report.Id,
+                    now)
+            };
         await PersistOperationAsync(
             dbContext,
             httpContext,
@@ -502,8 +579,228 @@ internal static class DailyReportEndpoints
             StatusCodes.Status200OK,
             sideEffectWriter,
             clock,
-            cancellationToken);
+            cancellationToken,
+            notificationWriter,
+            notifications);
 
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> StartCorrectionAsync(
+        Guid projectId,
+        Guid reportId,
+        StartDailyReportCorrectionRequest request,
+        HttpContext httpContext,
+        ICurrentActor actor,
+        IProjectPermissionService permissionService,
+        FieldOperationsDbContext dbContext,
+        IClock clock,
+        ITransactionalSideEffectWriter sideEffectWriter,
+        ITransactionalNotificationWriter notificationWriter,
+        IIdempotencyStore idempotencyStore,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!await HasPermissionAsync(
+                permissionService, actor, projectId, "field.daily-reports.review", cancellationToken))
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        var idempotency = await GetReplayAsync(
+            httpContext,
+            actor,
+            idempotencyStore,
+            "daily-reports.start-correction",
+            request,
+            cancellationToken);
+        if (idempotency.Result is not null)
+        {
+            return idempotency.Result;
+        }
+
+        var source = await LoadReportAsync(dbContext, actor.TenantId, projectId, reportId, cancellationToken);
+        if (source is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (source.Revision != request.BaseRevision)
+        {
+            return RevisionConflict(source);
+        }
+
+        if (await dbContext.DailyReports.AnyAsync(report =>
+                report.TenantId == actor.TenantId && report.ProjectId == projectId &&
+                report.SupersedesReportId == source.Id &&
+                (report.Status == DailyReportStatus.Draft ||
+                    report.Status == DailyReportStatus.Submitted ||
+                    report.Status == DailyReportStatus.Returned),
+                cancellationToken))
+        {
+            return Results.Conflict(new { code = "daily_report.correction.already_active" });
+        }
+
+        var correction = source.CreateCorrection(
+            request.ClientGeneratedId,
+            request.BaseRevision,
+            request.Reason,
+            actor.UserId,
+            clock.UtcNow);
+        dbContext.DailyReports.Add(correction);
+        var response = DailyReportResponse.From(correction, includeFacts: true);
+        InAppNotificationDraft[] notifications = correction.CreatedBy == actor.UserId
+            ? []
+            : new[]
+            {
+                CreateNotification(
+                    actor.TenantId,
+                    projectId,
+                    correction.CreatedBy,
+                    $"daily-report:{source.Id}:correction:{correction.Id}",
+                    "DailyReportCorrection",
+                    "نسخه اصلاحی گزارش روزانه ایجاد شد",
+                    correction.CorrectionReason ?? "نسخه اصلاحی نیازمند تکمیل است.",
+                    correction.Id,
+                    clock.UtcNow)
+            };
+        await PersistOperationAsync(
+            dbContext,
+            httpContext,
+            actor,
+            correction,
+            "DailyReportCorrectionStarted",
+            response,
+            idempotency,
+            StatusCodes.Status201Created,
+            sideEffectWriter,
+            clock,
+            cancellationToken,
+            notificationWriter,
+            notifications);
+        return Results.Created(
+            $"/api/v1/projects/{projectId}/daily-reports/{correction.Id}",
+            response);
+    }
+
+    private static async Task<IResult> ReviseDetailsAsync(
+        Guid projectId,
+        Guid reportId,
+        ReviseDailyReportDetailsRequest request,
+        HttpContext httpContext,
+        ICurrentActor actor,
+        IProjectPermissionService permissionService,
+        FieldOperationsDbContext dbContext,
+        IClock clock,
+        ITransactionalSideEffectWriter sideEffectWriter,
+        IIdempotencyStore idempotencyStore,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return Results.Unauthorized();
+        }
+
+        var report = await LoadReportAsync(dbContext, actor.TenantId, projectId, reportId, cancellationToken);
+        if (report is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!await CanEditAsync(permissionService, actor, projectId, report, cancellationToken))
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        var idempotency = await GetReplayAsync(
+            httpContext, actor, idempotencyStore, "daily-reports.revise-details", request, cancellationToken);
+        if (idempotency.Result is not null)
+        {
+            return idempotency.Result;
+        }
+
+        if (report.Revision != request.BaseRevision)
+        {
+            return RevisionConflict(report);
+        }
+
+        report.ReviseDetails(request.BaseRevision, request.LocationName, request.Narrative, clock.UtcNow);
+        var response = DailyReportResponse.From(report, includeFacts: true);
+        await PersistOperationAsync(
+            dbContext,
+            httpContext,
+            actor,
+            report,
+            "DailyReportDetailsRevised",
+            response,
+            idempotency,
+            StatusCodes.Status200OK,
+            sideEffectWriter,
+            clock,
+            cancellationToken);
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> RemoveFactAsync(
+        Guid projectId,
+        Guid reportId,
+        Guid factId,
+        RemoveDailyFactRequest request,
+        HttpContext httpContext,
+        ICurrentActor actor,
+        IProjectPermissionService permissionService,
+        FieldOperationsDbContext dbContext,
+        IClock clock,
+        ITransactionalSideEffectWriter sideEffectWriter,
+        IIdempotencyStore idempotencyStore,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return Results.Unauthorized();
+        }
+
+        var report = await LoadReportAsync(dbContext, actor.TenantId, projectId, reportId, cancellationToken);
+        if (report is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!await CanEditAsync(permissionService, actor, projectId, report, cancellationToken))
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        var idempotency = await GetReplayAsync(
+            httpContext, actor, idempotencyStore, "daily-reports.remove-fact", request, cancellationToken);
+        if (idempotency.Result is not null)
+        {
+            return idempotency.Result;
+        }
+
+        if (report.Revision != request.BaseRevision)
+        {
+            return RevisionConflict(report);
+        }
+
+        report.RemoveFact(factId, request.BaseRevision, clock.UtcNow);
+        var response = DailyReportResponse.From(report, includeFacts: true);
+        await PersistOperationAsync(
+            dbContext,
+            httpContext,
+            actor,
+            report,
+            "DailyReportFactRemoved",
+            response,
+            idempotency,
+            StatusCodes.Status200OK,
+            sideEffectWriter,
+            clock,
+            cancellationToken);
         return Results.Ok(response);
     }
 
@@ -555,7 +852,9 @@ internal static class DailyReportEndpoints
         int statusCode,
         ITransactionalSideEffectWriter sideEffectWriter,
         IClock clock,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        ITransactionalNotificationWriter? notificationWriter = null,
+        IReadOnlyCollection<InAppNotificationDraft>? notifications = null)
     {
         var responseJson = JsonSerializer.Serialize(response, SerializerOptions);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -600,8 +899,55 @@ internal static class DailyReportEndpoints
                     clock.UtcNow,
                     clock.UtcNow.AddDays(7))),
             cancellationToken);
+        if (notificationWriter is not null && notifications is { Count: > 0 })
+        {
+            await notificationWriter.WriteAsync(
+                dbContext.Database.GetDbConnection(),
+                transaction.GetDbTransaction(),
+                notifications,
+                cancellationToken);
+        }
         await transaction.CommitAsync(cancellationToken);
     }
+
+    private static async Task<bool> CanEditAsync(
+        IProjectPermissionService permissionService,
+        ICurrentActor actor,
+        Guid projectId,
+        DailyReport report,
+        CancellationToken cancellationToken)
+    {
+        if (!await HasPermissionAsync(
+                permissionService, actor, projectId, "field.daily-reports.capture", cancellationToken))
+        {
+            return false;
+        }
+
+        return report.CreatedBy == actor.UserId || await HasPermissionAsync(
+            permissionService, actor, projectId, "field.daily-reports.review", cancellationToken);
+    }
+
+    private static InAppNotificationDraft CreateNotification(
+        Guid tenantId,
+        Guid projectId,
+        Guid recipientUserId,
+        string deduplicationKey,
+        string category,
+        string title,
+        string body,
+        Guid reportId,
+        DateTimeOffset occurredAt) => new(
+            Guid.NewGuid(),
+            tenantId,
+            projectId,
+            recipientUserId,
+            deduplicationKey,
+            category,
+            title,
+            body,
+            "DailyReport",
+            reportId,
+            occurredAt);
 
     private static Task<bool> HasPermissionAsync(
         IProjectPermissionService permissionService,

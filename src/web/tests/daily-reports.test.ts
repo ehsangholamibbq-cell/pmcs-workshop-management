@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { listReviewInbox, reviewDailyReport } from "../lib/daily-reports.ts";
+import {
+  listReviewInbox,
+  removeDailyReportFact,
+  reviewDailyReport,
+  startDailyReportCorrection,
+} from "../lib/daily-reports.ts";
 
 const identity = { tenantId: "tenant-id", userId: "user-id" };
 
@@ -69,6 +74,45 @@ test("return workflow sends revision, comment and an idempotency key", async () 
       comment: "اصلاح مقدار",
     });
     assert.equal(report.status, "Returned");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("correction workflow starts a version and removes copied facts with revision", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls: { url: string; body: Record<string, unknown>; key: string | null }[] = [];
+  globalThis.fetch = async (input, init) => {
+    calls.push({
+      url: String(input),
+      body: JSON.parse(String(init?.body)) as Record<string, unknown>,
+      key: new Headers(init?.headers).get("Idempotency-Key"),
+    });
+    return Response.json({
+      id: "correction-id", projectId: "project-id", reportDate: "2026-09-09",
+      locationName: null, narrative: null, status: "Draft", revision: 1,
+      createdBy: "author-id", factCount: 1, reviewedBy: null, reviewedAt: null,
+      reviewComment: null, rootReportId: "report-id", versionNumber: 2,
+      supersedesReportId: "report-id", supersededByReportId: null, supersededAt: null,
+      correctionReason: "اصلاح مقدار", correctionInitiatedBy: "reviewer-id", facts: [],
+    });
+  };
+
+  try {
+    await startDailyReportCorrection(
+      "https://pmcs.test", identity, "project-id", "report-id", 4, "  اصلاح مقدار  ",
+    );
+    await removeDailyReportFact(
+      "https://pmcs.test", identity, "project-id", "correction-id", "fact-id", 1,
+    );
+
+    assert.equal(calls[0].url, "https://pmcs.test/api/v1/projects/project-id/daily-reports/report-id/corrections");
+    assert.equal(calls[0].body.baseRevision, 4);
+    assert.equal(calls[0].body.reason, "اصلاح مقدار");
+    assert.ok(calls[0].body.clientGeneratedId);
+    assert.equal(calls[1].url, "https://pmcs.test/api/v1/projects/project-id/daily-reports/correction-id/facts/fact-id/remove");
+    assert.deepEqual(calls[1].body, { baseRevision: 1 });
+    assert.ok(calls.every((call) => call.key));
   } finally {
     globalThis.fetch = originalFetch;
   }

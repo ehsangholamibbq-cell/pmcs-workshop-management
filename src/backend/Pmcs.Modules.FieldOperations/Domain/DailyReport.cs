@@ -30,6 +30,8 @@ public sealed class DailyReport : AggregateRoot
         CreatedBy = createdBy;
         CreatedAt = createdAt;
         LastModifiedAt = createdAt;
+        RootReportId = id;
+        VersionNumber = 1;
     }
 
     public Guid Id { get; private set; }
@@ -59,6 +61,20 @@ public sealed class DailyReport : AggregateRoot
     public DateTimeOffset? ReviewedAt { get; private set; }
 
     public string? ReviewComment { get; private set; }
+
+    public Guid RootReportId { get; private set; }
+
+    public int VersionNumber { get; private set; }
+
+    public Guid? SupersedesReportId { get; private set; }
+
+    public Guid? SupersededByReportId { get; private set; }
+
+    public DateTimeOffset? SupersededAt { get; private set; }
+
+    public string? CorrectionReason { get; private set; }
+
+    public Guid? CorrectionInitiatedBy { get; private set; }
 
     public IReadOnlyCollection<DailyReportFact> Facts => _facts.AsReadOnly();
 
@@ -104,6 +120,79 @@ public sealed class DailyReport : AggregateRoot
         LastModifiedAt = createdAt;
         AdvanceRevision();
         return fact;
+    }
+
+    public void RemoveFact(Guid factId, long baseRevision, DateTimeOffset removedAt)
+    {
+        EnsureEditable();
+        EnsureRevision(baseRevision);
+        var fact = _facts.SingleOrDefault(item => item.Id == factId)
+            ?? throw new DomainRuleException("daily_fact.not_found", "The report fact was not found.");
+        _facts.Remove(fact);
+        LastModifiedAt = removedAt;
+        AdvanceRevision();
+    }
+
+    public void ReviseDetails(
+        long baseRevision,
+        string? locationName,
+        string? narrative,
+        DateTimeOffset changedAt)
+    {
+        EnsureEditable();
+        EnsureRevision(baseRevision);
+        LocationName = NormalizeOptional(locationName, 200, "daily_report.location.too_long");
+        Narrative = NormalizeOptional(narrative, 4_000, "daily_report.narrative.too_long");
+        LastModifiedAt = changedAt;
+        AdvanceRevision();
+    }
+
+    public DailyReport CreateCorrection(
+        Guid correctionId,
+        long baseRevision,
+        string reason,
+        Guid initiatedBy,
+        DateTimeOffset initiatedAt)
+    {
+        EnsureRevision(baseRevision);
+        if (Status != DailyReportStatus.Approved || SupersededByReportId.HasValue)
+        {
+            throw new DomainRuleException(
+                "daily_report.correction.invalid_state",
+                "Only the current approved report can start a correction.");
+        }
+
+        if (correctionId == Guid.Empty || initiatedBy == Guid.Empty)
+        {
+            throw new DomainRuleException(
+                "daily_report.correction.identity.required",
+                "Correction and initiator ids are required.");
+        }
+
+        var normalizedReason = NormalizeRequired(reason, 1_000, "daily_report.correction.reason.invalid");
+        var correction = new DailyReport(
+            correctionId,
+            TenantId,
+            ProjectId,
+            ReportDate,
+            LocationName,
+            Narrative,
+            CreatedBy,
+            initiatedAt)
+        {
+            RootReportId = RootReportId,
+            VersionNumber = checked(VersionNumber + 1),
+            SupersedesReportId = Id,
+            CorrectionReason = normalizedReason,
+            CorrectionInitiatedBy = initiatedBy
+        };
+
+        foreach (var fact in _facts)
+        {
+            correction._facts.Add(fact.CopyForCorrection(Guid.NewGuid(), correction.Id, initiatedBy, initiatedAt));
+        }
+
+        return correction;
     }
 
     public void Submit(long baseRevision, DateTimeOffset submittedAt)
@@ -171,6 +260,27 @@ public sealed class DailyReport : AggregateRoot
         AdvanceRevision();
     }
 
+    public void SupersedeWith(
+        Guid replacementReportId,
+        string reason,
+        DateTimeOffset supersededAt)
+    {
+        if (Status != DailyReportStatus.Approved || replacementReportId == Guid.Empty ||
+            SupersededByReportId.HasValue)
+        {
+            throw new DomainRuleException(
+                "daily_report.supersede.invalid_state",
+                "Only a current approved report can be superseded once.");
+        }
+
+        Status = DailyReportStatus.Superseded;
+        SupersededByReportId = replacementReportId;
+        SupersededAt = supersededAt;
+        CorrectionReason = NormalizeRequired(reason, 1_000, "daily_report.correction.reason.invalid");
+        LastModifiedAt = supersededAt;
+        AdvanceRevision();
+    }
+
     private void EnsureEditable()
     {
         if (Status is not DailyReportStatus.Draft and not DailyReportStatus.Returned)
@@ -210,6 +320,10 @@ public sealed class DailyReport : AggregateRoot
 
         return normalized;
     }
+
+    private static string NormalizeRequired(string value, int maxLength, string errorCode) =>
+        NormalizeOptional(value, maxLength, errorCode)
+        ?? throw new DomainRuleException(errorCode, "A non-empty value is required.");
 }
 
 public enum DailyReportStatus

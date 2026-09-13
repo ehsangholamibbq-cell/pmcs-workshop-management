@@ -13,7 +13,8 @@ public sealed class DailyReportFact
         Guid dailyReportId,
         DailyFactInput input,
         Guid createdBy,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        Guid? copiedFromFactId = null)
     {
         Id = id;
         DailyReportId = dailyReportId;
@@ -31,6 +32,7 @@ public sealed class DailyReportFact
         MeasurementItemId = input.MeasurementItemId;
         CreatedBy = createdBy;
         CreatedAt = createdAt;
+        CopiedFromFactId = copiedFromFactId;
     }
 
     public Guid Id { get; private set; }
@@ -64,6 +66,8 @@ public sealed class DailyReportFact
     public Guid CreatedBy { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
+
+    public Guid? CopiedFromFactId { get; private set; }
 
     internal static DailyReportFact Create(
         Guid id,
@@ -167,6 +171,31 @@ public sealed class DailyReportFact
 
         return new DailyReportFact(id, dailyReportId, normalized, createdBy, createdAt);
     }
+
+    internal DailyReportFact CopyForCorrection(
+        Guid id,
+        Guid dailyReportId,
+        Guid copiedBy,
+        DateTimeOffset copiedAt) =>
+        new(
+            id,
+            dailyReportId,
+            new DailyFactInput(
+                Kind,
+                Description,
+                Category,
+                LocationName,
+                Quantity,
+                Unit,
+                ResourceCount,
+                Hours,
+                ImpactLevel,
+                ReferenceCode,
+                MeasurementItemId,
+                LocationId),
+            copiedBy,
+            copiedAt,
+            Id);
 
     private static string? NormalizeOptional(string? value, int maxLength, string errorCode)
     {

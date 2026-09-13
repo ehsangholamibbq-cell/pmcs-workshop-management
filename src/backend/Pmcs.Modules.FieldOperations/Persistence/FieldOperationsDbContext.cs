@@ -32,9 +32,18 @@ internal sealed class FieldOperationsDbContext(DbContextOptions<FieldOperationsD
             builder.Property(x => x.ReviewedBy).HasColumnName("reviewed_by");
             builder.Property(x => x.ReviewedAt).HasColumnName("reviewed_at");
             builder.Property(x => x.ReviewComment).HasColumnName("review_comment").HasMaxLength(1_000);
+            builder.Property(x => x.RootReportId).HasColumnName("root_report_id");
+            builder.Property(x => x.VersionNumber).HasColumnName("version_number");
+            builder.Property(x => x.SupersedesReportId).HasColumnName("supersedes_report_id");
+            builder.Property(x => x.SupersededByReportId).HasColumnName("superseded_by_report_id");
+            builder.Property(x => x.SupersededAt).HasColumnName("superseded_at");
+            builder.Property(x => x.CorrectionReason).HasColumnName("correction_reason").HasMaxLength(1_000);
+            builder.Property(x => x.CorrectionInitiatedBy).HasColumnName("correction_initiated_by");
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.DomainEvents);
-            builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.ReportDate }).IsUnique();
+            builder.HasIndex(x => new { x.RootReportId, x.VersionNumber }).IsUnique();
+            builder.HasIndex(x => x.SupersedesReportId);
+            builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.ReportDate });
 
             builder.HasMany(x => x.Facts)
                 .WithOne()
@@ -67,9 +76,11 @@ internal sealed class FieldOperationsDbContext(DbContextOptions<FieldOperationsD
             builder.Property(x => x.MeasurementItemId).HasColumnName("measurement_item_id");
             builder.Property(x => x.CreatedBy).HasColumnName("created_by");
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.CopiedFromFactId).HasColumnName("copied_from_fact_id");
             builder.HasIndex(x => x.DailyReportId);
             builder.HasIndex(x => x.MeasurementItemId);
             builder.HasIndex(x => x.LocationId);
+            builder.HasIndex(x => x.CopiedFromFactId);
         });
     }
 }

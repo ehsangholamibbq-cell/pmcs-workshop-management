@@ -25,12 +25,14 @@ public sealed class FieldOperationsModule : IModule
         services.AddScoped<IApprovedDailyFactSource, ApprovedDailyFactSource>();
         services.AddScoped<IDailyFactDirectory, DailyFactDirectory>();
         services.AddScoped<IProgressFactSource, ProgressFactSource>();
+        services.AddScoped<IDailyReportWorkSource, DailyReportWorkSource>();
         services.AddScoped<IOfflineFieldOperationHandler, OfflineDailyReportOperationHandler>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsInitialMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsStructuredFactsMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsReviewWorkflowMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsMeasurementLinkMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsLocationLinkMigration>();
+        services.AddSingleton<IDatabaseMigration, FieldOperationsCorrectionLineageMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

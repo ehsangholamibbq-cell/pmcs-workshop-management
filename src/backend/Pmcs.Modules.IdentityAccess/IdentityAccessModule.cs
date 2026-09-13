@@ -27,6 +27,7 @@ public sealed class IdentityAccessModule : IModule
         services.AddScoped<IActorAccessValidator, ActorAccessValidator>();
         services.AddScoped<IProjectAssigneeDirectory, ProjectAssigneeDirectory>();
         services.AddScoped<IProjectLeadershipDirectory, ProjectLeadershipDirectory>();
+        services.AddScoped<IProjectPermissionRecipientDirectory, ProjectPermissionRecipientDirectory>();
         var provisioning = ReadProvisioningOptions(configuration);
         provisioning.Validate();
         services.AddSingleton(provisioning);

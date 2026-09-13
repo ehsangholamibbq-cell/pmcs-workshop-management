@@ -83,6 +83,73 @@ public sealed class DailyReportWorkflowTests
         Assert.Equal(4L, report.Revision);
     }
 
+    [Fact]
+    public void ApprovedReportCreatesEditableCorrectionWithoutInvalidatingOfficialVersion()
+    {
+        var report = CreateApprovedReport();
+
+        var correction = report.CreateCorrection(
+            Guid.NewGuid(),
+            report.Revision,
+            "Correct the recorded quantity.",
+            Guid.NewGuid(),
+            StartedAt.AddMinutes(4));
+
+        Assert.Equal(DailyReportStatus.Approved, report.Status);
+        Assert.Equal(DailyReportStatus.Draft, correction.Status);
+        Assert.Equal(report.RootReportId, correction.RootReportId);
+        Assert.Equal(2, correction.VersionNumber);
+        Assert.Equal(report.Id, correction.SupersedesReportId);
+        Assert.Single(correction.Facts);
+        Assert.Equal(report.Facts.Single().Id, correction.Facts.Single().CopiedFromFactId);
+    }
+
+    [Fact]
+    public void ApprovedCorrectionSupersedesPredecessorWithBidirectionalLineage()
+    {
+        var report = CreateApprovedReport();
+        var correction = report.CreateCorrection(
+            Guid.NewGuid(), report.Revision, "Correct the quantity.", Guid.NewGuid(), StartedAt.AddMinutes(4));
+        correction.Submit(correction.Revision, StartedAt.AddMinutes(5));
+        correction.Approve(correction.Revision, null, Guid.NewGuid(), StartedAt.AddMinutes(6));
+
+        report.SupersedeWith(correction.Id, correction.CorrectionReason!, StartedAt.AddMinutes(6));
+
+        Assert.Equal(DailyReportStatus.Superseded, report.Status);
+        Assert.Equal(correction.Id, report.SupersededByReportId);
+        Assert.Equal(report.Id, correction.SupersedesReportId);
+        Assert.Equal(DailyReportStatus.Approved, correction.Status);
+    }
+
+    [Fact]
+    public void CorrectionFactsCanBeRemovedButOriginalEvidenceRemainsImmutable()
+    {
+        var report = CreateApprovedReport();
+        var originalFactId = report.Facts.Single().Id;
+        var correction = report.CreateCorrection(
+            Guid.NewGuid(), report.Revision, "Replace the fact.", Guid.NewGuid(), StartedAt.AddMinutes(4));
+        var copiedFactId = correction.Facts.Single().Id;
+
+        correction.RemoveFact(copiedFactId, correction.Revision, StartedAt.AddMinutes(5));
+
+        Assert.Empty(correction.Facts);
+        Assert.Equal(originalFactId, report.Facts.Single().Id);
+    }
+
+    [Fact]
+    public void CorrectionRequiresReasonAndCurrentApprovedRevision()
+    {
+        var report = CreateApprovedReport();
+
+        var missingReason = Assert.Throws<DomainRuleException>(() => report.CreateCorrection(
+            Guid.NewGuid(), report.Revision, " ", Guid.NewGuid(), StartedAt.AddMinutes(4)));
+        var staleRevision = Assert.Throws<DomainRuleException>(() => report.CreateCorrection(
+            Guid.NewGuid(), report.Revision - 1, "Correct it.", Guid.NewGuid(), StartedAt.AddMinutes(4)));
+
+        Assert.Equal("daily_report.correction.reason.invalid", missingReason.Code);
+        Assert.Equal("daily_report.revision.conflict", staleRevision.Code);
+    }
+
     private static DailyReport CreateReport() => DailyReport.Create(
         Guid.NewGuid(),
         Guid.NewGuid(),
@@ -92,6 +159,15 @@ public sealed class DailyReportWorkflowTests
         null,
         Guid.NewGuid(),
         StartedAt);
+
+    private static DailyReport CreateApprovedReport()
+    {
+        var report = CreateReport();
+        report.AddFact(Guid.NewGuid(), Fact(DailyFactKind.Note, "Observed fact"), Guid.NewGuid(), StartedAt);
+        report.Submit(2, StartedAt.AddMinutes(1));
+        report.Approve(3, null, Guid.NewGuid(), StartedAt.AddMinutes(2));
+        return report;
+    }
 
     private static DailyFactInput Fact(DailyFactKind kind, string description) => new(
         kind,

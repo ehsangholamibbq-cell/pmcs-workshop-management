@@ -10,10 +10,10 @@ import {
   type ProjectOperationalStatus,
 } from "@/lib/command-center";
 import { capabilityLabel, initialCapabilities, toCapabilityView } from "@/lib/project-state";
-import { DailyReportReviewInbox } from "@/components/daily-report-review-inbox";
 import { EvidenceCapture } from "@/components/evidence-capture";
 import { AttentionTriageControls } from "@/components/attention-triage-controls";
-import { ManagementActionInbox } from "@/components/management-action-inbox";
+import { MyWorkCenter } from "@/components/my-work-center";
+import { DailyReportHistory } from "@/components/daily-report-history";
 import { RealityCaptureForm } from "@/components/reality-capture-form";
 import { SyncIssuesPanel } from "@/components/sync-issues-panel";
 import { TodayReportWorkflow } from "@/components/today-report-workflow";
@@ -270,7 +270,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <a className="nav-item" href="#today">امروز کارگاه</a>
           <a className="nav-item" href="#progress">برنامه‌ریزی و پیشرفت</a>
           <a className="nav-item" href="#technical-office">دفتر فنی و اسناد</a>
-          <a className="nav-item" href="#actions">اقدامات من</a>
+          <a className="nav-item" href="#actions">کارهای من و اعلان‌ها</a>
           <a className="nav-item" href="#finance">مالی</a>
           <a className="nav-item" href="#commercial">قرارداد و خرید</a>
           <a className="nav-item" href="#supply">تدارکات و موجودی</a>
@@ -491,25 +491,27 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         />
 
         <section className="operational-grid" id="actions">
-          <DailyReportReviewInbox
+          <MyWorkCenter
             apiBaseUrl={apiBaseUrl}
             tenantId={tenantId}
             userId={userId}
             projectId={projectId}
             isOnline={isOnline}
             refreshToken={refreshToken}
+            onChanged={() => setRefreshToken((current) => current + 1)}
+          />
+          <DailyReportHistory
+            apiBaseUrl={apiBaseUrl}
+            tenantId={tenantId}
+            userId={userId}
+            projectId={projectId}
+            isOnline={isOnline}
+            refreshToken={refreshToken}
+            locations={projectLocations}
+            measurementItems={measurementItems}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
           <SyncIssuesPanel apiBaseUrl={apiBaseUrl} projectId={projectId} refreshToken={refreshToken} />
-          <ManagementActionInbox
-            apiBaseUrl={apiBaseUrl}
-            tenantId={tenantId}
-            userId={userId}
-            projectId={projectId}
-            isOnline={isOnline}
-            refreshToken={refreshToken}
-            onChanged={() => setRefreshToken((current) => current + 1)}
-          />
           {commandCenter?.canReadCommercial && (
             <>
               <CommercialControl
