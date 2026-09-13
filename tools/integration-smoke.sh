@@ -52,7 +52,7 @@ ObjectStorage__BucketName="${PMCS_TEST_S3_BUCKET}" \
 ObjectStorage__Region="us-east-1" \
 ObjectStorage__ForcePathStyle=true \
 ObjectStorage__CreateBucketIfMissing=true \
-RateLimiting__GeneralPermitLimit=20 \
+RateLimiting__GeneralPermitLimit=60 \
 RateLimiting__GeneralWindowSeconds=60 \
 RateLimiting__InsightPermitLimit=5 \
 RateLimiting__InsightWindowSeconds=60 \
@@ -106,8 +106,103 @@ curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   "http://127.0.0.1:${port}/api/v1/session" | grep -q '"authentication":"development-adapter"'
 
+current_step="checking project creation, idempotent replay and activation boundary"
+setup_key="integration-project-setup"
+setup_payload='{"code":"CI-AUDIT-01","name":"Integration lifecycle project","contractModel":"GeneralContracting","planningMode":"SimpleWorkList","budgetMode":"SetupRequired","qualityMode":"SetupRequired","hseMode":"NotEnabled","timeZone":"Asia/Tehran","financeMode":"Active","baseCurrencyCode":"IRR","procurementMode":"SetupRequired"}'
+setup_response="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header "Idempotency-Key: ${setup_key}" \
+  --header 'Content-Type: application/json' \
+  --data "${setup_payload}" \
+  "http://127.0.0.1:${port}/api/v1/projects")"
+setup_project_id="$(sed -n 's/.*"id":"\([^"]*\)".*/\1/p' <<<"${setup_response}")"
+setup_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${setup_response}")"
+grep -q '"status":"Draft"' <<<"${setup_response}"
+if [[ -z "${setup_project_id}" || -z "${setup_revision}" ]]; then
+  echo "Project setup did not return a draft identity and revision." >&2
+  exit 1
+fi
+
+setup_replay="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header "Idempotency-Key: ${setup_key}" \
+  --header 'Content-Type: application/json' \
+  --data "${setup_payload}" \
+  "http://127.0.0.1:${port}/api/v1/projects")"
+grep -q "\"id\":\"${setup_project_id}\"" <<<"${setup_replay}"
+
+setup_locations="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/locations")"
+grep -q '"code":"ROOT"' <<<"${setup_locations}"
+
+draft_mutation_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-draft-mutation' \
+  --header 'Content-Type: application/json' \
+  --data '{"clientGeneratedId":null,"reportDate":"2099-02-01","locationName":null,"narrative":null}' \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/daily-reports")"
+if [[ "${draft_mutation_status}" != "409" ]]; then
+  echo "Expected a draft project operation to return 409; received ${draft_mutation_status}." >&2
+  exit 1
+fi
+
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-project-activate' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${setup_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/activate" | grep -q '"status":"Active"'
+
+current_step="checking the required project Location boundary"
+location_guard_report="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-location-guard-report' \
+  --header 'Content-Type: application/json' \
+  --data '{"clientGeneratedId":null,"reportDate":"2099-02-02","locationName":null,"narrative":"Location invariant probe"}' \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/daily-reports")"
+location_guard_report_id="$(sed -n 's/.*"id":"\([^"]*\)".*/\1/p' <<<"${location_guard_report}")"
+location_guard_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${location_guard_report}")"
+if [[ -z "${location_guard_report_id}" || -z "${location_guard_revision}" ]]; then
+  echo "Location guard setup did not return a daily report identity and revision." >&2
+  exit 1
+fi
+missing_location_status="$(curl --silent --output "${temporary_directory}/missing-location.json" --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-location-required' \
+  --header 'Content-Type: application/json' \
+  --data "{\"kind\":\"Note\",\"description\":\"Missing Location must be rejected\",\"baseRevision\":${location_guard_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/daily-reports/${location_guard_report_id}/facts")"
+if [[ "${missing_location_status}" != "422" ]] || \
+    ! grep -q '"code":"project.location.required"' "${temporary_directory}/missing-location.json"; then
+  echo "Expected a fact without Location to return project.location.required (422); received ${missing_location_status}." >&2
+  exit 1
+fi
+
 current_step="creating an offline sync session"
 project_id="33333333-3333-3333-3333-333333333333"
+location_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/locations")"
+location_id="$(sed -n 's/.*"id":"\([^"]*\)".*"code":"ROOT".*/\1/p' <<<"${location_response}")"
+if [[ -z "${location_id}" ]]; then
+  echo "Project setup did not expose its root Location." >&2
+  exit 1
+fi
 device_id="integration-device-001"
 device_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 handshake_response="$(curl --silent --fail \
@@ -135,7 +230,7 @@ push_response="$(curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   --header "X-Pmcs-Sync-Session: ${session_id}" \
   --header 'Content-Type: application/json' \
-  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":\"Integration site\",\"kind\":\"Note\",\"description\":\"Integration observed fact\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-1\",\"deviceTimezoneOffsetMinutes\":0}]}" \
+  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Integration observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-1\",\"deviceTimezoneOffsetMinutes\":0}]}" \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 grep -q '"status":"Applied"' <<<"${push_response}"
 
@@ -209,7 +304,7 @@ conflict_response="$(curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   --header "X-Pmcs-Sync-Session: ${session_id}" \
   --header 'Content-Type: application/json' \
-  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${conflicting_operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${conflicting_report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${conflicting_fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":\"Integration site\",\"kind\":\"Note\",\"description\":\"Conflicting observed fact\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":2,\"dependencies\":[],\"correlationId\":\"integration-sync-2\",\"deviceTimezoneOffsetMinutes\":0}]}" \
+  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${conflicting_operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${conflicting_report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${conflicting_fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Conflicting observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":2,\"dependencies\":[],\"correlationId\":\"integration-sync-2\",\"deviceTimezoneOffsetMinutes\":0}]}" \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 conflict_id="$(sed -n 's/.*"conflictId":"\([^"]*\)".*/\1/p' <<<"${conflict_response}")"
 grep -q '"status":"Conflict"' <<<"${conflict_response}"
@@ -254,7 +349,7 @@ fi
 
 current_step="checking the anonymous API rate limit"
 rate_limited=false
-for _ in {1..25}; do
+for _ in {1..65}; do
   status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
     "http://127.0.0.1:${port}/api/v1/foundation")"
   if [[ "${status}" == "429" ]]; then

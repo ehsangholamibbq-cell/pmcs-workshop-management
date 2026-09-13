@@ -44,17 +44,24 @@ internal static class ProductionConfigurationValidator
             throw new InvalidOperationException("At least one absolute HTTPS PMCS web origin is required outside Development.");
         }
 
-        if (string.Equals(configuration["AllowedHosts"], "*", StringComparison.Ordinal))
+        var allowedHosts = Require(configuration, "AllowedHosts")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (allowedHosts.Length == 0 || allowedHosts.Any(host => host.Contains('*')))
         {
-            throw new InvalidOperationException("AllowedHosts cannot be '*' outside Development.");
+            throw new InvalidOperationException("AllowedHosts must contain explicit host names without wildcards outside Development.");
         }
 
         var connectionString = Require(configuration, "ConnectionStrings:Pmcs");
         var connection = new NpgsqlConnectionStringBuilder(connectionString);
+        if (connection.SslMode != SslMode.VerifyFull)
+        {
+            throw new InvalidOperationException(
+                "ConnectionStrings:Pmcs must use SSL Mode=VerifyFull outside Development.");
+        }
         RejectDevelopmentSecret(connection.Password, "ConnectionStrings:Pmcs");
         RejectDevelopmentSecret(Require(configuration, "ObjectStorage:AccessKey"), "ObjectStorage:AccessKey");
         RejectDevelopmentSecret(Require(configuration, "ObjectStorage:SecretKey"), "ObjectStorage:SecretKey");
-        _ = Require(configuration, "ObjectStorage:ServiceUrl");
+        RequireHttps(configuration, "ObjectStorage:ServiceUrl");
         _ = Require(configuration, "ObjectStorage:BucketName");
         if (bool.TryParse(configuration["ObjectStorage:CreateBucketIfMissing"], out var createBucket) && createBucket)
         {

@@ -67,6 +67,22 @@ public sealed class ProjectStateCalculatorTests
     }
 
     [Fact]
+    public void AttentionItemPreservesTheStableProjectLocationIdentity()
+    {
+        var locationId = Guid.NewGuid();
+        var reports = Enumerable.Range(0, 5)
+            .Select(day => Report(
+                AsOfDate.AddDays(-day),
+                day == 0 ? Fact(ApprovedDailyFactKind.Issue, ApprovedDailyImpactLevel.High, locationId) : null))
+            .ToArray();
+
+        var attention = Assert.Single(Calculate(Source(reports)).AttentionItems);
+
+        Assert.Equal(locationId, attention.LocationId);
+        Assert.Equal("Level 3", attention.LocationName);
+    }
+
+    [Fact]
     public void MissingImpactRemainsUnassessedAndIsNeverConvertedToLow()
     {
         var reports = Enumerable.Range(0, 5)
@@ -155,7 +171,8 @@ public sealed class ProjectStateCalculatorTests
 
     private static ApprovedDailyFactRecord Fact(
         ApprovedDailyFactKind kind,
-        ApprovedDailyImpactLevel? impactLevel) => new(
+        ApprovedDailyImpactLevel? impactLevel,
+        Guid? locationId = null) => new(
         Guid.NewGuid(),
         kind,
         kind == ApprovedDailyFactKind.Issue ? "Approved drawing was unavailable." : "Observed fact",
@@ -166,7 +183,9 @@ public sealed class ProjectStateCalculatorTests
         null,
         null,
         impactLevel,
-        null);
+        null,
+        null,
+        locationId);
 
     private static ProjectControlProfile Profile(ProjectCalendarProfile? calendar = null) => new(
         Guid.NewGuid(),

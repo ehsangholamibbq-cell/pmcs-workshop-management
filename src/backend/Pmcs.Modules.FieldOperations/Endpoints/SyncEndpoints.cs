@@ -10,12 +10,14 @@ using Pmcs.Modules.FieldOperations.Domain;
 using Pmcs.Modules.FieldOperations.Endpoints;
 using Pmcs.Modules.FieldOperations.Persistence;
 using Pmcs.Modules.Projects.Contracts;
+using Pmcs.Modules.Projects.Domain;
 
 namespace Pmcs.Modules.FieldOperations.Services;
 
 internal sealed class OfflineDailyReportOperationHandler(
     IProjectPermissionService permissionService,
     IProjectDirectory projectDirectory,
+    IProjectLocationDirectory projectLocationDirectory,
     IMeasurementItemDirectory measurementItemDirectory,
     FieldOperationsDbContext dbContext,
     IClock clock,
@@ -78,10 +80,25 @@ internal sealed class OfflineDailyReportOperationHandler(
                     cancellationToken);
             }
 
-            if (!await projectDirectory.ExistsAsync(context.TenantId, operation.ProjectId, cancellationToken))
+            var project = await projectDirectory.FindProfileAsync(
+                context.TenantId,
+                operation.ProjectId,
+                cancellationToken);
+            if (project is null)
             {
                 return await StoreTerminalAsync(
                     Rejected(operation, "project.not_found", "Project was not found or is not accessible."),
+                    context.TenantId,
+                    idempotencyKey,
+                    operationName,
+                    requestHash,
+                    cancellationToken);
+            }
+
+            if (project.Status != ProjectStatus.Active)
+            {
+                return await StoreTerminalAsync(
+                    Rejected(operation, "project.not_operational", "Project is not active for operational changes."),
                     context.TenantId,
                     idempotencyKey,
                     operationName,
@@ -124,6 +141,33 @@ internal sealed class OfflineDailyReportOperationHandler(
                 {
                     return measurementError;
                 }
+            }
+
+            if (!payload.LocationId.HasValue)
+            {
+                return await StoreTerminalAsync(
+                    Rejected(operation, "project.location.required", "A project location is required."),
+                    context.TenantId,
+                    idempotencyKey,
+                    operationName,
+                    requestHash,
+                    cancellationToken);
+            }
+
+            var location = await projectLocationDirectory.FindActiveAsync(
+                context.TenantId,
+                operation.ProjectId,
+                payload.LocationId.Value,
+                cancellationToken);
+            if (location is null)
+            {
+                return await StoreTerminalAsync(
+                    Rejected(operation, "project.location.not_active", "Location is not active in this project."),
+                    context.TenantId,
+                    idempotencyKey,
+                    operationName,
+                    requestHash,
+                    cancellationToken);
             }
 
             var report = await dbContext.DailyReports
@@ -194,14 +238,15 @@ internal sealed class OfflineDailyReportOperationHandler(
                         payload.Kind,
                         payload.Description,
                         payload.Category,
-                        payload.FactLocationName,
+                        location.Name,
                         payload.Quantity,
                         payload.Unit,
                         payload.ResourceCount,
                         payload.Hours,
                         payload.ImpactLevel,
                         payload.ReferenceCode,
-                        payload.MeasurementItemId),
+                        payload.MeasurementItemId,
+                        location.Id),
                     context.UserId,
                     clock.UtcNow);
             }

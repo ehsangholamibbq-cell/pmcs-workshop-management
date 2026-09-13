@@ -19,6 +19,12 @@ public sealed record TransactionalSideEffectBatch(
 
 public interface ITransactionalSideEffectWriter
 {
+    Task WriteAuditAsync(
+        DbConnection connection,
+        DbTransaction transaction,
+        AuditEntry audit,
+        CancellationToken cancellationToken = default);
+
     Task WriteAsync(
         DbConnection connection,
         DbTransaction transaction,

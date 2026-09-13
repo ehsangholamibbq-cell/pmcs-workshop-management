@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import {
   getCommandCenter,
   recalculateProjectState,
@@ -18,6 +19,7 @@ import { SyncIssuesPanel } from "@/components/sync-issues-panel";
 import { TodayReportWorkflow } from "@/components/today-report-workflow";
 import { FinanceControl } from "@/components/finance-control";
 import { ProjectCalendarSettings } from "@/components/project-calendar-settings";
+import { ProjectLocationSettings } from "@/components/project-location-settings";
 import { CommercialControl } from "@/components/commercial-control";
 import { AdvisoryInsights } from "@/components/advisory-insights";
 import { PlanningProgressPanel } from "@/components/planning-progress-panel";
@@ -39,16 +41,16 @@ import {
 } from "@/lib/attachment-store";
 import { formatAmountFa, toUserMessage } from "@/lib/localization";
 import { scopedStorageKey } from "@/lib/field-database";
+import { listProjectLocations, type ProjectLocationModel } from "@/lib/projects";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 
-const demoProjectId = "33333333-3333-3333-3333-333333333333";
 const apiBaseUrl = "/api/pmcs";
 
 interface FoundationDashboardProps {
-  readonly projectId?: string;
+  readonly projectId: string;
 }
 
-export function FoundationDashboard({ projectId = demoProjectId }: FoundationDashboardProps) {
+export function FoundationDashboard({ projectId }: FoundationDashboardProps) {
   return (
     <PmcsSessionBoundary>
       <FoundationDashboardContent projectId={projectId} />
@@ -70,9 +72,14 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [commandMessage, setCommandMessage] = useState("در حال دریافت آخرین تصویر رسمی وضعیت…");
   const [isCalculating, setIsCalculating] = useState(false);
   const [measurementItems, setMeasurementItems] = useState<readonly MeasurementItemModel[]>([]);
+  const [projectLocations, setProjectLocations] = useState<readonly ProjectLocationModel[]>([]);
   const isOnline = useSyncExternalStore(subscribeToOnlineState, readOnlineState, () => true);
   const commandCenterCacheKey = useMemo(
     () => scopedStorageKey(`pmcs-command-center:${projectId}`),
+    [projectId],
+  );
+  const locationCacheKey = useMemo(
+    () => scopedStorageKey(`pmcs-project-locations:${projectId}`),
     [projectId],
   );
   const today = useMemo(
@@ -194,6 +201,33 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
     return () => window.clearTimeout(timeoutId);
   }, [loadCommandCenter, refreshToken]);
 
+  const loadProjectLocations = useCallback(async () => {
+    const cached = readCachedProjectLocations(locationCacheKey);
+    if (!isOnline) {
+      setProjectLocations(cached);
+      return;
+    }
+
+    try {
+      const locations = await listProjectLocations(
+        apiBaseUrl,
+        { tenantId, userId },
+        projectId,
+      );
+      setProjectLocations(locations);
+      localStorage.setItem(locationCacheKey, JSON.stringify(locations));
+    } catch {
+      setProjectLocations(cached);
+    }
+  }, [isOnline, locationCacheKey, projectId, tenantId, userId]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadProjectLocations();
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadProjectLocations, refreshToken]);
+
   async function recalculate() {
     if (!isOnline) {
       setCommandMessage("محاسبه رسمی فقط هنگام اتصال به سرور انجام می‌شود.");
@@ -228,7 +262,10 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
       <aside className="sidebar" aria-label="ناوبری اصلی">
         <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
         <nav>
-          <a className="nav-item" href="/portfolio">سبد پروژه‌ها</a>
+          <Link className="nav-item" href="/">پروژه‌ها</Link>
+          {(session.tenantRole === "TenantAdministrator" || session.tenantRole === "PortfolioViewer") && (
+            <a className="nav-item" href="/portfolio">نمای سبد مدیریتی</a>
+          )}
           <a className="nav-item active" href="#pulse">مرکز فرمان</a>
           <a className="nav-item" href="#today">امروز کارگاه</a>
           <a className="nav-item" href="#progress">برنامه‌ریزی و پیشرفت</a>
@@ -253,7 +290,11 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">{commandCenter?.projectName ?? "پروژه نمونه"} · {commandCenter?.projectCode ?? "نمونه-۰۱"}</p>
+            <p className="eyebrow">
+              {commandCenter
+                ? `${commandCenter.projectName} · ${commandCenter.projectCode}`
+                : "در حال دریافت مشخصات پروژه…"}
+            </p>
             <h1>مرکز فرمان پروژه</h1>
           </div>
           <div className="topbar-meta">
@@ -326,6 +367,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               onStatus={setStorageMessage}
               onQueued={handleQueued}
               measurementItems={measurementItems}
+              locations={projectLocations}
             />
             <EvidenceCapture
               tenantId={tenantId}
@@ -518,6 +560,15 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             refreshToken={refreshToken}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
+          <ProjectLocationSettings
+            apiBaseUrl={apiBaseUrl}
+            tenantId={tenantId}
+            userId={userId}
+            projectId={projectId}
+            isOnline={isOnline}
+            locations={projectLocations}
+            onChanged={() => setRefreshToken((current) => current + 1)}
+          />
           <div className="capability-grid">
             {capabilityViews.map((capability) => (
               <article className={`capability-card ${capability.status}`} key={capability.key}>
@@ -610,6 +661,22 @@ function readCachedCommandCenter(commandCenterCacheKey: string): CommandCenterMo
     return value ? JSON.parse(value) as CommandCenterModel : null;
   } catch {
     return null;
+  }
+}
+
+function readCachedProjectLocations(locationCacheKey: string): readonly ProjectLocationModel[] {
+  try {
+    const value = localStorage.getItem(locationCacheKey);
+    if (!value) return [];
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is ProjectLocationModel =>
+      typeof item === "object" && item !== null &&
+      typeof (item as { id?: unknown }).id === "string" &&
+      typeof (item as { name?: unknown }).name === "string" &&
+      ((item as { status?: unknown }).status === "Active" || (item as { status?: unknown }).status === "Retired"));
+  } catch {
+    return [];
   }
 }
 

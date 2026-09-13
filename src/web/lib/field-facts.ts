@@ -15,6 +15,7 @@ export interface DailyFactDraft {
   readonly description: string;
   readonly category: string;
   readonly locationName: string;
+  readonly locationId?: string;
   readonly quantity: string;
   readonly unit: string;
   readonly resourceCount: string;
@@ -32,6 +33,7 @@ export interface DailyFactPayload {
   readonly description: string;
   readonly category: string | null;
   readonly factLocationName: string | null;
+  readonly locationId: string | null;
   readonly quantity: number | null;
   readonly unit: string | null;
   readonly resourceCount: number | null;
@@ -57,6 +59,7 @@ export const emptyFactDraft: DailyFactDraft = {
   description: "",
   category: "",
   locationName: "",
+  locationId: "",
   quantity: "",
   unit: "",
   resourceCount: "",
@@ -111,6 +114,7 @@ export function buildDailyFactPayload(
     description,
     category,
     factLocationName: optionalText(draft.locationName),
+    locationId: optionalText(draft.locationId ?? ""),
     quantity,
     unit,
     resourceCount,

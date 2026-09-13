@@ -8,20 +8,39 @@ namespace Pmcs.Modules.Platform.Services;
 
 internal sealed class TransactionalSideEffectWriter : ITransactionalSideEffectWriter
 {
+    public async Task WriteAuditAsync(
+        DbConnection connection,
+        DbTransaction transaction,
+        AuditEntry audit,
+        CancellationToken cancellationToken = default)
+    {
+        var (postgresConnection, postgresTransaction) = RequirePostgres(connection, transaction);
+        await InsertAuditAsync(postgresConnection, postgresTransaction, audit, cancellationToken);
+    }
+
     public async Task WriteAsync(
         DbConnection connection,
         DbTransaction transaction,
         TransactionalSideEffectBatch batch,
         CancellationToken cancellationToken = default)
     {
+        var (postgresConnection, postgresTransaction) = RequirePostgres(connection, transaction);
+
+        await InsertAuditAsync(postgresConnection, postgresTransaction, batch.Audit, cancellationToken);
+        await InsertOutboxAsync(postgresConnection, postgresTransaction, batch.Outbox, cancellationToken);
+        await InsertIdempotencyAsync(postgresConnection, postgresTransaction, batch.Idempotency, cancellationToken);
+    }
+
+    private static (NpgsqlConnection Connection, NpgsqlTransaction Transaction) RequirePostgres(
+        DbConnection connection,
+        DbTransaction transaction)
+    {
         if (connection is not NpgsqlConnection postgresConnection || transaction is not NpgsqlTransaction postgresTransaction)
         {
             throw new InvalidOperationException("Transactional side effects require an Npgsql connection and transaction.");
         }
 
-        await InsertAuditAsync(postgresConnection, postgresTransaction, batch.Audit, cancellationToken);
-        await InsertOutboxAsync(postgresConnection, postgresTransaction, batch.Outbox, cancellationToken);
-        await InsertIdempotencyAsync(postgresConnection, postgresTransaction, batch.Idempotency, cancellationToken);
+        return (postgresConnection, postgresTransaction);
     }
 
     private static async Task InsertAuditAsync(
@@ -88,6 +107,7 @@ internal sealed class TransactionalSideEffectWriter : ITransactionalSideEffectWr
         IdempotencyReceipt receipt,
         CancellationToken cancellationToken)
     {
+        IdempotencyKeyRules.Validate(receipt.Key);
         await using var command = new NpgsqlCommand(
             """
             insert into foundation.idempotency_records(
@@ -95,7 +115,15 @@ internal sealed class TransactionalSideEffectWriter : ITransactionalSideEffectWr
                 response_body, created_at, expires_at)
             values (
                 @id, @tenant_id, @key, @operation, @request_hash, @status_code,
-                @response_body, @created_at, @expires_at);
+                @response_body, @created_at, @expires_at)
+            on conflict (tenant_id, key, operation) do update set
+                id = excluded.id,
+                request_hash = excluded.request_hash,
+                status_code = excluded.status_code,
+                response_body = excluded.response_body,
+                created_at = excluded.created_at,
+                expires_at = excluded.expires_at
+            where foundation.idempotency_records.expires_at <= excluded.created_at;
             """,
             connection,
             transaction);
@@ -108,7 +136,11 @@ internal sealed class TransactionalSideEffectWriter : ITransactionalSideEffectWr
         command.Parameters.AddWithValue("response_body", NpgsqlDbType.Jsonb, receipt.ResponseBody);
         command.Parameters.AddWithValue("created_at", receipt.CreatedAt);
         command.Parameters.AddWithValue("expires_at", receipt.ExpiresAt);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        var affected = await command.ExecuteNonQueryAsync(cancellationToken);
+        if (affected == 0)
+        {
+            throw new IdempotencyOperationInProgressException();
+        }
     }
 
     private static void AddNullable<T>(

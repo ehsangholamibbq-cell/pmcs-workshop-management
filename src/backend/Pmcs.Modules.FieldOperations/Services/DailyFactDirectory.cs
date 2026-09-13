@@ -58,5 +58,6 @@ internal sealed class DailyFactDirectory(FieldOperationsDbContext dbContext) : I
         fact?.LocationName,
         fact?.ImpactLevel is null
             ? null
-            : Enum.Parse<DailyFactReferenceImpact>(fact.ImpactLevel.Value.ToString()));
+            : Enum.Parse<DailyFactReferenceImpact>(fact.ImpactLevel.Value.ToString()),
+        fact?.LocationId);
 }

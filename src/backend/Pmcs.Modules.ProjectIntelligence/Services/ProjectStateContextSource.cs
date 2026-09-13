@@ -73,7 +73,8 @@ internal sealed class ProjectStateContextSource(ProjectIntelligenceDbContext dbC
                     item.Priority.ToString(),
                     item.AgeDays,
                     item.Status.ToString(),
-                    item.ReferenceCode))
+                    item.ReferenceCode,
+                    item.LocationId))
                 .ToArray());
     }
 }

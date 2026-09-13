@@ -15,6 +15,7 @@ internal sealed partial class DevelopmentProjectSeeder(
     ILogger<DevelopmentProjectSeeder> logger) : IHostedService
 {
     public static readonly Guid DemoProjectId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid DemoLocationId = Guid.Parse("33333333-3333-4333-8333-333333333334");
     private static readonly Guid DemoTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid DemoUserId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
@@ -47,9 +48,20 @@ internal sealed partial class DevelopmentProjectSeeder(
             "Asia/Tehran",
             DemoUserId,
             clock.UtcNow);
-        project.Activate();
+        project.Activate(project.Revision, DemoUserId, clock.UtcNow);
+
+        var location = ProjectLocation.Create(
+            DemoLocationId,
+            DemoTenantId,
+            DemoProjectId,
+            "ROOT",
+            "کل پروژه",
+            null,
+            DemoUserId,
+            clock.UtcNow);
 
         dbContext.Projects.Add(project);
+        dbContext.ProjectLocations.Add(location);
         await dbContext.SaveChangesAsync(cancellationToken);
         LogSeedCreated(logger, DemoProjectId);
     }

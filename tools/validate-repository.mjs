@@ -11,11 +11,18 @@ const requiredFiles = [
   "src/backend/Pmcs.Api/Infrastructure/ProductionConfigurationValidator.cs",
   "src/backend/Pmcs.Api/Infrastructure/ReleaseIdentity.cs",
   "src/backend/Pmcs.Api/Infrastructure/ActorAccessMiddleware.cs",
+  "src/backend/Pmcs.Api/Infrastructure/ProjectLifecycleMiddleware.cs",
   "src/backend/Pmcs.BuildingBlocks/Domain/PersianDateCode.cs",
   "src/backend/Pmcs.Modules.IdentityAccess/Domain/UserInvitation.cs",
   "src/backend/Pmcs.Modules.IdentityAccess/Services/IdentityAdministrationWorker.cs",
   "src/backend/Pmcs.Modules.IdentityAccess/Services/KeycloakIdentityProviderAdministration.cs",
   "src/backend/Pmcs.Modules.FieldOperations/Endpoints/SyncEndpoints.cs",
+  "src/backend/Pmcs.Modules.FieldOperations/Migrations/FieldOperationsLocationLinkMigration.cs",
+  "src/backend/Pmcs.Modules.Platform/Migrations/PlatformIdempotencyRetentionMigration.cs",
+  "src/backend/Pmcs.Modules.Platform/Services/IdempotencyRetentionWorker.cs",
+  "src/backend/Pmcs.Modules.Projects/Domain/ProjectLocation.cs",
+  "src/backend/Pmcs.Modules.Projects/Migrations/ProjectActivationMetadataMigration.cs",
+  "src/backend/Pmcs.Modules.Projects/Migrations/ProjectLocationMigration.cs",
   "src/backend/Pmcs.Modules.Sync/Endpoints/SyncGatewayEndpoints.cs",
   "src/backend/Pmcs.Modules.Planning/Domain/MeasurementItem.cs",
   "src/backend/Pmcs.Modules.Planning/Domain/ProgressLedgerCalculation.cs",
@@ -23,6 +30,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.ProjectIntelligence/Domain/ProjectStateCalculation.cs",
   "src/backend/Pmcs.Modules.ProjectIntelligence/Domain/PortfolioOverviewCalculation.cs",
   "src/backend/Pmcs.Modules.ProjectIntelligence/Endpoints/PortfolioCommandCenterEndpoints.cs",
+  "src/backend/Pmcs.Modules.ProjectIntelligence/Migrations/ProjectStateLocationLinkMigration.cs",
   "src/backend/Pmcs.Modules.Intelligence/Domain/AdvisoryInsight.cs",
   "src/backend/Pmcs.Modules.Intelligence/Services/PermissionAwareContextAssembler.cs",
   "src/backend/Pmcs.Modules.Evidence/Domain/EvidenceFile.cs",
@@ -32,6 +40,8 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.QualitySafety/Domain/QualitySafetyConfiguration.cs",
   "src/backend/Pmcs.Modules.QualitySafety/Domain/CorrectiveAction.cs",
   "src/web/app/page.tsx",
+  "src/web/components/project-landing.tsx",
+  "src/web/components/project-location-settings.tsx",
   "src/web/app/portfolio/page.tsx",
   "src/web/app/admin/users/page.tsx",
   "src/web/app/projects/[projectId]/page.tsx",
@@ -47,14 +57,19 @@ const requiredFiles = [
   "src/web/tools/release-identity.mjs",
   "docs/adr/0022-release-provenance-and-pilot-gate.md",
   "docs/adr/0023-persian-calendar-user-boundary.md",
+  "docs/adr/0024-project-lifecycle-location-and-integrity.md",
+  "docs/api/project-setup-and-locations-v1.md",
+  "docs/audits/system-integrity-traceability-2026-09-13.md",
   "docs/checkpoints/foundation-19.md",
   "docs/checkpoints/foundation-19.1.md",
+  "docs/checkpoints/foundation-20.md",
   "docs/runbooks/pilot-release.md",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
   "ops/backup/postgres-restore-drill.sh",
   "tools/integration-smoke.sh",
+  "tools/audit-system-contracts.mjs",
   "tools/release-smoke.sh",
   "tools/validate-pilot-release.mjs",
   "release/pilot-gates.json",
@@ -139,6 +154,7 @@ assert.match(apiProgram, /MapHealthChecks\("\/health\/ready"/);
 assert.match(apiProgram, /ApiRateLimitPolicies\.InsightGeneration/);
 assert.match(apiProgram, /ApiRateLimitPolicies\.IdentityAdministration/);
 assert.match(apiProgram, /UseMiddleware<ActorAccessMiddleware>/);
+assert.match(apiProgram, /UseMiddleware<ProjectLifecycleMiddleware>/);
 assert.match(apiProgram, /MapGet\("\/api\/v1\/release"/);
 assert.doesNotMatch(apiProgram, /UseMiddleware<DevelopmentIdentityMiddleware>/);
 
@@ -157,6 +173,9 @@ assert.match(productionConfiguration, /PMCS_DEV_IDENTITY_ENABLED/);
 assert.match(productionConfiguration, /ObjectStorage:CreateBucketIfMissing/);
 assert.match(productionConfiguration, /IdentityProvisioning:ClientSecret/);
 assert.match(productionConfiguration, /ValidateForProduction/);
+assert.match(productionConfiguration, /SslMode\.VerifyFull/);
+assert.match(productionConfiguration, /RequireHttps\(configuration, "ObjectStorage:ServiceUrl"\)/);
+assert.match(productionConfiguration, /AllowedHosts must contain explicit host names without wildcards/);
 
 const webBuild = readFileSync(join(root, "src/web/tools/build.mjs"), "utf8");
 assert.match(webBuild, /writeReleaseIdentity/);
@@ -210,6 +229,70 @@ assert.match(syncGateway, /IOfflineFieldOperationHandler/);
 assert.doesNotMatch(syncGateway, /Pmcs\.Modules\.FieldOperations\.Persistence/);
 assert.match(syncGateway, /OfflineAuthorizationLease/);
 assert.match(syncGateway, /CheckpointOffer/);
+assert.match(syncGateway, /WriteAuditAsync/);
+
+const projectLifecycle = readFileSync(
+  join(root, "src/backend/Pmcs.Api/Infrastructure/ProjectLifecycleMiddleware.cs"),
+  "utf8",
+);
+assert.match(projectLifecycle, /profile\.Status != ProjectStatus\.Active/);
+assert.match(projectLifecycle, /project\.not_operational/);
+
+const directFacts = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.FieldOperations/Endpoints/DailyReportEndpoints.cs"),
+  "utf8",
+);
+const offlineFacts = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.FieldOperations/Endpoints/SyncEndpoints.cs"),
+  "utf8",
+);
+for (const source of [directFacts, offlineFacts]) {
+  assert.match(source, /project\.location\.required/);
+  assert.match(source, /projectLocationDirectory\.FindActiveAsync/);
+}
+
+const fieldOperationsMapping = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.FieldOperations/Persistence/FieldOperationsDbContext.cs"),
+  "utf8",
+);
+const dailyFactMapping = fieldOperationsMapping.slice(
+  fieldOperationsMapping.indexOf("modelBuilder.Entity<DailyReportFact>"),
+);
+assert.match(dailyFactMapping, /Property\(x => x\.LocationId\)\.HasColumnName\("location_id"\)/);
+
+const projectLocation = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.Projects/Domain/ProjectLocation.cs"),
+  "utf8",
+);
+assert.match(projectLocation, /isRoot != \(parentLocationId is null\)/);
+assert.match(projectLocation, /project\.location\.root\.retire\.denied/);
+
+const projectStateCalculation = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.ProjectIntelligence/Domain/ProjectStateCalculation.cs"),
+  "utf8",
+);
+assert.match(projectStateCalculation, /fact\.LocationId/);
+
+const projectStateMapping = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.ProjectIntelligence/Persistence/ProjectIntelligenceDbContext.cs"),
+  "utf8",
+);
+assert.match(projectStateMapping, /Property\(x => x\.LocationId\)\.HasColumnName\("location_id"\)/);
+
+const idempotencyStore = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.Platform/Services/IdempotencyStore.cs"),
+  "utf8",
+);
+assert.match(idempotencyStore, /record\.ExpiresAt <= clock\.UtcNow/);
+assert.match(idempotencyStore, /on conflict \(tenant_id, key, operation\) do update/);
+
+const operationStore = readFileSync(join(root, "src/web/lib/operation-store.ts"), "utf8");
+assert.match(operationStore, /serverConflict\.revision/);
+assert.doesNotMatch(operationStore, /baseRevision:\s*0[,}]/);
+assert.match(operationStore, /activeSyncs = new Map<string, Promise<SyncSummary>>/);
+
+const syncClient = readFileSync(join(root, "src/web/lib/sync-client.ts"), "utf8");
+assert.match(syncClient, /activeHandshakes = new Map<string, Promise<LocalSyncManifest>>/);
 
 const portfolioEndpoint = readFileSync(
   join(root, "src/backend/Pmcs.Modules.ProjectIntelligence/Endpoints/PortfolioCommandCenterEndpoints.cs"),

@@ -1,5 +1,5 @@
-import { FoundationDashboard } from "@/components/foundation-dashboard";
+import { ProjectLanding } from "@/components/project-landing";
 
 export default function HomePage() {
-  return <FoundationDashboard />;
+  return <ProjectLanding />;
 }

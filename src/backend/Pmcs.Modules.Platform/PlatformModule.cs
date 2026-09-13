@@ -29,7 +29,9 @@ public sealed class PlatformModule : IModule
         services.AddScoped<IOutboxWriter, OutboxWriter>();
         services.AddScoped<ITransactionalSideEffectWriter, TransactionalSideEffectWriter>();
         services.AddSingleton<IDatabaseMigration, PlatformInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, PlatformIdempotencyRetentionMigration>();
         services.AddHostedService<DatabaseMigrationRunner>();
+        services.AddHostedService<IdempotencyRetentionWorker>();
         services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
     }
 

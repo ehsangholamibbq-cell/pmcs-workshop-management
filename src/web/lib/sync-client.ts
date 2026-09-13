@@ -119,6 +119,16 @@ export interface SyncDeviceModel {
   readonly revision: number;
 }
 
+export interface SyncConflictModel {
+  readonly conflictId: string;
+  readonly projectId: string;
+  readonly operationId: string;
+  readonly status: "Open" | "Resolved";
+  readonly resolutionType?: "KeepServer" | "Reapply";
+  readonly replacementOperationId?: string;
+  readonly revision: number;
+}
+
 export interface LocalSyncDiagnostics {
   readonly leaseExpiresAt?: string;
   readonly lastHandshakeAt?: string;
@@ -138,12 +148,14 @@ export function prepareSyncSession(
   projectId: string,
   queue: SyncQueueSummary,
 ): Promise<LocalSyncManifest> {
-  const active = activeHandshakes.get(projectId);
+  const scope = currentLocalIdentityScope();
+  const handshakeKey = `${scope.tenantId}:${scope.userId}:${projectId}`;
+  const active = activeHandshakes.get(handshakeKey);
   if (active) return active;
   const handshake = performHandshake(apiBaseUrl, projectId, queue).finally(() => {
-    activeHandshakes.delete(projectId);
+    activeHandshakes.delete(handshakeKey);
   });
-  activeHandshakes.set(projectId, handshake);
+  activeHandshakes.set(handshakeKey, handshake);
   return handshake;
 }
 
@@ -302,6 +314,18 @@ export async function listSyncDevices(apiBaseUrl: string): Promise<readonly Sync
   const response = await fetch(`${normalizedBaseUrl(apiBaseUrl)}/api/v1/sync/devices`, { cache: "no-store" });
   await ensureApiSuccess(response);
   return response.json() as Promise<readonly SyncDeviceModel[]>;
+}
+
+export async function listSyncConflicts(
+  apiBaseUrl: string,
+  projectId: string,
+): Promise<readonly SyncConflictModel[]> {
+  const query = new URLSearchParams({ projectId });
+  const response = await fetch(`${normalizedBaseUrl(apiBaseUrl)}/api/v1/sync/conflicts?${query}`, {
+    cache: "no-store",
+  });
+  await ensureApiSuccess(response);
+  return response.json() as Promise<readonly SyncConflictModel[]>;
 }
 
 export async function revokeSyncDevice(apiBaseUrl: string, device: SyncDeviceModel, reason: string): Promise<void> {

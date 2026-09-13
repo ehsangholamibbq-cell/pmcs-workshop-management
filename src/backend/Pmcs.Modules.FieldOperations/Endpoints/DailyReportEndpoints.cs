@@ -200,6 +200,7 @@ internal static class DailyReportEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         IMeasurementItemDirectory measurementItemDirectory,
+        IProjectLocationDirectory projectLocationDirectory,
         FieldOperationsDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
@@ -257,20 +258,36 @@ internal static class DailyReportEndpoints
             return measurementValidation;
         }
 
+        if (!request.LocationId.HasValue)
+        {
+            return Results.UnprocessableEntity(new { code = "project.location.required" });
+        }
+
+        var location = await projectLocationDirectory.FindActiveAsync(
+            actor.TenantId,
+            projectId,
+            request.LocationId.Value,
+            cancellationToken);
+        if (location is null)
+        {
+            return Results.UnprocessableEntity(new { code = "project.location.not_active" });
+        }
+
         report.AddFact(
             request.ClientGeneratedId.GetValueOrDefault(Guid.NewGuid()),
             new DailyFactInput(
                 request.Kind,
                 request.Description,
                 request.Category,
-                request.LocationName,
+                location.Name,
                 request.Quantity,
                 request.Unit,
                 request.ResourceCount,
                 request.Hours,
                 request.ImpactLevel,
                 request.ReferenceCode,
-                request.MeasurementItemId),
+                request.MeasurementItemId,
+                location.Id),
             actor.UserId,
             clock.UtcNow);
 

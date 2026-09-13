@@ -13,6 +13,7 @@ import {
   prepareSyncSession,
   pullAuthorizedChanges,
   requireOfflineAuthorization,
+  listSyncConflicts,
   resolveServerConflict,
 } from "./sync-client.ts";
 
@@ -92,7 +93,7 @@ export interface OperationIssue {
 }
 
 const operationStore = operationStoreName;
-let activeSync: Promise<SyncSummary> | null = null;
+const activeSyncs = new Map<string, Promise<SyncSummary>>();
 
 export function buildClientOperation<TPayload>(input: EnqueueOperationInput<TPayload>): ClientOperation<TPayload> {
   return {
@@ -190,14 +191,16 @@ export async function recoverInterruptedOperations(): Promise<number> {
 }
 
 export function syncPendingOperations(apiBaseUrl: string, projectId: string): Promise<SyncSummary> {
-  if (activeSync) {
-    return activeSync;
-  }
+  const scope = currentLocalIdentityScope();
+  const syncKey = `${scope.tenantId}:${scope.userId}:${projectId}`;
+  const activeSync = activeSyncs.get(syncKey);
+  if (activeSync) return activeSync;
 
-  activeSync = performSync(apiBaseUrl, projectId).finally(() => {
-    activeSync = null;
+  const sync = performSync(apiBaseUrl, projectId).finally(() => {
+    activeSyncs.delete(syncKey);
   });
-  return activeSync;
+  activeSyncs.set(syncKey, sync);
+  return sync;
 }
 
 async function performSync(apiBaseUrl: string, projectId: string): Promise<SyncSummary> {
@@ -349,8 +352,26 @@ export async function resolveConflictOperation(
     pendingAttachmentBytes: 0,
     oldestOperationAt: operation.createdAtDevice,
   });
+  const serverConflicts = await listSyncConflicts(apiBaseUrl, projectId);
+  const serverConflict = serverConflicts.find((candidate) =>
+    candidate.conflictId === operation.conflictId &&
+    candidate.operationId === operation.operationId);
+  if (!serverConflict) {
+    throw new Error("پرونده تعارض روی سرور پیدا نشد؛ وضعیت دستگاه را تازه‌سازی کنید.");
+  }
+
   if (resolution === "keep-server") {
-    await resolveServerConflict(apiBaseUrl, manifest, operation.conflictId, 0, "KeepServer");
+    if (serverConflict.status === "Open") {
+      await resolveServerConflict(
+        apiBaseUrl,
+        manifest,
+        operation.conflictId,
+        serverConflict.revision,
+        "KeepServer",
+      );
+    } else if (serverConflict.resolutionType !== "KeepServer") {
+      throw new Error("این تعارض قبلاً با تصمیم دیگری تعیین تکلیف شده است.");
+    }
     await replaceOperations([{ ...operation, status: "resolved", lastError: "نسخه رسمی سرور پذیرفته شد." }]);
     return;
   }
@@ -380,14 +401,19 @@ export async function resolveConflictOperation(
     resolutionReplacementOperationId: undefined,
     lastError: undefined,
   };
-  await resolveServerConflict(
-    apiBaseUrl,
-    manifest,
-    operation.conflictId,
-    0,
-    "Reapply",
-    replacementOperationId,
-  );
+  if (serverConflict.status === "Open") {
+    await resolveServerConflict(
+      apiBaseUrl,
+      manifest,
+      operation.conflictId,
+      serverConflict.revision,
+      "Reapply",
+      replacementOperationId,
+    );
+  } else if (serverConflict.resolutionType !== "Reapply" ||
+      serverConflict.replacementOperationId !== replacementOperationId) {
+    throw new Error("این تعارض قبلاً با تصمیم یا شناسه جایگزین دیگری تعیین تکلیف شده است.");
+  }
   await replaceOperations([
     { ...operation, status: "resolved", lastError: "قصد محلی با شناسه جدید دوباره در صف قرار گرفت." },
     replacement,

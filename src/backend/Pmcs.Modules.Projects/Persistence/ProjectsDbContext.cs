@@ -7,6 +7,8 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> opti
 {
     public DbSet<Project> Projects => Set<Project>();
 
+    public DbSet<ProjectLocation> ProjectLocations => Set<ProjectLocation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("projects");
@@ -34,9 +36,39 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> opti
             builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.CreatedBy).HasColumnName("created_by");
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.ActivatedBy).HasColumnName("activated_by");
+            builder.Property(x => x.ActivatedAt).HasColumnName("activated_at");
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.DomainEvents);
             builder.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+        });
+
+        modelBuilder.Entity<ProjectLocation>(builder =>
+        {
+            builder.ToTable("project_locations");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.ProjectId).HasColumnName("project_id");
+            builder.Property(x => x.Code).HasColumnName("code").HasMaxLength(40);
+            builder.Property(x => x.Name).HasColumnName("name").HasMaxLength(200);
+            builder.Property(x => x.ParentLocationId).HasColumnName("parent_location_id");
+            builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(30);
+            builder.Property(x => x.CreatedBy).HasColumnName("created_by");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.ChangedAt).HasColumnName("changed_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.Ignore(x => x.DomainEvents);
+            builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.Code }).IsUnique();
+            builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.ParentLocationId });
+            builder.HasOne<Project>()
+                .WithMany()
+                .HasForeignKey(x => x.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne<ProjectLocation>()
+                .WithMany()
+                .HasForeignKey(x => x.ParentLocationId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

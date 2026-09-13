@@ -10,6 +10,7 @@ test("sync handshake carries device, schema, checkpoint and bounded queue contex
   assert.match(syncClient, /deviceId,[\s\S]*projectId,[\s\S]*protocolVersion:[\s\S]*localSchemaVersion:/u);
   assert.match(syncClient, /lastCheckpoint: current\?\.checkpoint \?\? null/u);
   assert.match(syncClient, /pendingAttachmentBytes/u);
+  assert.ok(syncClient.includes("const handshakeKey = `${scope.tenantId}:${scope.userId}:${projectId}`"));
 });
 
 test("pulled changes are persisted before the server checkpoint is acknowledged", () => {
@@ -25,10 +26,18 @@ test("offline push sends the immutable lease, sequence and correlation envelope"
   assert.match(operationStore, /authorizationVersion: operation\.authorizationVersion/u);
   assert.match(operationStore, /localSequence: operation\.localSequence/u);
   assert.match(operationStore, /correlationId: operation\.correlationId/u);
+  assert.match(operationStore, /const activeSyncs = new Map<string, Promise<SyncSummary>>/u);
+  assert.match(operationStore, /tenantId.*userId.*projectId/u);
 });
 
 test("local schema keeps sync metadata and idempotent applied changes in separate stores", () => {
   assert.match(fieldDatabase, /fieldDatabaseVersion = 5/u);
   assert.match(fieldDatabase, /sync-metadata/u);
   assert.match(fieldDatabase, /applied-changes/u);
+});
+
+test("conflict resolution reads the current server revision instead of using a fixed value", () => {
+  assert.match(operationStore, /await listSyncConflicts\(apiBaseUrl, projectId\)/u);
+  assert.match(operationStore, /serverConflict\.revision/u);
+  assert.doesNotMatch(operationStore, /operation\.conflictId,\s*0,\s*"(?:KeepServer|Reapply)"/u);
 });

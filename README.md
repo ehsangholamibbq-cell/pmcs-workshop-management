@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 19.1:
+Foundation Sprint — checkpoint 20 integrity audit:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -108,6 +108,11 @@ Foundation Sprint — checkpoint 19.1:
 - Smoke محیط برای جلوگیری از Deploy ترکیبی Web/API متعلق به Commitهای متفاوت
 - تقویم هجری شمسی در تمام ورودی‌ها و خروجی‌های کاربر با ارقام فارسی و منطقه زمانی تهران
 - Date Picker شمسی مشترک و Gate `audit:calendar`؛ نگهداری داخلی تاریخ روی ISO/UTC استاندارد
+- Project Registry واقعی بدون شناسه نمونه، ایجاد Draft و فعال‌سازی ممیزی‌شده و نسخه‌دار
+- Lifecycle guard برای جلوگیری از عملیات رسمی روی پروژه غیرفعال
+- Location/LBS سلسله‌مراتبی با ROOT، بازنشستگی کنترل‌شده و شناسه پایدار تا Fact و Project State
+- گیت سراسری قرارداد ۲۰۲ Endpoint و ۱۶۳ Mutation در CI
+- گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
 
 ## تصمیم‌های بنیادین
 
@@ -184,5 +189,7 @@ npm run check
 - Runbookها: [`docs/runbooks`](docs/runbooks)
 - احراز هویت Production: [`docs/security/production-authentication.md`](docs/security/production-authentication.md)
 - انتشار Pilot: [`docs/runbooks/pilot-release.md`](docs/runbooks/pilot-release.md)
+- ممیزی جامع Blueprint و یکپارچگی: [`docs/audits/system-integrity-traceability-2026-09-13.md`](docs/audits/system-integrity-traceability-2026-09-13.md)
+- قرارداد Project Setup و Location: [`docs/api/project-setup-and-locations-v1.md`](docs/api/project-setup-and-locations-v1.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

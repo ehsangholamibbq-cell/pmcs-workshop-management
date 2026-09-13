@@ -55,7 +55,11 @@ Permissionهای فعال در Vertical Slice اول:
 - `actions.update`
 - `actions.manage`
 - `attention.triage`
-- `projects.configure`
+- `projects.activate`
+- `projects.calendar.configure`
+- `projects.planning.configure`
+- `projects.locations.manage`
+- `sync.conflicts.manage`
 - `finance.records.read`
 - `finance.records.capture`
 - `finance.records.submit`
@@ -109,11 +113,11 @@ Permissionهای فعال در Vertical Slice اول:
 | `TechnicalOffice` | گردش کامل Document Revision، Transmittal، RFI و Submittal غیرمحرمانه؛ مدیریت قلم، تصمیم بازرسی و پذیرش خدمت |
 | `Observer` | مشاهده گزارش، Evidence، Action، Project State، Baseline، Milestone، دفتر پیشرفت، دفتر فنی و واقعیت موجودی |
 | `FinanceOperator` | مشاهده/ثبت/Submit اسناد مالی و Budget Baseline و مشاهده Financial State و واقعیت پذیرفته‌شده تأمین |
-| `FinanceManager` | همه عملیات FinanceOperator به‌اضافه Review/Post، تأیید بودجه و پیکربندی پروژه |
+| `FinanceManager` | همه عملیات FinanceOperator به‌اضافه Review/Post و تأیید بودجه؛ بدون اختیار ضمنی پیکربندی پروژه |
 | `ContractAdministrator` | مدیریت Party و قرارداد/الحاقیه، گردش کامل مدارک و پذیرش خدمت بدون اختیار اصلاح موجودی کالا |
 | `ProcurementOperator` | ثبت/ارسال درخواست خرید، مدیریت قلم/محل، ثبت دریافت فیزیکی و مشاهده سفارش/واقعیت تأمین |
 | `ProcurementManager` | همه عملیات تدارکات و موجودی، شامل اضافه‌تحویل، بازرسی، ورود موجودی، انتقال و اصلاح کنترل‌شده |
 
-`TenantAdministrator` همه Permissionهای Tenant و پروژه را دارد. `PortfolioViewer` می‌تواند پروژه‌ها، Actionها، Project State، Financial State، Commercial State، Baseline/Milestone، دفتر پیشرفت، دفتر فنی و واقعیت تدارکات/موجودی همه پروژه‌های Tenant را فقط بخواند و Insight مشورتی تولید/بازبینی کند، اما اجازه Recalculate، Upload، Triage یا تغییر داده رسمی را ندارد. بازبینی Insight نیز هیچ داده رسمی را تغییر نمی‌دهد. Endpointها Tenant scope، عضویت فعال پروژه و Permission عملیات را هم‌زمان بررسی می‌کنند. ثبت دریافت، تصمیم بازرسی، ورود موجودی، تحویل، تأیید تحویل، تسویه امانی، شمارش و تصویب اصلاح Permissionهای مستقل دارند. Role/Grantهای فعلی Policy ثابت Foundation هستند؛ مدیریت نسخه‌دار Grantها در Slice مستقل بعدی انجام می‌شود.
+`TenantAdministrator` همه Permissionهای Tenant و پروژه را دارد. `PortfolioViewer` می‌تواند پروژه‌ها، Actionها، Project State، Financial State، Commercial State، Baseline/Milestone، دفتر پیشرفت، دفتر فنی، واقعیت تدارکات/موجودی و Insightهای موجود همه پروژه‌های Tenant را فقط بخواند؛ اجازه Recalculate، تولید/بازبینی Insight، Upload، Triage یا تغییر داده رسمی را ندارد. Endpointها Tenant scope، عضویت فعال پروژه و Permission عملیات را هم‌زمان بررسی می‌کنند. ثبت دریافت، تصمیم بازرسی، ورود موجودی، تحویل، تأیید تحویل، تسویه امانی، شمارش و تصویب اصلاح Permissionهای مستقل دارند. Role/Grantهای فعلی Policy ثابت Foundation هستند؛ Effective Permission Preview و مدیریت نسخه‌دار Grant/Deny در Slice مستقل بعدی انجام می‌شود.
 
 مدارک دارای برچسب محرمانگی و همهٔ Revision، RFI، Submittal و Transmittal وابسته به آن‌ها فقط برای `ProjectManager`، `TenantAdministrator` یا `ContractAdministrator` دارای `technical.confidential.read` قابل مشاهده و اقدام‌اند. ایجاد مدرک محرمانه یا Revision جدید برای آن علاوه بر Permission گردش عمومی به `technical.confidential.manage` نیاز دارد؛ کنترل هم در Query و هم در Command به‌صورت fail-closed اجرا می‌شود.

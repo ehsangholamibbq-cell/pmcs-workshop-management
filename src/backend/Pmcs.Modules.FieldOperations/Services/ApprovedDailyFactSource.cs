@@ -95,7 +95,8 @@ internal sealed class ApprovedDailyFactSource(FieldOperationsDbContext dbContext
             fact.Hours,
             Map(fact.ImpactLevel),
             fact.ReferenceCode,
-            fact.MeasurementItemId)).ToArray());
+            fact.MeasurementItemId,
+            fact.LocationId)).ToArray());
 
     private static ApprovedDailyFactKind Map(DailyFactKind kind) => kind switch
     {

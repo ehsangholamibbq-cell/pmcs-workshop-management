@@ -21,7 +21,8 @@ public sealed record AddDailyFactRequest(
     DailyImpactLevel? ImpactLevel,
     string? ReferenceCode,
     long BaseRevision,
-    Guid? MeasurementItemId = null);
+    Guid? MeasurementItemId = null,
+    Guid? LocationId = null);
 
 public sealed record SubmitDailyReportRequest(long BaseRevision);
 
@@ -33,6 +34,7 @@ public sealed record DailyFactResponse(
     string Description,
     string? Category,
     string? LocationName,
+    Guid? LocationId,
     decimal? Quantity,
     string? Unit,
     int? ResourceCount,
@@ -49,6 +51,7 @@ public sealed record DailyFactResponse(
         fact.Description,
         fact.Category,
         fact.LocationName,
+        fact.LocationId,
         fact.Quantity,
         fact.Unit,
         fact.ResourceCount,

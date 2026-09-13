@@ -82,6 +82,10 @@ public sealed class Project : AggregateRoot
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public Guid? ActivatedBy { get; private set; }
+
+    public DateTimeOffset? ActivatedAt { get; private set; }
+
     public static Project Create(
         Guid id,
         Guid tenantId,
@@ -127,7 +131,8 @@ public sealed class Project : AggregateRoot
             throw new DomainRuleException("project.name.invalid", "Project name is required and must be at most 200 characters.");
         }
 
-        if (string.IsNullOrWhiteSpace(timeZone) || timeZone.Trim().Length > 100)
+        var normalizedTimeZone = timeZone?.Trim() ?? string.Empty;
+        if (normalizedTimeZone.Length is 0 or > 100 || !IsKnownTimeZone(normalizedTimeZone))
         {
             throw new DomainRuleException("project.time_zone.invalid", "A valid time-zone identifier is required.");
         }
@@ -148,7 +153,7 @@ public sealed class Project : AggregateRoot
             budgetMode,
             qualityMode,
             hseMode,
-            timeZone.Trim(),
+            normalizedTimeZone,
             createdBy,
             createdAt,
             financeMode,
@@ -156,15 +161,46 @@ public sealed class Project : AggregateRoot
             procurementMode);
     }
 
-    public void Activate()
+    public void Activate(long baseRevision, Guid activatedBy, DateTimeOffset activatedAt)
     {
+        EnsureRevision(baseRevision);
         if (Status != ProjectStatus.Draft)
         {
             throw new DomainRuleException("project.activate.invalid_state", "Only a draft project can be activated.");
         }
 
+        if (activatedBy == Guid.Empty)
+        {
+            throw new DomainRuleException("project.activate.actor.required", "An activation actor is required.");
+        }
+
+        if (ContractModel == ContractModel.NotConfigured)
+        {
+            throw new DomainRuleException("project.activate.contract_model.required", "A base contract model is required before activation.");
+        }
+
         Status = ProjectStatus.Active;
+        ActivatedBy = activatedBy;
+        ActivatedAt = activatedAt;
+        ConfigurationChangedAt = activatedAt;
         AdvanceRevision();
+    }
+
+    private static bool IsKnownTimeZone(string timeZone)
+    {
+        try
+        {
+            _ = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            return true;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return false;
+        }
     }
 
     public void ConfigureCalendar(

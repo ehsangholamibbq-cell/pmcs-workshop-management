@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Pmcs.Api.Infrastructure;
 using Pmcs.BuildingBlocks.Application;
+using Pmcs.Modules.IdentityAccess.Domain;
 using Pmcs.Modules.IdentityAccess.Services;
 
 namespace Pmcs.Domain.Tests;
@@ -39,7 +40,7 @@ public sealed class InfrastructureBoundaryTests
     {
         var values = ValidProductionValues();
         values["ConnectionStrings:Pmcs"] =
-            "Host=postgres;Database=pmcs;Username=pmcs;Password=pmcs_dev_only";
+            "Host=postgres;Database=pmcs;Username=pmcs;Password=pmcs_dev_only;SSL Mode=VerifyFull";
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
             ProductionConfigurationValidator.Validate(
@@ -55,6 +56,53 @@ public sealed class InfrastructureBoundaryTests
     {
         var values = ValidProductionValues();
         values["ObjectStorage:CreateBucketIfMissing"] = "true";
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductionConfigurationValidator.Validate(
+                new TestEnvironment("Production"),
+                new ConfigurationBuilder().AddInMemoryCollection(values).Build(),
+                ValidReleaseIdentity()));
+    }
+
+    [Fact]
+    public void ProductionConfigurationRejectsDatabaseWithoutCertificateVerification()
+    {
+        var values = ValidProductionValues();
+        values["ConnectionStrings:Pmcs"] =
+            "Host=postgres;Database=pmcs;Username=pmcs_app;Password=a-long-production-password;SSL Mode=Require";
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ProductionConfigurationValidator.Validate(
+                new TestEnvironment("Production"),
+                new ConfigurationBuilder().AddInMemoryCollection(values).Build(),
+                ValidReleaseIdentity()));
+
+        Assert.Contains("VerifyFull", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ProductionConfigurationRejectsInsecureObjectStorageTransport()
+    {
+        var values = ValidProductionValues();
+        values["ObjectStorage:ServiceUrl"] = "http://objects.internal";
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ProductionConfigurationValidator.Validate(
+                new TestEnvironment("Production"),
+                new ConfigurationBuilder().AddInMemoryCollection(values).Build(),
+                ValidReleaseIdentity()));
+
+        Assert.Contains("ObjectStorage:ServiceUrl", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("*")]
+    [InlineData("api.pmcs.example.com;*.internal")]
+    public void ProductionConfigurationRequiresExplicitAllowedHosts(string allowedHosts)
+    {
+        var values = ValidProductionValues();
+        values["AllowedHosts"] = allowedHosts;
 
         Assert.Throws<InvalidOperationException>(() =>
             ProductionConfigurationValidator.Validate(
@@ -114,6 +162,48 @@ public sealed class InfrastructureBoundaryTests
             new TestEnvironment("Production"),
             new ConfigurationBuilder().AddInMemoryCollection(values).Build(),
             ValidReleaseIdentity());
+    }
+
+    [Theory]
+    [InlineData("POST", "/api/v1/projects/33333333-3333-3333-3333-333333333333/daily-reports", true)]
+    [InlineData("PUT", "/api/v1/projects/33333333-3333-3333-3333-333333333333/evidence/44444444-4444-4444-8444-444444444444/content", true)]
+    [InlineData("GET", "/api/v1/projects/33333333-3333-3333-3333-333333333333/daily-reports", false)]
+    [InlineData("POST", "/api/v1/projects/33333333-3333-3333-3333-333333333333/activate", false)]
+    [InlineData("PUT", "/api/v1/projects/33333333-3333-3333-3333-333333333333/calendar", false)]
+    [InlineData("POST", "/api/v1/identity/users/22222222-2222-2222-2222-222222222222/memberships/33333333-3333-3333-3333-333333333333", false)]
+    public void ProjectLifecycleGuardSeparatesOperationalMutationsFromSetup(
+        string method,
+        string path,
+        bool expected)
+    {
+        var projectId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var context = new DefaultHttpContext();
+        context.Request.Method = method;
+        context.Request.Path = path;
+        context.Request.RouteValues["projectId"] = projectId;
+
+        Assert.Equal(expected, ProjectLifecycleMiddleware.IsOperationalMutation(context, out var parsedProjectId));
+        if (expected)
+        {
+            Assert.Equal(projectId, parsedProjectId);
+        }
+    }
+
+    [Fact]
+    public void IdempotencyKeysHaveOneCentralBoundedContract()
+    {
+        IdempotencyKeyRules.Validate("operation-123");
+        Assert.Throws<IdempotencyKeyInvalidException>(() => IdempotencyKeyRules.Validate(string.Empty));
+        Assert.Throws<IdempotencyKeyInvalidException>(() =>
+            IdempotencyKeyRules.Validate(new string('x', IdempotencyKeyRules.MaxKeyLength + 1)));
+    }
+
+    [Fact]
+    public void PortfolioViewerCannotMutateAdvisoryInsights()
+    {
+        Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.view"));
+        Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.generate"));
+        Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.review"));
     }
 
     [Theory]
@@ -313,7 +403,7 @@ public sealed class InfrastructureBoundaryTests
         ["PMCS_WEB_ORIGINS"] = "https://pmcs.example.com",
         ["AllowedHosts"] = "api.pmcs.example.com",
         ["ConnectionStrings:Pmcs"] =
-            "Host=postgres;Database=pmcs;Username=pmcs_app;Password=a-long-production-password",
+            "Host=postgres;Database=pmcs;Username=pmcs_app;Password=a-long-production-password;SSL Mode=VerifyFull",
         ["ObjectStorage:ServiceUrl"] = "https://objects.example.com",
         ["ObjectStorage:AccessKey"] = "production-access-key",
         ["ObjectStorage:SecretKey"] = "a-long-production-secret",

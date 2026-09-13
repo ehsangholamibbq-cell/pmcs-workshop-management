@@ -4,7 +4,7 @@
 
 | Method | Path | Permission | کاربرد |
 | --- | --- | --- | --- |
-| `PUT` | `/api/v1/projects/{projectId}/calendar` | `projects.configure` | تنظیم هفته کاری یا بازگرداندن تقویم به NotConfigured |
+| `PUT` | `/api/v1/projects/{projectId}/calendar` | `projects.calendar.configure` | تنظیم هفته کاری یا بازگرداندن تقویم به NotConfigured |
 
 نمونه هفته کاری:
 

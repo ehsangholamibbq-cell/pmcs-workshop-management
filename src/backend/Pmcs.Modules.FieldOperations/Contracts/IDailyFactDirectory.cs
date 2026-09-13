@@ -24,7 +24,8 @@ public sealed record DailyFactReference(
     DailyFactReferenceKind? Kind,
     string? Description,
     string? LocationName,
-    DailyFactReferenceImpact? ImpactLevel);
+    DailyFactReferenceImpact? ImpactLevel,
+    Guid? LocationId = null);
 
 public enum DailyFactReferenceStatus
 {

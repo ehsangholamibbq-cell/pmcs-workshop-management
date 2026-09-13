@@ -29,10 +29,12 @@ export function PmcsSessionBoundary({ children }: { readonly children: ReactNode
     void fetch("/api/pmcs/api/v1/session", { cache: "no-store" })
       .then(async (response) => {
         if (response.status === 401) {
+          await clearLocalIdentityScope(false);
           router.replace("/login");
           return null;
         }
         if (response.status === 403) {
+          await clearLocalIdentityScope(false);
           throw new Error("این حساب در سامانه فعال نیست؛ با مدیر سامانه تماس بگیرید.");
         }
         if (!response.ok) {

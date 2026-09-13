@@ -186,6 +186,7 @@ app.UseRouting();
 app.UseCors("PmcsWeb");
 app.UseAuthentication();
 app.UseMiddleware<ActorAccessMiddleware>();
+app.UseMiddleware<ProjectLifecycleMiddleware>();
 app.UseRateLimiter();
 app.UseAuthorization();
 

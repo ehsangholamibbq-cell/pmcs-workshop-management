@@ -98,4 +98,74 @@ public sealed class ProjectConfigurationTests
         Assert.Equal(2, project.Revision);
         Assert.NotNull(project.ConfigurationChangedAt);
     }
+
+    [Fact]
+    public void ProjectLocationPreservesHierarchyAndCannotRetireTheRoot()
+    {
+        var tenantId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        var actorId = Guid.NewGuid();
+        var root = ProjectLocation.Create(
+            Guid.NewGuid(), tenantId, projectId, "ROOT", "کل پروژه", null, actorId, DateTimeOffset.UtcNow);
+        var floor = ProjectLocation.Create(
+            Guid.NewGuid(), tenantId, projectId, "FLOOR-03", "طبقه سوم", root.Id, actorId, DateTimeOffset.UtcNow);
+
+        floor.Retire(floor.Revision, DateTimeOffset.UtcNow.AddMinutes(1));
+
+        Assert.Equal(root.Id, floor.ParentLocationId);
+        Assert.Equal(ProjectLocationStatus.Retired, floor.Status);
+        Assert.Throws<DomainRuleException>(() => root.Retire(root.Revision, DateTimeOffset.UtcNow));
+        Assert.Throws<DomainRuleException>(() => ProjectLocation.Create(
+            Guid.NewGuid(), tenantId, projectId, "ORPHAN", "محل بدون والد", null, actorId, DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void ProjectActivationIsRevisionControlled()
+    {
+        var project = Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "ACT-01", "Project",
+            ContractModel.GeneralContracting, PlanningMode.SimpleWorkList, CapabilityMode.NotEnabled,
+            CapabilityMode.NotEnabled, CapabilityMode.NotEnabled, "Asia/Tehran",
+            Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        Assert.Throws<DomainRuleException>(() => project.Activate(0, Guid.NewGuid(), DateTimeOffset.UtcNow));
+
+        var actorId = Guid.NewGuid();
+        var activatedAt = DateTimeOffset.UtcNow;
+        project.Activate(project.Revision, actorId, activatedAt);
+
+        Assert.Equal(ProjectStatus.Active, project.Status);
+        Assert.Equal(actorId, project.ActivatedBy);
+        Assert.Equal(activatedAt, project.ActivatedAt);
+        Assert.Equal(2, project.Revision);
+        Assert.Throws<DomainRuleException>(() => project.Activate(project.Revision, actorId, activatedAt));
+    }
+
+    [Fact]
+    public void ProjectRejectsUnknownTimeZone()
+    {
+        var exception = Assert.Throws<DomainRuleException>(() => Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "TZ-01", "Project",
+            ContractModel.GeneralContracting, PlanningMode.SimpleWorkList, CapabilityMode.NotEnabled,
+            CapabilityMode.NotEnabled, CapabilityMode.NotEnabled, "Iran/Unknown-City",
+            Guid.NewGuid(), DateTimeOffset.UtcNow));
+
+        Assert.Equal("project.time_zone.invalid", exception.Code);
+    }
+
+    [Fact]
+    public void ProjectCannotActivateWithoutABaseContractModel()
+    {
+        var project = Project.Create(
+            Guid.NewGuid(), Guid.NewGuid(), "NO-CONTRACT", "Project",
+            ContractModel.NotConfigured, PlanningMode.None, CapabilityMode.NotEnabled,
+            CapabilityMode.NotEnabled, CapabilityMode.NotEnabled, "Asia/Tehran",
+            Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        var exception = Assert.Throws<DomainRuleException>(() =>
+            project.Activate(project.Revision, Guid.NewGuid(), DateTimeOffset.UtcNow));
+
+        Assert.Equal("project.activate.contract_model.required", exception.Code);
+        Assert.Equal(ProjectStatus.Draft, project.Status);
+    }
 }

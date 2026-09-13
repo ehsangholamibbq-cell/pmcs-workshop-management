@@ -4,7 +4,7 @@ import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react
 import { listPurchaseOrders, type PurchaseOrderModel } from "@/lib/commercial";
 import { scopedStorageKey } from "@/lib/field-database";
 import { toUserMessage } from "@/lib/localization";
-import { formatPersianDateTime } from "@/lib/persian-date";
+import { formatPersianDateTime, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 import {
   acknowledgeMaterialIssue,
   createGoodsReceipt,
@@ -280,7 +280,7 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
       setMessage("سفارش خدمت، مقادیر معتبر، معیار پذیرش و مدرک الزامی است؛ مقدار ردشده علت می‌خواهد."); return;
     }
     const supplyItemId = order.supplyItemId;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayIsoInProjectTimeZone();
     await run("new-service", () => createServiceAcceptance(props.apiBaseUrl, identity, props.projectId, {
       purchaseOrderId: order.id, itemId: supplyItemId, periodStart: today, periodEnd: today,
       deliveredQuantity: delivered, acceptedQuantity: accepted, rejectedQuantity: rejected,

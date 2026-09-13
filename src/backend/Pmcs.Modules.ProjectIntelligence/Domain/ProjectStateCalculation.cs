@@ -182,7 +182,8 @@ public static class ProjectStateCalculator
                 _ => ProjectAttentionAgeBand.Overdue
             },
             ProjectAttentionStatus.NeedsTriage,
-            fact.ReferenceCode);
+            fact.ReferenceCode,
+            fact.LocationId);
     }
 
     private static ProjectOperationalStatus CalculateOperationalStatus(
@@ -284,7 +285,8 @@ public sealed record ProjectAttentionCalculation(
     int AgeDays,
     ProjectAttentionAgeBand AgeBand,
     ProjectAttentionStatus Status,
-    string? ReferenceCode);
+    string? ReferenceCode,
+    Guid? LocationId = null);
 
 public enum ProjectAssessmentScope
 {

@@ -24,6 +24,8 @@ public sealed record ConfigureProjectPlanningModeRequest(
     long BaseRevision,
     PlanningMode Mode);
 
+public sealed record ActivateProjectRequest(long BaseRevision);
+
 public sealed record ProjectResponse(
     Guid Id,
     string Code,
@@ -41,6 +43,8 @@ public sealed record ProjectResponse(
     DateTimeOffset? ConfigurationChangedAt,
     string TimeZone,
     ProjectStatus Status,
+    Guid? ActivatedBy,
+    DateTimeOffset? ActivatedAt,
     long Revision)
 {
     public static ProjectResponse From(Project project) => new(
@@ -60,6 +64,8 @@ public sealed record ProjectResponse(
         project.ConfigurationChangedAt,
         project.TimeZone,
         project.Status,
+        project.ActivatedBy,
+        project.ActivatedAt,
         project.Revision);
 }
 

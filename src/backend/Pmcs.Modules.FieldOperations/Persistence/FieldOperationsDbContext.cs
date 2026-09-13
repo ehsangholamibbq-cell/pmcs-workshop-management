@@ -57,6 +57,7 @@ internal sealed class FieldOperationsDbContext(DbContextOptions<FieldOperationsD
             builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(1_000);
             builder.Property(x => x.Category).HasColumnName("category").HasMaxLength(120);
             builder.Property(x => x.LocationName).HasColumnName("location_name").HasMaxLength(200);
+            builder.Property(x => x.LocationId).HasColumnName("location_id");
             builder.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(24, 6);
             builder.Property(x => x.Unit).HasColumnName("unit").HasMaxLength(40);
             builder.Property(x => x.ResourceCount).HasColumnName("resource_count");
@@ -68,6 +69,7 @@ internal sealed class FieldOperationsDbContext(DbContextOptions<FieldOperationsD
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.HasIndex(x => x.DailyReportId);
             builder.HasIndex(x => x.MeasurementItemId);
+            builder.HasIndex(x => x.LocationId);
         });
     }
 }

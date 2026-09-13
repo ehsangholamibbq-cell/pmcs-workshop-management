@@ -21,6 +21,7 @@ public sealed class DailyReportFact
         Description = input.Description;
         Category = input.Category;
         LocationName = input.LocationName;
+        LocationId = input.LocationId;
         Quantity = input.Quantity;
         Unit = input.Unit;
         ResourceCount = input.ResourceCount;
@@ -43,6 +44,8 @@ public sealed class DailyReportFact
     public string? Category { get; private set; }
 
     public string? LocationName { get; private set; }
+
+    public Guid? LocationId { get; private set; }
 
     public decimal? Quantity { get; private set; }
 
@@ -124,6 +127,11 @@ public sealed class DailyReportFact
         if (input.MeasurementItemId == Guid.Empty)
         {
             throw new DomainRuleException("daily_fact.measurement_item.invalid", "Measurement item id cannot be empty.");
+        }
+
+        if (input.LocationId == Guid.Empty)
+        {
+            throw new DomainRuleException("daily_fact.location.invalid", "Location id cannot be empty.");
         }
 
         if (input.MeasurementItemId.HasValue && input.Kind != DailyFactKind.WorkProgress)

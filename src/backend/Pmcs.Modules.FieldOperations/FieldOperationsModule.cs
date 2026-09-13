@@ -30,6 +30,7 @@ public sealed class FieldOperationsModule : IModule
         services.AddSingleton<IDatabaseMigration, FieldOperationsStructuredFactsMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsReviewWorkflowMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsMeasurementLinkMigration>();
+        services.AddSingleton<IDatabaseMigration, FieldOperationsLocationLinkMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

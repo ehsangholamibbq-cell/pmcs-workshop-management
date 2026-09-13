@@ -200,7 +200,6 @@ internal sealed class ProjectPermissionService(
                 "decisions.implement",
                 "decisions.review-effect",
                 "escalations.acknowledge",
-                "projects.configure",
                 "finance.records.read",
                 "finance.records.capture",
                 "finance.records.submit",
@@ -368,6 +367,7 @@ internal sealed class ProjectPermissionService(
                 "technical.read", "financial-state.read", "commercial-state.read", "supply.read",
                 "quality.read", "hse.read", "evidence.read", "actions.read", "actions.create",
                 "actions.update", "actions.manage", "attention.triage", "governance.read",
+                "projects.planning.configure", "sync.conflicts.manage",
                 "governance.configure", "governance.escalate", "governance.sensitive.read",
                 "governance.sensitive.write", "issues.create", "issues.manage", "issues.verify-close",
                 "risks.create", "risks.assess", "risks.manage", "risks.review",
@@ -469,7 +469,7 @@ internal sealed class ProjectPermissionService(
             select (TenantRole?)user.TenantRole)
             .SingleOrDefaultAsync(cancellationToken);
 
-    private static bool GrantsTenant(TenantRole role, string permission) =>
+    internal static bool GrantsTenant(TenantRole role, string permission) =>
         role == TenantRole.TenantAdministrator ||
         (role == TenantRole.PortfolioViewer &&
             (string.Equals(permission, "portfolio.read", StringComparison.OrdinalIgnoreCase) ||
@@ -488,9 +488,7 @@ internal sealed class ProjectPermissionService(
                 string.Equals(permission, "quality.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "hse.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "governance.read", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(permission, "insights.generate", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(permission, "insights.review", StringComparison.OrdinalIgnoreCase)));
+                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool GrantsRole(string roleCode, string permission) =>
         ProjectRolePermissions.TryGetValue(roleCode, out var permissions) &&

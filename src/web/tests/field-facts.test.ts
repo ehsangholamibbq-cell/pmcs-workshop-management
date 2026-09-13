@@ -91,3 +91,16 @@ test("changing fact kind does not leak hidden structured values", () => {
   assert.equal(payload.impactLevel, null);
   assert.equal(payload.referenceCode, null);
 });
+
+test("field fact preserves the selected project location identity", () => {
+  const payload = buildDailyFactPayload({
+    ...emptyFactDraft,
+    kind: "Note",
+    description: "مشاهده ثبت‌شده در محل",
+    locationId: "location-id",
+    locationName: "طبقه سوم",
+  }, "fact-id", "2026-09-13");
+
+  assert.equal(payload.locationId, "location-id");
+  assert.equal(payload.factLocationName, "طبقه سوم");
+});

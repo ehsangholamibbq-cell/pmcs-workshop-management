@@ -167,6 +167,8 @@ internal sealed class ProjectStateAttentionItem
 
     public string? LocationName { get; private set; }
 
+    public Guid? LocationId { get; private set; }
+
     public ProjectObservedImpact? ObservedImpact { get; private set; }
 
     public ProjectAttentionPriority Priority { get; private set; }
@@ -192,6 +194,7 @@ internal sealed class ProjectStateAttentionItem
             Description = calculation.Description,
             Category = calculation.Category,
             LocationName = calculation.LocationName,
+            LocationId = calculation.LocationId,
             ObservedImpact = calculation.ObservedImpact,
             Priority = calculation.Priority,
             AgeDays = calculation.AgeDays,

@@ -25,11 +25,18 @@ public sealed class ProjectsModule : IModule
         services.AddDbContext<ProjectsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IProjectTenantDirectory, ProjectTenantDirectory>();
         services.AddScoped<IProjectDirectory, ProjectDirectory>();
+        services.AddScoped<IProjectLocationDirectory, ProjectLocationDirectory>();
         services.AddSingleton<IDatabaseMigration, ProjectsInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectCalendarAndFinanceMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectProcurementMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectLocationMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectActivationMetadataMigration>();
         services.AddHostedService<DevelopmentProjectSeeder>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapProjectEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapProjectEndpoints();
+        endpoints.MapProjectLocationEndpoints();
+    }
 }

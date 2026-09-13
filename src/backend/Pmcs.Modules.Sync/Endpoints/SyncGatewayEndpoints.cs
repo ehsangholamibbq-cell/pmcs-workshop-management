@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.FieldOperations.Contracts;
 using Pmcs.Modules.Projects.Contracts;
+using Pmcs.Modules.Projects.Domain;
 using Pmcs.Modules.Sync.Domain;
 using Pmcs.Modules.Sync.Persistence;
 
@@ -45,7 +47,7 @@ internal static partial class SyncGatewayEndpoints
         IProjectDirectory projects,
         SyncDbContext db,
         IClock clock,
-        IAuditTrail audit,
+        ITransactionalSideEffectWriter sideEffects,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -79,10 +81,15 @@ internal static partial class SyncGatewayEndpoints
             actor.TenantId, actor.UserId, request.ProjectId, "quality.intake.capture", cancellationToken);
         var canCaptureHse = await permissions.HasProjectPermissionAsync(
             actor.TenantId, actor.UserId, request.ProjectId, "hse.intake.capture", cancellationToken);
-        if ((!canCaptureField && !canCaptureQuality && !canCaptureHse) ||
-            !await projects.ExistsAsync(actor.TenantId, request.ProjectId, cancellationToken))
+        var project = await projects.FindProfileAsync(actor.TenantId, request.ProjectId, cancellationToken);
+        if ((!canCaptureField && !canCaptureQuality && !canCaptureHse) || project is null)
         {
             return Problem(StatusCodes.Status403Forbidden, "sync.project.access_denied");
+        }
+
+        if (project.Status != ProjectStatus.Active)
+        {
+            return Problem(StatusCodes.Status409Conflict, "sync.project.not_active");
         }
 
         var allowedOperations = new List<string>(2);
@@ -197,9 +204,10 @@ internal static partial class SyncGatewayEndpoints
             skew);
         db.Sessions.Add(session);
         await db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-
-        await audit.WriteAsync(new AuditEntry(
+        await sideEffects.WriteAuditAsync(
+            db.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new AuditEntry(
             actor.TenantId,
             request.ProjectId,
             actor.UserId,
@@ -217,7 +225,9 @@ internal static partial class SyncGatewayEndpoints
                 ["pendingAttachments"] = request.Queue.PendingAttachments,
                 ["clockSkewSeconds"] = skew
             },
-            httpContext.TraceIdentifier), cancellationToken);
+            httpContext.TraceIdentifier),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.Ok(new SyncHandshakeResponse(
             session.Id,
@@ -466,7 +476,7 @@ internal static partial class SyncGatewayEndpoints
         ICurrentActor actor,
         SyncDbContext db,
         IClock clock,
-        IAuditTrail audit,
+        ITransactionalSideEffectWriter sideEffects,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -482,6 +492,7 @@ internal static partial class SyncGatewayEndpoints
         }
 
         var session = sessionResult.Session!;
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var offer = await db.CheckpointOffers.SingleOrDefaultAsync(item => item.Id == request.CheckpointOffer, cancellationToken);
         if (offer is null || offer.ExpiresAt <= now ||
             offer.SessionId != session.Id || offer.TenantId != actor.TenantId || offer.UserId != actor.UserId ||
@@ -535,7 +546,10 @@ internal static partial class SyncGatewayEndpoints
         offer.ConsumedAt = now;
         await db.SaveChangesAsync(cancellationToken);
 
-        await audit.WriteAsync(new AuditEntry(
+        await sideEffects.WriteAuditAsync(
+            db.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new AuditEntry(
             actor.TenantId,
             request.ProjectId,
             actor.UserId,
@@ -549,7 +563,9 @@ internal static partial class SyncGatewayEndpoints
                 ["sequence"] = checkpoint.LastSequence,
                 ["checkpointOffer"] = offer.Id
             },
-            httpContext.TraceIdentifier), cancellationToken);
+            httpContext.TraceIdentifier),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.Ok(new AdvanceCheckpointResponse(
             checkpoint.CurrentToken,
@@ -576,7 +592,7 @@ internal static partial class SyncGatewayEndpoints
         }
 
         var canManageAll = await permissions.HasProjectPermissionAsync(
-            actor.TenantId, actor.UserId, projectId, "projects.configure", cancellationToken);
+            actor.TenantId, actor.UserId, projectId, "sync.conflicts.manage", cancellationToken);
         var query = db.Conflicts.AsNoTracking().Where(item =>
             item.TenantId == actor.TenantId && item.ProjectId == projectId);
         if (!canManageAll)
@@ -597,7 +613,7 @@ internal static partial class SyncGatewayEndpoints
         IProjectPermissionService permissions,
         SyncDbContext db,
         IClock clock,
-        IAuditTrail audit,
+        ITransactionalSideEffectWriter sideEffects,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -605,6 +621,7 @@ internal static partial class SyncGatewayEndpoints
             return Results.Unauthorized();
         }
 
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var conflict = await db.Conflicts.SingleOrDefaultAsync(
             item => item.Id == conflictId && item.TenantId == actor.TenantId,
             cancellationToken);
@@ -616,7 +633,7 @@ internal static partial class SyncGatewayEndpoints
         var canResolve = await permissions.HasProjectPermissionAsync(
             actor.TenantId, actor.UserId, conflict.ProjectId, "field.daily-reports.capture", cancellationToken);
         var canManageAll = await permissions.HasProjectPermissionAsync(
-            actor.TenantId, actor.UserId, conflict.ProjectId, "projects.configure", cancellationToken);
+            actor.TenantId, actor.UserId, conflict.ProjectId, "sync.conflicts.manage", cancellationToken);
         if (!canResolve || (conflict.UserId != actor.UserId && !canManageAll))
         {
             return Results.Forbid();
@@ -651,7 +668,10 @@ internal static partial class SyncGatewayEndpoints
         db.ConflictResolutions.Add(resolution);
         await db.SaveChangesAsync(cancellationToken);
 
-        await audit.WriteAsync(new AuditEntry(
+        await sideEffects.WriteAuditAsync(
+            db.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new AuditEntry(
             actor.TenantId,
             conflict.ProjectId,
             actor.UserId,
@@ -666,7 +686,9 @@ internal static partial class SyncGatewayEndpoints
                 ["replacementOperationId"] = request.ReplacementOperationId,
                 ["deviceId"] = conflict.DeviceId
             },
-            httpContext.TraceIdentifier), cancellationToken);
+            httpContext.TraceIdentifier),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.Ok(ToConflictModel(conflict));
     }
@@ -708,7 +730,7 @@ internal static partial class SyncGatewayEndpoints
         IProjectPermissionService permissions,
         SyncDbContext db,
         IClock clock,
-        IAuditTrail audit,
+        ITransactionalSideEffectWriter sideEffects,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -716,6 +738,7 @@ internal static partial class SyncGatewayEndpoints
             return Results.Unauthorized();
         }
 
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var device = await db.Devices.SingleOrDefaultAsync(item =>
             item.Id == registrationId && item.TenantId == actor.TenantId,
             cancellationToken);
@@ -760,7 +783,10 @@ internal static partial class SyncGatewayEndpoints
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        await audit.WriteAsync(new AuditEntry(
+        await sideEffects.WriteAuditAsync(
+            db.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new AuditEntry(
             actor.TenantId,
             null,
             actor.UserId,
@@ -774,7 +800,9 @@ internal static partial class SyncGatewayEndpoints
                 ["deviceUserId"] = device.UserId,
                 ["reason"] = request.Reason
             },
-            httpContext.TraceIdentifier), cancellationToken);
+            httpContext.TraceIdentifier),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.NoContent();
     }

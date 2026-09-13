@@ -23,6 +23,7 @@ internal static class ProjectEndpoints
         group.MapGet("/", ListAsync);
         group.MapGet("/{projectId:guid}", GetAsync);
         group.MapPost("/", CreateAsync);
+        group.MapPost("/{projectId:guid}/activate", ActivateAsync);
         group.MapPut("/{projectId:guid}/calendar", ConfigureCalendarAsync);
         group.MapPut("/{projectId:guid}/planning-mode", ConfigurePlanningModeAsync);
     }
@@ -162,7 +163,17 @@ internal static class ProjectEndpoints
             return Results.Conflict(new { code = "project.code.duplicate" });
         }
 
+        var rootLocation = ProjectLocation.Create(
+            Guid.NewGuid(),
+            actor.TenantId,
+            project.Id,
+            "ROOT",
+            "کل پروژه",
+            null,
+            actor.UserId,
+            clock.UtcNow);
         dbContext.Projects.Add(project);
+        dbContext.ProjectLocations.Add(rootLocation);
         var response = ProjectResponse.From(project);
         var responseJson = JsonSerializer.Serialize(response, SerializerOptions);
 
@@ -185,7 +196,8 @@ internal static class ProjectEndpoints
                         ["code"] = project.Code,
                         ["planningMode"] = project.PlanningMode.ToString(),
                         ["budgetMode"] = project.BudgetMode.ToString(),
-                        ["hseMode"] = project.HseMode.ToString()
+                        ["hseMode"] = project.HseMode.ToString(),
+                        ["rootLocationId"] = rootLocation.Id
                     },
                     httpContext.TraceIdentifier),
                 new OutboxEnvelope(
@@ -212,6 +224,130 @@ internal static class ProjectEndpoints
         return Results.Created($"/api/v1/projects/{project.Id}", response);
     }
 
+    private static async Task<IResult> ActivateAsync(
+        Guid projectId,
+        ActivateProjectRequest request,
+        HttpContext httpContext,
+        ICurrentActor actor,
+        IProjectPermissionService permissionService,
+        ProjectsDbContext dbContext,
+        IClock clock,
+        ITransactionalSideEffectWriter sideEffectWriter,
+        IIdempotencyStore idempotencyStore,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!await permissionService.HasProjectPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                projectId,
+                "projects.activate",
+                cancellationToken))
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        var idempotencyKey = httpContext.Request.Headers["Idempotency-Key"].ToString();
+        if (string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Idempotency-Key is required.",
+                extensions: new Dictionary<string, object?> { ["code"] = "idempotency.key.required" });
+        }
+
+        const string operation = "projects.activate";
+        var requestJson = JsonSerializer.Serialize(request, SerializerOptions);
+        var requestHash = RequestHash.Create(requestJson);
+        var replay = await idempotencyStore.FindAsync(
+            actor.TenantId,
+            idempotencyKey,
+            operation,
+            requestHash,
+            cancellationToken);
+        if (replay is not null)
+        {
+            return Results.Content(replay.ResponseBody, "application/json", Encoding.UTF8, replay.StatusCode);
+        }
+
+        var project = await dbContext.Projects.SingleOrDefaultAsync(
+            item => item.TenantId == actor.TenantId && item.Id == projectId,
+            cancellationToken);
+        if (project is null)
+        {
+            return Results.NotFound(new { code = "project.not_found" });
+        }
+
+        if (project.Revision != request.BaseRevision)
+        {
+            return Results.Conflict(new { code = "project.revision.conflict", currentRevision = project.Revision });
+        }
+
+        var hasRootLocation = await dbContext.ProjectLocations.AsNoTracking().AnyAsync(
+            location => location.TenantId == actor.TenantId &&
+                location.ProjectId == projectId &&
+                location.ParentLocationId == null &&
+                location.Code == "ROOT" &&
+                location.Status == ProjectLocationStatus.Active,
+            cancellationToken);
+        if (!hasRootLocation)
+        {
+            return Results.UnprocessableEntity(new { code = "project.activate.location_root.required" });
+        }
+
+        project.Activate(request.BaseRevision, actor.UserId, clock.UtcNow);
+        var response = ProjectResponse.From(project);
+        var responseJson = JsonSerializer.Serialize(response, SerializerOptions);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await sideEffectWriter.WriteAsync(
+            dbContext.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new TransactionalSideEffectBatch(
+                new AuditEntry(
+                    actor.TenantId,
+                    project.Id,
+                    actor.UserId,
+                    "ProjectActivated",
+                    "Project",
+                    project.Id.ToString(),
+                    clock.UtcNow,
+                    new Dictionary<string, object?>
+                    {
+                        ["status"] = project.Status.ToString(),
+                        ["revision"] = project.Revision,
+                        ["activatedAt"] = project.ActivatedAt
+                    },
+                    httpContext.TraceIdentifier),
+                new OutboxEnvelope(
+                    Guid.NewGuid(),
+                    actor.TenantId,
+                    project.Id,
+                    "Projects.ProjectActivated",
+                    1,
+                    clock.UtcNow,
+                    responseJson,
+                    httpContext.TraceIdentifier),
+                new IdempotencyReceipt(
+                    actor.TenantId,
+                    idempotencyKey,
+                    operation,
+                    requestHash,
+                    StatusCodes.Status200OK,
+                    responseJson,
+                    clock.UtcNow,
+                    clock.UtcNow.AddDays(7))),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        return Results.Ok(response);
+    }
+
     private static async Task<IResult> ConfigureCalendarAsync(
         Guid projectId,
         ConfigureProjectCalendarRequest request,
@@ -233,7 +369,7 @@ internal static class ProjectEndpoints
                 actor.TenantId,
                 actor.UserId,
                 projectId,
-                "projects.configure",
+                "projects.calendar.configure",
                 cancellationToken))
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
@@ -348,7 +484,7 @@ internal static class ProjectEndpoints
                 actor.TenantId,
                 actor.UserId,
                 projectId,
-                "projects.configure",
+                "projects.planning.configure",
                 cancellationToken))
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);

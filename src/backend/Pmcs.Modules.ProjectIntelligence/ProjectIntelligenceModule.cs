@@ -25,6 +25,7 @@ public sealed class ProjectIntelligenceModule : IModule
         services.AddScoped<IProjectStateContextSource, ProjectStateContextSource>();
         services.AddSingleton<IDatabaseMigration, ProjectIntelligenceInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectStateV2Migration>();
+        services.AddSingleton<IDatabaseMigration, ProjectStateLocationLinkMigration>();
         services.AddHostedService<ProjectStateRefreshWorker>();
     }
 

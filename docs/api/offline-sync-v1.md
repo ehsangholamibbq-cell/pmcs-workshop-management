@@ -91,6 +91,8 @@ Command رسمی‌شده در Gateway نسخه ۲:
 
 این Command یک Fact مستقل را Append می‌کند. نبود WBS، Budget یا HSE مانع آن نیست. `measurementItemId` اختیاری است و فقط برای Work Progress معتبر است. اگر ارسال شود، تعلق به همان Tenant/Project، فعال‌بودن و تطابق واحد در سرور بررسی می‌شود.
 
+`locationId` برای هر Fact جدید الزامی است و باید به Location فعال همان Tenant/Project اشاره کند. نام Location در Payload مرجع رسمی نیست؛ سرور نام جاری رجیستری را همراه شناسه پایدار ذخیره می‌کند. پروژه نیز هنگام Handshake و هنگام اعمال Operation باید `Active` باشد.
+
 نتیجه هر Operation یکی از موارد زیر است:
 
 - `Applied`: پذیرفته و دارای Revision/Projection سرور؛

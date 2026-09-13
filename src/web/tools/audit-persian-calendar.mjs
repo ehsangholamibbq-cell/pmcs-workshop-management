@@ -14,6 +14,8 @@ for (const root of roots) {
       "قالب‌بندی تاریخ در رابط باید فقط از lib/persian-date انجام شود");
     check(file, source, /\.toLocaleDateString\s*\(/g,
       "قالب‌بندی محلی مستقیم تاریخ مجاز نیست");
+    check(file, source, /new\s+Date\s*\(\s*\)\.toISOString\s*\(\s*\)\.slice\s*\(\s*0\s*,\s*10\s*\)/g,
+      "روز جاری باید با منطقه زمانی پروژه از todayIsoInProjectTimeZone ساخته شود");
   }
 }
 

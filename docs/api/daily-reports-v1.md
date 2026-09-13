@@ -17,6 +17,8 @@
 
 همه POSTها به `Idempotency-Key` نیاز دارند. Headerهای Development در `development-identity.md` مستند شده‌اند و جای Authentication تولیدی نیستند.
 
+همه Mutationهای این مسیر فقط برای پروژه `Active` پذیرفته می‌شوند. هر Fact جدید باید `locationId` یک Location فعال از همان Tenant/Project داشته باشد؛ نام آزاد ارسال‌شده مرجع نیست و سرور نام رسمی Location را Snapshot می‌کند. `locationId = null` فقط در سابقه‌های قدیمی پیش از مهاجرت قابل مشاهده است.
+
 ## Workflow
 
 ```mermaid
@@ -33,6 +35,7 @@ stateDiagram-v2
 - Return فقط از `Submitted` و با دلیل انجام می‌شود.
 - Approve فقط از `Submitted` انجام می‌شود.
 - هر تغییر Aggregate، Audit، Outbox و Idempotency Receipt را در یک transaction PostgreSQL می‌نویسد.
+- حالت `Superseded` در مدل داده رزرو شده، اما Command و زنجیره اصلاح آن هنوز پیاده‌سازی نشده و در ممیزی Checkpoint 20 یک Gap صریح MVP است.
 
 ## Factهای ساختاریافته
 

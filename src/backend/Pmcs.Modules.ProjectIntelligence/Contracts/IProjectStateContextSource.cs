@@ -59,4 +59,5 @@ public sealed record ProjectStateAttentionContextRecord(
     string Priority,
     int AgeDays,
     string Status,
-    string? ReferenceCode);
+    string? ReferenceCode,
+    Guid? LocationId);

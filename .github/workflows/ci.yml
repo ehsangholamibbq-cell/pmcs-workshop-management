@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 24
       - run: node tools/validate-repository.mjs
+      - run: node tools/audit-system-contracts.mjs
 
   backend:
     runs-on: ubuntu-latest

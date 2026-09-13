@@ -101,7 +101,8 @@ public sealed record ProjectAttentionResponse(
     AttentionDispositionState Disposition,
     Guid? ActionId,
     string? DispositionReason,
-    DateTimeOffset? DispositionAt)
+    DateTimeOffset? DispositionAt,
+    Guid? LocationId)
 {
     internal static ProjectAttentionResponse From(
         ProjectStateAttentionItem item,
@@ -127,7 +128,8 @@ public sealed record ProjectAttentionResponse(
         },
         disposition?.ActionId,
         disposition?.Reason,
-        disposition?.DecidedAt);
+        disposition?.DecidedAt,
+        item.LocationId);
 }
 
 public enum AttentionDispositionState

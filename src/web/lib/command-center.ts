@@ -31,6 +31,7 @@ export interface ProjectAttentionItem {
   readonly description: string;
   readonly category: string | null;
   readonly locationName: string | null;
+  readonly locationId: string | null;
   readonly observedImpact: Exclude<ProjectAttentionPriority, "Unassessed"> | null;
   readonly priority: ProjectAttentionPriority;
   readonly ageDays: number;

@@ -11,7 +11,8 @@ public sealed record DailyFactInput(
     decimal? Hours,
     DailyImpactLevel? ImpactLevel,
     string? ReferenceCode,
-    Guid? MeasurementItemId = null);
+    Guid? MeasurementItemId = null,
+    Guid? LocationId = null);
 
 public enum DailyImpactLevel
 {

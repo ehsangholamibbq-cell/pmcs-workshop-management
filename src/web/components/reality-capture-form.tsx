@@ -11,6 +11,7 @@ import {
 } from "@/lib/field-facts";
 import { enqueueOperation, getOrCreateDailyReportId } from "@/lib/operation-store";
 import type { MeasurementItemModel } from "@/lib/planning";
+import type { ProjectLocationModel } from "@/lib/projects";
 import { todayIsoInProjectTimeZone } from "@/lib/persian-date";
 
 interface RealityCaptureFormProps {
@@ -21,6 +22,7 @@ interface RealityCaptureFormProps {
   readonly onStatus: (message: string) => void;
   readonly onQueued: (factId: string) => Promise<void>;
   readonly measurementItems?: readonly MeasurementItemModel[];
+  readonly locations?: readonly ProjectLocationModel[];
 }
 
 export function RealityCaptureForm({
@@ -31,9 +33,14 @@ export function RealityCaptureForm({
   onStatus,
   onQueued,
   measurementItems = [],
+  locations = [],
 }: RealityCaptureFormProps) {
   const [draft, setDraft] = useState<DailyFactDraft>(emptyFactDraft);
   const fields = useMemo(() => factFields(draft.kind), [draft.kind]);
+  const activeLocations = useMemo(
+    () => locations.filter((location) => location.status === "Active"),
+    [locations],
+  );
   const selectedKind = factKinds.find((item) => item.value === draft.kind);
 
   function update<K extends keyof DailyFactDraft>(key: K, value: DailyFactDraft[K]) {
@@ -50,12 +57,25 @@ export function RealityCaptureForm({
     }));
   }
 
+  function selectLocation(locationId: string) {
+    const location = activeLocations.find((candidate) => candidate.id === locationId);
+    setDraft((current) => ({
+      ...current,
+      locationId,
+      locationName: location?.name ?? "",
+    }));
+  }
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     try {
       onStatus("در حال ذخیره روی این دستگاه…");
-    const reportDate = todayIsoInProjectTimeZone();
+      if (!draft.locationId) {
+        throw new FactValidationError("انتخاب محل پروژه برای ثبت واقعیت الزامی است");
+      }
+
+      const reportDate = todayIsoInProjectTimeZone();
       const factId = crypto.randomUUID();
       const payload = buildDailyFactPayload(draft, factId, reportDate);
       await enqueueOperation({
@@ -67,7 +87,12 @@ export function RealityCaptureForm({
         commandType: "CaptureDailyReportFact",
         payload,
       });
-      setDraft((current) => ({ ...emptyFactDraft, kind: current.kind }));
+      setDraft((current) => ({
+        ...emptyFactDraft,
+        kind: current.kind,
+        locationId: current.locationId,
+        locationName: current.locationName,
+      }));
       await onQueued(factId);
     } catch (error) {
       onStatus(error instanceof FactValidationError
@@ -120,13 +145,21 @@ export function RealityCaptureForm({
       )}
 
       <div className="field">
-        <label htmlFor="fact-location">محل</label>
-        <input
+        <label htmlFor="fact-location">محل پروژه</label>
+        <select
           id="fact-location"
-          value={draft.locationName}
-          onChange={(event) => update("locationName", event.target.value)}
-          placeholder="مثال: طبقه سوم، محور ب"
-        />
+          required
+          value={draft.locationId ?? ""}
+          onChange={(event) => selectLocation(event.target.value)}
+        >
+          <option value="">{activeLocations.length > 0 ? "انتخاب محل" : "فهرست محل در دسترس نیست"}</option>
+          {activeLocations.map((location) => (
+            <option key={location.id} value={location.id}>{location.code} · {location.name}</option>
+          ))}
+        </select>
+        {activeLocations.length === 0 && (
+          <small className="field-help">برای ثبت آفلاین، ابتدا باید فهرست محل‌های مجاز در حالت آنلاین دریافت شود.</small>
+        )}
       </div>
 
       {fields.quantity && (

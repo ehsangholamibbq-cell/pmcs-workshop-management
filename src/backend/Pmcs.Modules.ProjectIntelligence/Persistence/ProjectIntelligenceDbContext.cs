@@ -81,6 +81,7 @@ internal sealed class ProjectIntelligenceDbContext(DbContextOptions<ProjectIntel
             builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(1_000);
             builder.Property(x => x.Category).HasColumnName("category").HasMaxLength(120);
             builder.Property(x => x.LocationName).HasColumnName("location_name").HasMaxLength(200);
+            builder.Property(x => x.LocationId).HasColumnName("location_id");
             builder.Property(x => x.ObservedImpact).HasColumnName("observed_impact").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.Priority).HasColumnName("priority").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.AgeDays).HasColumnName("age_days");
@@ -88,6 +89,7 @@ internal sealed class ProjectIntelligenceDbContext(DbContextOptions<ProjectIntel
             builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.ReferenceCode).HasColumnName("reference_code").HasMaxLength(120);
             builder.HasIndex(x => new { x.SnapshotId, x.SourceFactId }).IsUnique();
+            builder.HasIndex(x => new { x.SnapshotId, x.LocationId });
         });
     }
 }

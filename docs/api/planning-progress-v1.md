@@ -22,7 +22,7 @@
 | `POST` | `/milestone-updates/{updateId}/approve` | `planning.milestones.review` | تأیید انسانی و ورود به محاسبه رسمی |
 | `POST` | `/milestone-updates/{updateId}/return` | `planning.milestones.review` | بازگشت وضعیت همراه دلیل |
 
-تغییر حالت برنامه‌ریزی در مالک Project و از مسیر `PUT /api/v1/projects/{projectId}/planning-mode` با `projects.configure` انجام می‌شود. تغییر حالت، نسخه مبنا یا Fact تاریخی را حذف یا بازنویسی نمی‌کند؛ اگر نسخه مصوب قبلی با حالت جدید سازگار نباشد، `ModeMismatch` برگردانده و از محاسبه کنار گذاشته می‌شود.
+تغییر حالت برنامه‌ریزی در مالک Project و از مسیر `PUT /api/v1/projects/{projectId}/planning-mode` با `projects.planning.configure` انجام می‌شود. تغییر حالت، نسخه مبنا یا Fact تاریخی را حذف یا بازنویسی نمی‌کند؛ اگر نسخه مصوب قبلی با حالت جدید سازگار نباشد، `ModeMismatch` برگردانده و از محاسبه کنار گذاشته می‌شود.
 
 Commandها به `Idempotency-Key` نیاز دارند و Aggregate، Audit، Outbox و رسید Idempotency را در یک Transaction می‌نویسند. کد و واحد قلم پس از ایجاد تغییر نمی‌کنند تا Factهای تاریخی معنای خود را از دست ندهند؛ غیرفعال‌سازی نیز رکورد یا ارتباط قدیمی را حذف نمی‌کند.
 

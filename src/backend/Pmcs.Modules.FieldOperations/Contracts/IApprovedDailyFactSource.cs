@@ -43,7 +43,8 @@ public sealed record ApprovedDailyFactRecord(
     decimal? Hours,
     ApprovedDailyImpactLevel? ImpactLevel,
     string? ReferenceCode,
-    Guid? MeasurementItemId = null);
+    Guid? MeasurementItemId = null,
+    Guid? LocationId = null);
 
 public enum ApprovedDailyFactKind
 {
