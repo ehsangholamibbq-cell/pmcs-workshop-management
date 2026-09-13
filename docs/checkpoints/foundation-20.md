@@ -22,7 +22,8 @@
 - cleared stale local identity scope after authorization/session invalidation;
 - strengthened production host, PostgreSQL certificate and object-storage transport validation;
 - corrected the service-acceptance civil date to use the Tehran project day;
-- added a repository-wide endpoint/mutation contract audit to CI.
+- added a repository-wide endpoint/mutation contract audit to CI;
+- enabled explicit manual CI dispatch so the complete verification suite can be rerun independently of a push event.
 
 ## Verification available in this workspace
 
