@@ -1,7 +1,8 @@
 # Foundation checkpoint 21 — Project setup readiness and effective permission preview
 
 - Date: 2026-09-13
-- Status: Implemented in repository; connected CI evidence pending
+- Status: Implemented in repository; connected CI verification started
+- Remote source commit: `2fcf8e4a29020e719c77793b5e76894436ae28df`
 - Product baseline: `PMCS_Blueprint_V1_21_FA.md`
 
 ## Scope delivered
