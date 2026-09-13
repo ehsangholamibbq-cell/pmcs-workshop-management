@@ -25,7 +25,7 @@ The review covered:
 
 - the approved MVP/V1 boundaries and acceptance criteria in Blueprint 1.21;
 - all 14 backend modules, API host and shared building blocks;
-- 202 registered API endpoints and all 163 non-GET mutations;
+- 205 registered API endpoints and all 164 non-GET mutations;
 - module dependencies and cross-module persistence imports;
 - aggregate transitions, revision control, permissions, audit/outbox/idempotency and tenant/project scoping;
 - PostgreSQL migrations and important uniqueness/reference constraints;
@@ -172,3 +172,17 @@ Connected verification: GitHub Actions run [`34761372257`](https://github.com/eh
 5. CI hardening, target-environment UAT and Pilot evidence closure.
 
 No item in the external-gate list may be replaced by a template, a local assertion or an unsigned report.
+
+## Checkpoint 21 verification extension
+
+Project Setup Readiness and Effective Permission Preview were implemented after the original Checkpoint 20 audit close. Connected GitHub Actions run [`34763386154`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/34763386154) on commit `2cb5c44b6b66a48353eaed66047446bdb96d856f` completed successfully across all six jobs:
+
+- .NET 10 Release build: passed with zero warnings;
+- C# tests: 215 passed, 0 failed;
+- Web/API contract tests: 104 passed;
+- ESLint, Persian UI audit, Persian calendar audit, TypeScript and Next.js production build: passed;
+- repository validation: 242 C# module files;
+- endpoint/mutation audit: 205 endpoints, 164 mutations and 5 documented protocol-managed mutations;
+- PostgreSQL 17/API and MinIO object roundtrip: passed;
+- isolated restore drill: passed with 33 migrations retained for inspection;
+- identity container and all 8 Pilot policy tests: passed.

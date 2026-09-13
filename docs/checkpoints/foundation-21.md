@@ -1,8 +1,9 @@
 # Foundation checkpoint 21 — Project setup readiness and effective permission preview
 
 - Date: 2026-09-13
-- Status: Implemented in repository; connected CI verification started
-- Remote source commit: `2fcf8e4a29020e719c77793b5e76894436ae28df`
+- Status: Implemented and verified by connected CI
+- Verified remote commit: `2cb5c44b6b66a48353eaed66047446bdb96d856f`
+- GitHub Actions evidence: [`34763386154`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/34763386154)
 - Product baseline: `PMCS_Blueprint_V1_21_FA.md`
 
 ## Scope delivered
@@ -27,7 +28,10 @@
 - repository validation passed for 242 C# module files;
 - system contract audit passed for 205 endpoints and 164 mutations, with 5 documented protocol-managed mutations;
 - all 8 Pilot policy/release tests and shell syntax checks passed;
-- `.NET`, Docker and PostgreSQL clients are not installed locally; backend compilation,  PostgreSQL migration, MinIO roundtrip and restore results are delegated to connected CI and are not claimed yet.
+- connected .NET 10 Release build succeeded with zero warnings;
+- 215 C# tests passed with zero failures;
+- PostgreSQL 17 migration/API smoke and MinIO binary roundtrip passed;
+- isolated PostgreSQL restore drill passed and retained the drill database with 33 migrations.
 
 ## Deliberate boundary
 
