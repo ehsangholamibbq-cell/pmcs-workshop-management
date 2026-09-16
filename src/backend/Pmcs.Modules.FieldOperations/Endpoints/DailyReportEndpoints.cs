@@ -886,7 +886,7 @@ internal static class DailyReportEndpoints
                         ["copiedFactCount"] = report.Facts.Count(fact => fact.CopiedFromFactId.HasValue),
                         ["reviewedBy"] = report.ReviewedBy,
                         ["reviewComment"] = report.ReviewComment,
-                        ["notificationCount"] = notifications?.Count ?? 0,
+                        ["notificationCount"] = notifications?.Length ?? 0,
                         ["notificationRecipientIds"] = notifications is null
                             ? Array.Empty<Guid>()
                             : notifications.Select(notification => notification.RecipientUserId).Distinct().ToArray()
@@ -911,7 +911,7 @@ internal static class DailyReportEndpoints
                     clock.UtcNow,
                     clock.UtcNow.AddDays(7))),
             cancellationToken);
-        if (notificationWriter is not null && notifications is { Count: > 0 })
+        if (notificationWriter is not null && notifications is { Length: > 0 })
         {
             await notificationWriter.WriteAsync(
                 dbContext.Database.GetDbConnection(),
