@@ -855,7 +855,7 @@ internal static class DailyReportEndpoints
         IClock clock,
         CancellationToken cancellationToken,
         ITransactionalNotificationWriter? notificationWriter = null,
-        IReadOnlyCollection<InAppNotificationDraft>? notifications = null)
+        InAppNotificationDraft[]? notifications = null)
     {
         var responseJson = JsonSerializer.Serialize(response, SerializerOptions);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
