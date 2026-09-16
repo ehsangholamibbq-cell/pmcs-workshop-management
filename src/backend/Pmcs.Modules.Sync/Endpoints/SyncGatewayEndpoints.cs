@@ -403,6 +403,10 @@ internal static partial class SyncGatewayEndpoints
             }
         }
 
+        var appliedCount = results.Count(item => item.Status == OfflineFieldOperationStatus.Applied);
+        var conflictCount = results.Count(item => item.Status == OfflineFieldOperationStatus.Conflict);
+        var rejectedCount = results.Count(item =>
+            item.Status is OfflineFieldOperationStatus.Rejected or OfflineFieldOperationStatus.Unsupported);
         SyncGatewayLog.BatchProcessed(
             logger,
             actor.TenantId,
@@ -410,9 +414,9 @@ internal static partial class SyncGatewayEndpoints
             session.ProjectId,
             request.DeviceId,
             results.Count,
-            results.Count(item => item.Status == OfflineFieldOperationStatus.Applied),
-            results.Count(item => item.Status == OfflineFieldOperationStatus.Conflict),
-            results.Count(item => item.Status is OfflineFieldOperationStatus.Rejected or OfflineFieldOperationStatus.Unsupported));
+            appliedCount,
+            conflictCount,
+            rejectedCount);
         return Results.Ok(new SyncPushResponse(clock.UtcNow, results));
     }
 
@@ -1129,7 +1133,7 @@ internal static partial class SyncGatewayEndpoints
         }
     }
 
-    private static Task RecordOperationReceiptAsync(
+    private static Task<int> RecordOperationReceiptAsync(
         SyncDbContext db,
         ICurrentActor actor,
         string deviceId,
