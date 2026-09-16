@@ -183,3 +183,21 @@ Project Setup Readiness and Effective Permission Preview were implemented after 
 - PostgreSQL 17/API and MinIO object roundtrip: passed;
 - isolated restore drill: passed with 33 migrations retained for inspection;
 - identity container and all 8 Pilot policy tests: passed.
+
+## Checkpoint 22 verification extension
+
+Daily Report revision lineage, permission-scoped My Work and durable in-app Notifications were implemented after Checkpoint 21. Connected GitHub Actions run [`35146249608`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35146249608) on source commit `9e09f04f12b908fbfaf0e2f8718ade05f2be91ab` completed successfully across all six jobs:
+
+- .NET 10 Release build: passed with zero warnings;
+- C# tests: 223 passed, 0 failed;
+- Web/API/testability tests: 109 passed;
+- ESLint, Persian UI audit, Persian calendar audit, TypeScript and Next.js production build: passed;
+- repository validation: 256 C# module files;
+- endpoint/mutation audit: 212 endpoints, 169 mutations and 5 documented protocol-managed mutations;
+- PostgreSQL 17 correction workflow, My Work, Notification acknowledgement and direct Audit/Outbox/Idempotency database verification: passed;
+- MinIO object roundtrip and isolated restore drill: passed with 35 migrations retained for inspection;
+- Identity Container and all 8 Pilot/Release policy tests: passed.
+
+The connected scenario also found and closed a lineage interaction defect in offline duplicate-date detection. Sync now resolves the root report for a project date instead of assuming the correction chain contains only one row, and a repository guard pins this rule.
+
+Per the approved additive roadmap, the repository now advances to Checkpoint 23. PMCS V1 is not yet Feature Complete, Qualified, Final or Locked.

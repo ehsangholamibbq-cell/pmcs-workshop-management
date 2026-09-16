@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 22 implementation:
+Foundation Sprint — checkpoint 22 verified; checkpoint 23 is next:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -114,7 +114,7 @@ Foundation Sprint — checkpoint 22 implementation:
 - Project Registry واقعی بدون شناسه نمونه، ایجاد Draft و فعال‌سازی ممیزی‌شده و نسخه‌دار
 - Lifecycle guard برای جلوگیری از عملیات رسمی روی پروژه غیرفعال
 - Location/LBS سلسله‌مراتبی با ROOT، بازنشستگی کنترل‌شده و شناسه پایدار تا Fact و Project State
-- گیت سراسری قرارداد ۲۰۲ Endpoint و ۱۶۳ Mutation در CI
+- گیت سراسری قرارداد ۲۱۲ Endpoint و ۱۶۹ Mutation در CI
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
 
 ## تصمیم‌های بنیادین
