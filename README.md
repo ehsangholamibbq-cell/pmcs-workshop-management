@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 23 verified; checkpoint 24 is next:
+`PMCS V1 — Feature Complete` after verified Checkpoint 24. The product is not yet Qualified, Final or Locked; QA Foundation is next:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -26,6 +26,11 @@ Foundation Sprint — checkpoint 23 verified; checkpoint 24 is next:
 - Finance Lite برای Receipt، Payment، Petty Cash Funding/Expense با Workflow کنترل‌شده
 - Budget Baseline اختیاری با Submit/Approve/Return/Supersede
 - Financial State مستقل از Health عملیاتی و قابل استفاده بدون بودجه اولیه
+- تعهدات پرداختنی/دریافتنی با سررسید، Aging قطعی و تسویه متصل به رکورد مالی Posted
+- درخواست، تنخواه‌گردانی و تسویه تنخواه با کنترل تراز و تأیید مستقل
+- کارمزد مدیریتی اختیاری، نسخه‌دار و مؤثر از تاریخ مشخص بر مبنای هزینه شناسایی‌شده
+- Verification مستقل Finance برای محاسبه، رکورد، Audit، Permission و اتصال بین‌ماژولی
+- اتصال پایدار رکوردهای مالی به Party، Contract، Commitment، Location، Cost Center و WBS
 - Commercial bounded context مستقل برای Party، Contract، Amendment، Purchase Request و Purchase Order
 - سقف اولیه قرارداد و برآورد خرید اختیاری؛ نبود آن‌ها هرگز صفر تلقی نمی‌شود
 - Commitment واقعی فقط پس از صدور Purchase Order از درخواست Approved
@@ -198,5 +203,6 @@ npm run check
 - انتشار Pilot: [`docs/runbooks/pilot-release.md`](docs/runbooks/pilot-release.md)
 - ممیزی جامع Blueprint و یکپارچگی: [`docs/audits/system-integrity-traceability-2026-09-13.md`](docs/audits/system-integrity-traceability-2026-09-13.md)
 - قرارداد Project Setup و Location: [`docs/api/project-setup-and-locations-v1.md`](docs/api/project-setup-and-locations-v1.md)
+- گزارش Checkpoint 24: [`docs/checkpoints/foundation-24.md`](docs/checkpoints/foundation-24.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.
