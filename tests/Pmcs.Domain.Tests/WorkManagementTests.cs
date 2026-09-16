@@ -53,7 +53,8 @@ public sealed class WorkManagementTests
         Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.read"));
         Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.submit"));
         Assert.False(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.review"));
-        Assert.True(ProjectPermissionService.GrantsRole("ProjectController", "field.daily-reports.review"));
+        Assert.True(ProjectPermissionService.GrantsRole("TechnicalOffice", "field.daily-reports.review"));
+        Assert.False(ProjectPermissionService.GrantsRole("ProjectController", "field.daily-reports.review"));
         Assert.True(ProjectPermissionService.GrantsRole("Observer", "actions.read"));
         Assert.False(ProjectPermissionService.GrantsRole("Observer", "actions.update"));
     }
