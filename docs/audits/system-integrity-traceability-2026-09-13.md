@@ -221,3 +221,11 @@ Offline recovery orchestration, duplicate/replay evidence, simultaneous-user con
 The verified implementation adds a durable project-scoped recovery state machine, bounded retry, crash-state recovery, stable attachment idempotency, prior-batch dependency receipts and testable diagnostics without placing business payload in the receipt store. The connected build also exposed four performance-analyzer findings in the initial logging/SQL wrapper; they were corrected without suppression before the fully green run.
 
 Per the approved additive roadmap, the repository now advances to Checkpoint 24. PMCS V1 is not yet Feature Complete, Qualified, Final or Locked.
+
+## Checkpoint 24 implementation extension
+
+Finance Lite completion now adds explicit payable/receivable obligations and immutable settlement allocation, a separately approved petty-cash advance and balanced reconciliation workflow, optional versioned management-fee policy, deterministic aging/exposure calculations and stable Party/Contract/Commitment/Location/Cost Center/WBS lineage. The permission-aware verification service independently recalculates Financial State, inspects Finance records, validates cross-module references and verifies Audit correlation without relying on the browser calculation.
+
+Local evidence currently includes 124 passing Web/API/testability tests, successful ESLint, Persian UI, Persian calendar, TypeScript and Next.js production checks, validation of 267 C# module files, and an audit of 236 endpoints, 188 mutations and 5 documented protocol-managed mutations. The connected .NET/PostgreSQL/MinIO/Identity/Release evidence is still pending and no connected result is asserted here.
+
+Checkpoint 24 remains an implementation candidate until every connected GitHub Actions job and the direct PostgreSQL Finance verification script pass. Only then may the repository advance to `PMCS V1 — Feature Complete`; it must still not be described as Qualified, Final or Locked before QA Foundation and the full qualification cycle.
