@@ -199,7 +199,8 @@ internal sealed class OfflineDailyReportOperationHandler(
                 var reportForDate = await dbContext.DailyReports.AsNoTracking().SingleOrDefaultAsync(
                     item => item.TenantId == context.TenantId &&
                         item.ProjectId == operation.ProjectId &&
-                        item.ReportDate == payload.ReportDate,
+                        item.ReportDate == payload.ReportDate &&
+                        item.SupersedesReportId == null,
                     cancellationToken);
                 if (reportForDate is not null)
                 {

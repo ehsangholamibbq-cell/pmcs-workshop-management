@@ -70,6 +70,11 @@ const fieldSync = readFileSync(
 assert.match(fieldSync, /project\.Status != ProjectStatus\.Active/);
 assert.match(fieldSync, /projectLocationDirectory\.FindActiveAsync/);
 assert.match(fieldSync, /project\.location\.required/);
+assert.match(
+  fieldSync,
+  /ReportDate == payload\.ReportDate\s*&&\s*item\.SupersedesReportId == null/,
+  "Offline duplicate-date detection must target the lineage root, not fail when correction versions exist.",
+);
 
 const directFacts = readFileSync(
   join(backendRoot, "Pmcs.Modules.FieldOperations/Endpoints/DailyReportEndpoints.cs"),
