@@ -22,9 +22,16 @@ public sealed class FinanceModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddDbContext<FinanceDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IFinancialStateSource, FinancialStateSource>();
+        services.AddScoped<IFinanceControlReadService, FinanceControlReadService>();
+        services.AddScoped<IFinanceVerificationService, FinanceVerificationService>();
         services.AddSingleton<IDatabaseMigration, FinanceInitialMigration>();
         services.AddSingleton<IDatabaseMigration, FinanceCommercialLinkMigration>();
+        services.AddSingleton<IDatabaseMigration, FinanceControlAndLocationMigration>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapFinanceEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapFinanceEndpoints();
+        endpoints.MapFinanceControlEndpoints();
+    }
 }

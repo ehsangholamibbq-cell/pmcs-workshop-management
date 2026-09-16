@@ -8,6 +8,14 @@ public interface ICommercialReferenceDirectory
         Guid? contractId,
         Guid? commitmentId,
         CancellationToken cancellationToken = default);
+
+    Task<CommercialReferenceValidation> ValidateAsync(
+        Guid tenantId,
+        Guid projectId,
+        Guid? contractId,
+        Guid? commitmentId,
+        Guid? partyId,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record CommercialReferenceValidation(bool IsValid, string? ErrorCode)

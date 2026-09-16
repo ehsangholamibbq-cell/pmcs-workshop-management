@@ -52,7 +52,7 @@ ObjectStorage__BucketName="${PMCS_TEST_S3_BUCKET}" \
 ObjectStorage__Region="us-east-1" \
 ObjectStorage__ForcePathStyle=true \
 ObjectStorage__CreateBucketIfMissing=true \
-RateLimiting__GeneralPermitLimit=60 \
+RateLimiting__GeneralPermitLimit=200 \
 RateLimiting__GeneralWindowSeconds=60 \
 RateLimiting__InsightPermitLimit=5 \
 RateLimiting__InsightWindowSeconds=60 \
@@ -498,6 +498,114 @@ grep -q '"recoveryState":"Healthy"' <<<"${sync_diagnostics}"
 grep -q '"checkpointLag":0' <<<"${sync_diagnostics}"
 grep -Eq '"recentReplayCount":[1-9][0-9]*' <<<"${sync_diagnostics}"
 
+current_step="checking Checkpoint 24 finance controls and independent verification"
+finance_operator_capture="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/identity/permissions/preview?userId=${field_user_id}&projectId=${project_id}&operation=finance.obligations.capture&proposedRoleCode=FinanceOperator")"
+grep -q '"allowed":true' <<<"${finance_operator_capture}"
+finance_operator_review="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/identity/permissions/preview?userId=${field_user_id}&projectId=${project_id}&operation=finance.obligations.review&proposedRoleCode=FinanceOperator")"
+grep -q '"allowed":false' <<<"${finance_operator_review}"
+finance_manager_verification="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/identity/permissions/preview?userId=${field_user_id}&projectId=${project_id}&operation=finance.verification.read&proposedRoleCode=FinanceManager")"
+grep -q '"allowed":true' <<<"${finance_manager_verification}"
+create_posted_financial_record() {
+  local record_id="$1"
+  local record_type="$2"
+  local record_amount="$3"
+  local record_number="$4"
+  local create_response
+  local submit_response
+  local record_revision
+
+  create_response="$(curl --silent --fail \
+    --request POST \
+    --header "X-Tenant-Id: ${tenant_id}" \
+    --header "X-User-Id: ${user_id}" \
+    --header "Idempotency-Key: cp24-record-${record_number}" \
+    --header 'Content-Type: application/json' \
+    --data "{\"clientGeneratedId\":\"${record_id}\",\"type\":\"${record_type}\",\"transactionDate\":\"2026-09-01\",\"amount\":${record_amount},\"currencyCode\":\"IRR\",\"description\":\"Checkpoint 24 verified ${record_type}\",\"counterparty\":\"Integration party\",\"documentNumber\":\"${record_number}\",\"contractReference\":null,\"contractId\":null,\"commitmentId\":null,\"costCenterCode\":\"CI\",\"partyId\":null,\"locationId\":\"${location_id}\",\"wbsReference\":\"CI-WBS\"}" \
+    "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/records")"
+  record_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${create_response}")"
+  submit_response="$(curl --silent --fail \
+    --request POST \
+    --header "X-Tenant-Id: ${tenant_id}" \
+    --header "X-User-Id: ${user_id}" \
+    --header "Idempotency-Key: cp24-record-submit-${record_number}" \
+    --header 'Content-Type: application/json' \
+    --data "{\"baseRevision\":${record_revision}}" \
+    "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/records/${record_id}/submit")"
+  record_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${submit_response}")"
+  curl --silent --fail \
+    --request POST \
+    --header "X-Tenant-Id: ${tenant_id}" \
+    --header "X-User-Id: ${user_id}" \
+    --header "Idempotency-Key: cp24-record-post-${record_number}" \
+    --header 'Content-Type: application/json' \
+    --data "{\"baseRevision\":${record_revision},\"comment\":\"CI verified\"}" \
+    "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/records/${record_id}/post" >/dev/null
+}
+
+payment_record_id="88888888-8888-4888-8888-888888888881"
+funding_record_id="88888888-8888-4888-8888-888888888882"
+expense_record_id="88888888-8888-4888-8888-888888888883"
+return_record_id="88888888-8888-4888-8888-888888888884"
+create_posted_financial_record "${payment_record_id}" "Payment" "1000" "PAY-CI-01"
+create_posted_financial_record "${funding_record_id}" "PettyCashFunding" "500" "PCF-CI-01"
+create_posted_financial_record "${expense_record_id}" "PettyCashExpense" "400" "PCE-CI-01"
+create_posted_financial_record "${return_record_id}" "Receipt" "100" "PCR-CI-01"
+
+obligation_id="99999999-9999-4999-8999-999999999991"
+obligation_response="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: cp24-obligation-create' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"${obligation_id}\",\"type\":\"Payable\",\"number\":\"OB-CI-01\",\"description\":\"Checkpoint 24 payable\",\"issueDate\":\"2026-09-01\",\"dueDate\":\"2026-09-10\",\"amount\":1000,\"currencyCode\":\"IRR\",\"partyId\":null,\"counterparty\":\"Integration party\",\"contractId\":null,\"commitmentId\":null,\"costCenterCode\":\"CI\",\"wbsReference\":\"CI-WBS\",\"locationId\":\"${location_id}\"}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/obligations")"
+obligation_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${obligation_response}")"
+obligation_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-obligation-submit' --header 'Content-Type: application/json' --data "{\"baseRevision\":${obligation_revision}}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/obligations/${obligation_id}/submit")"
+obligation_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${obligation_response}")"
+obligation_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-obligation-approve' --header 'Content-Type: application/json' --data "{\"baseRevision\":${obligation_revision},\"comment\":\"CI approved\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/obligations/${obligation_id}/approve")"
+obligation_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${obligation_response}")"
+curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-obligation-settle' --header 'Content-Type: application/json' --data "{\"baseRevision\":${obligation_revision},\"financialRecordId\":\"${payment_record_id}\",\"amount\":1000}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/obligations/${obligation_id}/settlements" | grep -q '"status":"Settled"'
+
+petty_cash_id="99999999-9999-4999-8999-999999999992"
+petty_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-create' --header 'Content-Type: application/json' --data "{\"clientGeneratedId\":\"${petty_cash_id}\",\"number\":\"PC-CI-01\",\"purpose\":\"Checkpoint 24 petty cash\",\"custodian\":\"CI cashier\",\"requestDate\":\"2026-09-01\",\"reconciliationDueDate\":\"2026-09-10\",\"requestedAmount\":500,\"currencyCode\":\"IRR\",\"locationId\":\"${location_id}\",\"costCenterCode\":\"CI\",\"wbsReference\":\"CI-WBS\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests")"
+petty_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${petty_response}")"
+petty_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-submit' --header 'Content-Type: application/json' --data "{\"baseRevision\":${petty_revision}}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests/${petty_cash_id}/submit")"
+petty_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${petty_response}")"
+petty_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-approve' --header 'Content-Type: application/json' --data "{\"baseRevision\":${petty_revision},\"approvedAmount\":500,\"comment\":\"CI approved\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests/${petty_cash_id}/approve")"
+petty_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${petty_response}")"
+petty_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-advance' --header 'Content-Type: application/json' --data "{\"baseRevision\":${petty_revision},\"advanceRecordId\":\"${funding_record_id}\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests/${petty_cash_id}/advance")"
+petty_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${petty_response}")"
+petty_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-reconcile' --header 'Content-Type: application/json' --data "{\"baseRevision\":${petty_revision},\"expenseAmount\":400,\"returnedAmount\":100,\"expenseRecordId\":\"${expense_record_id}\",\"returnRecordId\":\"${return_record_id}\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests/${petty_cash_id}/reconciliation")"
+petty_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${petty_response}")"
+curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-petty-reconciliation-approve' --header 'Content-Type: application/json' --data "{\"baseRevision\":${petty_revision},\"comment\":\"CI reconciled\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/petty-cash-requests/${petty_cash_id}/reconciliation/approve" | grep -q '"status":"Reconciled"'
+
+fee_policy_id="99999999-9999-4999-8999-999999999993"
+fee_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-fee-create' --header 'Content-Type: application/json' --data "{\"clientGeneratedId\":\"${fee_policy_id}\",\"title\":\"CI management fee\",\"ratePercent\":5,\"calculationBase\":\"RecognizedSpend\",\"effectiveFrom\":\"2026-09-01\",\"notes\":\"Checkpoint 24\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/management-fee-policies")"
+fee_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${fee_response}")"
+fee_response="$(curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-fee-submit' --header 'Content-Type: application/json' --data "{\"baseRevision\":${fee_revision}}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/management-fee-policies/${fee_policy_id}/submit")"
+fee_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${fee_response}")"
+curl --silent --fail --request POST --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" --header 'Idempotency-Key: cp24-fee-approve' --header 'Content-Type: application/json' --data "{\"baseRevision\":${fee_revision},\"comment\":\"CI approved\"}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/management-fee-policies/${fee_policy_id}/approve" | grep -q '"status":"Approved"'
+
+finance_control_state="$(curl --silent --fail --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/control-state")"
+grep -q '"openPayableAmount":0' <<<"${finance_control_state}"
+grep -q '"outstandingAdvanceAmount":0' <<<"${finance_control_state}"
+grep -q '"managementFeeAmount":70' <<<"${finance_control_state}"
+finance_verification="$(curl --silent --fail --header "X-Tenant-Id: ${tenant_id}" --header "X-User-Id: ${user_id}" "http://127.0.0.1:${port}/api/v1/projects/${project_id}/finance/verification")"
+grep -q '"snapshotMatchesIndependentCalculation":true' <<<"${finance_verification}"
+grep -q '"invalidLocationLinkCount":0' <<<"${finance_verification}"
+grep -q '"invalidCommercialLinkCount":0' <<<"${finance_verification}"
+grep -q '"passed":true' <<<"${finance_verification}"
+
 current_step="checking the insight rate limit"
 insight_status=""
 for _ in {1..6}; do
@@ -516,7 +624,7 @@ fi
 
 current_step="checking the anonymous API rate limit"
 rate_limited=false
-for _ in {1..65}; do
+for _ in {1..220}; do
   status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
     "http://127.0.0.1:${port}/api/v1/foundation")"
   if [[ "${status}" == "429" ]]; then

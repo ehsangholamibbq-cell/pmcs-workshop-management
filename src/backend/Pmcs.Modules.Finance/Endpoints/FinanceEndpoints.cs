@@ -103,6 +103,7 @@ internal static class FinanceEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         IProjectDirectory projectDirectory,
+        IProjectLocationDirectory locationDirectory,
         ICommercialReferenceDirectory commercialReferenceDirectory,
         FinanceDbContext dbContext,
         IClock clock,
@@ -160,10 +161,18 @@ internal static class FinanceEndpoints
             projectId,
             request.ContractId,
             request.CommitmentId,
+            request.PartyId,
             cancellationToken);
         if (!commercialReference.IsValid)
         {
             return Results.UnprocessableEntity(new { code = commercialReference.ErrorCode });
+        }
+
+        var location = await ResolveLocationAsync(
+            locationDirectory, actor.TenantId, projectId, request.LocationId, cancellationToken);
+        if (request.LocationId.HasValue && location is null)
+        {
+            return Results.UnprocessableEntity(new { code = "finance.location.not_active" });
         }
 
         var record = FinancialRecord.Create(
@@ -182,7 +191,11 @@ internal static class FinanceEndpoints
             request.CommitmentId,
             request.CostCenterCode,
             actor.UserId,
-            clock.UtcNow);
+            clock.UtcNow,
+            request.PartyId,
+            request.LocationId,
+            location?.Code,
+            request.WbsReference);
         dbContext.FinancialRecords.Add(record);
         var response = FinancialRecordResponse.From(record);
         await PersistSimpleAsync(
@@ -261,6 +274,7 @@ internal static class FinanceEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         IProjectDirectory projectDirectory,
+        IProjectLocationDirectory locationDirectory,
         ICommercialReferenceDirectory commercialReferenceDirectory,
         FinanceDbContext dbContext,
         IClock clock,
@@ -313,10 +327,18 @@ internal static class FinanceEndpoints
             projectId,
             request.ContractId,
             request.CommitmentId,
+            request.PartyId,
             cancellationToken);
         if (!commercialReference.IsValid)
         {
             return Results.UnprocessableEntity(new { code = commercialReference.ErrorCode });
+        }
+
+        var location = await ResolveLocationAsync(
+            locationDirectory, actor.TenantId, projectId, request.LocationId, cancellationToken);
+        if (request.LocationId.HasValue && location is null)
+        {
+            return Results.UnprocessableEntity(new { code = "finance.location.not_active" });
         }
 
         var record = await FindRecordAsync(dbContext, actor.TenantId, projectId, recordId, cancellationToken);
@@ -342,7 +364,11 @@ internal static class FinanceEndpoints
             request.ContractReference,
             request.ContractId,
             request.CommitmentId,
-            request.CostCenterCode);
+            request.CostCenterCode,
+            request.PartyId,
+            request.LocationId,
+            location?.Code,
+            request.WbsReference);
         var response = FinancialRecordResponse.From(record);
         await PersistSimpleAsync(
             dbContext, httpContext, actor, projectId, record.Id, "FinancialRecord", "FinancialRecordAmended",
@@ -1062,8 +1088,21 @@ internal static class FinanceEndpoints
         ["contractId"] = item.ContractId,
         ["commitmentId"] = item.CommitmentId,
         ["costCenterCode"] = item.CostCenterCode,
+        ["partyId"] = item.PartyId,
+        ["locationId"] = item.LocationId,
+        ["locationCode"] = item.LocationCode,
+        ["wbsReference"] = item.WbsReference,
         ["revision"] = item.Revision
     };
+
+    private static async Task<ProjectLocationReference?> ResolveLocationAsync(
+        IProjectLocationDirectory directory,
+        Guid tenantId,
+        Guid projectId,
+        Guid? locationId,
+        CancellationToken cancellationToken) => locationId.HasValue
+        ? await directory.FindActiveAsync(tenantId, projectId, locationId.Value, cancellationToken)
+        : null;
 
     private static Dictionary<string, object?> BaselineAuditData(BudgetBaseline item) => new()
     {

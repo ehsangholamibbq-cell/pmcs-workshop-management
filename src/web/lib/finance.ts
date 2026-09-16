@@ -21,6 +21,10 @@ export interface FinancialRecordModel {
   readonly contractId: string | null;
   readonly commitmentId: string | null;
   readonly costCenterCode: string | null;
+  readonly partyId: string | null;
+  readonly locationId: string | null;
+  readonly locationCode: string | null;
+  readonly wbsReference: string | null;
   readonly status: FinancialRecordStatus;
   readonly reviewComment: string | null;
   readonly revision: number;
@@ -72,6 +76,9 @@ export interface CreateFinancialRecordInput {
   readonly contractId?: string;
   readonly commitmentId?: string;
   readonly costCenterCode?: string;
+  readonly partyId?: string;
+  readonly locationId?: string;
+  readonly wbsReference?: string;
 }
 
 interface ApiIdentity {
@@ -111,6 +118,9 @@ export async function createFinancialRecord(
     contractId: emptyToNull(input.contractId),
     commitmentId: emptyToNull(input.commitmentId),
     costCenterCode: emptyToNull(input.costCenterCode),
+    partyId: emptyToNull(input.partyId),
+    locationId: emptyToNull(input.locationId),
+    wbsReference: emptyToNull(input.wbsReference),
   });
 }
 
@@ -155,6 +165,9 @@ export async function amendFinancialRecord(
       contractId: record.contractId,
       commitmentId: record.commitmentId,
       costCenterCode: record.costCenterCode,
+      partyId: record.partyId,
+      locationId: record.locationId,
+      wbsReference: record.wbsReference,
     }),
   });
 }

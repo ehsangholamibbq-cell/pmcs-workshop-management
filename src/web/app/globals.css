@@ -1419,6 +1419,19 @@ output {
   grid-column: 1 / -1;
 }
 
+.finance-completion {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.finance-completion .budget-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
 .commercial-control {
   grid-column: 1 / -1;
 }

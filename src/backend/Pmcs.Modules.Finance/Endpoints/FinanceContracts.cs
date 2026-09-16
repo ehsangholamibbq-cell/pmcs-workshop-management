@@ -15,7 +15,10 @@ public sealed record CreateFinancialRecordRequest(
     string? ContractReference,
     Guid? ContractId,
     Guid? CommitmentId,
-    string? CostCenterCode);
+    string? CostCenterCode,
+    Guid? PartyId = null,
+    Guid? LocationId = null,
+    string? WbsReference = null);
 
 public sealed record SubmitFinanceItemRequest(long BaseRevision);
 
@@ -31,7 +34,10 @@ public sealed record AmendFinancialRecordRequest(
     string? ContractReference,
     Guid? ContractId,
     Guid? CommitmentId,
-    string? CostCenterCode);
+    string? CostCenterCode,
+    Guid? PartyId = null,
+    Guid? LocationId = null,
+    string? WbsReference = null);
 
 public sealed record ReviewFinanceItemRequest(long BaseRevision, string? Comment);
 
@@ -49,6 +55,10 @@ public sealed record FinancialRecordResponse(
     Guid? ContractId,
     Guid? CommitmentId,
     string? CostCenterCode,
+    Guid? PartyId,
+    Guid? LocationId,
+    string? LocationCode,
+    string? WbsReference,
     FinancialRecordStatus Status,
     Guid CreatedBy,
     DateTimeOffset CreatedAt,
@@ -72,6 +82,10 @@ public sealed record FinancialRecordResponse(
         item.ContractId,
         item.CommitmentId,
         item.CostCenterCode,
+        item.PartyId,
+        item.LocationId,
+        item.LocationCode,
+        item.WbsReference,
         item.Status,
         item.CreatedBy,
         item.CreatedAt,
@@ -80,6 +94,230 @@ public sealed record FinancialRecordResponse(
         item.ReviewedAt,
         item.ReviewComment,
         item.Revision);
+}
+
+public sealed record CreateFinancialObligationRequest(
+    Guid? ClientGeneratedId,
+    FinancialObligationType Type,
+    string Number,
+    string Description,
+    DateOnly IssueDate,
+    DateOnly DueDate,
+    decimal Amount,
+    string? CurrencyCode,
+    Guid? PartyId,
+    string? Counterparty,
+    Guid? ContractId,
+    Guid? CommitmentId,
+    string? CostCenterCode,
+    string? WbsReference,
+    Guid? LocationId);
+
+public sealed record AmendFinancialObligationRequest(
+    long BaseRevision,
+    FinancialObligationType Type,
+    string Number,
+    string Description,
+    DateOnly IssueDate,
+    DateOnly DueDate,
+    decimal Amount,
+    string? CurrencyCode,
+    Guid? PartyId,
+    string? Counterparty,
+    Guid? ContractId,
+    Guid? CommitmentId,
+    string? CostCenterCode,
+    string? WbsReference,
+    Guid? LocationId);
+
+public sealed record FinancialObligationResponse(
+    Guid Id,
+    Guid ProjectId,
+    FinancialObligationType Type,
+    string Number,
+    string Description,
+    DateOnly IssueDate,
+    DateOnly DueDate,
+    decimal Amount,
+    decimal SettledAmount,
+    decimal OutstandingAmount,
+    string CurrencyCode,
+    Guid? PartyId,
+    string? Counterparty,
+    Guid? ContractId,
+    Guid? CommitmentId,
+    string? CostCenterCode,
+    string? WbsReference,
+    Guid? LocationId,
+    string? LocationCode,
+    FinancialObligationStatus Status,
+    string? ReviewComment,
+    long Revision)
+{
+    internal static FinancialObligationResponse From(FinancialObligation item) => new(
+        item.Id,
+        item.ProjectId,
+        item.Type,
+        item.Number,
+        item.Description,
+        item.IssueDate,
+        item.DueDate,
+        item.Amount,
+        item.SettledAmount,
+        item.OutstandingAmount,
+        item.CurrencyCode,
+        item.PartyId,
+        item.Counterparty,
+        item.ContractId,
+        item.CommitmentId,
+        item.CostCenterCode,
+        item.WbsReference,
+        item.LocationId,
+        item.LocationCode,
+        item.Status,
+        item.ReviewComment,
+        item.Revision);
+}
+
+public sealed record SettleFinancialObligationRequest(
+    long BaseRevision,
+    Guid FinancialRecordId,
+    decimal Amount);
+
+public sealed record CreatePettyCashRequest(
+    Guid? ClientGeneratedId,
+    string Number,
+    string Purpose,
+    string Custodian,
+    DateOnly RequestDate,
+    DateOnly ReconciliationDueDate,
+    decimal RequestedAmount,
+    string? CurrencyCode,
+    Guid? LocationId,
+    string? CostCenterCode,
+    string? WbsReference);
+
+public sealed record AmendPettyCashRequest(
+    long BaseRevision,
+    string Number,
+    string Purpose,
+    string Custodian,
+    DateOnly RequestDate,
+    DateOnly ReconciliationDueDate,
+    decimal RequestedAmount,
+    string? CurrencyCode,
+    Guid? LocationId,
+    string? CostCenterCode,
+    string? WbsReference);
+
+public sealed record ApprovePettyCashRequest(long BaseRevision, decimal ApprovedAmount, string? Comment);
+
+public sealed record RecordPettyCashAdvanceRequest(long BaseRevision, Guid AdvanceRecordId);
+
+public sealed record SubmitPettyCashReconciliationRequest(
+    long BaseRevision,
+    decimal ExpenseAmount,
+    decimal ReturnedAmount,
+    Guid ExpenseRecordId,
+    Guid? ReturnRecordId);
+
+public sealed record PettyCashRequestResponse(
+    Guid Id,
+    Guid ProjectId,
+    string Number,
+    string Purpose,
+    string Custodian,
+    DateOnly RequestDate,
+    DateOnly ReconciliationDueDate,
+    decimal RequestedAmount,
+    decimal? ApprovedAmount,
+    decimal? ReconciledExpenseAmount,
+    decimal? ReturnedAmount,
+    string CurrencyCode,
+    Guid? LocationId,
+    string? LocationCode,
+    string? CostCenterCode,
+    string? WbsReference,
+    Guid? AdvanceRecordId,
+    Guid? ExpenseRecordId,
+    Guid? ReturnRecordId,
+    PettyCashRequestStatus Status,
+    string? ReviewComment,
+    long Revision)
+{
+    internal static PettyCashRequestResponse From(PettyCashRequest item) => new(
+        item.Id,
+        item.ProjectId,
+        item.Number,
+        item.Purpose,
+        item.Custodian,
+        item.RequestDate,
+        item.ReconciliationDueDate,
+        item.RequestedAmount,
+        item.ApprovedAmount,
+        item.ReconciledExpenseAmount,
+        item.ReturnedAmount,
+        item.CurrencyCode,
+        item.LocationId,
+        item.LocationCode,
+        item.CostCenterCode,
+        item.WbsReference,
+        item.AdvanceRecordId,
+        item.ExpenseRecordId,
+        item.ReturnRecordId,
+        item.Status,
+        item.ReviewComment,
+        item.Revision);
+}
+
+public sealed record CreateManagementFeePolicyRequest(
+    Guid? ClientGeneratedId,
+    string Title,
+    decimal RatePercent,
+    ManagementFeeBase CalculationBase,
+    DateOnly EffectiveFrom,
+    string? Notes);
+
+public sealed record AmendManagementFeePolicyRequest(
+    long BaseRevision,
+    string Title,
+    decimal RatePercent,
+    ManagementFeeBase CalculationBase,
+    DateOnly EffectiveFrom,
+    string? Notes);
+
+public sealed record ManagementFeePolicyResponse(
+    Guid Id,
+    Guid ProjectId,
+    string Title,
+    decimal RatePercent,
+    ManagementFeeBase CalculationBase,
+    DateOnly EffectiveFrom,
+    string? Notes,
+    ManagementFeePolicyStatus Status,
+    string? ReviewComment,
+    long Revision)
+{
+    internal static ManagementFeePolicyResponse From(ManagementFeePolicy item) => new(
+        item.Id,
+        item.ProjectId,
+        item.Title,
+        item.RatePercent,
+        item.CalculationBase,
+        item.EffectiveFrom,
+        item.Notes,
+        item.Status,
+        item.ReviewComment,
+        item.Revision);
+}
+
+public sealed record FinanceControlStateResponse(
+    FinancialStateResponse FinancialState,
+    FinanceControlCalculation Control)
+{
+    public static FinanceControlStateResponse From(FinanceControlStateRecord state) => new(
+        FinancialStateResponse.From(state.FinancialState),
+        state.Control);
 }
 
 public sealed record CreateBudgetBaselineRequest(

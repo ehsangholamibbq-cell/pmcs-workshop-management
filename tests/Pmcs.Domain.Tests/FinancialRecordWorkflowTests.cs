@@ -59,6 +59,23 @@ public sealed class FinancialRecordWorkflowTests
         Assert.Equal(5, record.Revision);
     }
 
+    [Fact]
+    public void RecordPreservesStablePartyLocationAndWbsLineage()
+    {
+        var partyId = Guid.NewGuid();
+        var locationId = Guid.NewGuid();
+        var record = FinancialRecord.Create(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), FinancialRecordType.Payment,
+            new DateOnly(2026, 9, 9), 100m, "IRR", "Location-linked payment", null, null,
+            null, null, null, "CC-1", Guid.NewGuid(), DateTimeOffset.UtcNow,
+            partyId, locationId, "ZONE-A", "WBS-1");
+
+        Assert.Equal(partyId, record.PartyId);
+        Assert.Equal(locationId, record.LocationId);
+        Assert.Equal("ZONE-A", record.LocationCode);
+        Assert.Equal("WBS-1", record.WbsReference);
+    }
+
     private static FinancialRecord CreateRecord() => FinancialRecord.Create(
         Guid.NewGuid(),
         Guid.NewGuid(),

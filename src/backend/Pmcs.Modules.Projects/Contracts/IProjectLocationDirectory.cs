@@ -2,6 +2,12 @@ namespace Pmcs.Modules.Projects.Contracts;
 
 public interface IProjectLocationDirectory
 {
+    Task<ProjectLocationReference?> FindAsync(
+        Guid tenantId,
+        Guid projectId,
+        Guid locationId,
+        CancellationToken cancellationToken = default);
+
     Task<ProjectLocationReference?> FindActiveAsync(
         Guid tenantId,
         Guid projectId,

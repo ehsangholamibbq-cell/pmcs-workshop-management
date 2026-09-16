@@ -36,6 +36,14 @@ public sealed class FinancialRecord : AggregateRoot
 
     public string? CostCenterCode { get; private set; }
 
+    public Guid? PartyId { get; private set; }
+
+    public Guid? LocationId { get; private set; }
+
+    public string? LocationCode { get; private set; }
+
+    public string? WbsReference { get; private set; }
+
     public FinancialRecordStatus Status { get; private set; }
 
     public Guid CreatedBy { get; private set; }
@@ -66,7 +74,11 @@ public sealed class FinancialRecord : AggregateRoot
         Guid? commitmentId,
         string? costCenterCode,
         Guid createdBy,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        Guid? partyId = null,
+        Guid? locationId = null,
+        string? locationCode = null,
+        string? wbsReference = null)
     {
         if (id == Guid.Empty || tenantId == Guid.Empty || projectId == Guid.Empty || createdBy == Guid.Empty)
         {
@@ -88,6 +100,9 @@ public sealed class FinancialRecord : AggregateRoot
             throw new DomainRuleException("finance.record.amount.invalid", "Amount must be positive and have at most two decimal places.");
         }
 
+        ValidateOptionalIdentity(partyId, "finance.record.party.invalid");
+        ValidateOptionalIdentity(locationId, "finance.record.location.invalid");
+
         return new FinancialRecord
         {
             Id = id,
@@ -104,6 +119,10 @@ public sealed class FinancialRecord : AggregateRoot
             ContractId = contractId,
             CommitmentId = commitmentId,
             CostCenterCode = Optional(costCenterCode, 120, "finance.record.cost_center.too_long"),
+            PartyId = partyId,
+            LocationId = locationId,
+            LocationCode = Optional(locationCode, 80, "finance.record.location_code.too_long"),
+            WbsReference = Optional(wbsReference, 240, "finance.record.wbs.too_long"),
             Status = FinancialRecordStatus.Draft,
             CreatedBy = createdBy,
             CreatedAt = createdAt
@@ -134,7 +153,11 @@ public sealed class FinancialRecord : AggregateRoot
         string? contractReference,
         Guid? contractId,
         Guid? commitmentId,
-        string? costCenterCode)
+        string? costCenterCode,
+        Guid? partyId = null,
+        Guid? locationId = null,
+        string? locationCode = null,
+        string? wbsReference = null)
     {
         EnsureRevision(baseRevision);
         EnsureEditable();
@@ -153,6 +176,9 @@ public sealed class FinancialRecord : AggregateRoot
             throw new DomainRuleException("finance.record.amount.invalid", "Amount must be positive and have at most two decimal places.");
         }
 
+        ValidateOptionalIdentity(partyId, "finance.record.party.invalid");
+        ValidateOptionalIdentity(locationId, "finance.record.location.invalid");
+
         Type = type;
         TransactionDate = transactionDate;
         Amount = amount;
@@ -164,6 +190,10 @@ public sealed class FinancialRecord : AggregateRoot
         ContractId = contractId;
         CommitmentId = commitmentId;
         CostCenterCode = Optional(costCenterCode, 120, "finance.record.cost_center.too_long");
+        PartyId = partyId;
+        LocationId = locationId;
+        LocationCode = Optional(locationCode, 80, "finance.record.location_code.too_long");
+        WbsReference = Optional(wbsReference, 240, "finance.record.wbs.too_long");
         AdvanceRevision();
     }
 
@@ -252,6 +282,14 @@ public sealed class FinancialRecord : AggregateRoot
         }
 
         return normalized;
+    }
+
+    private static void ValidateOptionalIdentity(Guid? value, string errorCode)
+    {
+        if (value == Guid.Empty)
+        {
+            throw new DomainRuleException(errorCode, "Optional identity cannot be empty.");
+        }
     }
 }
 

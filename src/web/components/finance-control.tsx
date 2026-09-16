@@ -2,6 +2,7 @@
 
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
+import { FinanceCompletionPanel } from "@/components/finance-completion-panel";
 import {
   amendBudgetBaseline,
   amendFinancialRecord,
@@ -19,10 +20,13 @@ import {
 } from "@/lib/finance";
 import {
   listContracts,
+  listParties,
   listPurchaseOrders,
+  type PartyModel,
   type ProjectContractModel,
   type PurchaseOrderModel,
 } from "@/lib/commercial";
+import { listProjectLocations, type ProjectLocationModel } from "@/lib/projects";
 import { formatAmountFa, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 
@@ -42,6 +46,8 @@ export function FinanceControl(props: FinanceControlProps) {
   const [state, setState] = useState<FinancialStateModel | null>(null);
   const [contracts, setContracts] = useState<readonly ProjectContractModel[]>([]);
   const [commitments, setCommitments] = useState<readonly PurchaseOrderModel[]>([]);
+  const [parties, setParties] = useState<readonly PartyModel[]>([]);
+  const [locations, setLocations] = useState<readonly ProjectLocationModel[]>([]);
   const [type, setType] = useState<FinancialRecordType>("Payment");
   const [transactionDate, setTransactionDate] = useState(todayIsoInProjectTimeZone);
   const [amount, setAmount] = useState("");
@@ -52,6 +58,9 @@ export function FinanceControl(props: FinanceControlProps) {
   const [contractId, setContractId] = useState("");
   const [commitmentId, setCommitmentId] = useState("");
   const [costCenterCode, setCostCenterCode] = useState("");
+  const [partyId, setPartyId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [wbsReference, setWbsReference] = useState("");
   const [baselineTitle, setBaselineTitle] = useState("");
   const [baselineAmount, setBaselineAmount] = useState("");
   const [baselineNotes, setBaselineNotes] = useState("");
@@ -70,18 +79,22 @@ export function FinanceControl(props: FinanceControlProps) {
     }
 
     try {
-      const [currentRecords, currentBaselines, currentState, currentContracts, currentCommitments] = await Promise.all([
+      const [currentRecords, currentBaselines, currentState, currentContracts, currentCommitments, currentParties, currentLocations] = await Promise.all([
         listFinancialRecords(props.apiBaseUrl, identity, props.projectId),
         listBudgetBaselines(props.apiBaseUrl, identity, props.projectId),
         getFinancialState(props.apiBaseUrl, identity, props.projectId),
         listContracts(props.apiBaseUrl, identity, props.projectId),
         listPurchaseOrders(props.apiBaseUrl, identity, props.projectId),
+        listParties(props.apiBaseUrl, identity, props.projectId),
+        listProjectLocations(props.apiBaseUrl, identity, props.projectId),
       ]);
       setRecords(currentRecords);
       setBaselines(currentBaselines);
       setState(currentState);
       setContracts(currentContracts);
       setCommitments(currentCommitments);
+      setParties(currentParties);
+      setLocations(currentLocations);
       setMessage(financialStateMessage(currentState));
     } catch (error) {
       setMessage(toUserMessage(error, "داده مالی از سرور دریافت نشد یا دسترسی این کاربر محدود است."));
@@ -115,6 +128,9 @@ export function FinanceControl(props: FinanceControlProps) {
         contractId,
         commitmentId,
         costCenterCode,
+        partyId,
+        locationId,
+        wbsReference,
       });
       setAmount("");
       setDescription("");
@@ -124,6 +140,9 @@ export function FinanceControl(props: FinanceControlProps) {
       setContractId("");
       setCommitmentId("");
       setCostCenterCode("");
+      setPartyId("");
+      setLocationId("");
+      setWbsReference("");
       await load();
       props.onChanged?.();
     } catch (error) {
@@ -313,6 +332,28 @@ export function FinanceControl(props: FinanceControlProps) {
               مرکز هزینه (اختیاری)
               <input value={costCenterCode} onChange={(event) => setCostCenterCode(event.target.value)} />
             </label>
+            <label className="field">
+              طرف حساب ثبت‌شده (اختیاری)
+              <select value={partyId} onChange={(event) => setPartyId(event.target.value)}>
+                <option value="">بدون اتصال</option>
+                {parties.filter((party) => party.status === "Active").map((party) => (
+                  <option key={party.id} value={party.id}>{party.code} · {party.legalName}</option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              محل پروژه (اختیاری)
+              <select value={locationId} onChange={(event) => setLocationId(event.target.value)} data-testid="finance-record-location">
+                <option value="">بدون اتصال</option>
+                {locations.filter((location) => location.status === "Active").map((location) => (
+                  <option key={location.id} value={location.id}>{location.code} · {location.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              ساختار شکست کار (WBS) اختیاری
+              <input value={wbsReference} onChange={(event) => setWbsReference(event.target.value)} />
+            </label>
             <label className="field full-width">
               مرجع متنی قدیمی (اختیاری)
               <input value={contractReference} onChange={(event) => setContractReference(event.target.value)} />
@@ -415,6 +456,17 @@ export function FinanceControl(props: FinanceControlProps) {
           </div>
         </section>
       </div>
+      <FinanceCompletionPanel
+        apiBaseUrl={props.apiBaseUrl}
+        tenantId={props.tenantId}
+        userId={props.userId}
+        projectId={props.projectId}
+        isOnline={props.isOnline}
+        refreshToken={props.refreshToken}
+        records={records}
+        locations={locations}
+        onChanged={props.onChanged}
+      />
     </article>
   );
 }
