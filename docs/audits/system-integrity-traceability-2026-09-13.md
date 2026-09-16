@@ -201,3 +201,23 @@ Daily Report revision lineage, permission-scoped My Work and durable in-app Noti
 The connected scenario also found and closed a lineage interaction defect in offline duplicate-date detection. Sync now resolves the root report for a project date instead of assuming the correction chain contains only one row, and a repository guard pins this rule.
 
 Per the approved additive roadmap, the repository now advances to Checkpoint 23. PMCS V1 is not yet Feature Complete, Qualified, Final or Locked.
+
+## Checkpoint 23 verification extension
+
+Offline recovery orchestration, duplicate/replay evidence, simultaneous-user conflict verification and readable local/server diagnostics were implemented after Checkpoint 22. Connected GitHub Actions run [`35150589920`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35150589920) on source commit `fdcee701238f3cdefb3b0d44821b05f144f52db4` and tree `7aac5749f85951c5ce53491ba960dd8a93b034eb` completed successfully across all six jobs:
+
+- .NET 10 Release build: passed with zero warnings;
+- C# tests: 231 passed, 0 failed;
+- Web/API/testability tests: 120 passed;
+- ESLint, Persian UI audit, Persian calendar audit, TypeScript and Next.js production build: passed;
+- repository validation: 257 C# module files;
+- endpoint/mutation audit: 212 endpoints, 169 mutations and 5 documented protocol-managed mutations;
+- PostgreSQL 17 replay proved one Fact, one Audit and one Change Feed with a payload-free Receipt showing two attempts/one replay;
+- a real second user and device produced an explicit concurrent Conflict, resolved by the manager with both actors and correlated Audit lineage preserved;
+- local/server checkpoint alignment, `Healthy` recovery diagnostics, MinIO roundtrip and direct Checkpoint 23 database verification passed;
+- isolated restore drill passed with 36 migrations retained for inspection;
+- Identity Container and all 8 Pilot/Release policy tests passed.
+
+The verified implementation adds a durable project-scoped recovery state machine, bounded retry, crash-state recovery, stable attachment idempotency, prior-batch dependency receipts and testable diagnostics without placing business payload in the receipt store. The connected build also exposed four performance-analyzer findings in the initial logging/SQL wrapper; they were corrected without suppression before the fully green run.
+
+Per the approved additive roadmap, the repository now advances to Checkpoint 24. PMCS V1 is not yet Feature Complete, Qualified, Final or Locked.

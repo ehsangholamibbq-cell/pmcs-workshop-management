@@ -1,7 +1,10 @@
 # Foundation checkpoint 23 — Offline, Sync, Recovery and Conflict Handling
 
 - Date: 2026-09-16
-- Status: Implementation candidate; connected CI evidence pending
+- Status: Implemented and verified by connected CI
+- Verified remote source commit: `fdcee701238f3cdefb3b0d44821b05f144f52db4`
+- Verified source tree: `7aac5749f85951c5ce53491ba960dd8a93b034eb`
+- GitHub Actions evidence: [`35150589920`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35150589920)
 - Governing roadmap: [`../roadmaps/pmcs-v1-development-and-qualification.md`](../roadmaps/pmcs-v1-development-and-qualification.md)
 - Product baseline: `PMCS_Blueprint_V1_21_FA.md` plus the approved additive V1 development and qualification roadmap
 
@@ -44,21 +47,26 @@
 | Audit verification | conflict detection/resolution and applied-operation correlation assertions |
 | E2E readiness | stable `data-testid` and `data-sync-phase` selectors without bypassing authorization |
 
-## Verification status
+## Connected verification result
 
-Local verification is complete:
-
-- 119 Web/API/testability tests passed;
-- ESLint, Persian UI audit, Persian calendar audit and TypeScript passed;
-- Next.js production build passed;
+- all six GitHub Actions jobs passed: Architecture, Backend, Integration, Web, Pilot Contract and Identity Container;
+- .NET 10 Release build passed with zero warnings;
+- 231 C# tests passed with zero failures;
+- 120 Web/API contract and testability tests passed;
+- ESLint, Persian UI audit, Persian calendar audit, TypeScript and Next.js production build passed;
 - repository validation passed for 257 C# module files;
 - system contract audit passed for 212 endpoints, 169 mutations and 5 documented protocol-managed mutations;
-- shell syntax validation passed.
+- all 8 Pilot/Release policy tests and shell validation passed;
+- PostgreSQL 17 migration/API flow and MinIO binary roundtrip passed;
+- identical-operation Replay produced one Fact, one applied Audit and one Change Feed while the payload-free Receipt recorded two attempts and one replay;
+- real second-user concurrent edit produced and resolved an explicit Conflict with both actors and correlated detection/resolution Audit events;
+- device Checkpoint aligned with the server Watermark and readable recovery diagnostics returned `Healthy`;
+- isolated PostgreSQL restore drill passed and retained the drill database with 36 migrations.
 
-The .NET Release build, C# suite, PostgreSQL 17/MinIO integration scenario, Checkpoint 23 direct database verification and restore drill require connected GitHub Actions and are intentionally not marked successful until that run is green.
+The first connected attempt correctly failed on four .NET performance-analyzer findings in the new structured logging/SQL wrapper. The implementation was corrected without suppressing analyzers; the verified run above then rebuilt and reran every job from zero.
 
 ## Deliberate boundary
 
 Checkpoint 23 does not add general offline mutation for every PMCS aggregate, resumable multipart transfer, authenticated cold-start bootstrap, seven-day device endurance, QA impersonation or the independent QA Gateway. Those remain explicit qualification work. Closing this checkpoint also does not make PMCS V1 Feature Complete, Qualified, Final or Locked.
 
-After connected verification, the next approved product step is Checkpoint 24: Finance Lite + Financial Integration + Location.
+The next approved product step is Checkpoint 24: Finance Lite + Financial Integration + Location.

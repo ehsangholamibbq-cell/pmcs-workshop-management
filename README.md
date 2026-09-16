@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 23 implemented locally; connected CI verification is pending:
+Foundation Sprint — checkpoint 23 verified; checkpoint 24 is next:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
