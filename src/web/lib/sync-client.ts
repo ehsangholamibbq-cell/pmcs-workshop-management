@@ -7,9 +7,9 @@ import {
 } from "./field-database.ts";
 import { ensureApiSuccess } from "./localization.ts";
 
-export const syncProtocolVersion = 2;
-export const syncLocalSchemaVersion = 5;
-export const syncClientVersion = "0.1.0";
+export const syncProtocolVersion = 3;
+export const syncLocalSchemaVersion = 6;
+export const syncClientVersion = "0.2.0";
 
 export interface SyncQueueSummary {
   readonly pendingOperations: number;
@@ -31,6 +31,7 @@ export interface LocalSyncManifest {
   readonly leaseIssuedAt: string;
   readonly leaseExpiresAt: string;
   readonly checkpoint: string | null;
+  readonly checkpointSequence: number;
   readonly serverWatermark: number;
   readonly policyVersion: string;
   readonly protocolVersion: number;
@@ -68,6 +69,7 @@ interface HandshakeResponse {
   readonly bootstrapRequired: boolean;
   readonly serverWatermark: number;
   readonly currentCheckpoint: string | null;
+  readonly currentCheckpointSequence: number;
   readonly clockSkewSeconds: number;
   readonly clockSkewWarning: boolean;
   readonly allowedOperations: readonly string[];
@@ -135,10 +137,36 @@ export interface LocalSyncDiagnostics {
   readonly lastPushAt?: string;
   readonly lastPullAt?: string;
   readonly checkpoint: string | null;
+  readonly checkpointSequence: number;
   readonly serverWatermark: number;
   readonly clockSkewWarning: boolean;
   readonly bootstrapRequired: boolean;
   readonly policyVersion?: string;
+}
+
+export interface ServerSyncDiagnostics {
+  readonly projectId: string;
+  readonly deviceId: string;
+  readonly deviceStatus: "Active" | "Revoked";
+  readonly serverAt: string;
+  readonly leaseExpiresAt?: string;
+  readonly lastHandshakeAt?: string;
+  readonly lastCheckpointSequence: number;
+  readonly checkpointAdvancedAt?: string;
+  readonly openConflictCount: number;
+  readonly recentRejectedOperationCount: number;
+  readonly recentReplayCount: number;
+  readonly lastOperationAt?: string;
+  readonly serverWatermark: number;
+  readonly checkpointLag: number;
+  readonly recoveryState:
+    | "NeverSynchronized"
+    | "Healthy"
+    | "PendingPull"
+    | "AttentionRequired"
+    | "LeaseExpired"
+    | "DeviceRevoked";
+  readonly policyVersion: string;
 }
 
 const activeHandshakes = new Map<string, Promise<LocalSyncManifest>>();
@@ -198,6 +226,7 @@ async function performHandshake(
     leaseIssuedAt: model.lease.issuedAt,
     leaseExpiresAt: model.lease.expiresAt,
     checkpoint: model.currentCheckpoint,
+    checkpointSequence: model.currentCheckpointSequence,
     serverWatermark: model.serverWatermark,
     policyVersion: model.policyVersion,
     protocolVersion: model.protocolVersion,
@@ -272,6 +301,7 @@ export async function pullAuthorizedChanges(
     current = {
       ...current,
       checkpoint: advanced.checkpoint,
+      checkpointSequence: advanced.sequence,
       serverWatermark: page.serverWatermark,
       bootstrapRequired: false,
       lastPullAt: advanced.advancedAt,
@@ -303,11 +333,24 @@ export async function readLocalSyncDiagnostics(projectId: string): Promise<Local
     lastPushAt: manifest?.lastPushAt,
     lastPullAt: manifest?.lastPullAt,
     checkpoint: manifest?.checkpoint ?? null,
+    checkpointSequence: manifest?.checkpointSequence ?? 0,
     serverWatermark: manifest?.serverWatermark ?? 0,
     clockSkewWarning: manifest?.clockSkewWarning ?? false,
     bootstrapRequired: manifest?.bootstrapRequired ?? false,
     policyVersion: manifest?.policyVersion,
   };
+}
+
+export async function readServerSyncDiagnostics(
+  apiBaseUrl: string,
+  projectId: string,
+): Promise<ServerSyncDiagnostics> {
+  const query = new URLSearchParams({ projectId, deviceId: getOrCreateDeviceId() });
+  const response = await fetch(`${normalizedBaseUrl(apiBaseUrl)}/api/v1/sync/diagnostics?${query}`, {
+    cache: "no-store",
+  });
+  await ensureApiSuccess(response);
+  return response.json() as Promise<ServerSyncDiagnostics>;
 }
 
 export async function listSyncDevices(apiBaseUrl: string): Promise<readonly SyncDeviceModel[]> {

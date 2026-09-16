@@ -24,6 +24,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.Projects/Migrations/ProjectActivationMetadataMigration.cs",
   "src/backend/Pmcs.Modules.Projects/Migrations/ProjectLocationMigration.cs",
   "src/backend/Pmcs.Modules.Sync/Endpoints/SyncGatewayEndpoints.cs",
+  "src/backend/Pmcs.Modules.Sync/Migrations/SyncRecoveryDiagnosticsMigration.cs",
   "src/backend/Pmcs.Modules.Planning/Domain/MeasurementItem.cs",
   "src/backend/Pmcs.Modules.Planning/Domain/ProgressLedgerCalculation.cs",
   "src/backend/Pmcs.Modules.Planning/Endpoints/PlanningEndpoints.cs",
@@ -47,6 +48,7 @@ const requiredFiles = [
   "src/web/app/projects/[projectId]/page.tsx",
   "src/web/app/not-found.tsx",
   "src/web/lib/localization.ts",
+  "src/web/lib/sync-recovery.ts",
   "src/web/lib/persian-date.ts",
   "src/web/components/persian-date-input.tsx",
   "src/web/lib/portfolio.ts",
@@ -65,10 +67,13 @@ const requiredFiles = [
   "docs/checkpoints/foundation-20.md",
   "docs/checkpoints/foundation-22.md",
   "docs/adr/0026-daily-report-lineage-and-personal-work-inbox.md",
+  "docs/adr/0027-offline-recovery-and-consistency.md",
   "docs/api/my-work-notifications-v1.md",
   "docs/roadmaps/pmcs-v1-development-and-qualification.md",
+  "docs/checkpoints/foundation-23.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
+  "tools/checkpoint23-db-verification.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
@@ -236,6 +241,12 @@ assert.doesNotMatch(syncGateway, /Pmcs\.Modules\.FieldOperations\.Persistence/);
 assert.match(syncGateway, /OfflineAuthorizationLease/);
 assert.match(syncGateway, /CheckpointOffer/);
 assert.match(syncGateway, /WriteAuditAsync/);
+assert.match(syncGateway, /RecordOperationReceiptAsync/);
+assert.match(syncGateway, /recentRejectedCount/);
+assert.doesNotMatch(
+  readFileSync(join(root, "src/backend/Pmcs.Modules.Sync/Persistence/SyncPersistenceRecords.cs"), "utf8"),
+  /class SyncOperationReceipt[\s\S]*?PayloadJson/,
+);
 
 const projectLifecycle = readFileSync(
   join(root, "src/backend/Pmcs.Api/Infrastructure/ProjectLifecycleMiddleware.cs"),
@@ -299,6 +310,10 @@ assert.match(operationStore, /activeSyncs = new Map<string, Promise<SyncSummary>
 
 const syncClient = readFileSync(join(root, "src/web/lib/sync-client.ts"), "utf8");
 assert.match(syncClient, /activeHandshakes = new Map<string, Promise<LocalSyncManifest>>/);
+const syncRecovery = readFileSync(join(root, "src/web/lib/sync-recovery.ts"), "utf8");
+assert.match(syncRecovery, /retryScheduleMs = \[5_000, 15_000, 45_000, 120_000, 300_000\]/);
+assert.match(syncRecovery, /readServerSyncDiagnostics/);
+assert.match(syncRecovery, /evaluateSyncConsistency/);
 
 const portfolioEndpoint = readFileSync(
   join(root, "src/backend/Pmcs.Modules.ProjectIntelligence/Endpoints/PortfolioCommandCenterEndpoints.cs"),

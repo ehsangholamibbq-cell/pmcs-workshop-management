@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.FieldOperations.Contracts;
@@ -240,6 +242,7 @@ internal static partial class SyncGatewayEndpoints
             bootstrapRequired,
             watermark,
             checkpointMatches ? checkpoint?.CurrentToken : null,
+            checkpointMatches ? checkpoint?.LastSequence ?? 0 : 0,
             SyncPolicy.MaximumBatchSize,
             MaximumAttachmentSizeBytes,
             skew,
@@ -265,6 +268,7 @@ internal static partial class SyncGatewayEndpoints
         SyncDbContext db,
         IClock clock,
         IAuditTrail audit,
+        ILogger<SyncModule> logger,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -301,16 +305,29 @@ internal static partial class SyncGatewayEndpoints
         var resultByOperation = new Dictionary<string, OfflineFieldOperationStatus>(StringComparer.Ordinal);
         var leaseCache = new Dictionary<Guid, OfflineAuthorizationLease?>();
 
-        foreach (var requestOperation in request.Operations.OrderBy(item => item.LocalSequence))
+        foreach (var requestOperation in request.Operations
+                     .OrderBy(item => item.LocalSequence)
+                     .ThenBy(item => item.OperationId, StringComparer.Ordinal))
         {
-            var envelopeError = ValidateEnvelope(requestOperation, session.ProjectId, resultByOperation);
+            var operationNow = clock.UtcNow;
+            var envelopeError = await ValidateEnvelopeAsync(
+                requestOperation,
+                session.ProjectId,
+                resultByOperation,
+                db,
+                actor,
+                request.DeviceId,
+                cancellationToken);
             if (envelopeError is not null)
             {
                 results.Add(envelopeError);
                 resultByOperation[requestOperation.OperationId] = envelopeError.Status;
+                await RecordOperationReceiptAsync(
+                    db, actor, request.DeviceId, requestOperation, envelopeError,
+                    operationNow, httpContext.TraceIdentifier, cancellationToken);
                 await AuditSyncResultAsync(
                     audit, actor, request.DeviceId, requestOperation, envelopeError.Status,
-                    envelopeError.Code, null, clock.UtcNow, httpContext.TraceIdentifier, cancellationToken);
+                    envelopeError.Code, null, operationNow, httpContext.TraceIdentifier, cancellationToken);
                 continue;
             }
 
@@ -334,9 +351,12 @@ internal static partial class SyncGatewayEndpoints
                 var rejected = Rejected(requestOperation, "sync.lease.operation_not_covered");
                 results.Add(rejected);
                 resultByOperation[requestOperation.OperationId] = rejected.Status;
+                await RecordOperationReceiptAsync(
+                    db, actor, request.DeviceId, requestOperation, rejected,
+                    operationNow, httpContext.TraceIdentifier, cancellationToken);
                 await AuditSyncResultAsync(
                     audit, actor, request.DeviceId, requestOperation, rejected.Status,
-                    rejected.Code, null, clock.UtcNow, httpContext.TraceIdentifier, cancellationToken);
+                    rejected.Code, null, operationNow, httpContext.TraceIdentifier, cancellationToken);
                 continue;
             }
 
@@ -354,11 +374,11 @@ internal static partial class SyncGatewayEndpoints
             Guid? conflictId = null;
             if (handled.Status == OfflineFieldOperationStatus.Conflict)
             {
-                conflictId = await EnsureConflictAsync(db, actor, request.DeviceId, requestOperation, handled, clock.UtcNow, cancellationToken);
+                conflictId = await EnsureConflictAsync(db, actor, request.DeviceId, requestOperation, handled, operationNow, cancellationToken);
             }
             else if (handled.Status == OfflineFieldOperationStatus.Applied)
             {
-                await EnsureChangeFeedAsync(db, actor, request.DeviceId, requestOperation, handled, clock.UtcNow, cancellationToken);
+                await EnsureChangeFeedAsync(db, actor, request.DeviceId, requestOperation, handled, operationNow, cancellationToken);
             }
 
             var response = new SyncOperationResponse(
@@ -372,14 +392,27 @@ internal static partial class SyncGatewayEndpoints
                 conflictId);
             results.Add(response);
             resultByOperation[requestOperation.OperationId] = response.Status;
+            await RecordOperationReceiptAsync(
+                db, actor, request.DeviceId, requestOperation, response,
+                operationNow, httpContext.TraceIdentifier, cancellationToken);
             if (handled.Status != OfflineFieldOperationStatus.Applied)
             {
                 await AuditSyncResultAsync(
                     audit, actor, request.DeviceId, requestOperation, handled.Status,
-                    handled.Code, conflictId, clock.UtcNow, httpContext.TraceIdentifier, cancellationToken);
+                    handled.Code, conflictId, operationNow, httpContext.TraceIdentifier, cancellationToken);
             }
         }
 
+        SyncGatewayLog.BatchProcessed(
+            logger,
+            actor.TenantId,
+            actor.UserId,
+            session.ProjectId,
+            request.DeviceId,
+            results.Count,
+            results.Count(item => item.Status == OfflineFieldOperationStatus.Applied),
+            results.Count(item => item.Status == OfflineFieldOperationStatus.Conflict),
+            results.Count(item => item.Status is OfflineFieldOperationStatus.Rejected or OfflineFieldOperationStatus.Unsupported));
         return Results.Ok(new SyncPushResponse(clock.UtcNow, results));
     }
 
@@ -813,6 +846,7 @@ internal static partial class SyncGatewayEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissions,
         SyncDbContext db,
+        IClock clock,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -852,19 +886,51 @@ internal static partial class SyncGatewayEndpoints
             item.TenantId == actor.TenantId && item.UserId == actor.UserId && item.ProjectId == projectId &&
             item.DeviceId == deviceId && item.Status == SyncConflictStatus.Open,
             cancellationToken);
+        var recentBoundary = clock.UtcNow.AddHours(-24);
+        var recentRejectedCount = await db.OperationReceipts.AsNoTracking().CountAsync(item =>
+            item.TenantId == actor.TenantId && item.UserId == actor.UserId && item.ProjectId == projectId &&
+            item.DeviceId == deviceId && item.LastAttemptAt >= recentBoundary &&
+            (item.Status == nameof(OfflineFieldOperationStatus.Rejected) ||
+                item.Status == nameof(OfflineFieldOperationStatus.Unsupported)),
+            cancellationToken);
+        var recentReplayCount = await db.OperationReceipts.AsNoTracking()
+            .Where(item => item.TenantId == actor.TenantId && item.UserId == actor.UserId &&
+                item.ProjectId == projectId && item.DeviceId == deviceId && item.LastAttemptAt >= recentBoundary)
+            .Select(item => (int?)item.ReplayCount)
+            .SumAsync(cancellationToken) ?? 0;
+        var lastOperationAt = await db.OperationReceipts.AsNoTracking()
+            .Where(item => item.TenantId == actor.TenantId && item.UserId == actor.UserId &&
+                item.ProjectId == projectId && item.DeviceId == deviceId)
+            .Select(item => (DateTimeOffset?)item.LastAttemptAt)
+            .MaxAsync(cancellationToken);
         var watermark = await CurrentWatermarkAsync(db, actor.TenantId, projectId, cancellationToken);
+        var checkpointSequence = checkpoint?.LastSequence ?? 0;
+        var checkpointLag = Math.Max(0, watermark - checkpointSequence);
+        var recoveryState = SyncRecoveryHealth.Evaluate(
+            device.Status,
+            leaseExpiresAt,
+            clock.UtcNow,
+            checkpointSequence,
+            watermark,
+            conflictCount,
+            recentRejectedCount);
 
         return Results.Ok(new SyncDiagnosticsModel(
             projectId,
             deviceId,
             device.Status,
+            clock.UtcNow,
             leaseExpiresAt,
             lastHandshakeAt,
-            checkpoint?.LastSequence ?? 0,
+            checkpointSequence,
             checkpoint?.AdvancedAt,
             conflictCount,
-            null,
+            recentRejectedCount,
+            recentReplayCount,
+            lastOperationAt,
             watermark,
+            checkpointLag,
+            recoveryState,
             SyncPolicy.PolicyVersion));
     }
 
@@ -902,10 +968,14 @@ internal static partial class SyncGatewayEndpoints
             : (session, null);
     }
 
-    private static SyncOperationResponse? ValidateEnvelope(
+    private static async Task<SyncOperationResponse?> ValidateEnvelopeAsync(
         SyncOperationRequest operation,
         Guid sessionProjectId,
-        Dictionary<string, OfflineFieldOperationStatus> priorResults)
+        Dictionary<string, OfflineFieldOperationStatus> priorResults,
+        SyncDbContext db,
+        ICurrentActor actor,
+        string deviceId,
+        CancellationToken cancellationToken)
     {
         if (!IsValidUlid(operation.OperationId) || operation.EntityId == Guid.Empty ||
             operation.ProjectId == Guid.Empty || operation.ProjectId != sessionProjectId ||
@@ -917,19 +987,43 @@ internal static partial class SyncGatewayEndpoints
             return Rejected(operation, "sync.operation.envelope.invalid");
         }
 
-        if (operation.Dependencies is { Count: > 50 })
+        var dependencies = operation.Dependencies ?? [];
+        if (dependencies.Count > 50 ||
+            dependencies.Any(item => !IsValidUlid(item) || string.Equals(item, operation.OperationId, StringComparison.Ordinal)) ||
+            dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count)
         {
             return Rejected(operation, "sync.operation.dependencies.invalid");
         }
 
-        foreach (var dependency in operation.Dependencies ?? [])
+        var unresolvedDependencies = dependencies
+            .Where(item => !priorResults.ContainsKey(item))
+            .ToArray();
+        var persistedDependencies = unresolvedDependencies.Length == 0
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : await db.OperationReceipts.AsNoTracking()
+                .Where(item => item.TenantId == actor.TenantId && item.UserId == actor.UserId &&
+                    item.ProjectId == operation.ProjectId && item.DeviceId == deviceId &&
+                    unresolvedDependencies.Contains(item.OperationId))
+                .ToDictionaryAsync(item => item.OperationId, item => item.Status, StringComparer.Ordinal, cancellationToken);
+
+        foreach (var dependency in dependencies)
         {
-            if (!priorResults.TryGetValue(dependency, out var status))
+            if (priorResults.TryGetValue(dependency, out var status))
+            {
+                if (status != OfflineFieldOperationStatus.Applied)
+                {
+                    return Rejected(operation, "sync.operation.dependency.blocked");
+                }
+
+                continue;
+            }
+
+            if (!persistedDependencies.TryGetValue(dependency, out var persistedStatus))
             {
                 return Rejected(operation, "sync.operation.dependency.out_of_order");
             }
 
-            if (status != OfflineFieldOperationStatus.Applied)
+            if (!string.Equals(persistedStatus, nameof(OfflineFieldOperationStatus.Applied), StringComparison.Ordinal))
             {
                 return Rejected(operation, "sync.operation.dependency.blocked");
             }
@@ -973,8 +1067,20 @@ internal static partial class SyncGatewayEndpoints
             result.ServerProjectionJson,
             now);
         db.Conflicts.Add(conflict);
-        await db.SaveChangesAsync(cancellationToken);
-        return conflict.Id;
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            return conflict.Id;
+        }
+        catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+        {
+            db.ChangeTracker.Clear();
+            return await db.Conflicts.AsNoTracking()
+                .Where(item => item.TenantId == actor.TenantId && item.UserId == actor.UserId &&
+                    item.DeviceId == deviceId && item.OperationId == operation.OperationId)
+                .Select(item => item.Id)
+                .SingleAsync(cancellationToken);
+        }
     }
 
     private static async Task EnsureChangeFeedAsync(
@@ -1013,8 +1119,48 @@ internal static partial class SyncGatewayEndpoints
             ServerAt = now,
             CorrelationId = operation.CorrelationId
         });
-        await db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+        {
+            db.ChangeTracker.Clear();
+        }
     }
+
+    private static Task RecordOperationReceiptAsync(
+        SyncDbContext db,
+        ICurrentActor actor,
+        string deviceId,
+        SyncOperationRequest operation,
+        SyncOperationResponse response,
+        DateTimeOffset attemptedAt,
+        string correlationId,
+        CancellationToken cancellationToken) =>
+        db.Database.ExecuteSqlInterpolatedAsync($"""
+            insert into sync_control.operation_receipts (
+                id, tenant_id, project_id, user_id, device_id, operation_id, local_sequence,
+                entity_type, entity_id, command_type, status, code, conflict_id, server_revision,
+                attempt_count, replay_count, first_attempt_at, last_attempt_at, last_correlation_id)
+            values (
+                {Guid.NewGuid()}, {actor.TenantId}, {operation.ProjectId}, {actor.UserId}, {deviceId},
+                {operation.OperationId}, {operation.LocalSequence}, {operation.EntityType}, {operation.EntityId},
+                {operation.CommandType}, {response.Status.ToString()}, {response.Code}, {response.ConflictId},
+                {response.ServerRevision}, 1, {(response.WasReplay ? 1 : 0)}, {attemptedAt}, {attemptedAt}, {correlationId})
+            on conflict (tenant_id, user_id, device_id, operation_id) do update set
+                status = excluded.status,
+                code = excluded.code,
+                conflict_id = coalesce(excluded.conflict_id, sync_control.operation_receipts.conflict_id),
+                server_revision = coalesce(excluded.server_revision, sync_control.operation_receipts.server_revision),
+                attempt_count = sync_control.operation_receipts.attempt_count + 1,
+                replay_count = sync_control.operation_receipts.replay_count + excluded.replay_count,
+                last_attempt_at = excluded.last_attempt_at,
+                last_correlation_id = excluded.last_correlation_id;
+            """, cancellationToken);
+
+    private static bool IsUniqueViolation(DbUpdateException exception) =>
+        exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     private static SyncChangeModel ToChangeModel(SyncChangeFeedEntry entry) => new(
         entry.Sequence,
@@ -1133,4 +1279,22 @@ internal static partial class SyncGatewayEndpoints
 
     [GeneratedRegex("^[A-Za-z0-9._:-]{1,64}$", RegexOptions.CultureInvariant)]
     private static partial Regex CorrelationIdPattern();
+}
+
+internal static partial class SyncGatewayLog
+{
+    [LoggerMessage(
+        EventId = 4601,
+        Level = LogLevel.Information,
+        Message = "Sync batch processed for tenant {TenantId}, user {UserId}, project {ProjectId}, device {DeviceId}: total={Total}, applied={Applied}, conflicts={Conflicts}, rejected={Rejected}")]
+    public static partial void BatchProcessed(
+        ILogger logger,
+        Guid tenantId,
+        Guid userId,
+        Guid projectId,
+        string deviceId,
+        int total,
+        int applied,
+        int conflicts,
+        int rejected);
 }

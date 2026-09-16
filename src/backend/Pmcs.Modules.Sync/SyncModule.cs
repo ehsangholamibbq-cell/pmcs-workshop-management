@@ -21,6 +21,7 @@ public sealed class SyncModule : IModule
 
         services.AddDbContext<SyncDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<IDatabaseMigration, SyncControlInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, SyncRecoveryDiagnosticsMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapSyncGatewayEndpoints();

@@ -1,4 +1,4 @@
-# قرارداد آفلاین و همگام‌سازی — نسخه ۲
+# قرارداد آفلاین و همگام‌سازی — نسخه ۳
 
 این قرارداد برای ثبت کنترل‌شده واقعیت‌های کارگاه است. داده محلی تا پذیرش سرور حقیقت رسمی نیست. سرور در هر همگام‌سازی هویت، دستگاه، مجوز جاری، Lease، نسخه قرارداد، Workflow و قواعد دامنه را دوباره بررسی می‌کند.
 
@@ -44,13 +44,13 @@ Content-Type: application/json
 | `deviceId` | شناسه پایدار مرورگر؛ حداکثر ۱۲۰ کاراکتر امن |
 | `projectId` | دقیقاً یک پروژه برای نشست |
 | `appVersion` | حداقل `0.1.0` |
-| `protocolVersion` | دقیقاً `2` |
-| `localSchemaVersion` | دقیقاً `5` |
+| `protocolVersion` | دقیقاً `3` |
+| `localSchemaVersion` | دقیقاً `6` |
 | `lastCheckpoint` | Token مبهم آخرین Apply موفق یا `null` |
 | `deviceTime` | برای تشخیص Clock Skew، نه تصمیم رسمی |
 | `queue` | تعداد و سن قدیمی‌ترین عملیات و حجم Attachment بدون Payload حساس |
 
-پاسخ موفق شامل `sessionId`، زمان انقضا، Lease ID، Authorization Version، Policy Version، Watermark، Checkpoint فعلی، حدود Batch/File، هشدار اختلاف ساعت و Dataset Manifest حداقلی است. اگر Checkpoint کلاینت با سرور یکسان نباشد، `bootstrapRequired=true` و Pull کنترل‌شده از Sequence صفر انجام می‌شود؛ Full database دانلود نمی‌شود.
+پاسخ موفق شامل `sessionId`، زمان انقضا، Lease ID، Authorization Version، Policy Version، Watermark، Checkpoint فعلی و `currentCheckpointSequence`، حدود Batch/File، هشدار اختلاف ساعت و Dataset Manifest حداقلی است. Policy جاری `sync-policy-v3` است. اگر Checkpoint کلاینت با سرور یکسان نباشد، `bootstrapRequired=true` و Pull کنترل‌شده از Sequence صفر انجام می‌شود؛ Full database دانلود نمی‌شود.
 
 خطاهای Compatibility با HTTP 426 و یکی از Codeهای زیر پاسخ داده می‌شوند:
 
@@ -101,6 +101,8 @@ Command رسمی‌شده در Gateway نسخه ۲:
 - `Unsupported`: Command یا Payload Version شناخته‌شده نیست.
 
 Replay همان Operation/Payload نتیجه ذخیره‌شده را با `wasReplay=true` برمی‌گرداند. استفاده دوباره Operation ID با Payload متفاوت `sync.operation.reused` است.
+
+هر تلاش در یک Receipt عملیاتی payload-free با کلید Tenant/User/Device/Operation ثبت می‌شود. Receipt فقط Status، Revision/Conflict reference، تعداد تلاش/Replay، Correlation ID و زمان‌ها را نگه می‌دارد. Retry هم‌زمان یا پس از Crash نمی‌تواند Fact، Audit یا Change Feed دوم بسازد. Dependency یک Operation می‌تواند در Batch جاری یا Receipt پذیرفته‌شدهٔ Batch قبلی اثبات شود.
 
 ثبت اولیه Quality/HSE یک Draft provisional مستقل است: کلاینت فقط زیر Lease معتبر آن را نگه می‌دارد و پس از Handshake به Endpoint مالک QualitySafety می‌فرستد. آن Endpoint Permission، فعال‌بودن ماژول و Domain Rule جاری را دوباره کنترل می‌کند. Draft محلی Incident رسمی، شماره پرونده یا اعلان بحرانی نیست.
 
@@ -154,12 +156,24 @@ GET  /api/v1/sync/diagnostics?projectId=<id>&deviceId=<id>
 
 لغو دستگاه همه Sessionها و Leaseهای همان User/Device را می‌بندد. Remote wipe روی دستگاه کاملاً آفلاین تضمین‌پذیر نیست؛ کنترل واقعی، انقضای Lease، توقف Session، Scope حداقلی و Purge در اتصال بعدی است.
 
-Diagnostics فقط Metadata عملیاتی بدون Payload، Token، عکس یا متن حساس برمی‌گرداند: آخرین Handshake، انقضای Lease، Sequence نقطه کنترل، Watermark و تعداد Conflict باز.
+Diagnostics فقط Metadata عملیاتی بدون Payload، Token، عکس یا متن حساس برمی‌گرداند: زمان سرور، آخرین Handshake، انقضای Lease، Sequence نقطه کنترل، Watermark، فاصله Checkpoint، تعداد Conflict باز، تعداد Rejection/Replay اخیر و زمان آخرین Operation.
+
+`recoveryState` در سرور یکی از وضعیت‌های `NeverSynchronized`، `Healthy`، `PendingPull`، `AttentionRequired`، `LeaseExpired` یا `DeviceRevoked` است و از Device/Lease/Checkpoint/Conflict/Rejected Receipt به‌صورت قطعی محاسبه می‌شود.
 
 ## Attachment
 
-Attachment Queue مستقل از Operation Queue است. والد ابتدا Sync می‌شود، سپس Upload Session مجوزدار ساخته می‌شود؛ SHA-256، MIME و اندازه کنترل و Blob پس از تأیید Object Storage از دستگاه خالی می‌شود. در پیاده‌سازی فعلی Retry در مرز کل فایل ۲۵ MiB انجام می‌شود؛ Multipart resume، Malware Scanner و Quarantine بیرونی در Pilot Release Gate آزمون/تکمیل می‌شوند و این سند آن‌ها را انجام‌شده اعلام نمی‌کند.
+Attachment Queue مستقل از Operation Queue است. والد ابتدا Sync می‌شود، سپس Upload Session مجوزدار ساخته می‌شود؛ SHA-256، MIME و اندازه کنترل و Blob پس از تأیید Object Storage از دستگاه خالی می‌شود. Idempotency ساخت Upload Session به شناسه ثابت Attachment متصل است و با شماره تلاش تغییر نمی‌کند. در پیاده‌سازی فعلی Retry در مرز کل فایل ۲۵ MiB انجام می‌شود؛ Multipart resume، Malware Scanner و Quarantine بیرونی در Pilot Release Gate آزمون/تکمیل می‌شوند و این سند آن‌ها را انجام‌شده اعلام نمی‌کند.
 
 ## وضعیت‌های محلی
 
 رابط `Queued`، `Syncing`، `Synced`، `Conflict`، `Rejected` و `Resolved` را جدا نگه می‌دارد. Pending Operation، Conflict حل‌نشده و Evidence ارسال‌نشده با Cache eviction پاک نمی‌شوند. Logout امن فقط با Purge پایگاه داده Scope همان Tenant/User انجام می‌شود و Device ID فیزیکی برای مدیریت دستگاه باقی می‌ماند.
+
+## چرخه Recovery و تطبیق نهایی
+
+Coordinator واحد برای هر Tenant/User/Project روی Startup، Reconnect، Manual Sync یا Retry اجرا می‌شود. چرخه ابتدا Operation و Attachment نیمه‌تمام را بازیابی می‌کند، سپس عملیات، Draft اولیه Quality/HSE و فایل‌ها را در Batchهای محدود ارسال می‌کند و در پایان وارد Verification می‌شود.
+
+وضعیت پایدار چرخه یکی از `offline`، `recovering`، `pushing`، `uploading`، `verifying`، `succeeded`، `attention`، `retry-scheduled` یا `blocked` است. نتیجه موفق فقط وقتی ثبت می‌شود که صف محلی خالی، Conflict/Rejected تعیین‌تکلیف‌شده، Device و Lease معتبر و Checkpoint محلی با Checkpoint و Watermark سرور سازگار باشد.
+
+Retry خودکار فقط برای خطای شبکه، Timeout، Rate Limit، خطای موقت سرور و Session/Checkpoint قابل بازیابی انجام می‌شود. تأخیرها به‌ترتیب ۵، ۱۵، ۴۵، ۱۲۰ و ۳۰۰ ثانیه و پس از آن حداکثر ۳۰۰ ثانیه هستند؛ `Retry-After` معتبر بین یک ثانیه و پانزده دقیقه اولویت دارد. Validation، Permission، Lease و Conflict به `attention` یا `blocked` می‌روند و خودکار پنهان نمی‌شوند.
+
+زمان‌ها در IndexedDB و API به ISO/UTC می‌مانند. هر زمان Recovery/Retry که به کاربر نمایش داده می‌شود با تقویم هجری شمسی مشترک و منطقه زمانی تهران قالب‌بندی می‌شود.

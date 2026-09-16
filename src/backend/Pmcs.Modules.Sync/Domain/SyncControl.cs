@@ -545,10 +545,10 @@ public sealed class SyncConflictResolution
 
 public static class SyncPolicy
 {
-    public const int ProtocolVersion = 2;
-    public const int LocalSchemaVersion = 5;
+    public const int ProtocolVersion = 3;
+    public const int LocalSchemaVersion = 6;
     public const int MaximumBatchSize = 100;
-    public const string PolicyVersion = "sync-policy-v2";
+    public const string PolicyVersion = "sync-policy-v3";
     public static readonly TimeSpan SessionDuration = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan MaximumLeaseDuration = TimeSpan.FromDays(7);
     public static readonly TimeSpan MaximumOfflineOperationAge = TimeSpan.FromDays(7);
@@ -568,6 +568,58 @@ public static class SyncPolicy
 }
 
 public sealed record SyncCompatibility(bool IsCompatible, string? BlockingCode);
+
+public static class SyncRecoveryHealth
+{
+    public static SyncRecoveryState Evaluate(
+        SyncDeviceStatus deviceStatus,
+        DateTimeOffset? leaseExpiresAt,
+        DateTimeOffset now,
+        long checkpointSequence,
+        long serverWatermark,
+        int openConflictCount,
+        int recentRejectedOperationCount)
+    {
+        if (deviceStatus == SyncDeviceStatus.Revoked)
+        {
+            return SyncRecoveryState.DeviceRevoked;
+        }
+
+        if (!leaseExpiresAt.HasValue)
+        {
+            return SyncRecoveryState.NeverSynchronized;
+        }
+
+        if (leaseExpiresAt.Value <= now)
+        {
+            return SyncRecoveryState.LeaseExpired;
+        }
+
+        if (openConflictCount > 0 || recentRejectedOperationCount > 0)
+        {
+            return SyncRecoveryState.AttentionRequired;
+        }
+
+        if (checkpointSequence > serverWatermark)
+        {
+            return SyncRecoveryState.AttentionRequired;
+        }
+
+        return checkpointSequence < serverWatermark
+            ? SyncRecoveryState.PendingPull
+            : SyncRecoveryState.Healthy;
+    }
+}
+
+public enum SyncRecoveryState
+{
+    NeverSynchronized = 1,
+    Healthy = 2,
+    PendingPull = 3,
+    AttentionRequired = 4,
+    LeaseExpired = 5,
+    DeviceRevoked = 6
+}
 
 public enum SyncDeviceStatus
 {

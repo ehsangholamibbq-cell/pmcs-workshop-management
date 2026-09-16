@@ -1,10 +1,11 @@
 export const legacyFieldDatabaseName = "pmcs-field-v1";
-export const fieldDatabaseVersion = 5;
+export const fieldDatabaseVersion = 6;
 export const operationStoreName = "operations";
 export const attachmentStoreName = "attachments";
 export const qualitySafetyIntakeStoreName = "quality-safety-intakes";
 export const syncMetadataStoreName = "sync-metadata";
 export const appliedChangeStoreName = "applied-changes";
+export const syncRecoveryStoreName = "sync-recovery";
 
 export interface LocalIdentityScope {
   readonly tenantId: string;
@@ -80,6 +81,12 @@ export function openFieldDatabase(): Promise<IDBDatabase> {
         const changes = database.createObjectStore(appliedChangeStoreName, { keyPath: "changeId" });
         changes.createIndex("by-project-sequence", ["projectId", "sequence"], { unique: false });
         changes.createIndex("by-server-at", "serverAt", { unique: false });
+      }
+
+      if (!database.objectStoreNames.contains(syncRecoveryStoreName)) {
+        const recovery = database.createObjectStore(syncRecoveryStoreName, { keyPath: "key" });
+        recovery.createIndex("by-project", "projectId", { unique: true });
+        recovery.createIndex("by-updated-at", "updatedAt", { unique: false });
       }
     };
 

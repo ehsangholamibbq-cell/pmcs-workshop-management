@@ -7,7 +7,7 @@ import {
   qualitySafetyIntakeStoreName,
   scopedStorageKey,
 } from "./field-database.ts";
-import { apiProblemMessage, toUserMessage } from "./localization.ts";
+import { apiProblemMessage, ensureApiSuccess, toUserMessage } from "./localization.ts";
 import {
   noteSuccessfulPush,
   prepareSyncSession,
@@ -79,6 +79,15 @@ export interface SyncSummary {
   readonly applied: number;
   readonly conflicts: number;
   readonly rejected: number;
+  readonly deferred: number;
+  readonly remaining: number;
+}
+
+export interface OperationDiagnostics {
+  readonly queued: number;
+  readonly syncing: number;
+  readonly conflicts: number;
+  readonly rejected: number;
 }
 
 export interface OperationIssue {
@@ -132,29 +141,39 @@ export async function enqueueOperation<TPayload>(input: EnqueueOperationInput<TP
   return operation;
 }
 
-export async function countPendingOperations(): Promise<number> {
+export async function countPendingOperations(projectId: string): Promise<number> {
   const database = await openFieldDatabase();
-  const operationCount = await new Promise<number>((resolve, reject) => {
-    const transaction = database.transaction(operationStore, "readonly");
-    const request = transaction.objectStore(operationStore).index("by-status").count("queued");
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("شمارش عملیات محلی ممکن نشد."));
-  });
-  const qualitySafetyCount = await new Promise<number>((resolve, reject) => {
-    const transaction = database.transaction(qualitySafetyIntakeStoreName, "readonly");
-    const request = transaction.objectStore(qualitySafetyIntakeStoreName).count();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("شمارش ثبت‌های محلی کیفیت و ایمنی ممکن نشد."));
-  });
+  const [queued, syncing, qualitySafetyCount] = await Promise.all([
+    readOperationsForProjectByStatus(database, projectId, "queued", 100_000),
+    readOperationsForProjectByStatus(database, projectId, "syncing", 100_000),
+    countQualitySafetyForProject(database, projectId),
+  ]);
   database.close();
-  return operationCount + qualitySafetyCount;
+  return queued.length + syncing.length + qualitySafetyCount;
 }
 
-export async function listOperationIssues(limit = 20): Promise<readonly OperationIssue[]> {
+export async function readOperationDiagnostics(projectId: string): Promise<OperationDiagnostics> {
+  const database = await openFieldDatabase();
+  const [queued, syncing, conflicts, rejected] = await Promise.all([
+    readOperationsForProjectByStatus(database, projectId, "queued", 100_000),
+    readOperationsForProjectByStatus(database, projectId, "syncing", 100_000),
+    readOperationsForProjectByStatus(database, projectId, "conflict", 100_000),
+    readOperationsForProjectByStatus(database, projectId, "rejected", 100_000),
+  ]);
+  database.close();
+  return {
+    queued: queued.length,
+    syncing: syncing.length,
+    conflicts: conflicts.length,
+    rejected: rejected.length,
+  };
+}
+
+export async function listOperationIssues(projectId: string, limit = 20): Promise<readonly OperationIssue[]> {
   const database = await openFieldDatabase();
   const [conflicts, rejected] = await Promise.all([
-    readOperationsByStatus(database, "conflict", limit),
-    readOperationsByStatus(database, "rejected", limit),
+    readOperationsForProjectByStatus(database, projectId, "conflict", limit),
+    readOperationsForProjectByStatus(database, projectId, "rejected", limit),
   ]);
   database.close();
 
@@ -173,9 +192,9 @@ export async function listOperationIssues(limit = 20): Promise<readonly Operatio
     }));
 }
 
-export async function recoverInterruptedOperations(): Promise<number> {
+export async function recoverInterruptedOperations(projectId: string): Promise<number> {
   const database = await openFieldDatabase();
-  const interrupted = await readOperationsByStatus(database, "syncing", 1000);
+  const interrupted = await readOperationsForProjectByStatus(database, projectId, "syncing", 100_000);
   if (interrupted.length > 0) {
     await writeOperations(
       database,
@@ -196,17 +215,36 @@ export function syncPendingOperations(apiBaseUrl: string, projectId: string): Pr
   const activeSync = activeSyncs.get(syncKey);
   if (activeSync) return activeSync;
 
-  const sync = performSync(apiBaseUrl, projectId).finally(() => {
+  const sync = drainPendingOperations(apiBaseUrl, projectId).finally(() => {
     activeSyncs.delete(syncKey);
   });
   activeSyncs.set(syncKey, sync);
   return sync;
 }
 
-async function performSync(apiBaseUrl: string, projectId: string): Promise<SyncSummary> {
+async function drainPendingOperations(apiBaseUrl: string, projectId: string): Promise<SyncSummary> {
+  let sent = 0;
+  let applied = 0;
+  let conflicts = 0;
+  let rejected = 0;
+  let deferred = 0;
+  let remaining = 0;
+  for (let batchNumber = 0; batchNumber < 20; batchNumber += 1) {
+    const batch = await performSyncBatch(apiBaseUrl, projectId);
+    sent += batch.sent;
+    applied += batch.applied;
+    conflicts += batch.conflicts;
+    rejected += batch.rejected;
+    deferred += batch.deferred;
+    remaining = batch.remaining;
+    if (batch.remaining === 0 || batch.deferred > 0 || batch.sent < 100) break;
+  }
+  return { sent, applied, conflicts, rejected, deferred, remaining };
+}
+
+async function performSyncBatch(apiBaseUrl: string, projectId: string): Promise<SyncSummary> {
   const database = await openFieldDatabase();
-  const allQueued = await readOperationsByStatus(database, "queued", 1000);
-  const projectQueue = allQueued.filter((operation) => operation.projectId === projectId);
+  const projectQueue = await readOperationsForProjectByStatus(database, projectId, "queued", 100_000);
   const queued = projectQueue.slice(0, 100);
 
   const scope = currentLocalIdentityScope();
@@ -232,7 +270,7 @@ async function performSync(apiBaseUrl: string, projectId: string): Promise<SyncS
     if (manifest.allowedOperations.includes("CaptureDailyReportFact")) {
       await pullAuthorizedChanges(apiBaseUrl, manifest);
     }
-    return { sent: 0, applied: 0, conflicts: 0, rejected: 0 };
+    return { sent: 0, applied: 0, conflicts: 0, rejected: 0, deferred: 0, remaining: 0 };
   }
 
   const attemptedAt = new Date().toISOString();
@@ -276,9 +314,7 @@ async function performSync(apiBaseUrl: string, projectId: string): Promise<SyncS
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(apiProblemMessage(null, response.status));
-    }
+    await ensureApiSuccess(response);
 
     const batch = (await response.json()) as SyncBatchResult;
     const resultById = new Map(batch.operations.map((result) => [result.operationId, result]));
@@ -313,12 +349,15 @@ async function performSync(apiBaseUrl: string, projectId: string): Promise<SyncS
       await pullAuthorizedChanges(apiBaseUrl, pushedManifest);
     }
     database.close();
+    const remaining = await countQueuedForProject(projectId);
 
     return {
       sent: completed.length,
       applied: completed.filter((operation) => operation.status === "synced").length,
       conflicts: completed.filter((operation) => operation.status === "conflict").length,
       rejected: completed.filter((operation) => operation.status === "rejected").length,
+      deferred: completed.filter((operation) => operation.status === "queued").length,
+      remaining,
     };
   } catch (error) {
     const message = toUserMessage(error, "ارتباط با سرور برقرار نشد؛ عملیات محلی محفوظ است.");
@@ -446,9 +485,9 @@ export function findDailyReportId(projectId: string, reportDate: string): string
 
 async function countQueuedForProject(projectId: string): Promise<number> {
   const database = await openFieldDatabase();
-  const operations = await readOperationsByStatus(database, "queued", 1000);
+  const operations = await readOperationsForProjectByStatus(database, projectId, "queued", 100_000);
   database.close();
-  return operations.filter((item) => item.projectId === projectId).length;
+  return operations.length;
 }
 
 function readOperation(database: IDBDatabase, operationId: string): Promise<ClientOperation | null> {
@@ -474,26 +513,39 @@ function nextLocalSequence(): number {
   return next;
 }
 
-function readOperationsByStatus(
+function readOperationsForProjectByStatus(
   database: IDBDatabase,
+  projectId: string,
   status: OperationStatus,
   limit: number,
 ): Promise<ClientOperation[]> {
   return new Promise((resolve, reject) => {
     const operations: ClientOperation[] = [];
     const transaction = database.transaction(operationStore, "readonly");
-    const request = transaction.objectStore(operationStore).index("by-status").openCursor(status);
+    const request = transaction.objectStore(operationStore).index("by-project").openCursor(IDBKeyRange.only(projectId));
     request.onsuccess = () => {
       const cursor = request.result;
       if (!cursor || operations.length >= limit) {
-        resolve(operations);
+        resolve(operations.sort((left, right) =>
+          left.localSequence - right.localSequence || left.operationId.localeCompare(right.operationId)));
         return;
       }
-
-      operations.push(cursor.value as ClientOperation);
+      const operation = cursor.value as ClientOperation;
+      if (operation.status === status) operations.push(operation);
       cursor.continue();
     };
-    request.onerror = () => reject(request.error ?? new Error("خواندن صف عملیات محلی ممکن نشد."));
+    request.onerror = () => reject(request.error ?? new Error("خواندن صف پروژه از پایگاه داده محلی ممکن نشد."));
+  });
+}
+
+function countQualitySafetyForProject(database: IDBDatabase, projectId: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(qualitySafetyIntakeStoreName, "readonly");
+    const request = transaction.objectStore(qualitySafetyIntakeStoreName)
+      .index("by-project")
+      .count(IDBKeyRange.only(projectId));
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error ?? new Error("شمارش ثبت‌های محلی کیفیت و ایمنی ممکن نشد."));
   });
 }
 

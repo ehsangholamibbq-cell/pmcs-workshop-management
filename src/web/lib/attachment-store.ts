@@ -43,6 +43,13 @@ export interface AttachmentSyncSummary {
   readonly uploaded: number;
   readonly rejected: number;
   readonly deferred: number;
+  readonly remaining: number;
+}
+
+export interface AttachmentDiagnostics {
+  readonly queued: number;
+  readonly uploading: number;
+  readonly rejected: number;
 }
 
 export interface AttachmentIssue {
@@ -80,7 +87,7 @@ const allowedContentTypes = new Set([
   "application/pdf",
 ]);
 const maximumSizeBytes = 25 * 1024 * 1024;
-let activeSync: Promise<AttachmentSyncSummary> | null = null;
+const activeSyncs = new Map<string, Promise<AttachmentSyncSummary>>();
 
 export async function enqueueAttachment(input: EnqueueAttachmentInput): Promise<QueuedAttachment> {
   validateFile(input.file);
@@ -121,19 +128,28 @@ export function buildEvidenceSessionPayload(attachment: QueuedAttachment): Evide
   };
 }
 
-export async function countPendingAttachments(): Promise<number> {
+export async function countPendingAttachments(projectId: string): Promise<number> {
   const database = await openFieldDatabase();
-  const [queued, uploading] = await Promise.all([
-    countByStatus(database, "queued"),
-    countByStatus(database, "uploading"),
-  ]);
+  const items = await readByProject(database, projectId, 100_000);
   database.close();
-  return queued + uploading;
+  return items.filter((item) => item.status === "queued" || item.status === "uploading").length;
 }
 
-export async function recoverInterruptedAttachments(): Promise<number> {
+export async function readAttachmentDiagnostics(projectId: string): Promise<AttachmentDiagnostics> {
   const database = await openFieldDatabase();
-  const interrupted = await readByStatus(database, "uploading", 100);
+  const items = await readByProject(database, projectId, 100_000);
+  database.close();
+  return {
+    queued: items.filter((item) => item.status === "queued").length,
+    uploading: items.filter((item) => item.status === "uploading").length,
+    rejected: items.filter((item) => item.status === "rejected").length,
+  };
+}
+
+export async function recoverInterruptedAttachments(projectId: string): Promise<number> {
+  const database = await openFieldDatabase();
+  const interrupted = (await readByProject(database, projectId, 100_000))
+    .filter((item) => item.status === "uploading");
   if (interrupted.length > 0) {
     await writeAttachments(database, interrupted.map((item) => ({
       ...item,
@@ -145,9 +161,11 @@ export async function recoverInterruptedAttachments(): Promise<number> {
   return interrupted.length;
 }
 
-export async function listAttachmentIssues(limit = 20): Promise<readonly AttachmentIssue[]> {
+export async function listAttachmentIssues(projectId: string, limit = 20): Promise<readonly AttachmentIssue[]> {
   const database = await openFieldDatabase();
-  const rejected = await readByStatus(database, "rejected", limit);
+  const rejected = (await readByProject(database, projectId, 100_000))
+    .filter((item) => item.status === "rejected")
+    .slice(0, limit);
   database.close();
   return rejected.map((item) => ({
     attachmentId: item.attachmentId,
@@ -157,23 +175,45 @@ export async function listAttachmentIssues(limit = 20): Promise<readonly Attachm
   }));
 }
 
-export function syncPendingAttachments(apiBaseUrl: string): Promise<AttachmentSyncSummary> {
-  if (activeSync) {
-    return activeSync;
-  }
+export function syncPendingAttachments(apiBaseUrl: string, projectId: string): Promise<AttachmentSyncSummary> {
+  const scope = currentLocalIdentityScope();
+  const syncKey = `${scope.tenantId}:${scope.userId}:${projectId}`;
+  const activeSync = activeSyncs.get(syncKey);
+  if (activeSync) return activeSync;
 
-  activeSync = performSync(apiBaseUrl).finally(() => {
-    activeSync = null;
+  const sync = drainPendingAttachments(apiBaseUrl, projectId).finally(() => {
+    activeSyncs.delete(syncKey);
   });
-  return activeSync;
+  activeSyncs.set(syncKey, sync);
+  return sync;
 }
 
-async function performSync(apiBaseUrl: string): Promise<AttachmentSyncSummary> {
+async function drainPendingAttachments(apiBaseUrl: string, projectId: string): Promise<AttachmentSyncSummary> {
+  let sent = 0;
+  let uploaded = 0;
+  let rejected = 0;
+  let deferred = 0;
+  let remaining = 0;
+  for (let batchNumber = 0; batchNumber < 50; batchNumber += 1) {
+    const batch = await performSyncBatch(apiBaseUrl, projectId);
+    sent += batch.sent;
+    uploaded += batch.uploaded;
+    rejected += batch.rejected;
+    deferred += batch.deferred;
+    remaining = batch.remaining;
+    if (batch.remaining === 0 || batch.deferred > 0 || batch.sent < 20) break;
+  }
+  return { sent, uploaded, rejected, deferred, remaining };
+}
+
+async function performSyncBatch(apiBaseUrl: string, projectId: string): Promise<AttachmentSyncSummary> {
   const database = await openFieldDatabase();
-  const queued = await readByStatus(database, "queued", 20);
+  const queued = (await readByProject(database, projectId, 100_000))
+    .filter((item) => item.status === "queued")
+    .slice(0, 20);
   if (queued.length === 0) {
     database.close();
-    return { sent: 0, uploaded: 0, rejected: 0, deferred: 0 };
+    return { sent: 0, uploaded: 0, rejected: 0, deferred: 0, remaining: 0 };
   }
 
   const scope = currentLocalIdentityScope();
@@ -230,7 +270,7 @@ async function performSync(apiBaseUrl: string): Promise<AttachmentSyncSummary> {
   }
 
   database.close();
-  return { sent: queued.length, uploaded, rejected, deferred };
+  return { sent: queued.length, uploaded, rejected, deferred, remaining: await countQueuedAttachments(projectId) };
 }
 
 async function createUploadSession(
@@ -244,7 +284,7 @@ async function createUploadSession(
       headers: {
         ...identityHeaders(attachment),
         "Content-Type": "application/json",
-        "Idempotency-Key": `${attachment.attachmentId}:session:${attachment.attemptCount}`,
+        "Idempotency-Key": `${attachment.attachmentId}:session`,
       },
       body: JSON.stringify(buildEvidenceSessionPayload(attachment)),
     },
@@ -301,24 +341,15 @@ async function calculateSha256(file: File): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function countByStatus(database: IDBDatabase, status: AttachmentStatus): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(attachmentStore, "readonly");
-    const request = transaction.objectStore(attachmentStore).index("by-status").count(status);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("شمارش صف محلی مدارک ممکن نشد."));
-  });
-}
-
-function readByStatus(
+function readByProject(
   database: IDBDatabase,
-  status: AttachmentStatus,
+  projectId: string,
   limit: number,
 ): Promise<QueuedAttachment[]> {
   return new Promise((resolve, reject) => {
     const items: QueuedAttachment[] = [];
     const transaction = database.transaction(attachmentStore, "readonly");
-    const request = transaction.objectStore(attachmentStore).index("by-status").openCursor(status);
+    const request = transaction.objectStore(attachmentStore).index("by-project").openCursor(IDBKeyRange.only(projectId));
     request.onsuccess = () => {
       const cursor = request.result;
       if (!cursor || items.length >= limit) {
@@ -328,8 +359,16 @@ function readByStatus(
       items.push(cursor.value as QueuedAttachment);
       cursor.continue();
     };
-    request.onerror = () => reject(request.error ?? new Error("خواندن صف محلی مدارک ممکن نشد."));
+    request.onerror = () => reject(request.error ?? new Error("خواندن مدارک محلی پروژه ممکن نشد."));
   });
+}
+
+async function countQueuedAttachments(projectId: string): Promise<number> {
+  const database = await openFieldDatabase();
+  const count = (await readByProject(database, projectId, 100_000))
+    .filter((item) => item.status === "queued").length;
+  database.close();
+  return count;
 }
 
 function writeAttachments(database: IDBDatabase, items: readonly QueuedAttachment[]): Promise<void> {

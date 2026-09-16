@@ -84,6 +84,14 @@ jobs:
             --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
             postgres:17-alpine sh -c \
             'apk add --no-cache bash >/dev/null && bash tools/checkpoint22-db-verification.sh'
+      - name: Verify Checkpoint 23 sync recovery and conflict evidence
+        run: |
+          docker run --rm --network host \
+            --volume "${GITHUB_WORKSPACE}:/workspace" \
+            --workdir /workspace \
+            --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
+            postgres:17-alpine sh -c \
+            'apk add --no-cache bash >/dev/null && bash tools/checkpoint23-db-verification.sh'
       - name: PostgreSQL backup and isolated restore drill
         run: |
           mkdir -p "${RUNNER_TEMP}/pmcs-backup"
@@ -121,7 +129,7 @@ jobs:
         with:
           node-version: 24
       - run: node --test tools/tests/*.test.mjs
-      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh tools/checkpoint22-db-verification.sh ops/backup/*.sh
+      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh tools/checkpoint22-db-verification.sh tools/checkpoint23-db-verification.sh ops/backup/*.sh
 
   web:
     runs-on: ubuntu-latest

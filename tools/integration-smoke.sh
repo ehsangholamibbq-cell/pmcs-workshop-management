@@ -241,7 +241,7 @@ handshake_response="$(curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
   --header 'Content-Type: application/json' \
-  --data "{\"deviceId\":\"${device_id}\",\"projectId\":\"${project_id}\",\"deviceName\":\"Integration browser\",\"platform\":\"CI\",\"appVersion\":\"0.1.0\",\"protocolVersion\":2,\"localSchemaVersion\":5,\"lastCheckpoint\":null,\"deviceTime\":\"${device_time}\",\"queue\":{\"pendingOperations\":2,\"pendingAttachments\":0,\"pendingAttachmentBytes\":0,\"oldestOperationAt\":\"${device_time}\"}}" \
+  --data "{\"deviceId\":\"${device_id}\",\"projectId\":\"${project_id}\",\"deviceName\":\"Integration browser\",\"platform\":\"CI\",\"appVersion\":\"0.2.0\",\"protocolVersion\":3,\"localSchemaVersion\":6,\"lastCheckpoint\":null,\"deviceTime\":\"${device_time}\",\"queue\":{\"pendingOperations\":2,\"pendingAttachments\":0,\"pendingAttachmentBytes\":0,\"oldestOperationAt\":\"${device_time}\"}}" \
   "http://127.0.0.1:${port}/api/v1/sync/handshake")"
 session_id="$(sed -n 's/.*"sessionId":"\([^"]*\)".*/\1/p' <<<"${handshake_response}")"
 lease_id="$(sed -n 's/.*"leaseId":"\([^"]*\)".*/\1/p' <<<"${handshake_response}")"
@@ -264,6 +264,18 @@ push_response="$(curl --silent --fail \
   --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Integration observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-1\",\"deviceTimezoneOffsetMinutes\":0}]}" \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 grep -q '"status":"Applied"' <<<"${push_response}"
+
+current_step="replaying the same immutable offline operation"
+replay_response="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header "X-Pmcs-Sync-Session: ${session_id}" \
+  --header 'Content-Type: application/json' \
+  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Integration observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-1\",\"deviceTimezoneOffsetMinutes\":0}]}" \
+  "http://127.0.0.1:${port}/api/v1/sync/operations")"
+grep -q '"status":"Applied"' <<<"${replay_response}"
+grep -q '"wasReplay":true' <<<"${replay_response}"
 
 current_step="checking Daily Report correction lineage, My Work and notification receipts"
 report_response="$(curl --silent --fail \
@@ -422,17 +434,35 @@ curl --silent --fail \
   --data "{\"projectId\":\"${project_id}\",\"checkpointOffer\":\"${checkpoint_offer}\"}" \
   "http://127.0.0.1:${port}/api/v1/sync/checkpoints" | grep -q '"sequence":'
 
-current_step="creating and resolving a sync conflict"
+current_step="opening a second-user sync session for a concurrent edit"
+field_user_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+field_device_id="integration-device-002"
+field_handshake_response="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${field_user_id}" \
+  --header 'Content-Type: application/json' \
+  --data "{\"deviceId\":\"${field_device_id}\",\"projectId\":\"${project_id}\",\"deviceName\":\"Concurrent field browser\",\"platform\":\"CI\",\"appVersion\":\"0.2.0\",\"protocolVersion\":3,\"localSchemaVersion\":6,\"lastCheckpoint\":null,\"deviceTime\":\"${device_time}\",\"queue\":{\"pendingOperations\":1,\"pendingAttachments\":0,\"pendingAttachmentBytes\":0,\"oldestOperationAt\":\"${device_time}\"}}" \
+  "http://127.0.0.1:${port}/api/v1/sync/handshake")"
+field_session_id="$(sed -n 's/.*"sessionId":"\([^"]*\)".*/\1/p' <<<"${field_handshake_response}")"
+field_lease_id="$(sed -n 's/.*"leaseId":"\([^"]*\)".*/\1/p' <<<"${field_handshake_response}")"
+field_authorization_version="$(sed -n 's/.*"authorizationVersion":\([0-9][0-9]*\).*/\1/p' <<<"${field_handshake_response}")"
+if [[ -z "${field_session_id}" || -z "${field_lease_id}" || -z "${field_authorization_version}" ]]; then
+  echo "Second-user sync handshake did not return a session and offline lease." >&2
+  exit 1
+fi
+
+current_step="creating and resolving a concurrent two-user sync conflict"
 conflicting_report_id="66666666-6666-6666-6666-666666666666"
 conflicting_fact_id="77777777-7777-7777-7777-777777777777"
 conflicting_operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1C"
 conflict_response="$(curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
-  --header "X-User-Id: ${user_id}" \
-  --header "X-Pmcs-Sync-Session: ${session_id}" \
+  --header "X-User-Id: ${field_user_id}" \
+  --header "X-Pmcs-Sync-Session: ${field_session_id}" \
   --header 'Content-Type: application/json' \
-  --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${conflicting_operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${conflicting_report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${conflicting_fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Conflicting observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":2,\"dependencies\":[],\"correlationId\":\"integration-sync-2\",\"deviceTimezoneOffsetMinutes\":0}]}" \
+  --data "{\"deviceId\":\"${field_device_id}\",\"operations\":[{\"operationId\":\"${conflicting_operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${conflicting_report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${conflicting_fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Concurrent field user fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${field_lease_id}\",\"authorizationVersion\":${field_authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-2\",\"deviceTimezoneOffsetMinutes\":0}]}" \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 conflict_id="$(sed -n 's/.*"conflictId":"\([^"]*\)".*/\1/p' <<<"${conflict_response}")"
 grep -q '"status":"Conflict"' <<<"${conflict_response}"
@@ -458,6 +488,15 @@ curl --silent --fail \
   --header 'Content-Type: application/json' \
   --data "{\"baseRevision\":${conflict_revision},\"resolution\":\"KeepServer\",\"replacementOperationId\":null,\"comment\":\"Integration resolution\"}" \
   "http://127.0.0.1:${port}/api/v1/sync/conflicts/${conflict_id}/resolve" | grep -q '"status":"Resolved"'
+
+current_step="verifying readable sync recovery diagnostics"
+sync_diagnostics="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/sync/diagnostics?projectId=${project_id}&deviceId=${device_id}")"
+grep -q '"recoveryState":"Healthy"' <<<"${sync_diagnostics}"
+grep -q '"checkpointLag":0' <<<"${sync_diagnostics}"
+grep -Eq '"recentReplayCount":[1-9][0-9]*' <<<"${sync_diagnostics}"
 
 current_step="checking the insight rate limit"
 insight_status=""

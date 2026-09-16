@@ -5,6 +5,20 @@ export interface ApiProblem {
   readonly message?: string;
 }
 
+export class ApiRequestError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly retryAfterSeconds?: number;
+
+  constructor(message: string, status: number, code?: string, retryAfterSeconds?: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+    this.code = code;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
 const statusMessages: Readonly<Record<number, string>> = {
   400: "درخواست ارسال‌شده معتبر نیست.",
   401: "برای ادامه باید وارد حساب کاربری شوید.",
@@ -161,7 +175,12 @@ export async function ensureApiSuccess(response: Response): Promise<void> {
     // پاسخ غیرساختاریافته نیز به یک پیام امن و فارسی تبدیل می‌شود.
   }
 
-  throw new Error(apiProblemMessage(problem, response.status));
+  throw new ApiRequestError(
+    apiProblemMessage(problem, response.status),
+    response.status,
+    problem?.code,
+    parseRetryAfterSeconds(response.headers.get("Retry-After")),
+  );
 }
 
 export function apiProblemMessage(problem: ApiProblem | null, status?: number): string {
@@ -226,4 +245,13 @@ export function formatAmountFa(value?: number | null, currencyCode?: string | nu
 
 function containsPersian(value: string): boolean {
   return /[\u0600-\u06ff]/u.test(value);
+}
+
+function parseRetryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number.parseInt(value, 10);
+  if (Number.isInteger(seconds) && seconds >= 0) return seconds;
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return undefined;
+  return Math.max(0, Math.ceil((timestamp - Date.now()) / 1000));
 }

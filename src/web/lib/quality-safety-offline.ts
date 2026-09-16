@@ -23,6 +23,15 @@ export async function enqueueOfflineQualitySafetyIntake(projectId: string, paylo
   await transaction(database, "readwrite", (store) => store.put(draft)); database.close(); return draft.draftId;
 }
 
+export async function countPendingQualitySafetyIntakes(projectId: string): Promise<number> {
+  const database = await openFieldDatabase();
+  try {
+    return (await readProject(database, projectId)).length;
+  } finally {
+    database.close();
+  }
+}
+
 export async function syncOfflineQualitySafetyIntakes(baseUrl: string, projectId: string) {
   const scope = currentLocalIdentityScope(); const database = await openFieldDatabase();
   try {

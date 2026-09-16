@@ -8,13 +8,13 @@ public sealed class SyncControlTests
     private static readonly DateTimeOffset Now = new(2026, 9, 12, 10, 0, 0, TimeSpan.Zero);
 
     [Theory]
-    [InlineData("0.1.0", 2, 5, true)]
-    [InlineData("0.1.0-beta", 2, 5, true)]
-    [InlineData("0.0.9", 2, 5, false)]
-    [InlineData("0.1.0", 1, 5, false)]
-    [InlineData("0.1.0", 2, 4, false)]
+    [InlineData("0.1.0", 3, 6, true)]
+    [InlineData("0.1.0-beta", 3, 6, true)]
+    [InlineData("0.0.9", 3, 6, false)]
     [InlineData("0.1.0", 2, 6, false)]
-    [InlineData("invalid", 2, 5, false)]
+    [InlineData("0.1.0", 3, 5, false)]
+    [InlineData("0.1.0", 3, 7, false)]
+    [InlineData("invalid", 3, 6, false)]
     public void CompatibilityRequiresCurrentProtocolAndRecoverableLocalSchema(
         string appVersion,
         int protocolVersion,
@@ -116,6 +116,52 @@ public sealed class SyncControlTests
         Assert.Throws<DomainRuleException>(() => conflict.Resolve(
             Guid.NewGuid(), conflict.Revision + 1, Guid.NewGuid(), SyncConflictResolutionType.KeepServer,
             null, null, Now.AddMinutes(1)));
+    }
+
+    [Theory]
+    [InlineData(SyncDeviceStatus.Revoked, true, 10, 10, 0, 0, SyncRecoveryState.DeviceRevoked)]
+    [InlineData(SyncDeviceStatus.Active, false, 0, 0, 0, 0, SyncRecoveryState.NeverSynchronized)]
+    [InlineData(SyncDeviceStatus.Active, true, 10, 12, 0, 0, SyncRecoveryState.PendingPull)]
+    [InlineData(SyncDeviceStatus.Active, true, 12, 12, 1, 0, SyncRecoveryState.AttentionRequired)]
+    [InlineData(SyncDeviceStatus.Active, true, 12, 12, 0, 1, SyncRecoveryState.AttentionRequired)]
+    [InlineData(SyncDeviceStatus.Active, true, 13, 12, 0, 0, SyncRecoveryState.AttentionRequired)]
+    [InlineData(SyncDeviceStatus.Active, true, 12, 12, 0, 0, SyncRecoveryState.Healthy)]
+    public void RecoveryHealthIsDerivedFromDurableServerEvidence(
+        SyncDeviceStatus deviceStatus,
+        bool hasValidLease,
+        long checkpoint,
+        long watermark,
+        int conflicts,
+        int rejected,
+        SyncRecoveryState expected)
+    {
+        var leaseExpiry = hasValidLease ? Now.AddHours(1) : (DateTimeOffset?)null;
+
+        var actual = SyncRecoveryHealth.Evaluate(
+            deviceStatus,
+            leaseExpiry,
+            Now,
+            checkpoint,
+            watermark,
+            conflicts,
+            rejected);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void RecoveryHealthReportsExpiredLeaseBeforeQueueHealth()
+    {
+        var actual = SyncRecoveryHealth.Evaluate(
+            SyncDeviceStatus.Active,
+            Now.AddSeconds(-1),
+            Now,
+            12,
+            12,
+            0,
+            0);
+
+        Assert.Equal(SyncRecoveryState.LeaseExpired, actual);
     }
 
     private static SyncConflictCase CreateConflict() => SyncConflictCase.Detect(

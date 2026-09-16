@@ -13,6 +13,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     public DbSet<SyncChangeFeedEntry> ChangeFeed => Set<SyncChangeFeedEntry>();
     public DbSet<DeviceCheckpoint> DeviceCheckpoints => Set<DeviceCheckpoint>();
     public DbSet<CheckpointOffer> CheckpointOffers => Set<CheckpointOffer>();
+    public DbSet<SyncOperationReceipt> OperationReceipts => Set<SyncOperationReceipt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -183,6 +184,33 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
             builder.Property(x => x.ExpiresAt).HasColumnName("expires_at");
             builder.Property(x => x.ConsumedAt).HasColumnName("consumed_at");
             builder.HasIndex(x => new { x.SessionId, x.ExpiresAt });
+        });
+
+        modelBuilder.Entity<SyncOperationReceipt>(builder =>
+        {
+            builder.ToTable("operation_receipts");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.ProjectId).HasColumnName("project_id");
+            builder.Property(x => x.UserId).HasColumnName("user_id");
+            builder.Property(x => x.DeviceId).HasColumnName("device_id").HasMaxLength(120);
+            builder.Property(x => x.OperationId).HasColumnName("operation_id").HasMaxLength(26);
+            builder.Property(x => x.LocalSequence).HasColumnName("local_sequence");
+            builder.Property(x => x.EntityType).HasColumnName("entity_type").HasMaxLength(120);
+            builder.Property(x => x.EntityId).HasColumnName("entity_id");
+            builder.Property(x => x.CommandType).HasColumnName("command_type").HasMaxLength(160);
+            builder.Property(x => x.Status).HasColumnName("status").HasMaxLength(40);
+            builder.Property(x => x.Code).HasColumnName("code").HasMaxLength(160);
+            builder.Property(x => x.ConflictId).HasColumnName("conflict_id");
+            builder.Property(x => x.ServerRevision).HasColumnName("server_revision");
+            builder.Property(x => x.AttemptCount).HasColumnName("attempt_count");
+            builder.Property(x => x.ReplayCount).HasColumnName("replay_count");
+            builder.Property(x => x.FirstAttemptAt).HasColumnName("first_attempt_at");
+            builder.Property(x => x.LastAttemptAt).HasColumnName("last_attempt_at");
+            builder.Property(x => x.LastCorrelationId).HasColumnName("last_correlation_id").HasMaxLength(120);
+            builder.HasIndex(x => new { x.TenantId, x.UserId, x.DeviceId, x.OperationId }).IsUnique();
+            builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.UserId, x.DeviceId, x.LastAttemptAt });
         });
     }
 }

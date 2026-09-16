@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 22 verified; checkpoint 23 is next:
+Foundation Sprint — checkpoint 23 implemented locally; connected CI verification is pending:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -105,7 +105,10 @@ Foundation Sprint — checkpoint 22 verified; checkpoint 23 is next:
 - Deadline outlook قطعی و Escalation deduplicated؛ Acknowledge هرگز Resolution نیست
 - طبقه‌بندی و Permission fail-closed برای رکوردهای محدود مدیریتی، HSE و تجاری
 - نقش `ProjectController` و رابط فارسی Online-only برای چرخه‌های رسمی ریسک و تصمیم
-- Offline Sync نسخه ۲ با Device/Lease/Session، Change Feed، Checkpoint و Conflict Center پایدار
+- Offline Sync نسخه ۳ با Device/Lease/Session، Change Feed، Checkpoint و Conflict Center پایدار
+- چرخه Recovery پایدار برای قطع/وصل، Crash، Retry محدود و تطبیق Local/Server
+- Receipt تشخیصی بدون Payload برای Replay/Rejected و جلوگیری قابل اثبات از Duplicate
+- سناریوی تعارض واقعی دو کاربر با Audit و Correlation قابل راستی‌آزمایی
 - Release Identity تعبیه‌شده در Artifactهای API و Web با Commit، نسخه و زمان Build یکسان
 - Pilot Gate fail-closed با هشت Evidence تاریخ‌دار، Hash گزارش و سه تأیید مستقل
 - Smoke محیط برای جلوگیری از Deploy ترکیبی Web/API متعلق به Commitهای متفاوت

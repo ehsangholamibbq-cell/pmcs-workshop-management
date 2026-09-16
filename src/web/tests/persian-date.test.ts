@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { buildDailyFactPayload, emptyFactDraft } from "../lib/field-facts.ts";
 import {
   addDaysToIsoDate,
   formatPersianDate,
@@ -53,4 +54,19 @@ test("calendar month is Saturday-first and contains exactly 42 selectable days",
   assert.equal(days.filter((day) => day.inCurrentMonth).length, 31);
   assert.equal(days.find((day) => day.isToday)?.day, 21);
   assert.equal(new Date(`${days[0].isoDate}T12:00:00Z`).getUTCDay(), 6);
+});
+
+test("offline sync payload keeps ISO internally and returns to the same Persian date", () => {
+  const reportDate = parsePersianDateInput("۱۴۰۳/۱۲/۳۰");
+  assert.equal(reportDate, "2025-03-20");
+  const payload = buildDailyFactPayload({
+    ...emptyFactDraft,
+    kind: "Note",
+    description: "ثبت آفلاین پایان سال",
+    locationId: "location-id",
+  }, "fact-id", reportDate!);
+
+  assert.equal(payload.reportDate, "2025-03-20");
+  assert.equal(formatPersianDateInput(payload.reportDate), "۱۴۰۳/۱۲/۳۰");
+  assert.equal(formatPersianDateInput(addDaysToIsoDate(payload.reportDate, 1)), "۱۴۰۴/۰۱/۰۱");
 });

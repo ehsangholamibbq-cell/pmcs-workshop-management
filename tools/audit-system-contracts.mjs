@@ -115,10 +115,14 @@ assert.match(transactionalEffects, /on conflict \(tenant_id, key, operation\) do
 
 const operationStore = readFileSync(join(root, "src/web/lib/operation-store.ts"), "utf8");
 const syncClient = readFileSync(join(root, "src/web/lib/sync-client.ts"), "utf8");
+const syncRecovery = readFileSync(join(root, "src/web/lib/sync-recovery.ts"), "utf8");
 assert.match(operationStore, /serverConflict\.revision/);
 assert.doesNotMatch(operationStore, /baseRevision:\s*0[,}]/);
 assert.match(operationStore, /activeSyncs = new Map/);
 assert.match(syncClient, /activeHandshakes = new Map/);
+assert.match(syncRecovery, /runSyncRecoveryCycle/);
+assert.match(syncRecovery, /pendingQualitySafetyIntakes/);
+assert.match(syncRecovery, /serverCheckpointSequence/);
 
 console.log(
   `System contract audit passed: ${registrations.length} endpoints, ${mutations.length} mutations, ` +

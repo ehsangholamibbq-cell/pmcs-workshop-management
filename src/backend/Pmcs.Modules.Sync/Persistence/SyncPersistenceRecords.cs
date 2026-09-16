@@ -47,3 +47,26 @@ internal sealed class CheckpointOffer
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset? ConsumedAt { get; set; }
 }
+
+internal sealed class SyncOperationReceipt
+{
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
+    public Guid ProjectId { get; set; }
+    public Guid UserId { get; set; }
+    public string DeviceId { get; set; } = string.Empty;
+    public string OperationId { get; set; } = string.Empty;
+    public long LocalSequence { get; set; }
+    public string EntityType { get; set; } = string.Empty;
+    public Guid EntityId { get; set; }
+    public string CommandType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string? Code { get; set; }
+    public Guid? ConflictId { get; set; }
+    public long? ServerRevision { get; set; }
+    public int AttemptCount { get; set; }
+    public int ReplayCount { get; set; }
+    public DateTimeOffset FirstAttemptAt { get; set; }
+    public DateTimeOffset LastAttemptAt { get; set; }
+    public string LastCorrelationId { get; set; } = string.Empty;
+}

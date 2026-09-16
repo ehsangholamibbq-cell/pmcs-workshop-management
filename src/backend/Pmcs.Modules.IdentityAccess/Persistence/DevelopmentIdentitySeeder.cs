@@ -16,8 +16,10 @@ internal sealed partial class DevelopmentIdentitySeeder(
 {
     public static readonly Guid DemoTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     public static readonly Guid DemoUserId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    public static readonly Guid DemoFieldUserId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     private static readonly Guid DemoProjectId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid DemoMembershipId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+    private static readonly Guid DemoFieldMembershipId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -46,6 +48,17 @@ internal sealed partial class DevelopmentIdentitySeeder(
                 clock.UtcNow));
         }
 
+        if (!await dbContext.Users.AnyAsync(x => x.Id == DemoFieldUserId, cancellationToken))
+        {
+            dbContext.Users.Add(UserAccount.Create(
+                DemoFieldUserId,
+                DemoTenantId,
+                "سرپرست کارگاه آزمون هم‌زمانی",
+                "field.sync@pmcs.local",
+                TenantRole.Member,
+                clock.UtcNow));
+        }
+
         if (!await dbContext.ProjectMemberships.AnyAsync(x => x.Id == DemoMembershipId, cancellationToken))
         {
             dbContext.ProjectMemberships.Add(ProjectMembership.Assign(
@@ -54,6 +67,18 @@ internal sealed partial class DevelopmentIdentitySeeder(
                 DemoProjectId,
                 DemoUserId,
                 "ProjectManager",
+                clock.UtcNow));
+        }
+
+
+        if (!await dbContext.ProjectMemberships.AnyAsync(x => x.Id == DemoFieldMembershipId, cancellationToken))
+        {
+            dbContext.ProjectMemberships.Add(ProjectMembership.Assign(
+                DemoFieldMembershipId,
+                DemoTenantId,
+                DemoProjectId,
+                DemoFieldUserId,
+                "SiteSupervisor",
                 clock.UtcNow));
         }
 

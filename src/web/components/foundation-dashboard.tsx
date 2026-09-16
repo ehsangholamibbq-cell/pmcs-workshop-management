@@ -28,17 +28,10 @@ import { SupplyRealityPanel } from "@/components/supply-reality-panel";
 import { QualitySafetyPanel } from "@/components/quality-safety-panel";
 import { GovernancePanel } from "@/components/governance-panel";
 import type { MeasurementItemModel } from "@/lib/planning";
-import { formatPersianDate, todayIsoInProjectTimeZone } from "@/lib/persian-date";
-import {
-  countPendingOperations,
-  recoverInterruptedOperations,
-  syncPendingOperations,
-} from "@/lib/operation-store";
-import {
-  countPendingAttachments,
-  recoverInterruptedAttachments,
-  syncPendingAttachments,
-} from "@/lib/attachment-store";
+import { formatPersianDate, formatPersianDateTime, todayIsoInProjectTimeZone } from "@/lib/persian-date";
+import { countPendingOperations } from "@/lib/operation-store";
+import { countPendingAttachments } from "@/lib/attachment-store";
+import { runSyncRecoveryCycle, type SyncRecoveryTrigger } from "@/lib/sync-recovery";
 import { formatAmountFa, toUserMessage } from "@/lib/localization";
 import { scopedStorageKey } from "@/lib/field-database";
 import { listProjectLocations, type ProjectLocationModel } from "@/lib/projects";
@@ -66,6 +59,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [attachmentCount, setAttachmentCount] = useState(0);
   const [lastFactId, setLastFactId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [nextRetryAt, setNextRetryAt] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState("صف محلی آماده است");
   const [refreshToken, setRefreshToken] = useState(0);
   const [commandCenter, setCommandCenter] = useState<CommandCenterModel | null>(null);
@@ -89,36 +83,40 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
 
   const refreshPendingCount = useCallback(async () => {
     const [operations, attachments] = await Promise.all([
-      countPendingOperations(),
-      countPendingAttachments(),
+      countPendingOperations(projectId),
+      countPendingAttachments(projectId),
     ]);
     setPendingCount(operations);
     setAttachmentCount(attachments);
-  }, []);
+  }, [projectId]);
 
-  const synchronize = useCallback(async (automatic = false) => {
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setStorageMessage("اینترنت در دسترس نیست؛ عملیات روی دستگاه باقی ماند");
-      return;
-    }
-
+  const synchronize = useCallback(async (
+    automatic = false,
+    trigger: SyncRecoveryTrigger = automatic ? "startup" : "manual",
+  ) => {
     setIsSyncing(true);
     if (!automatic) {
       setStorageMessage("در حال همگام‌سازی و اعتبارسنجی سرور…");
     }
 
     try {
-      const result = await syncPendingOperations(apiBaseUrl, projectId);
-      const evidenceResult = await syncPendingAttachments(apiBaseUrl);
+      const result = await runSyncRecoveryCycle(apiBaseUrl, projectId, trigger);
       await refreshPendingCount();
-      if (result.sent === 0 && evidenceResult.sent === 0) {
-        setStorageMessage("عملیات جدیدی برای همگام‌سازی وجود ندارد");
-      } else if (result.conflicts > 0 || result.rejected > 0 || evidenceResult.rejected > 0 || evidenceResult.deferred > 0) {
+      setNextRetryAt(result.state.nextRetryAt ?? null);
+      if (result.state.phase === "offline") {
+        setStorageMessage("اینترنت در دسترس نیست؛ عملیات روی دستگاه باقی ماند");
+      } else if (result.state.phase === "retry-scheduled") {
+        setStorageMessage(`ارتباط کامل نشد؛ داده محفوظ است و تلاش بعدی ${formatPersianDateTime(result.state.nextRetryAt!)} انجام می‌شود`);
+      } else if (result.state.phase === "blocked") {
+        setStorageMessage(result.state.lastErrorMessage ?? "همگام‌سازی نیازمند بررسی کاربر یا مدیر سامانه است");
+      } else if (result.state.phase === "attention") {
         setStorageMessage(
-          `${result.applied.toLocaleString("fa-IR")} عملیات و ${evidenceResult.uploaded.toLocaleString("fa-IR")} مدرک پذیرفته شد؛ موارد باقیمانده نیازمند تلاش مجدد یا بررسی است`,
+          `${result.operations.applied.toLocaleString("fa-IR")} عملیات و ${result.attachments.uploaded.toLocaleString("fa-IR")} مدرک پذیرفته شد؛ تعارض یا مورد ردشده نیازمند بررسی است`,
         );
+      } else if (result.operations.sent === 0 && result.attachments.sent === 0 && result.state.syncedQualitySafetyIntakes === 0) {
+        setStorageMessage("نسخه محلی و سرور کنترل شد؛ موردی برای ارسال باقی نمانده است");
       } else {
-        setStorageMessage(`${result.applied.toLocaleString("fa-IR")} عملیات و ${evidenceResult.uploaded.toLocaleString("fa-IR")} مدرک توسط سرور پذیرفته شد`);
+        setStorageMessage(`${result.operations.applied.toLocaleString("fa-IR")} عملیات، ${result.attachments.uploaded.toLocaleString("fa-IR")} مدرک و ${result.state.syncedQualitySafetyIntakes.toLocaleString("fa-IR")} ثبت کیفیت/ایمنی توسط سرور پذیرفته شد`);
       }
     } catch {
       await refreshPendingCount().catch(() => undefined);
@@ -130,25 +128,28 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [projectId, refreshPendingCount]);
 
   useEffect(() => {
-    void Promise.all([recoverInterruptedOperations(), recoverInterruptedAttachments()])
-      .then(refreshPendingCount)
-      .then(() => {
-        if (navigator.onLine) {
-          return synchronize(true);
-        }
-
-        return undefined;
-      })
-      .catch(() => setStorageMessage("فضای محلی هنوز در این مرورگر آماده نشده است"));
+    const startupTimeout = window.setTimeout(() => {
+      void refreshPendingCount()
+        .then(() => synchronize(true, "startup"))
+        .catch(() => setStorageMessage("فضای محلی هنوز در این مرورگر آماده نشده است"));
+    }, 0);
 
     const handleOnline = () => {
-      void synchronize(true);
+      void synchronize(true, "reconnect");
     };
     window.addEventListener("online", handleOnline);
     return () => {
+      window.clearTimeout(startupTimeout);
       window.removeEventListener("online", handleOnline);
     };
   }, [refreshPendingCount, synchronize]);
+
+  useEffect(() => {
+    if (!nextRetryAt || !isOnline) return;
+    const delay = Math.max(0, Date.parse(nextRetryAt) - Date.now());
+    const timeoutId = window.setTimeout(() => void synchronize(true, "retry"), delay);
+    return () => window.clearTimeout(timeoutId);
+  }, [isOnline, nextRetryAt, synchronize]);
 
   const handleQueued = useCallback(async (factId: string) => {
     setLastFactId(factId);
