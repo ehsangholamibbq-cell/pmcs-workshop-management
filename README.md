@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-Foundation Sprint — checkpoint 24 implementation candidate; connected CI evidence is pending:
+`PMCS V1 — Feature Complete` after verified Checkpoint 24. The product is not yet Qualified, Final or Locked; QA Foundation is next:
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
