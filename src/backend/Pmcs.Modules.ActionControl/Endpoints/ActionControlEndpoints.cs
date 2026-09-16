@@ -217,7 +217,12 @@ internal static partial class ActionControlEndpoints
                 ["dueDate"] = action.DueDate,
                 ["priority"] = action.Priority.ToString(),
                 ["status"] = action.Status.ToString(),
-                ["revision"] = action.Revision
+                ["revision"] = action.Revision,
+                ["notificationCount"] = notifications.Length,
+                ["notificationRecipientIds"] = notifications
+                    .Select(notification => notification.RecipientUserId)
+                    .Distinct()
+                    .ToArray()
             },
             response,
             idempotency,

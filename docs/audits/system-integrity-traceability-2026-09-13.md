@@ -44,9 +44,9 @@ Static inspection cannot replace compilation, database migration execution, brow
 | Location/LBS base | Implemented for core Fact path | hierarchical module-owned Location, automatic ROOT, active-parent/child rules, stable ID in Fact and Project State | apply LBS identifiers to remaining modules that still use free-text Location; permission-scoped Location bootstrap |
 | Module activation/status | Partial | independent capability modes and state semantics | versioned module readiness prerequisites and explicit Ready/Activate/Suspend workflow |
 | Daily Site Operations | Partial | structured WorkProgress/Labor/Equipment/Material/Issue/Stoppage/SiteCondition/Note facts | richer project-day/weather/crew semantics and remaining blueprint reference dimensions |
-| Daily Report workflow | Partial | Draft/Submit/Return/Approve, revision, audit/outbox/idempotency | Supersede/correction chain; rejected state if retained; version lineage in UI/API |
+| Daily Report workflow | Implemented core | Draft/Submit/Return/Approve, immutable correction Draft, copied Fact lineage, atomic replacement approval/Supersede, bidirectional version history, audit/outbox/idempotency | richer project-day semantics and domain UAT remain; Rejected is reserved and not presented as an active workflow |
 | Progress without mandatory WBS | Implemented for current scope | measurement items, optional target, approved/provisional separation, versioned modes/baselines | broader UAT and import/integration remain outside MVP core |
-| Issue and Action core | Partial | triage, assignment, transitions, complete/verify/close separation, governance escalation | consolidated My Work; offline Issue/Action operations; simple user-facing notifications |
+| Issue and Action core | Partial | triage, assignment, transitions, complete/verify/close separation, governance escalation and consolidated assigned work | offline Issue/Action operations |
 | Attachment/Evidence | Partial | private S3-compatible content, SHA-256/size checks, metadata lineage, local attachment queue | resumable multipart upload, malware scan/quarantine/safe preview and real object-store lifecycle |
 | Audit and versioning | Implemented core / Partial platform | aggregate revisions, audit/outbox transactions for formal commands, release provenance | immutable retention policy, migration checksums and completion of atomic audit on every Sync rejection/conflict path |
 | Offline PWA and Sync | Partial | operation log, lease/session, push/pull/checkpoint, Daily Fact handler, conflict center, crash retry, scoped local stores | authenticated cold-start app shell; full project/location/task bootstrap; offline Issue/Action; quality/HSE through the common operation protocol; seven-day device endurance |
@@ -55,7 +55,7 @@ Static inspection cannot replace compilation, database migration execution, brow
 | Project State Lite | Implemented core | approved-fact-only deterministic calculation, coverage/freshness/confidence, no fake green/zero | broader dimensions and change summary against an official selected prior snapshot |
 | Command Center Lite | Implemented core / Partial offline | source drill-down, top exceptions, actions, financial/commercial optional states, trend | cached authenticated Project Pulse/My Work for true cold start |
 | AI Daily/Weekly Summary with citation | Partial | permission-aware structured context, provenance, citation validation, human review, safe failure | scheduled daily/weekly product experience and approved-model production evidence |
-| Notification / in-app My Work | Open as a consolidated product slice | escalation records and Action lists exist separately | notification record/dedup/delivery/acknowledgement and one permission-scoped My Work inbox |
+| Notification / in-app My Work | Implemented core | recipient-owned notification record, transactional dedup, read/acknowledge receipts and one permission-scoped My Work inbox across reports/actions | external channels, broader source adapters and target-environment UAT remain |
 
 ## Blueprint-to-code matrix — additional V1 scope
 
@@ -142,11 +142,9 @@ Connected verification: GitHub Actions run [`34761372257`](https://github.com/eh
 
 ### Repository product work
 
-1. Implement Daily Report supersession/correction lineage.
-2. Deliver consolidated My Work and in-app Notification.
-3. Complete MVP offline bootstrap/cold start and Issue/Action operations.
-4. Close the agreed Finance Lite gaps.
-5. Add explicit deny, Delegation, custom scoped grants and dedicated module readiness providers.
+1. Complete MVP offline bootstrap/cold start and Issue/Action operations.
+2. Close the agreed Finance Lite gaps.
+3. Add explicit deny, Delegation, custom scoped grants and dedicated module readiness providers.
 
 ### Repository hardening work
 
@@ -165,11 +163,10 @@ Connected verification: GitHub Actions run [`34761372257`](https://github.com/eh
 
 ## Recommended implementation order
 
-1. Daily Report Supersede + My Work/Notification.
-2. Complete offline bootstrap and Issue/Action/attachment recovery.
-3. Finance Lite completion and cross-module Location adoption.
-4. Explicit deny/scoped grants, module readiness providers and workflow templates.
-5. CI hardening, target-environment UAT and Pilot evidence closure.
+1. Complete offline bootstrap and Issue/Action/attachment recovery.
+2. Finance Lite completion and cross-module Location adoption.
+3. Explicit deny/scoped grants, module readiness providers and workflow templates.
+4. CI hardening, target-environment UAT and Pilot evidence closure.
 
 No item in the external-gate list may be replaced by a template, a local assertion or an unsigned report.
 

@@ -32,3 +32,9 @@ Each item includes stable kind/target identity, status, priority, revision, chan
 - notification timestamps are UTC at the API boundary and formatted as Persian/Shamsi dates and Tehran-local time in the Persian Web interface.
 
 The current channel is in-app only. Email, SMS and push delivery are not claimed by this contract.
+
+## Application and verification boundary
+
+`IWorkManagementQueryService` is the permission-aware Application boundary for My Work and notification queries. HTTP endpoints do not own aggregation, priority, overdue or source-visibility rules. Future QA/Agent adapters must call this service instead of reading module tables directly.
+
+The Persian UI exposes stable `data-testid` selectors and entity identities for E2E automation. The isolated integration scenario uses deterministic report/correction identities; `tools/checkpoint22-db-verification.sh` verifies persisted lineage, receipt, Audit, Outbox and Idempotency evidence directly in the test database. This verification path is CI/Staging-only and creates no production reset or bypass endpoint.

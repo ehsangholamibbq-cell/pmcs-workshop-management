@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.Modules.WorkManagement.Contracts;
 using Pmcs.Modules.WorkManagement.Endpoints;
 using Pmcs.Modules.WorkManagement.Migrations;
 using Pmcs.Modules.WorkManagement.Persistence;
@@ -22,6 +23,7 @@ public sealed class WorkManagementModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddDbContext<WorkManagementDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<ITransactionalNotificationWriter, TransactionalNotificationWriter>();
+        services.AddScoped<IWorkManagementQueryService, WorkManagementQueryService>();
         services.AddSingleton<IDatabaseMigration, WorkManagementInitialMigration>();
     }
 

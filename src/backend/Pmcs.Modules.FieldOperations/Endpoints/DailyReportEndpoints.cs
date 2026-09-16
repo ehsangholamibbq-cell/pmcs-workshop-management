@@ -876,9 +876,20 @@ internal static class DailyReportEndpoints
                     {
                         ["status"] = report.Status.ToString(),
                         ["revision"] = report.Revision,
+                        ["rootReportId"] = report.RootReportId,
+                        ["versionNumber"] = report.VersionNumber,
+                        ["supersedesReportId"] = report.SupersedesReportId,
+                        ["supersededByReportId"] = report.SupersededByReportId,
+                        ["correctionReason"] = report.CorrectionReason,
+                        ["correctionInitiatedBy"] = report.CorrectionInitiatedBy,
                         ["factCount"] = report.Facts.Count,
+                        ["copiedFactCount"] = report.Facts.Count(fact => fact.CopiedFromFactId.HasValue),
                         ["reviewedBy"] = report.ReviewedBy,
-                        ["reviewComment"] = report.ReviewComment
+                        ["reviewComment"] = report.ReviewComment,
+                        ["notificationCount"] = notifications?.Count ?? 0,
+                        ["notificationRecipientIds"] = notifications is null
+                            ? Array.Empty<Guid>()
+                            : notifications.Select(notification => notification.RecipientUserId).Distinct().ToArray()
                     },
                     httpContext.TraceIdentifier),
                 new OutboxEnvelope(

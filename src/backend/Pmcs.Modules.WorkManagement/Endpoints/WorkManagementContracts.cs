@@ -1,4 +1,4 @@
-namespace Pmcs.Modules.WorkManagement.Endpoints;
+namespace Pmcs.Modules.WorkManagement.Contracts;
 
 public sealed record NotificationReceiptRequest(long BaseRevision);
 
@@ -34,3 +34,30 @@ public sealed record MyWorkResponse(
     DateTimeOffset CalculatedAt,
     int UnreadNotificationCount,
     IReadOnlyCollection<MyWorkItemResponse> Items);
+
+public enum WorkManagementQueryStatus
+{
+    Success = 1,
+    Forbidden = 2,
+    ProjectNotFound = 3
+}
+
+public sealed record WorkManagementQueryResult<T>(
+    WorkManagementQueryStatus Status,
+    T? Value);
+
+public interface IWorkManagementQueryService
+{
+    Task<WorkManagementQueryResult<MyWorkResponse>> GetMyWorkAsync(
+        Guid tenantId,
+        Guid userId,
+        Guid projectId,
+        CancellationToken cancellationToken = default);
+
+    Task<WorkManagementQueryResult<IReadOnlyCollection<InAppNotificationResponse>>> ListNotificationsAsync(
+        Guid tenantId,
+        Guid userId,
+        Guid projectId,
+        bool unreadOnly,
+        CancellationToken cancellationToken = default);
+}

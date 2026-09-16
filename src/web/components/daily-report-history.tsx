@@ -202,7 +202,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
 
   const selectedEditable = selected && (selected.status === "Draft" || selected.status === "Returned");
   return (
-    <section className="operational-card daily-report-history" id="daily-report-history">
+    <section className="operational-card daily-report-history" data-testid="daily-report-history" id="daily-report-history">
       <div className="card-heading">
         <div><p className="eyebrow">ردیابی اصلاحات</p><h2>نسخه‌های گزارش روزانه</h2></div>
         <span className="count-badge">{reports.length.toLocaleString("fa-IR")}</span>
@@ -212,19 +212,19 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
         {reports.slice(0, 20).map((report) => {
           const activeCorrection = reports.some((candidate) => candidate.supersedesReportId === report.id && ["Draft", "Submitted", "Returned"].includes(candidate.status));
           return (
-            <div className="report-version-item" key={report.id}>
+            <div className="report-version-item" data-testid="daily-report-version" data-entity-id={report.id} key={report.id}>
               <div>
                 <strong>{formatPersianDate(report.reportDate, "full")}</strong>
                 <small>نسخه {report.versionNumber.toLocaleString("fa-IR")} · {statusLabel(report.status)} · {report.factCount.toLocaleString("fa-IR")} واقعیت</small>
                 {report.correctionReason && <p>دلیل اصلاح: {report.correctionReason}</p>}
               </div>
               <div className="review-actions">
-                <button className="secondary-button" type="button" disabled={!props.isOnline || busy !== null} onClick={() => void open(report.id)}>جزئیات</button>
+                <button className="secondary-button" data-testid="daily-report-version-open" type="button" disabled={!props.isOnline || busy !== null} onClick={() => void open(report.id)}>جزئیات</button>
               </div>
               {report.status === "Approved" && !report.supersededByReportId && !activeCorrection && (
                 <div className="correction-start">
-                  <textarea rows={2} aria-label={`دلیل اصلاح گزارش ${formatPersianDate(report.reportDate)}`} placeholder="دلیل مستند ایجاد نسخه اصلاحی" value={reasons[report.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [report.id]: event.target.value }))} />
-                  <button type="button" disabled={!props.isOnline || busy !== null} onClick={() => void startCorrection(report)}>ایجاد نسخه اصلاحی</button>
+                  <textarea data-testid="daily-report-correction-reason" rows={2} aria-label={`دلیل اصلاح گزارش ${formatPersianDate(report.reportDate)}`} placeholder="دلیل مستند ایجاد نسخه اصلاحی" value={reasons[report.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [report.id]: event.target.value }))} />
+                  <button data-testid="daily-report-correction-start" type="button" disabled={!props.isOnline || busy !== null} onClick={() => void startCorrection(report)}>ایجاد نسخه اصلاحی</button>
                 </div>
               )}
             </div>
@@ -233,20 +233,20 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
       </div>
 
       {selected && (
-        <div className="correction-editor">
+        <div className="correction-editor" data-testid="daily-report-correction-editor" data-entity-id={selected.id}>
           <div className="section-title"><div><p className="eyebrow">نسخه انتخاب‌شده</p><h3>گزارش {formatPersianDate(selected.reportDate)} · نسخه {selected.versionNumber.toLocaleString("fa-IR")}</h3></div><span className="section-note">{statusLabel(selected.status)}</span></div>
           {selectedEditable && (
             <form className="correction-details" onSubmit={saveDetails}>
               <label>شرح محل کلی<input value={locationName} onChange={(event) => setLocationName(event.target.value)} /></label>
               <label>شرح تکمیلی<textarea rows={2} value={narrative} onChange={(event) => setNarrative(event.target.value)} /></label>
-              <button type="submit" disabled={!props.isOnline || busy !== null}>ذخیره مشخصات</button>
+              <button data-testid="daily-report-correction-save" type="submit" disabled={!props.isOnline || busy !== null}>ذخیره مشخصات</button>
             </form>
           )}
           <div className="correction-facts">
             {(selected.facts ?? []).map((fact) => (
-              <div className="correction-fact" key={fact.id}>
+              <div className="correction-fact" data-testid="daily-report-correction-fact" data-entity-id={fact.id} key={fact.id}>
                 <div><strong>{factKindLabel(fact.kind)} · {fact.description}</strong><small>{fact.locationName ?? "بدون محل"}{fact.copiedFromFactId ? " · کپی ردیابی‌شده از نسخه قبل" : " · ثبت جدید"}</small></div>
-                {selectedEditable && <button className="secondary-button" type="button" disabled={!props.isOnline || busy !== null} onClick={() => void removeFact(fact.id)}>حذف از نسخه اصلاحی</button>}
+                {selectedEditable && <button className="secondary-button" data-testid="daily-report-correction-fact-remove" type="button" disabled={!props.isOnline || busy !== null} onClick={() => void removeFact(fact.id)}>حذف از نسخه اصلاحی</button>}
               </div>
             ))}
           </div>
@@ -262,9 +262,9 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
                 {fields.impact && <div className="field"><label>شدت اثر<select value={draft.impactLevel} onChange={(event) => updateDraft("impactLevel", event.target.value as DailyFactDraft["impactLevel"])}><option value="">ارزیابی نشده</option><option value="Low">کم</option><option value="Medium">متوسط</option><option value="High">زیاد</option><option value="Critical">بحرانی</option></select></label></div>}
                 {fields.reference && <div className="field"><label>مرجع<input value={draft.referenceCode} onChange={(event) => updateDraft("referenceCode", event.target.value)} /></label></div>}
                 <div className="field full-width"><label>شرح واقعیت<textarea required rows={2} value={draft.description} onChange={(event) => updateDraft("description", event.target.value)} /></label></div>
-                <div className="form-actions full-width"><button type="submit" disabled={!props.isOnline || busy !== null}>افزودن واقعیت اصلاحی</button><span className="draft-note">نسخه قبلی تغییر نمی‌کند</span></div>
+                <div className="form-actions full-width"><button data-testid="daily-report-correction-fact-add" type="submit" disabled={!props.isOnline || busy !== null}>افزودن واقعیت اصلاحی</button><span className="draft-note">نسخه قبلی تغییر نمی‌کند</span></div>
               </form>
-              <div className="correction-submit"><button type="button" disabled={!props.isOnline || busy !== null || (selected.facts?.length ?? 0) === 0} onClick={() => void submitCorrection()}>ارسال نسخه اصلاحی برای تأیید</button></div>
+              <div className="correction-submit"><button data-testid="daily-report-correction-submit" type="button" disabled={!props.isOnline || busy !== null || (selected.facts?.length ?? 0) === 0} onClick={() => void submitCorrection()}>ارسال نسخه اصلاحی برای تأیید</button></div>
             </>
           )}
         </div>

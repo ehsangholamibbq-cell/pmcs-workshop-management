@@ -7,10 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pmcs.BuildingBlocks.Application;
-using Pmcs.Modules.ActionControl.Contracts;
-using Pmcs.Modules.ActionControl.Domain;
-using Pmcs.Modules.FieldOperations.Contracts;
-using Pmcs.Modules.Projects.Contracts;
+using Pmcs.Modules.WorkManagement.Contracts;
 using Pmcs.Modules.WorkManagement.Domain;
 using Pmcs.Modules.WorkManagement.Persistence;
 
@@ -32,12 +29,7 @@ internal static class WorkManagementEndpoints
     private static async Task<IResult> MyWorkAsync(
         Guid projectId,
         ICurrentActor actor,
-        IProjectPermissionService permissions,
-        IProjectDirectory projectDirectory,
-        IDailyReportWorkSource dailyReports,
-        IManagementActionWorkSource actions,
-        WorkManagementDbContext dbContext,
-        IClock clock,
+        IWorkManagementQueryService queryService,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -45,58 +37,21 @@ internal static class WorkManagementEndpoints
             return Results.Unauthorized();
         }
 
-        if (!await HasPermissionAsync(permissions, actor, projectId, "projects.read", cancellationToken))
+        var result = await queryService.GetMyWorkAsync(
+            actor.TenantId, actor.UserId, projectId, cancellationToken);
+        return result.Status switch
         {
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-        }
-
-        var project = await projectDirectory.FindProfileAsync(actor.TenantId, projectId, cancellationToken);
-        if (project is null)
-        {
-            return Results.NotFound(new { code = "project.not_found" });
-        }
-
-        var canReadReports = await HasPermissionAsync(
-            permissions, actor, projectId, "field.daily-reports.read", cancellationToken);
-        var canReviewReports = canReadReports && await HasPermissionAsync(
-            permissions, actor, projectId, "field.daily-reports.review", cancellationToken);
-        var canReadActions = await HasPermissionAsync(
-            permissions, actor, projectId, "actions.read", cancellationToken);
-
-        var reportTask = canReadReports
-            ? dailyReports.ListAsync(actor.TenantId, projectId, actor.UserId, canReviewReports, cancellationToken)
-            : Task.FromResult<IReadOnlyCollection<DailyReportWorkRecord>>([]);
-        var actionTask = canReadActions
-            ? actions.ListAssignedAsync(actor.TenantId, projectId, actor.UserId, cancellationToken)
-            : Task.FromResult<IReadOnlyCollection<ManagementActionWorkRecord>>([]);
-
-        await Task.WhenAll(reportTask, actionTask);
-        var today = ResolveLocalDate(clock.UtcNow, project.TimeZone);
-        var items = reportTask.Result.Select(report => Map(report, today))
-            .Concat(actionTask.Result.Select(action => Map(action, today)))
-            .OrderByDescending(item => item.IsOverdue)
-            .ThenBy(item => item.DueDate ?? item.ReferenceDate)
-            .ThenByDescending(item => item.Priority == "Critical")
-            .ThenByDescending(item => item.ChangedAt)
-            .Take(300)
-            .ToArray();
-
-        var unreadCount = await dbContext.Notifications.AsNoTracking().CountAsync(
-            notification => notification.TenantId == actor.TenantId &&
-                notification.ProjectId == projectId &&
-                notification.RecipientUserId == actor.UserId &&
-                notification.ReadAt == null,
-            cancellationToken);
-
-        return Results.Ok(new MyWorkResponse(clock.UtcNow, unreadCount, items));
+            WorkManagementQueryStatus.Success => Results.Ok(result.Value),
+            WorkManagementQueryStatus.ProjectNotFound => Results.NotFound(new { code = "project.not_found" }),
+            _ => Results.StatusCode(StatusCodes.Status403Forbidden)
+        };
     }
 
     private static async Task<IResult> ListNotificationsAsync(
         Guid projectId,
         bool? unreadOnly,
         ICurrentActor actor,
-        IProjectPermissionService permissions,
-        WorkManagementDbContext dbContext,
+        IWorkManagementQueryService queryService,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -104,25 +59,11 @@ internal static class WorkManagementEndpoints
             return Results.Unauthorized();
         }
 
-        if (!await HasPermissionAsync(permissions, actor, projectId, "projects.read", cancellationToken))
-        {
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-        }
-
-        var query = dbContext.Notifications.AsNoTracking().Where(notification =>
-            notification.TenantId == actor.TenantId && notification.ProjectId == projectId &&
-            notification.RecipientUserId == actor.UserId);
-        if (unreadOnly == true)
-        {
-            query = query.Where(notification => notification.ReadAt == null);
-        }
-
-        var notifications = await query
-            .OrderBy(notification => notification.ReadAt != null)
-            .ThenByDescending(notification => notification.OccurredAt)
-            .Take(100)
-            .ToArrayAsync(cancellationToken);
-        return Results.Ok(notifications.Select(Map).ToArray());
+        var result = await queryService.ListNotificationsAsync(
+            actor.TenantId, actor.UserId, projectId, unreadOnly == true, cancellationToken);
+        return result.Status == WorkManagementQueryStatus.Success
+            ? Results.Ok(result.Value)
+            : Results.StatusCode(StatusCodes.Status403Forbidden);
     }
 
     private static Task<IResult> MarkReadAsync(
@@ -283,61 +224,6 @@ internal static class WorkManagementEndpoints
         return Results.Ok(response);
     }
 
-    private static MyWorkItemResponse Map(DailyReportWorkRecord report, DateOnly today)
-    {
-        var (kind, title, description, priority, status) = report.Kind switch
-        {
-            DailyReportWorkKind.Review => (
-                "DailyReportReview",
-                "بازبینی گزارش روزانه",
-                "گزارش ارسال‌شده در انتظار تصمیم شماست.",
-                "High",
-                "WaitingForReview"),
-            DailyReportWorkKind.CorrectReturned => (
-                "DailyReportCorrection",
-                "اصلاح گزارش عودت‌شده",
-                report.CorrectionReason,
-                "High",
-                "CorrectionRequired"),
-            DailyReportWorkKind.CompleteCorrection => (
-                "DailyReportCorrection",
-                "تکمیل نسخه اصلاحی گزارش",
-                report.CorrectionReason,
-                "Medium",
-                "DraftCorrection"),
-            _ => throw new ArgumentOutOfRangeException(nameof(report), report.Kind, "Unsupported report work kind.")
-        };
-        return new MyWorkItemResponse(
-            $"daily-report:{report.ReportId}",
-            kind,
-            title,
-            description,
-            report.ReportDate,
-            report.ReportDate,
-            priority,
-            status,
-            "DailyReport",
-            report.ReportId,
-            report.ChangedAt,
-            report.Revision,
-            report.ReportDate < today);
-    }
-
-    private static MyWorkItemResponse Map(ManagementActionWorkRecord action, DateOnly today) => new(
-        $"management-action:{action.ActionId}",
-        "ManagementAction",
-        action.Title,
-        action.Description,
-        action.DueDate,
-        null,
-        action.Priority.ToString(),
-        action.Status.ToString(),
-        "ManagementAction",
-        action.ActionId,
-        action.ChangedAt,
-        action.Revision,
-        action.DueDate < today);
-
     private static InAppNotificationResponse Map(InAppNotification notification) => new(
         notification.Id,
         notification.ProjectId,
@@ -388,12 +274,6 @@ internal static class WorkManagementEndpoints
             projectId,
             permission,
             cancellationToken);
-
-    private static DateOnly ResolveLocalDate(DateTimeOffset now, string timeZoneId)
-    {
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, timeZone).DateTime);
-    }
 
     private static JsonSerializerOptions CreateSerializerOptions()
     {

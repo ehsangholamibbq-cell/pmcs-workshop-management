@@ -159,6 +159,12 @@ permission_preview="$(curl --silent --fail \
 grep -q '"allowed":true' <<<"${permission_preview}"
 grep -q '"policyVersion":"pmcs-rbac-v1"' <<<"${permission_preview}"
 
+work_review_permission="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/identity/permissions/preview?userId=${user_id}&projectId=${setup_project_id}&operation=field.daily-reports.review")"
+grep -q '"allowed":true' <<<"${work_review_permission}"
+
 readiness_response="$(curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
@@ -258,6 +264,103 @@ push_response="$(curl --silent --fail \
   --data "{\"deviceId\":\"${device_id}\",\"operations\":[{\"operationId\":\"${operation_id}\",\"projectId\":\"${project_id}\",\"entityType\":\"DailyReport\",\"entityId\":\"${report_id}\",\"commandType\":\"CaptureDailyReportFact\",\"baseRevision\":null,\"payloadSchemaVersion\":1,\"createdAtDevice\":\"${device_time}\",\"payload\":{\"factId\":\"${fact_id}\",\"reportDate\":\"2099-01-01\",\"locationName\":null,\"kind\":\"Note\",\"description\":\"Integration observed fact\",\"locationId\":\"${location_id}\"},\"offlineLeaseId\":\"${lease_id}\",\"authorizationVersion\":${authorization_version},\"localSequence\":1,\"dependencies\":[],\"correlationId\":\"integration-sync-1\",\"deviceTimezoneOffsetMinutes\":0}]}" \
   "http://127.0.0.1:${port}/api/v1/sync/operations")"
 grep -q '"status":"Applied"' <<<"${push_response}"
+
+current_step="checking Daily Report correction lineage, My Work and notification receipts"
+report_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${report_id}")"
+report_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${report_response}")"
+submitted_report="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-report-submit' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${report_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${report_id}/submit")"
+submitted_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${submitted_report}")"
+grep -q '"status":"Submitted"' <<<"${submitted_report}"
+
+notifications_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/notifications?unreadOnly=true")"
+notification_id="$(sed -n 's/.*"id":"\([^"]*\)".*/\1/p' <<<"${notifications_response}")"
+notification_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${notifications_response}")"
+grep -q '"category":"DailyReportReview"' <<<"${notifications_response}"
+if [[ -z "${notification_id}" || -z "${notification_revision}" ]]; then
+  echo "Submitted report did not create a recipient-scoped notification." >&2
+  exit 1
+fi
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-notification-ack' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${notification_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/notifications/${notification_id}/acknowledge" | \
+  grep -q '"acknowledgedAt":'
+
+approved_report="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-report-approve' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${submitted_revision},\"comment\":\"Integration approval\"}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${report_id}/approve")"
+approved_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${approved_report}")"
+grep -q '"status":"Approved"' <<<"${approved_report}"
+
+correction_id="99999999-9999-4999-8999-999999999999"
+correction_response="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-report-correction' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"${correction_id}\",\"baseRevision\":${approved_revision},\"reason\":\"Integration correction lineage\"}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${report_id}/corrections")"
+correction_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${correction_response}")"
+grep -q '"versionNumber":2' <<<"${correction_response}"
+grep -q "\"supersedesReportId\":\"${report_id}\"" <<<"${correction_response}"
+grep -q "\"copiedFromFactId\":\"${fact_id}\"" <<<"${correction_response}"
+
+correction_submitted="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-correction-submit' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${correction_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${correction_id}/submit")"
+correction_submitted_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${correction_submitted}")"
+
+my_work_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/my-work")"
+grep -q '"kind":"DailyReportReview"' <<<"${my_work_response}"
+grep -q "\"targetId\":\"${correction_id}\"" <<<"${my_work_response}"
+
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-correction-approve' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${correction_submitted_revision},\"comment\":\"Replacement approved\"}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${correction_id}/approve" | \
+  grep -q '"status":"Approved"'
+
+superseded_report="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/projects/${project_id}/daily-reports/${report_id}")"
+grep -q '"status":"Superseded"' <<<"${superseded_report}"
+grep -q "\"supersededByReportId\":\"${correction_id}\"" <<<"${superseded_report}"
 
 current_step="creating an evidence upload session"
 evidence_id="88888888-8888-8888-8888-888888888888"

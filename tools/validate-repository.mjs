@@ -63,7 +63,12 @@ const requiredFiles = [
   "docs/checkpoints/foundation-19.md",
   "docs/checkpoints/foundation-19.1.md",
   "docs/checkpoints/foundation-20.md",
+  "docs/checkpoints/foundation-22.md",
+  "docs/adr/0026-daily-report-lineage-and-personal-work-inbox.md",
+  "docs/api/my-work-notifications-v1.md",
+  "docs/roadmaps/pmcs-v1-development-and-qualification.md",
   "docs/runbooks/pilot-release.md",
+  "tools/checkpoint22-db-verification.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
@@ -95,6 +100,7 @@ const allowedProjectReferences = new Map([
   ["Pmcs.Modules.QualitySafety", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.ProjectIntelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.IdentityAccess", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
+  ["Pmcs.Modules.WorkManagement", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
 ]);
 
 for (const [project, allowed] of allowedProjectReferences) {

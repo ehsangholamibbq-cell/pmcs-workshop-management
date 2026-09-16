@@ -1,4 +1,5 @@
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.IdentityAccess.Services;
 using Pmcs.Modules.WorkManagement.Domain;
 
 namespace Pmcs.Domain.Tests;
@@ -43,6 +44,18 @@ public sealed class WorkManagementTests
             notification.Acknowledge(1, recipientId, OccurredAt.AddMinutes(2)));
 
         Assert.Equal("notification.revision.conflict", exception.Code);
+    }
+
+    [Fact]
+    public void MyWorkSourcePermissionsRemainRoleScopedAndTestable()
+    {
+        Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "projects.read"));
+        Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.read"));
+        Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.submit"));
+        Assert.False(ProjectPermissionService.GrantsRole("SiteSupervisor", "field.daily-reports.review"));
+        Assert.True(ProjectPermissionService.GrantsRole("ProjectController", "field.daily-reports.review"));
+        Assert.True(ProjectPermissionService.GrantsRole("Observer", "actions.read"));
+        Assert.False(ProjectPermissionService.GrantsRole("Observer", "actions.update"));
     }
 
     private static InAppNotification Create(Guid recipientId) => InAppNotification.Create(

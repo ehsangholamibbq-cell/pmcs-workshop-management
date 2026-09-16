@@ -186,6 +186,7 @@ npm run check
 
 ## مستندات
 
+- Roadmap قطعی توسعه و Qualification: [`docs/roadmaps/pmcs-v1-development-and-qualification.md`](docs/roadmaps/pmcs-v1-development-and-qualification.md)
 - تصمیم‌های معماری: [`docs/adr`](docs/adr)
 - API و قراردادهای توسعه: [`docs/api`](docs/api)
 - پایه Permission: [`docs/security`](docs/security)

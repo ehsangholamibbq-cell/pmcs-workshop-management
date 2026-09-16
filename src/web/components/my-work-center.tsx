@@ -148,8 +148,8 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
   const items = work?.items ?? [];
   const unread = notifications.filter((item) => item.readAt === null).length;
   return (
-    <section className="my-work-center" aria-label="کارهای من و اعلان‌ها">
-      <article className="operational-card my-work-card">
+    <section className="my-work-center" aria-label="کارهای من و اعلان‌ها" data-testid="my-work-center">
+      <article className="operational-card my-work-card" data-testid="my-work-panel">
         <div className="card-heading">
           <div><p className="eyebrow">کارتابل یکپارچه</p><h2>کارهای من</h2></div>
           <span className={items.some((item) => item.isOverdue) ? "count-badge warning" : "count-badge"}>
@@ -157,9 +157,9 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
           </span>
         </div>
         <p className="microcopy" aria-live="polite">{message}</p>
-        <div className="my-work-list">
+        <div className="my-work-list" data-testid="my-work-list">
           {items.map((item) => (
-            <div className={`my-work-item${item.isOverdue ? " overdue" : ""}`} key={item.id}>
+            <div className={`my-work-item${item.isOverdue ? " overdue" : ""}`} data-testid="my-work-item" data-entity-id={item.targetId} key={item.id}>
               <div className="work-summary">
                 <span className={`priority-badge priority-${item.priority.toLowerCase()}`}>{priorityLabel(item.priority)}</span>
                 <strong>{item.title}</strong>
@@ -168,16 +168,16 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
               </div>
               {item.kind === "ManagementAction" && (
                 <div className="review-actions">
-                  {item.status !== "InProgress" && <button className="secondary-button" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "InProgress")}>شروع</button>}
-                  <button type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "Done")}>انجام شد</button>
+                  {item.status !== "InProgress" && <button className="secondary-button" data-testid="my-work-action-start" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "InProgress")}>شروع</button>}
+                  <button data-testid="my-work-action-done" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "Done")}>انجام شد</button>
                 </div>
               )}
               {item.kind === "DailyReportReview" && (
                 <div className="work-review-controls">
                   <textarea rows={2} aria-label={`نظر ${item.title}`} placeholder="نظر اختیاری؛ برای عودت، دلیل الزامی است" value={comments[item.id] ?? ""} onChange={(event) => setComments((current) => ({ ...current, [item.id]: event.target.value }))} />
                   <div className="review-actions">
-                    <button type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "approve")}>تأیید</button>
-                    <button className="secondary-button" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "return")}>عودت برای اصلاح</button>
+                    <button data-testid="daily-report-review-approve" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "approve")}>تأیید</button>
+                    <button className="secondary-button" data-testid="daily-report-review-return" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "return")}>عودت برای اصلاح</button>
                   </div>
                 </div>
               )}
@@ -188,18 +188,18 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
         </div>
       </article>
 
-      <article className="operational-card notification-card">
+      <article className="operational-card notification-card" data-testid="notification-panel">
         <div className="card-heading">
           <div><p className="eyebrow">اعلان داخل سامانه</p><h2>اعلان‌های من</h2></div>
           <span className={unread > 0 ? "count-badge warning" : "count-badge"}>{unread.toLocaleString("fa-IR")}</span>
         </div>
-        <div className="notification-list">
+        <div className="notification-list" data-testid="notification-list">
           {notifications.slice(0, 20).map((notification) => (
-            <div className={`notification-item${notification.readAt ? " read" : ""}`} key={notification.id}>
+            <div className={`notification-item${notification.readAt ? " read" : ""}`} data-testid="notification-item" data-entity-id={notification.id} key={notification.id}>
               <div><strong>{notification.title}</strong><small>{formatPersianDateTime(notification.occurredAt)}</small><p>{notification.body}</p></div>
               <div className="review-actions">
-                {!notification.readAt && <button className="secondary-button" type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "read")}>خواندم</button>}
-                {!notification.acknowledgedAt && <button type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "acknowledge")}>تأیید دریافت</button>}
+                {!notification.readAt && <button className="secondary-button" data-testid="notification-read" type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "read")}>خواندم</button>}
+                {!notification.acknowledgedAt && <button data-testid="notification-acknowledge" type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "acknowledge")}>تأیید دریافت</button>}
               </div>
             </div>
           ))}

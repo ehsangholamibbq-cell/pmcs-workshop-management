@@ -21,11 +21,13 @@ An approved Daily Report was immutable but could not be corrected without either
 ### My Work and notifications
 
 - `My Work` is a server-calculated, permission-scoped read model. It combines assigned non-terminal Management Actions, submitted reports visible to a reviewer, returned reports owned by the actor and active correction Drafts owned by the actor.
+- Composition, permission evaluation, overdue calculation and ordering live in the independent `IWorkManagementQueryService` Application boundary rather than UI or HTTP endpoints. The same boundary can later be invoked by QA Gateway and permission-aware Agent Tools.
 - Source permissions are evaluated independently. Access to the project does not fabricate access to Action or Daily Report work.
 - In-app notifications are durable recipient-owned records with a unique deduplication key, target lineage, occurrence time, read time, acknowledgement time and optimistic revision.
 - Notification creation for Daily Report submission/return/approval/correction and Action assignment occurs in the same PostgreSQL transaction as the source mutation. Retry cannot create duplicate notifications and a committed source command cannot silently lose its notification.
 - Listing and receipt changes are always restricted by Tenant, Project and exact recipient. Reading and acknowledgement are separate idempotent audited commands.
 - User-visible dates and times in My Work, notification and lineage surfaces use the shared Persian calendar formatter; API and database contracts remain ISO `date` and UTC `timestamptz`.
+- Stable UI test selectors and deterministic integration identities are contractually maintained for E2E and database verification; they do not weaken production authorization.
 
 ## Consequences
 
