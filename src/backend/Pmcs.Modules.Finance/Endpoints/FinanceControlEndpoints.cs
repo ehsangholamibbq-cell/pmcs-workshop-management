@@ -12,6 +12,7 @@ using Pmcs.Modules.Commercial.Contracts;
 using Pmcs.Modules.Finance.Contracts;
 using Pmcs.Modules.Finance.Domain;
 using Pmcs.Modules.Finance.Persistence;
+using Pmcs.Modules.Finance.Services;
 using Pmcs.Modules.Projects.Contracts;
 
 namespace Pmcs.Modules.Finance.Endpoints;

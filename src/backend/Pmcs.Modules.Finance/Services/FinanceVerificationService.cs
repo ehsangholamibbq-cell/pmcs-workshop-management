@@ -265,7 +265,7 @@ internal static class FinanceVerificationComparer
         return mismatches;
     }
 
-    private static void Compare<T>(ICollection<string> mismatches, string field, T persisted, T calculated)
+    private static void Compare<T>(List<string> mismatches, string field, T persisted, T calculated)
     {
         if (!EqualityComparer<T>.Default.Equals(persisted, calculated))
         {

@@ -16,7 +16,7 @@ public static class FinanceControlCalculator
 
         var aging = CalculateAging(asOfDate, obligations);
         var pettyCash = CalculatePettyCash(asOfDate, pettyCashRequests);
-        var managementFee = managementFeePolicy is null || managementFeePolicy.EffectiveFrom > asOfDate
+        decimal? managementFee = managementFeePolicy is null || managementFeePolicy.EffectiveFrom > asOfDate
             ? null
             : decimal.Round(
                 recognizedSpend * managementFeePolicy.RatePercent / 100m,
