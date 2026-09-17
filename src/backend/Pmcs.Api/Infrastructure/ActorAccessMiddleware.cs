@@ -17,9 +17,15 @@ internal sealed partial class ActorAccessMiddleware(RequestDelegate next)
 
         if (!actor.IsAuthenticated || !actor.TokenIssuedAt.HasValue)
         {
-            var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
-                .CreateLogger<ActorAccessMiddleware>();
-            LogInvalidActorClaims(logger, actor.TenantId != Guid.Empty, actor.UserId != Guid.Empty, actor.TokenIssuedAt.HasValue);
+            var loggerFactory = context.RequestServices?.GetService<ILoggerFactory>();
+            if (loggerFactory is not null)
+            {
+                LogInvalidActorClaims(
+                    loggerFactory.CreateLogger<ActorAccessMiddleware>(),
+                    actor.TenantId != Guid.Empty,
+                    actor.UserId != Guid.Empty,
+                    actor.TokenIssuedAt.HasValue);
+            }
             await WriteProblemAsync(context, StatusCodes.Status401Unauthorized, "authentication.claims.invalid");
             return;
         }
