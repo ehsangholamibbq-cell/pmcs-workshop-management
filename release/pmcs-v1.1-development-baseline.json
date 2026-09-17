@@ -1,0 +1,21 @@
+{
+  "contractVersion": 1,
+  "baselineId": "pmcs-v1.1-development",
+  "product": "PMCS V1.1",
+  "targetVersion": "1.1.0",
+  "status": "governance-candidate",
+  "parentProductBaseline": "PMCS V1",
+  "parentProductBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "repositoryStartCommit": "0389b52cbd3385bdcc9f0e2a94411800389ae2fc",
+  "repositoryStartTree": "c0f3f7dfc0295dbd02a20192ad8b56217db579db",
+  "developmentBranch": "v1.1-development",
+  "repositoryStartRunId": "35256341709",
+  "repositoryStartRunNumber": 70,
+  "repositoryStartRunConclusion": "success",
+  "runtimeChangesAfterParentBaseline": false,
+  "visualDirection": "management-excellence",
+  "visualDirectionGate": "approved",
+  "governanceSourceCommit": null,
+  "governanceValidationRunId": null
+}
+
