@@ -48,6 +48,7 @@ const requiredFiles = [
   "src/backend/Pmcs.TestHarness/Program.cs",
   "src/backend/Pmcs.TestHarness/FileVerification.cs",
   "src/backend/Pmcs.TestHarness/SyncVerification.cs",
+  "src/backend/Pmcs.TestHarness/ExploratoryVerification.cs",
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",
@@ -89,6 +90,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-03.md",
   "docs/checkpoints/qa-foundation-04.md",
   "docs/checkpoints/qa-foundation-05.md",
+  "docs/checkpoints/qa-foundation-06.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -222,6 +224,23 @@ assert.match(ciWorkflow, /ui-e2e:/);
 assert.match(ciWorkflow, /playwright install --with-deps chromium/);
 assert.match(ciWorkflow, /node tools\/qa\/prepare-ui-e2e\.mjs/);
 assert.match(ciWorkflow, /npm run test:e2e/);
+assert.match(ciWorkflow, /Agent\/Exploratory/);
+
+const testHarnessProgram = readFileSync(
+  join(root, "src/backend/Pmcs.TestHarness/Program.cs"),
+  "utf8",
+);
+const exploratoryVerification = readFileSync(
+  join(root, "src/backend/Pmcs.TestHarness/ExploratoryVerification.cs"),
+  "utf8",
+);
+const seedDiagnostics = readFileSync(join(root, "tools/qa/seed-diagnostics.sh"), "utf8");
+assert.match(testHarnessProgram, /"verify-exploratory" => await VerifyExploratoryAsync\(\)/);
+assert.match(exploratoryVerification, /deterministic-persona-explorer/);
+assert.match(exploratoryVerification, /role-header-cannot-escalate/);
+assert.match(exploratoryVerification, /destructive-route-absent/);
+assert.match(exploratoryVerification, /preview-simulation-does-not-persist/);
+assert.match(seedDiagnostics, /-- verify-exploratory/);
 
 for (const file of [
   "src/backend/Pmcs.Modules.ActionControl/Domain/GovernanceRules.cs",
