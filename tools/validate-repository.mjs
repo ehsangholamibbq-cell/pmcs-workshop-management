@@ -92,6 +92,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-05.md",
   "docs/checkpoints/qa-foundation-06.md",
   "docs/checkpoints/qa-foundation-07.md",
+  "docs/checkpoints/pmcs-v1-qualification.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -118,6 +119,8 @@ const requiredFiles = [
   "tools/validate-pilot-release.mjs",
   "release/pilot-gates.json",
   "release/pilot-candidate.schema.json",
+  "release/pmcs-v1-qualification.json",
+  "release/pmcs-v1-baseline.json",
 ];
 
 for (const file of requiredFiles) {
@@ -282,9 +285,33 @@ assert.match(exploratoryVerification, /destructive-route-absent/);
 assert.match(exploratoryVerification, /preview-simulation-does-not-persist/);
 assert.match(seedDiagnostics, /-- verify-exploratory/);
 assert.match(readme, /QA Foundation Slice 6:[^\n]*173\/173/);
+assert.match(readme, /PMCS V1 — Qualified \| Final \| Baseline Locked/);
+assert.match(readme, /QA Foundation Slice 7:[^\n]*7\/7[^\n]*12\/12/);
 assert.doesNotMatch(readme, /QA Foundation Slice 5:[^\n]*در انتظار تأیید/);
 assert.match(qaFoundationStatus, /Slice 6[^\n]*173\/173[^\n]*Run 67/);
+assert.match(qaFoundationStatus, /Slice 7[^\n]*Run 69[^\n]*7\/7[^\n]*12\/12/);
+assert.doesNotMatch(qaFoundationStatus, /هنوز `Qualified`|Candidate آماده Full Regression/);
 assert.doesNotMatch(qaFoundationStatus, /Slice 5[^\n]*در حال انجام است/);
+
+const qualificationEvidence = JSON.parse(
+  readFileSync(join(root, "release/pmcs-v1-qualification.json"), "utf8"),
+);
+const lockedBaseline = JSON.parse(
+  readFileSync(join(root, "release/pmcs-v1-baseline.json"), "utf8"),
+);
+assert.equal(qualificationEvidence.status, "qualified");
+assert.equal(qualificationEvidence.baselineLockEligible, true);
+assert.equal(qualificationEvidence.baselineCommit, "26bf222d44634562ca7f3fc0931f3f8b79ca04a1");
+assert.equal(qualificationEvidence.workflowRun.id, "35255343431");
+assert.equal(qualificationEvidence.summary.passedSuiteCount, 7);
+assert.equal(qualificationEvidence.summary.executedCommandCount, 12);
+assert.equal(qualificationEvidence.summary.failureCount, 0);
+assert.deepEqual(qualificationEvidence.failures, []);
+assert.equal(lockedBaseline.status, "locked");
+assert.equal(lockedBaseline.sourceBaselineCommit, qualificationEvidence.baselineCommit);
+assert.equal(lockedBaseline.qualificationRunId, qualificationEvidence.workflowRun.id);
+assert.equal(lockedBaseline.runtimeChangesAfterSourceBaseline, false);
+assert.match(lockedBaseline.qualificationReportArtifactDigest, /^sha256:[0-9a-f]{64}$/u);
 
 for (const file of [
   "src/backend/Pmcs.Modules.ActionControl/Domain/GovernanceRules.cs",

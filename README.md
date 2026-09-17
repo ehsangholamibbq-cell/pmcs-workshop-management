@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-`PMCS V1 — Feature Complete` after verified Checkpoint 24. The product is not yet Qualified, Final or Locked; QA Qualification is in progress:
+`PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -12,7 +12,7 @@
 - QA Foundation Slice 4: آزمون مستقل Offline/Sync شامل Reconnect، Replay/Duplicate، جداسازی دو کاربر، Conflict/Resolution، Checkpoint/Diagnostics و Device revocation با `28/28` assertion در CI متصل تأیید و بسته شده است.
 - QA Foundation Slice 5: Gate مستقل Playwright روی Compose واقعی برای Login مبتنی بر Keycloak/BFF، RTL/Responsive، تقویم شمسی، Loading/Error/Empty و چرخه Offline/IndexedDB/Browser Restart/Reconnect در Runهای 64 و 65 تأیید و بسته شده است.
 - QA Foundation Slice 6: Agent/Exploratory Runner قطعی، ۱۲ Persona و ۱۲ سطح خواندنی، مرزهای منفی Authentication/Tenant/Project و نبود Route مخرب با `173/173` assertion در Run 67 تأیید و بسته شده است. Regression Runner، Test Report Generator و Full Regression نهایی همچنان باز هستند.
-- QA Foundation Slice 7: Regression Runner نسخه‌دار و Test Report Generator به‌صورت fail-closed برای هفت Suite مستقل پیاده‌سازی شده‌اند. Candidate منتظر اجرای Full Regression متصل و ثبت Evidence نهایی است؛ V1 هنوز Qualified یا Locked نیست.
+- QA Foundation Slice 7: Regression Runner نسخه‌دار و Test Report Generator برای هفت Suite مستقل در Run 69 با `7/7` Suite و `12/12` فرمان سبز تأیید شدند؛ گزارش ماشینی `qualified` صادر و Baseline منبع قفل شد.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -220,5 +220,6 @@ npm run check
 - گزارش Slice پنجم QA Foundation: [`docs/checkpoints/qa-foundation-05.md`](docs/checkpoints/qa-foundation-05.md)
 - گزارش Slice ششم QA Foundation: [`docs/checkpoints/qa-foundation-06.md`](docs/checkpoints/qa-foundation-06.md)
 - گزارش Slice هفتم QA Foundation: [`docs/checkpoints/qa-foundation-07.md`](docs/checkpoints/qa-foundation-07.md)
+- گزارش نهایی Qualification و قفل V1: [`docs/checkpoints/pmcs-v1-qualification.md`](docs/checkpoints/pmcs-v1-qualification.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

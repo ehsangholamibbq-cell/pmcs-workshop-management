@@ -1,0 +1,15 @@
+{
+  "contractVersion": 1,
+  "baselineId": "pmcs-v1",
+  "product": "PMCS V1",
+  "status": "locked",
+  "sourceBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "qualificationRunNumber": 69,
+  "qualificationRunId": "35255343431",
+  "qualificationRunUrl": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35255343431",
+  "qualificationReportArtifactId": "10512885151",
+  "qualificationReportArtifactDigest": "sha256:af35b17afad73301e3cedf3dbf6cda02287842c0dd12392a3f76c7a7b5379438",
+  "qualifiedAt": "2026-09-17T17:56:52.199Z",
+  "lockedAt": "2026-09-17T17:58:17Z",
+  "runtimeChangesAfterSourceBaseline": false
+}

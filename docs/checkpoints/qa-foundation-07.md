@@ -3,8 +3,8 @@
 ## State
 
 - Product state: `PMCS V1 — Feature Complete`
-- Slice state: Candidate implemented; connected Full Regression pending
-- Qualification state: In progress; not yet Qualified, Final or Locked
+- Slice state: Closed by connected Full Regression Run 69
+- Qualification state: `Qualified`; source baseline locked
 
 ## Scope
 
@@ -23,6 +23,6 @@ The Test Report Generator accepts exactly one report for every expected suite, r
 
 ## Qualification boundary
 
-This Candidate does not claim Qualification. Slice 7 closes only after the connected workflow proves the runner and generator on the candidate commit. The final V1 status and baseline lock require a second evidence-only commit followed by one more full connected regression.
+Run 69 proved all seven suite artifacts against source commit `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`. The report accepted `7/7` suites and `12/12` runner commands with no failures, returned `qualified` and marked the source baseline lock-eligible. The exact report and artifact digest are now preserved in the release evidence files.
 
-The managerial Agent remains outside V1 and must not start before Qualification and baseline lock.
+The managerial Agent remains outside V1. Qualification and baseline lock are now complete, so its separately approved roadmap may begin only as a new post-V1 phase.

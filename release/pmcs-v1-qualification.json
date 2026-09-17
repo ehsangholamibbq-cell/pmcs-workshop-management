@@ -1,0 +1,88 @@
+{
+  "contractVersion": 1,
+  "reportType": "pmcs-v1-qualification",
+  "qualificationVersion": "pmcs-v1-qualification-1",
+  "product": "PMCS V1",
+  "baselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "status": "qualified",
+  "baselineLockEligible": true,
+  "generatedAt": "2026-09-17T17:56:52.199Z",
+  "workflowRun": {
+    "id": "35255343431",
+    "url": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35255343431"
+  },
+  "summary": {
+    "expectedSuiteCount": 7,
+    "receivedSuiteCount": 7,
+    "passedSuiteCount": 7,
+    "plannedCommandCount": 12,
+    "executedCommandCount": 12,
+    "failureCount": 0
+  },
+  "suites": [
+    {
+      "suite": "architecture",
+      "displayName": "Architecture and repository contracts",
+      "layer": "architecture",
+      "status": "passed",
+      "plannedCommandCount": 2,
+      "executedCommandCount": 2,
+      "durationMs": 203
+    },
+    {
+      "suite": "backend",
+      "displayName": ".NET build and domain tests",
+      "layer": "automated",
+      "status": "passed",
+      "plannedCommandCount": 3,
+      "executedCommandCount": 3,
+      "durationMs": 51784
+    },
+    {
+      "suite": "integration",
+      "displayName": "PostgreSQL, API, object storage and QA verification",
+      "layer": "integration",
+      "status": "passed",
+      "plannedCommandCount": 1,
+      "executedCommandCount": 1,
+      "durationMs": 125344
+    },
+    {
+      "suite": "pilot-contract",
+      "displayName": "Release, QA and shell contracts",
+      "layer": "contract",
+      "status": "passed",
+      "plannedCommandCount": 2,
+      "executedCommandCount": 2,
+      "durationMs": 774
+    },
+    {
+      "suite": "web",
+      "displayName": "Web unit, lint, Persian UI, calendar and production build",
+      "layer": "automated",
+      "status": "passed",
+      "plannedCommandCount": 2,
+      "executedCommandCount": 2,
+      "durationMs": 56254
+    },
+    {
+      "suite": "ui-e2e",
+      "displayName": "Real browser UI and offline recovery",
+      "layer": "ui-e2e",
+      "status": "passed",
+      "plannedCommandCount": 1,
+      "executedCommandCount": 1,
+      "durationMs": 27598
+    },
+    {
+      "suite": "identity-container",
+      "displayName": "OIDC realm and identity administration container",
+      "layer": "identity",
+      "status": "passed",
+      "plannedCommandCount": 1,
+      "executedCommandCount": 1,
+      "durationMs": 1120
+    }
+  ],
+  "failures": []
+}

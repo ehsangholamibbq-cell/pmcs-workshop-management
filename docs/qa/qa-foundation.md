@@ -1,7 +1,7 @@
 # PMCS QA Foundation — مرز اجرایی Seed، Diagnostics و QA Gateway
 
-- وضعیت محصول: `PMCS V1 — Feature Complete`
-- وضعیت Qualification: فعال؛ هنوز `Qualified`، `Final` یا `Locked` نیست
+- وضعیت محصول: `PMCS V1 — Qualified | Final | Baseline Locked`
+- وضعیت Qualification: تکمیل‌شده در Run 69؛ Baseline منبع `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - مرجع: Roadmap قطعی توسعه و احراز صلاحیت PMCS V1
 
 ## قرارداد امنیتی
@@ -62,6 +62,6 @@ PMCS_QA_S3_BUCKET='pmcs-qa-local' \
 - Slice 4 Offline / Sync Verification مستقل، Reconnect با Lease قبلی، Duplicate/Replay، جداسازی Idempotency دو کاربر، Conflict/Resolution، Local/Server checkpoint، Diagnostics و Device revocation را اضافه کرده و با `28/28` assertion در CI متصل تأیید شده است.
 - Slice 5 Browser UI/E2E Verification مستقل، Login واقعی Keycloak/BFF، authenticated cold start، RTL/Responsive، تقویم شمسی، Loading/Error/Empty state و چرخه IndexedDB/Service Worker/Browser Restart/Reconnect را اضافه کرده و با Run 64 و بازآزمایی کامل Run 65 بسته شده است.
 - Slice 6 Agent/Exploratory Verification یک Explorer قطعی و بدون ارتقای دسترسی برای کل Actorهای Seed، مرزهای منفی Authentication/Tenant/Project، نبود Route مخرب و تطبیق Permission Preview با رفتار واقعی API را اضافه کرده و با `173/173` assertion در Run 67 بسته شده است.
-- Slice 7 Regression Runner و Test Report Generator یک Manifest نسخه‌دار برای هفت Suite، Evidence اتمیک وابسته به Commit و گزارش تجمیعی fail-closed اضافه کرده‌اند. Candidate آماده Full Regression متصل است و تا سبزشدن همه Jobها بسته محسوب نمی‌شود.
+- Slice 7 Regression Runner و Test Report Generator یک Manifest نسخه‌دار برای هفت Suite، Evidence اتمیک وابسته به Commit و گزارش تجمیعی fail-closed اضافه کردند و در Run 69 با `7/7` Suite، `12/12` فرمان و صفر Failure بسته شدند.
 
-پس از تأیید متصل Slice 7، فقط Full Regression نهایی، ثبت Evidence، اعلام `PMCS V1 Qualified` و قفل Baseline باقی می‌ماند. Multipart/Malware/Quarantine، Endurance چندروزه دستگاه و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.
+Full Regression، ثبت Evidence، اعلام `PMCS V1 Qualified` و قفل Baseline کامل شده‌اند. Multipart/Malware/Quarantine، Endurance چندروزه دستگاه و چرخه واقعی Object Storage Gateهای صریح Hardening/Pilot بعد از V1 باقی می‌مانند و بخشی از ادعای Qualification این Baseline نیستند.
