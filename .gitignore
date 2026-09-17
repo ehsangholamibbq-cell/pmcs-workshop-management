@@ -31,3 +31,6 @@ Thumbs.db
 artifacts/
 coverage/
 .tooling/
+src/web/.playwright/
+src/web/playwright-report/
+src/web/test-results/

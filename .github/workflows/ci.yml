@@ -169,6 +169,52 @@ jobs:
       - run: npm ci
       - run: npm run check
 
+  ui-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      PMCS_DEMO_USER_PASSWORD: Pmcs-E2E-only-2026!
+      PMCS_E2E_USER_EMAIL: demo@pmcs.local
+      PMCS_E2E_USER_PASSWORD: Pmcs-E2E-only-2026!
+      PMCS_E2E_ADMIN_CLIENT_SECRET: identity_admin_dev_only
+      PMCS_E2E_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+      - name: Install Web and Chromium dependencies
+        working-directory: src/web
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Start isolated full application stack
+        run: docker compose up --detach --build
+      - name: Wait for OIDC, API and Web readiness
+        run: |
+          for attempt in {1..90}; do
+            if curl --fail --silent http://localhost:8081/realms/pmcs/.well-known/openid-configuration >/dev/null && \
+               curl --fail --silent http://localhost:8080/health/ready >/dev/null && \
+               curl --fail --silent http://localhost:3000/login >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps
+          exit 1
+      - name: Prepare isolated OIDC browser fixture
+        run: node tools/qa/prepare-ui-e2e.mjs
+      - name: Verify real browser login, RTL, responsive and offline recovery
+        working-directory: src/web
+        run: npm run test:e2e
+      - if: failure()
+        run: docker compose logs --no-color
+      - if: always()
+        run: docker compose down --volumes
+
   identity-container:
     runs-on: ubuntu-latest
     steps:

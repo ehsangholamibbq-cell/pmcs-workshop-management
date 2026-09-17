@@ -14,6 +14,7 @@
     "audit:fa": "node tools/audit-persian-ui.mjs",
     "audit:calendar": "node tools/audit-persian-calendar.mjs",
     "test:unit": "node --test tests/*.test.ts tests/*.test.mjs",
+    "test:e2e": "playwright test",
     "check": "npm run test:unit && npm run lint && npm run audit:fa && npm run audit:calendar && npm run build"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/node": "24.13.3",
     "@types/pg": "8.15.5",
     "@types/react": "19.2.18",

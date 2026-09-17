@@ -62,6 +62,10 @@ const requiredFiles = [
   "src/web/lib/portfolio.ts",
   "src/web/lib/portfolio-view.ts",
   "src/web/public/sw.js",
+  "src/web/playwright.config.ts",
+  "src/web/e2e/authentication.setup.ts",
+  "src/web/e2e/authenticated-shell.spec.ts",
+  "src/web/e2e/offline-recovery.spec.ts",
   "src/web/tools/audit-persian-ui.mjs",
   "src/web/tools/audit-persian-calendar.mjs",
   "src/web/tools/release-identity.mjs",
@@ -84,6 +88,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-02.md",
   "docs/checkpoints/qa-foundation-03.md",
   "docs/checkpoints/qa-foundation-04.md",
+  "docs/checkpoints/qa-foundation-05.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -92,6 +97,7 @@ const requiredFiles = [
   "tools/qa/verify-database.sh",
   "tools/qa/verify-files-database.sh",
   "tools/qa/verify-sync-database.sh",
+  "tools/qa/prepare-ui-e2e.mjs",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "tests/Pmcs.Domain.Tests/OfflineOperationIdentityTests.cs",
@@ -195,8 +201,27 @@ assert.deepEqual(
 const webPackage = JSON.parse(readFileSync(join(root, "src/web/package.json"), "utf8"));
 assert.equal(webPackage.engines.node, ">=24 <25");
 assert.equal(webPackage.dependencies.next, "16.3.3");
+assert.equal(webPackage.devDependencies["@playwright/test"], "1.63.0");
+assert.equal(webPackage.scripts["test:e2e"], "playwright test");
 assert.match(webPackage.scripts.check, /audit:fa/);
 assert.match(webPackage.scripts.check, /audit:calendar/);
+
+const browserE2e = readFileSync(join(root, "src/web/e2e/offline-recovery.spec.ts"), "utf8");
+assert.match(browserE2e, /launchPersistentContext/);
+assert.match(browserE2e, /offline: true/);
+assert.match(browserE2e, /readStoredOperations/);
+assert.match(browserE2e, /status === "synced"/);
+
+const e2ePreparation = readFileSync(join(root, "tools/qa/prepare-ui-e2e.mjs"), "utf8");
+assert.match(e2ePreparation, /grant_type: "client_credentials"/);
+assert.match(e2ePreparation, /reset-password/);
+assert.match(e2ePreparation, /requiredActions: \[\]/);
+
+const ciWorkflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
+assert.match(ciWorkflow, /ui-e2e:/);
+assert.match(ciWorkflow, /playwright install --with-deps chromium/);
+assert.match(ciWorkflow, /node tools\/qa\/prepare-ui-e2e\.mjs/);
+assert.match(ciWorkflow, /npm run test:e2e/);
 
 for (const file of [
   "src/backend/Pmcs.Modules.ActionControl/Domain/GovernanceRules.cs",

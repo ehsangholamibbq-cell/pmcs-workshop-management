@@ -60,5 +60,6 @@ PMCS_QA_S3_BUCKET='pmcs-qa-local' \
 - Slice 2 ممیزی سراسری و Permission / Workflow / Database / Audit Verification مستقل را اضافه کرده است.
 - Slice 3 File / Attachment Verification مستقل، تشخیص امضای محتوا، کنترل یکپارچگی دانلود و Audit دریافت فایل را اضافه کرده است.
 - Slice 4 Offline / Sync Verification مستقل، Reconnect با Lease قبلی، Duplicate/Replay، جداسازی Idempotency دو کاربر، Conflict/Resolution، Local/Server checkpoint، Diagnostics و Device revocation را اضافه کرده و با `28/28` assertion در CI متصل تأیید شده است.
+- Slice 5 Browser UI/E2E Verification مستقل، Login واقعی Keycloak/BFF، authenticated cold start، RTL/Responsive، تقویم شمسی، Loading/Error/Empty state و چرخه IndexedDB/Service Worker/Browser Restart/Reconnect را اضافه کرده است؛ تأیید CI متصل این Slice در حال انجام است.
 
-مرحله مستقل فعال بعدی UI/E2E مرورگری است، از جمله IndexedDB، قطع واقعی شبکه، authenticated cold start و Mobile/Tablet/Desktop. Full Qualification پس از آن همچنان شامل Agent/Exploratory، Regression Runner و Test Report Generator است. Multipart/Malware/Quarantine، Endurance چندروزه دستگاه و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.
+پس از بسته‌شدن UI/E2E، Full Qualification همچنان شامل Agent/Exploratory، Regression Runner و Test Report Generator است. Multipart/Malware/Quarantine، Endurance چندروزه دستگاه و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.
