@@ -54,7 +54,13 @@ CREATE INDEX IF NOT EXISTS ix_bff_verification_identifier ON bff_verification(id
 CREATE INDEX IF NOT EXISTS ix_bff_verification_expires_at ON bff_verification(expires_at);
 
 CREATE TABLE IF NOT EXISTS bff_rate_limit (
-    key text PRIMARY KEY,
+    id text PRIMARY KEY,
+    key text NOT NULL UNIQUE,
     count integer NOT NULL,
     last_request bigint NOT NULL
 );
+
+ALTER TABLE bff_rate_limit ADD COLUMN IF NOT EXISTS id text;
+UPDATE bff_rate_limit SET id = key WHERE id IS NULL;
+ALTER TABLE bff_rate_limit ALTER COLUMN id SET NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_bff_rate_limit_id ON bff_rate_limit(id);
