@@ -40,6 +40,10 @@ ProductionConfigurationValidator.Validate(builder.Environment, builder.Configura
 
 const string authenticationScheme = "Pmcs";
 const long maximumRequestBodySize = 30L * 1024L * 1024L;
+var logOidcAuthenticationFailure = LoggerMessage.Define(
+    LogLevel.Warning,
+    new EventId(4010, "OidcAuthenticationFailed"),
+    "OIDC bearer authentication failed.");
 var generalPermitLimit = ReadPositiveInt(builder.Configuration, "RateLimiting:GeneralPermitLimit", 300);
 var generalWindowSeconds = ReadPositiveInt(builder.Configuration, "RateLimiting:GeneralWindowSeconds", 60);
 var insightPermitLimit = ReadPositiveInt(builder.Configuration, "RateLimiting:InsightPermitLimit", 5);
@@ -107,7 +111,7 @@ builder.Services
                 var logger = context.HttpContext.RequestServices
                     .GetRequiredService<ILoggerFactory>()
                     .CreateLogger("Pmcs.Authentication");
-                logger.LogWarning(context.Exception, "OIDC bearer authentication failed.");
+                logOidcAuthenticationFailure(logger, context.Exception);
                 return Task.CompletedTask;
             }
         };
