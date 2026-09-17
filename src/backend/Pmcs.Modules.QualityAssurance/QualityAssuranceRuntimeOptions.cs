@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Data.Common;
 using System.Text;
 using Microsoft.Extensions.Configuration;
@@ -121,13 +120,14 @@ public static class QaDatabaseSafety
 
     private static string? ReadDatabaseName(DbConnectionStringBuilder builder)
     {
-        foreach (DictionaryEntry entry in builder)
+        foreach (string key in builder.Keys)
         {
-            var key = Convert.ToString(entry.Key, System.Globalization.CultureInfo.InvariantCulture);
             if (string.Equals(key, "Database", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(key, "Initial Catalog", StringComparison.OrdinalIgnoreCase))
             {
-                return Convert.ToString(entry.Value, System.Globalization.CultureInfo.InvariantCulture)?.Trim();
+                return Convert.ToString(
+                    builder[key],
+                    System.Globalization.CultureInfo.InvariantCulture)?.Trim();
             }
         }
 
