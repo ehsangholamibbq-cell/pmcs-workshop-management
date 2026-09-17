@@ -3,7 +3,7 @@
   "product": "PMCS",
   "releaseLine": "V1.1",
   "checkpoint": "PMCS-V1.1-UX1-RC1",
-  "status": "owner-review-required",
+  "status": "owner-approved",
   "parentBranch": "v1.1-development",
   "parentCommit": "4e401ab9e2bfab5bd197e9789d7a87e91e8a5784",
   "candidateSourceCommit": "d44e217c95e9619fb6014ea59db2c663e26646dc",
@@ -12,6 +12,8 @@
   "validationConclusion": "success",
   "validationUrl": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35279540996",
   "runtimeChanged": false,
+  "ownerApprovedAt": "2026-09-17",
+  "ownerApprovalScope": "v1.1-visual-direction",
   "direction": "management-excellence",
   "approvedVisualCriteria": [
     "login-composition",
@@ -27,7 +29,7 @@
   "gates": {
     "VX-G1": "evidence-in-progress",
     "VX-G2": "approved",
-    "VX-G3": "awaiting-owner-review",
+    "VX-G3": "open-design-system-completion",
     "VX-G4": "not-started",
     "VX-G5": "not-started"
   },
@@ -35,6 +37,9 @@
     "persianRtl": true,
     "jalali": true,
     "reducedMotion": true,
+    "loginExperienceVersioned": true,
+    "loginExperiencePreviewPublishRollback": true,
+    "loginExperienceAssetFallback": true,
     "arbitraryLoginCodeAllowed": false,
     "duplicateOperationalData": false,
     "duplicateFinancialData": false,

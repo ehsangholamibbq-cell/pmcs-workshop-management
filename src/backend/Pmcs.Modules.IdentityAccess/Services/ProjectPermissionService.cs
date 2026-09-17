@@ -684,6 +684,7 @@ internal sealed class ProjectPermissionService(
                 string.Equals(permission, "quality.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "hse.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "governance.read", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "platform.modules.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool GrantsRole(string roleCode, string permission) =>

@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.1.0`
-- وضعیت: مسیر بصری مصوب؛ Design System و Qualification در حال برنامه‌ریزی
+- نسخه سند: `1.2.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» با تأیید مالک محصول بسته شد؛ Design System و Qualification باز است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -179,7 +179,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | --- | --- | --- |
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | باز تا ثبت Evidence کامل |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
-| `VX-G3 System Ready` | Token/component contract و prototype کامل | باز |
+| `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | باز؛ تأیید جهت بصری جایگزین این Gate نیست |
 | `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
@@ -191,3 +191,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | --- | --- |
 | `1.0.0` | ایجاد Visual Excellence Program سراسری |
 | `1.1.0` | تصویب مسیر «مدیریت ممتاز»، قرارداد برند و Motion، Login قابل پیکربندی، پروفایل شخصی و Prototype تکثیر پروژه |
+| `1.2.0` | ثبت تأیید مالک محصول برای ترکیب Login، گرمی محیط و Motion؛ تثبیت الزام Preview/Publish/Rollback/Fallback برای Login و باز نگه‌داشتن VX-G3 |

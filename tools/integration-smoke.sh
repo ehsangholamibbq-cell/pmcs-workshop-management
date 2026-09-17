@@ -106,6 +106,39 @@ curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   "http://127.0.0.1:${port}/api/v1/session" | grep -q '"authentication":"development-adapter"'
 
+current_step="checking the fail-closed platform extension catalog"
+module_catalog_unauthenticated_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  "http://127.0.0.1:${port}/api/v1/platform/modules/")"
+if [[ "${module_catalog_unauthenticated_status}" != "401" ]]; then
+  echo "Expected unauthenticated module catalog access to return 401; received ${module_catalog_unauthenticated_status}." >&2
+  exit 1
+fi
+
+module_catalog="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/platform/modules/")"
+grep -q '"schemaVersion":"pmcs.module/v1"' <<<"${module_catalog}"
+grep -q '"schemaVersion":"pmcs.module/legacy-v1"' <<<"${module_catalog}"
+grep -q '"moduleId":"platform.foundation"' <<<"${module_catalog}"
+grep -q '"id":"platform.modules.describe"' <<<"${module_catalog}"
+grep -q '"name":"platform.module-catalog.snapshot","version":1' <<<"${module_catalog}"
+
+curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/platform/modules/platform.foundation" | \
+  grep -q '"moduleId":"platform.foundation"'
+
+unknown_module_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/platform/modules/platform.unknown")"
+if [[ "${unknown_module_status}" != "404" ]]; then
+  echo "Expected an unknown module contract to return 404; received ${unknown_module_status}." >&2
+  exit 1
+fi
+
 current_step="checking project creation, idempotent replay and activation boundary"
 setup_key="integration-project-setup"
 setup_payload='{"code":"CI-AUDIT-01","name":"Integration lifecycle project","contractModel":"GeneralContracting","planningMode":"SimpleWorkList","budgetMode":"SetupRequired","qualityMode":"SetupRequired","hseMode":"NotEnabled","timeZone":"Asia/Tehran","financeMode":"SetupRequired","baseCurrencyCode":"IRR","procurementMode":"SetupRequired","projectType":"Building","executionPhase":"PreConstruction","countryCode":"IR","region":"Tehran","startDate":"2026-09-01","plannedFinishDate":"2027-09-01","shortDescription":"Controlled integration lifecycle","unitSystem":"Metric","dailyCutoffLocalTime":"18:00:00","reportingFrequency":"WorkingDays","dailyReportWorkflow":"OneStepApproval","offlinePolicyAccepted":true,"calendarMode":"WorkingWeek","workingDays":["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday"]}'

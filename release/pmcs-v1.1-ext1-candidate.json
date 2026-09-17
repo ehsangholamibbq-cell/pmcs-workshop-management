@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "product": "PMCS",
+  "releaseLine": "V1.1",
+  "checkpoint": "PMCS-V1.1-EXT1-RC1",
+  "status": "validation-pending",
+  "parentBranch": "v1.1-development",
+  "parentCommit": "33115e17390f02ea2ca53edaf245fc843c022235",
+  "runtimeBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "runtimeChanged": true,
+  "moduleManifestSchema": "pmcs.module/v1",
+  "platformContractVersion": "1.1.0",
+  "referenceModule": "platform.foundation",
+  "gates": {
+    "moduleDescriptor": "implemented",
+    "permissionManifest": "implemented",
+    "navigationManifest": "implemented",
+    "eventManifest": "implemented",
+    "agentToolManifest": "implemented",
+    "fullCi": "pending"
+  },
+  "security": {
+    "unknownSchemaFailsClosed": true,
+    "unsafeRoutesFailClosed": true,
+    "centralPermissionFinal": true,
+    "dynamicBinaryLoadingAllowed": false,
+    "crossModulePersistenceAllowed": false,
+    "agentDirectDatabaseAccessAllowed": false
+  },
+  "nextStage": "V1.1-DOC1"
+}

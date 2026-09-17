@@ -207,6 +207,14 @@ public sealed class InfrastructureBoundaryTests
         Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.review"));
     }
 
+    [Fact]
+    public void PlatformModuleCatalogUsesCentralTenantPermissions()
+    {
+        Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "platform.modules.read"));
+        Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "platform.modules.manage"));
+        Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.TenantAdministrator, "platform.modules.manage"));
+    }
+
     [Theory]
     [InlineData("development", "1.0.0", "2026-09-12T12:00:00Z")]
     [InlineData("6DEA26EFBC75EAC5D195C630BB4C4B9B64CCB7B2", "1.0.0", "2026-09-12T12:00:00Z")]

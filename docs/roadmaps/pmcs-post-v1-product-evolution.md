@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.2.0`
-- وضعیت: `Architecture Approved`؛ مسیر بصری تصویب شده و پیاده‌سازی محصول هنوز آغاز نشده است
+- نسخه سند: `1.3.0`
+- وضعیت: `V1.1 Development`؛ UX1 تصویب شده و EXT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,6 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
+- مرحله فعال: `V1.1-EXT1 — Extensibility Foundation`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -114,6 +115,8 @@ Scope:
 4. Collaboration و Reporting جدید.
 
 **Gate خروج:** `Visual Direction Approved`. مسیر «مدیریت ممتاز» از نظر ترکیب Login، گرمی محیط و شدت Motion توسط مالک محصول تصویب شده است. این تصمیم فقط Gate انتخاب Art Direction را می‌بندد؛ `VX-G3 System Ready`، Prototype تمام stateها و Design System هنوز باید پیش از مهاجرت تولیدی کامل شوند.
+
+**Evidence:** مالک محصول Candidate `PMCS-V1.1-UX1-RC1` را در ۲۰۲۶-۰۹-۱۷ برای سه معیار قفل‌شده تأیید کرد. موشن، تصویر و تم Login باید در IAM1 از Authentication جدا، نسخه‌دار و دارای Preview/Publish/Rollback/Fallback باشند.
 
 ### `V1.1-EXT1` — Extensibility Foundation
 

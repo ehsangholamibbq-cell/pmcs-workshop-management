@@ -70,11 +70,13 @@ IModule[] modules =
     new WorkManagementModule(),
     new QualityAssuranceModule()
 ];
+var moduleCatalog = ModuleCatalog.Create(modules.Select(module => module.Descriptor));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(qaRuntime);
+builder.Services.AddSingleton<IModuleCatalog>(moduleCatalog);
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services
     .AddAuthentication(options =>
