@@ -1,7 +1,9 @@
 # QA Foundation Slice 2 — Permission, Workflow, Database and Audit Verification
 
 - Date: 2026-09-17
-- Status: Implemented; connected verification pending
+- Status: Implemented and verified by connected CI
+- Verified remote source commit: `ccd7905ebbae7862e798ba8734eb826309c1eb49`
+- GitHub Actions evidence: [`35219479805`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35219479805)
 - Product state: `PMCS V1 — Feature Complete`
 - Qualification state: In progress; not Qualified, Final or Locked
 - Governing roadmap: [`../roadmaps/pmcs-v1-development-and-qualification.md`](../roadmaps/pmcs-v1-development-and-qualification.md)
@@ -33,4 +35,17 @@ This Slice closes only Permission / Workflow / Database / Audit Verification. In
 
 ## Connected verification
 
-Pending the connected CI run for this source revision.
+- repository validation passed for 274 C# module files, including canonical migration identities and exact reset-schema coverage;
+- system contract audit passed for 239 endpoints, 188 mutations and 5 documented protocol-managed mutations, with duplicate route detection active;
+- .NET 10 Release build passed with zero warnings and zero errors;
+- 249 C# tests passed with zero failures;
+- 124 Web tests, ESLint, Persian UI audit, Persian calendar audit, TypeScript and Next.js production build passed;
+- all 32 API assertions passed: 24 explicit Permission decisions plus 8 role-separated Daily Report workflow checks;
+- the direct database gate passed for 38 migrations, 12 active seeded actors, canonical migration ledger identity, project-scoped Permission Audit, workflow state and actor lineage, Outbox, Idempotency and Notification evidence;
+- the original integration smoke and Checkpoint 22/23/24 direct database gates remained green;
+- the isolated PostgreSQL backup/restore drill passed with all 38 migrations;
+- Identity Container and Pilot Contract gates passed.
+
+The connected candidate passed on its first run without suppressing or weakening any gate.
+
+QA Foundation Slice 2 is closed. Independent File/Attachment, Offline/Sync, UI/E2E, exploratory-agent and full-regression qualification remain active. PMCS V1 therefore remains Feature Complete and must not yet be described as Qualified, Final or Locked.

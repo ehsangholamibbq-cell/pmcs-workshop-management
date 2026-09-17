@@ -7,7 +7,7 @@
 `PMCS V1 — Feature Complete` after verified Checkpoint 24. The product is not yet Qualified, Final or Locked; QA Qualification is in progress:
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
-- QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit پیاده‌سازی شده است؛ File/Attachment و مراحل بعدی Qualification هنوز باز هستند.
+- QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است؛ File/Attachment و مراحل بعدی Qualification هنوز باز هستند.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
