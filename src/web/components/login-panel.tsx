@@ -26,11 +26,15 @@ export function LoginPanel({ initialError = false }: { readonly initialError?: b
       provider: "keycloak",
       callbackURL: safeReturnTo(),
       errorCallbackURL: "/login?error=identity",
+      disableRedirect: true,
     });
-    if (result.error) {
+    if (result.error || !result.data?.url) {
       setMessage("اتصال به سرویس ورود برقرار نشد؛ کمی بعد دوباره تلاش کنید.");
       setIsStarting(false);
+      return;
     }
+
+    window.location.assign(result.data.url);
   }
 
   return (
