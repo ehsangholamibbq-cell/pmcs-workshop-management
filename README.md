@@ -12,6 +12,7 @@
 - QA Foundation Slice 4: آزمون مستقل Offline/Sync شامل Reconnect، Replay/Duplicate، جداسازی دو کاربر، Conflict/Resolution، Checkpoint/Diagnostics و Device revocation با `28/28` assertion در CI متصل تأیید و بسته شده است.
 - QA Foundation Slice 5: Gate مستقل Playwright روی Compose واقعی برای Login مبتنی بر Keycloak/BFF، RTL/Responsive، تقویم شمسی، Loading/Error/Empty و چرخه Offline/IndexedDB/Browser Restart/Reconnect در Runهای 64 و 65 تأیید و بسته شده است.
 - QA Foundation Slice 6: Agent/Exploratory Runner قطعی، ۱۲ Persona و ۱۲ سطح خواندنی، مرزهای منفی Authentication/Tenant/Project و نبود Route مخرب با `173/173` assertion در Run 67 تأیید و بسته شده است. Regression Runner، Test Report Generator و Full Regression نهایی همچنان باز هستند.
+- QA Foundation Slice 7: Regression Runner نسخه‌دار و Test Report Generator به‌صورت fail-closed برای هفت Suite مستقل پیاده‌سازی شده‌اند. Candidate منتظر اجرای Full Regression متصل و ثبت Evidence نهایی است؛ V1 هنوز Qualified یا Locked نیست.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -217,5 +218,7 @@ npm run check
 - گزارش Slice سوم QA Foundation: [`docs/checkpoints/qa-foundation-03.md`](docs/checkpoints/qa-foundation-03.md)
 - گزارش Slice چهارم QA Foundation: [`docs/checkpoints/qa-foundation-04.md`](docs/checkpoints/qa-foundation-04.md)
 - گزارش Slice پنجم QA Foundation: [`docs/checkpoints/qa-foundation-05.md`](docs/checkpoints/qa-foundation-05.md)
+- گزارش Slice ششم QA Foundation: [`docs/checkpoints/qa-foundation-06.md`](docs/checkpoints/qa-foundation-06.md)
+- گزارش Slice هفتم QA Foundation: [`docs/checkpoints/qa-foundation-07.md`](docs/checkpoints/qa-foundation-07.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

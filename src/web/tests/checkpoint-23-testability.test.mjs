@@ -13,6 +13,10 @@ const gateway = readFileSync(
   "utf8",
 );
 const workflow = readFileSync(new URL("../../../.github/workflows/ci.yml", import.meta.url), "utf8");
+const integrationRegression = readFileSync(
+  new URL("../../../tools/qa/run-integration-regression.sh", import.meta.url),
+  "utf8",
+);
 
 test("disconnect, reconnect and scheduled retry have explicit testable transitions", () => {
   assert.match(serviceWorker, /fetch\(request\)\.catch\(\(\) => caches\.match\("\/offline\.html"\)\)/u);
@@ -48,6 +52,7 @@ test("conflict and recovery UI exposes stable selectors for later E2E automation
 });
 
 test("CI verifies replay, two-user conflict, recovery, audit and diagnostics directly", () => {
-  assert.match(workflow, /checkpoint23-db-verification\.sh/u);
-  assert.match(workflow, /Verify Checkpoint 23 sync recovery and conflict evidence/u);
+  assert.match(workflow, /regression-runner\.mjs run integration/u);
+  assert.match(integrationRegression, /checkpoint23-db-verification\.sh/u);
+  assert.match(integrationRegression, /PMCS_VERIFICATION_DATABASE_URL/u);
 });

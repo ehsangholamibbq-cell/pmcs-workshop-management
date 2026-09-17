@@ -91,6 +91,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-04.md",
   "docs/checkpoints/qa-foundation-05.md",
   "docs/checkpoints/qa-foundation-06.md",
+  "docs/checkpoints/qa-foundation-07.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -100,6 +101,12 @@ const requiredFiles = [
   "tools/qa/verify-files-database.sh",
   "tools/qa/verify-sync-database.sh",
   "tools/qa/prepare-ui-e2e.mjs",
+  "tools/qa/regression-suites.json",
+  "tools/qa/regression-runner.mjs",
+  "tools/qa/test-report-generator.mjs",
+  "tools/qa/run-integration-regression.sh",
+  "tools/qa/verify-identity-container.mjs",
+  "tools/tests/regression-qualification.test.mjs",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "tests/Pmcs.Domain.Tests/OfflineOperationIdentityTests.cs",
@@ -223,8 +230,39 @@ const ciWorkflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
 assert.match(ciWorkflow, /ui-e2e:/);
 assert.match(ciWorkflow, /playwright install --with-deps chromium/);
 assert.match(ciWorkflow, /node tools\/qa\/prepare-ui-e2e\.mjs/);
-assert.match(ciWorkflow, /npm run test:e2e/);
-assert.match(ciWorkflow, /Agent\/Exploratory/);
+assert.match(ciWorkflow, /regression-runner\.mjs run ui-e2e/);
+assert.match(ciWorkflow, /regression-runner\.mjs run integration/);
+assert.equal(
+  [...ciWorkflow.matchAll(/node tools\/qa\/regression-runner\.mjs run ([a-z0-9-]+)/g)]
+    .map(match => match[1])
+    .sort()
+    .join(","),
+  "architecture,backend,identity-container,integration,pilot-contract,ui-e2e,web",
+  "CI must execute every regression suite exactly once.",
+);
+assert.match(ciWorkflow, /qualification-report:/);
+assert.match(ciWorkflow, /node tools\/qa\/test-report-generator\.mjs/);
+assert.match(ciWorkflow, /pmcs-v1-qualification-report/);
+
+const regressionManifest = JSON.parse(
+  readFileSync(join(root, "tools/qa/regression-suites.json"), "utf8"),
+);
+assert.equal(regressionManifest.contractVersion, 1);
+assert.equal(regressionManifest.runnerVersion, "pmcs-v1-regression-1");
+assert.deepEqual(
+  regressionManifest.suites.map(suite => suite.id),
+  ["architecture", "backend", "integration", "pilot-contract", "web", "ui-e2e", "identity-container"],
+);
+assert.ok(regressionManifest.suites.every(suite => suite.commands.length > 0));
+
+const regressionRunner = readFileSync(join(root, "tools/qa/regression-runner.mjs"), "utf8");
+const qualificationReporter = readFileSync(join(root, "tools/qa/test-report-generator.mjs"), "utf8");
+assert.match(regressionRunner, /pmcs-regression-suite/);
+assert.match(regressionRunner, /writeJsonAtomically/);
+assert.doesNotMatch(regressionRunner, /JSON\.stringify\(process\.env/);
+assert.match(qualificationReporter, /baselineLockEligible/);
+assert.match(qualificationReporter, /Missing suite report/);
+assert.match(qualificationReporter, /mismatched suite report contract/);
 
 const testHarnessProgram = readFileSync(
   join(root, "src/backend/Pmcs.TestHarness/Program.cs"),

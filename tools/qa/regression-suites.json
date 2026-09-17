@@ -1,0 +1,143 @@
+{
+  "contractVersion": 1,
+  "runnerVersion": "pmcs-v1-regression-1",
+  "suites": [
+    {
+      "id": "architecture",
+      "displayName": "Architecture and repository contracts",
+      "layer": "architecture",
+      "commands": [
+        {
+          "id": "repository-validation",
+          "file": "node",
+          "args": ["tools/validate-repository.mjs"]
+        },
+        {
+          "id": "system-contract-audit",
+          "file": "node",
+          "args": ["tools/audit-system-contracts.mjs"]
+        }
+      ]
+    },
+    {
+      "id": "backend",
+      "displayName": ".NET build and domain tests",
+      "layer": "automated",
+      "commands": [
+        {
+          "id": "dotnet-restore",
+          "file": "dotnet",
+          "args": ["restore", "PMCS.slnx"]
+        },
+        {
+          "id": "dotnet-build",
+          "file": "dotnet",
+          "args": ["build", "PMCS.slnx", "--configuration", "Release", "--no-restore"]
+        },
+        {
+          "id": "dotnet-test",
+          "file": "dotnet",
+          "args": [
+            "test",
+            "PMCS.slnx",
+            "--configuration",
+            "Release",
+            "--no-build",
+            "--logger",
+            "trx;LogFileName=backend.trx",
+            "--results-directory",
+            "artifacts/qa/test-results/backend"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "integration",
+      "displayName": "PostgreSQL, API, object storage and QA verification",
+      "layer": "integration",
+      "commands": [
+        {
+          "id": "connected-integration-regression",
+          "file": "bash",
+          "args": ["tools/qa/run-integration-regression.sh"]
+        }
+      ]
+    },
+    {
+      "id": "pilot-contract",
+      "displayName": "Release, QA and shell contracts",
+      "layer": "contract",
+      "commands": [
+        {
+          "id": "node-contract-tests",
+          "file": "bash",
+          "args": ["-lc", "node --test tools/tests/*.test.mjs"]
+        },
+        {
+          "id": "shell-syntax",
+          "file": "bash",
+          "args": [
+            "-n",
+            "tools/release-smoke.sh",
+            "tools/integration-smoke.sh",
+            "tools/checkpoint22-db-verification.sh",
+            "tools/checkpoint23-db-verification.sh",
+            "tools/checkpoint24-db-verification.sh",
+            "tools/qa/reset-database.sh",
+            "tools/qa/seed-diagnostics.sh",
+            "tools/qa/verify-database.sh",
+            "tools/qa/verify-files-database.sh",
+            "tools/qa/verify-sync-database.sh",
+            "tools/qa/run-integration-regression.sh",
+            "ops/backup/postgres-backup.sh",
+            "ops/backup/postgres-restore-drill.sh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "displayName": "Web unit, lint, Persian UI, calendar and production build",
+      "layer": "automated",
+      "commands": [
+        {
+          "id": "web-install",
+          "file": "npm",
+          "args": ["ci"],
+          "cwd": "src/web"
+        },
+        {
+          "id": "web-check",
+          "file": "npm",
+          "args": ["run", "check"],
+          "cwd": "src/web"
+        }
+      ]
+    },
+    {
+      "id": "ui-e2e",
+      "displayName": "Real browser UI and offline recovery",
+      "layer": "ui-e2e",
+      "commands": [
+        {
+          "id": "playwright-browser-qualification",
+          "file": "npm",
+          "args": ["run", "test:e2e"],
+          "cwd": "src/web"
+        }
+      ]
+    },
+    {
+      "id": "identity-container",
+      "displayName": "OIDC realm and identity administration container",
+      "layer": "identity",
+      "commands": [
+        {
+          "id": "identity-container-verification",
+          "file": "node",
+          "args": ["tools/qa/verify-identity-container.mjs"]
+        }
+      ]
+    }
+  ]
+}

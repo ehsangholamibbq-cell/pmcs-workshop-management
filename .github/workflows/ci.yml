@@ -17,19 +17,31 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node tools/validate-repository.mjs
-      - run: node tools/audit-system-contracts.mjs
+      - run: node tools/qa/regression-runner.mjs run architecture
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-architecture
+          path: artifacts/qa/regression/architecture.json
+          if-no-files-found: error
 
   backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet restore PMCS.slnx
-      - run: dotnet build PMCS.slnx --configuration Release --no-restore
-      - run: dotnet test PMCS.slnx --configuration Release --no-build --logger trx
+      - run: node tools/qa/regression-runner.mjs run backend
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-backend
+          path: artifacts/qa/regression/backend.json
+          if-no-files-found: error
 
   integration:
     runs-on: ubuntu-latest
@@ -53,13 +65,32 @@ jobs:
       PMCS_TEST_S3_ACCESS_KEY: pmcs_integration
       PMCS_TEST_S3_SECRET_KEY: pmcs_integration_only
       PMCS_TEST_S3_BUCKET: pmcs-integration
+      PMCS_VERIFICATION_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration
+      PMCS_QA_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_integration;Username=pmcs;Password=pmcs_integration_only
+      PMCS_QA_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_integration
+      PMCS_QA_DATABASE_NAME: pmcs_qa_integration
+      PMCS_QA_RESET_CONFIRM: RESET:pmcs_qa_integration
+      PMCS_QA_AUTH_KEY: qa-ci-independent-key-0123456789abcdef
+      PMCS_QA_S3_ENDPOINT: http://127.0.0.1:9000
+      PMCS_QA_S3_ACCESS_KEY: pmcs_integration
+      PMCS_QA_S3_SECRET_KEY: pmcs_integration_only
+      PMCS_QA_S3_BUCKET: pmcs-qa-integration
+      PMCS_BACKUP_CONNECTION_STRING: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration
+      PMCS_RESTORE_ADMIN_CONNECTION_STRING: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/postgres
+      PMCS_RESTORE_TARGET_CONNECTION_STRING: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_ci
+      PMCS_RESTORE_TARGET_DATABASE: pmcs_restore_drill_ci
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: pmcs
+      PGPASSWORD: pmcs_integration_only
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet restore PMCS.slnx
-      - run: dotnet build PMCS.slnx --configuration Release --no-restore
       - name: Start isolated object storage
         run: |
           docker run --detach --name pmcs-integration-minio \
@@ -75,72 +106,14 @@ jobs:
           done
           docker logs pmcs-integration-minio
           exit 1
-      - run: ./tools/integration-smoke.sh
-      - name: Verify Checkpoint 22 audit and workflow state
-        run: |
-          docker run --rm --network host \
-            --volume "${GITHUB_WORKSPACE}:/workspace" \
-            --workdir /workspace \
-            --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
-            postgres:17-alpine sh -c \
-            'apk add --no-cache bash >/dev/null && bash tools/checkpoint22-db-verification.sh'
-      - name: Verify Checkpoint 23 sync recovery and conflict evidence
-        run: |
-          docker run --rm --network host \
-            --volume "${GITHUB_WORKSPACE}:/workspace" \
-            --workdir /workspace \
-            --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
-            postgres:17-alpine sh -c \
-            'apk add --no-cache bash >/dev/null && bash tools/checkpoint23-db-verification.sh'
-      - name: Verify Checkpoint 24 finance and location evidence
-        run: |
-          docker run --rm --network host \
-            --volume "${GITHUB_WORKSPACE}:/workspace" \
-            --workdir /workspace \
-            --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
-            postgres:17-alpine sh -c \
-            'apk add --no-cache bash >/dev/null && bash tools/checkpoint24-db-verification.sh'
-      - name: Verify QA seed, diagnostics, permissions, workflow, files, offline sync and Agent/Exploratory
-        env:
-          PMCS_QA_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_integration;Username=pmcs;Password=pmcs_integration_only
-          PMCS_QA_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_integration
-          PMCS_QA_RESET_CONFIRM: RESET:pmcs_qa_integration
-          PMCS_QA_AUTH_KEY: qa-ci-independent-key-0123456789abcdef
-          PMCS_QA_S3_ENDPOINT: http://127.0.0.1:9000
-          PMCS_QA_S3_ACCESS_KEY: pmcs_integration
-          PMCS_QA_S3_SECRET_KEY: pmcs_integration_only
-          PMCS_QA_S3_BUCKET: pmcs-qa-integration
-        run: |
-          PGPASSWORD=pmcs_integration_only createdb \
-            --host 127.0.0.1 \
-            --username pmcs \
-            pmcs_qa_integration
-          ./tools/qa/reset-database.sh
-          ./tools/qa/seed-diagnostics.sh
-      - name: PostgreSQL backup and isolated restore drill
-        run: |
-          mkdir -p "${RUNNER_TEMP}/pmcs-backup"
-          docker run --rm --network host \
-            --volume "${GITHUB_WORKSPACE}:/workspace" \
-            --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
-            --workdir /workspace \
-            --env 'PMCS_BACKUP_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
-            --env PMCS_BACKUP_DIRECTORY=/backup \
-            postgres:17-alpine sh -c \
-            'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-backup.sh'
-          backup_file="$(find "${RUNNER_TEMP}/pmcs-backup" -maxdepth 1 -name '*.dump' -type f -print -quit)"
-          test -n "${backup_file}"
-          backup_name="$(basename "${backup_file}")"
-          docker run --rm --network host \
-            --volume "${GITHUB_WORKSPACE}:/workspace" \
-            --volume "${RUNNER_TEMP}/pmcs-backup:/backup" \
-            --workdir /workspace \
-            --env 'PMCS_RESTORE_ADMIN_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/postgres' \
-            --env 'PMCS_RESTORE_TARGET_CONNECTION_STRING=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_ci' \
-            --env PMCS_RESTORE_TARGET_DATABASE=pmcs_restore_drill_ci \
-            --env "PMCS_RESTORE_BACKUP_FILE=/backup/${backup_name}" \
-            postgres:17-alpine sh -c \
-            'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-restore-drill.sh'
+      - name: Run connected integration regression
+        run: node tools/qa/regression-runner.mjs run integration
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-integration
+          path: artifacts/qa/regression/integration.json
+          if-no-files-found: error
       - if: failure()
         run: docker logs pmcs-integration-minio || true
       - if: always()
@@ -153,21 +126,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node --test tools/tests/*.test.mjs
-      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh tools/checkpoint22-db-verification.sh tools/checkpoint23-db-verification.sh tools/checkpoint24-db-verification.sh tools/qa/*.sh ops/backup/*.sh
+      - run: node tools/qa/regression-runner.mjs run pilot-contract
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-pilot-contract
+          path: artifacts/qa/regression/pilot-contract.json
+          if-no-files-found: error
 
   web:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
-      - run: npm run check
+      - run: node tools/qa/regression-runner.mjs run web
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-web
+          path: artifacts/qa/regression/web.json
+          if-no-files-found: error
 
   ui-e2e:
     runs-on: ubuntu-latest
@@ -208,15 +188,22 @@ jobs:
       - name: Prepare isolated OIDC browser fixture
         run: node tools/qa/prepare-ui-e2e.mjs
       - name: Verify real browser login, RTL, responsive and offline recovery
-        working-directory: src/web
-        run: npm run test:e2e
+        run: node tools/qa/regression-runner.mjs run ui-e2e
       - if: failure()
         run: docker compose logs --no-color
       - if: always()
         run: docker compose down --volumes
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-ui-e2e
+          path: artifacts/qa/regression/ui-e2e.json
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
+    env:
+      PMCS_IDENTITY_TEST_CLIENT_SECRET: identity_admin_dev_only
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -224,7 +211,7 @@ jobs:
           node-version: 24
       - run: docker compose config --quiet
       - run: docker compose up --detach --build keycloak web-auth-postgres
-      - name: Verify imported OIDC realm
+      - name: Wait for imported OIDC realm
         run: |
           for attempt in {1..60}; do
             if curl --fail --silent http://localhost:8081/realms/pmcs/.well-known/openid-configuration >/dev/null; then
@@ -235,77 +222,50 @@ jobs:
             fi
             sleep 2
           done
-          node --input-type=module -e '
-            const response = await fetch("http://localhost:8081/realms/pmcs/.well-known/openid-configuration");
-            if (!response.ok) {
-              console.error(`OIDC discovery returned HTTP ${response.status}`);
-              process.exit(1);
-            }
-            const discovery = await response.json();
-            if (discovery.issuer !== "http://localhost:8081/realms/pmcs") {
-              console.error(`Unexpected OIDC issuer: ${discovery.issuer}`);
-              process.exit(1);
-            }
-            if (!discovery.authorization_endpoint || !discovery.token_endpoint || !discovery.jwks_uri) {
-              console.error("OIDC discovery is missing required endpoints");
-              process.exit(1);
-            }
-          '
-          node --input-type=module -e '
-            const tokenResponse = await fetch("http://localhost:8081/realms/pmcs/protocol/openid-connect/token", {
-              method: "POST",
-              headers: { "content-type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                grant_type: "client_credentials",
-                client_id: "pmcs-identity-admin",
-                client_secret: "identity_admin_dev_only",
-              }),
-            });
-            if (!tokenResponse.ok) {
-              console.error(`Client-credentials request returned HTTP ${tokenResponse.status}: ${await tokenResponse.text()}`);
-              process.exit(1);
-            }
-            const { access_token: token } = await tokenResponse.json();
-            const usersResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users?max=1", {
-              headers: { authorization: `Bearer ${token}` },
-            });
-            if (!usersResponse.ok) {
-              console.error(`Admin users probe returned HTTP ${usersResponse.status}: ${await usersResponse.text()}`);
-              process.exit(1);
-            }
-            const userNameSeed = crypto.randomUUID();
-            const createResponse = await fetch("http://localhost:8081/admin/realms/pmcs/users", {
-              method: "POST",
-              headers: {
-                authorization: `Bearer ${token}`,
-                "content-type": "application/json",
-              },
-              body: JSON.stringify({
-                username: `ci-${userNameSeed}@pmcs.invalid`,
-                email: `ci-${userNameSeed}@pmcs.invalid`,
-                enabled: false,
-              }),
-            });
-            if (createResponse.status !== 201) {
-              console.error(`Admin user creation returned HTTP ${createResponse.status}: ${await createResponse.text()}`);
-              process.exit(1);
-            }
-            const location = createResponse.headers.get("location");
-            const createdUserId = location?.split("/").filter(Boolean).at(-1);
-            if (!createdUserId) {
-              console.error("Admin user creation did not return a user Location header");
-              process.exit(1);
-            }
-            const deleteResponse = await fetch(`http://localhost:8081/admin/realms/pmcs/users/${encodeURIComponent(createdUserId)}`, {
-              method: "DELETE",
-              headers: { authorization: `Bearer ${token}` },
-            });
-            if (deleteResponse.status !== 204) {
-              console.error(`Admin user deletion returned HTTP ${deleteResponse.status}: ${await deleteResponse.text()}`);
-              process.exit(1);
-            }
-          '
+      - name: Verify imported OIDC realm and administration roundtrip
+        run: node tools/qa/regression-runner.mjs run identity-container
       - if: failure()
         run: docker compose logs keycloak keycloak-postgres web-auth-postgres
       - if: always()
         run: docker compose down --volumes
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-regression-identity-container
+          path: artifacts/qa/regression/identity-container.json
+          if-no-files-found: error
+
+  qualification-report:
+    if: always()
+    needs: [architecture, backend, integration, pilot-contract, web, ui-e2e, identity-container]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download regression suite evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: qa-regression-*
+          path: artifacts/qa/regression
+          merge-multiple: true
+      - name: Generate fail-closed PMCS V1 qualification report
+        env:
+          PMCS_EXPECTED_COMMIT: ${{ github.sha }}
+          PMCS_WORKFLOW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PMCS_JOB_RESULT_ARCHITECTURE: ${{ needs.architecture.result }}
+          PMCS_JOB_RESULT_BACKEND: ${{ needs.backend.result }}
+          PMCS_JOB_RESULT_INTEGRATION: ${{ needs.integration.result }}
+          PMCS_JOB_RESULT_PILOT_CONTRACT: ${{ needs['pilot-contract'].result }}
+          PMCS_JOB_RESULT_WEB: ${{ needs.web.result }}
+          PMCS_JOB_RESULT_UI_E2E: ${{ needs['ui-e2e'].result }}
+          PMCS_JOB_RESULT_IDENTITY_CONTAINER: ${{ needs['identity-container'].result }}
+        run: node tools/qa/test-report-generator.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1-qualification-report
+          path: artifacts/qa/qualification/
+          if-no-files-found: error
