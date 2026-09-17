@@ -2,7 +2,7 @@ using Pmcs.BuildingBlocks.Application;
 
 namespace Pmcs.Api.Infrastructure;
 
-internal sealed class ActorAccessMiddleware(RequestDelegate next)
+internal sealed partial class ActorAccessMiddleware(RequestDelegate next, ILogger<ActorAccessMiddleware> logger)
 {
     public async Task InvokeAsync(
         HttpContext context,
@@ -17,6 +17,7 @@ internal sealed class ActorAccessMiddleware(RequestDelegate next)
 
         if (!actor.IsAuthenticated || !actor.TokenIssuedAt.HasValue)
         {
+            LogInvalidActorClaims(logger, actor.TenantId != Guid.Empty, actor.UserId != Guid.Empty, actor.TokenIssuedAt.HasValue);
             await WriteProblemAsync(context, StatusCodes.Status401Unauthorized, "authentication.claims.invalid");
             return;
         }
@@ -33,6 +34,9 @@ internal sealed class ActorAccessMiddleware(RequestDelegate next)
 
         await next(context);
     }
+
+    [LoggerMessage(4011, LogLevel.Warning, "Authenticated OIDC principal has invalid actor claims. Tenant={HasTenantId}; User={HasUserId}; IssuedAt={HasIssuedAt}.")]
+    private static partial void LogInvalidActorClaims(ILogger logger, bool hasTenantId, bool hasUserId, bool hasIssuedAt);
 
     private static Task WriteProblemAsync(HttpContext context, int statusCode, string code)
     {
