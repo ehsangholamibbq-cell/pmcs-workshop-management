@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.3.0`
-- وضعیت: `V1.1 Development`؛ UX1 تصویب شده و EXT1 فعال است
+- نسخه سند: `1.4.0`
+- وضعیت: `V1.1 Development`؛ UX1 و EXT1 بسته شده‌اند و DOC1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,7 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-EXT1 — Extensibility Foundation`
+- مرحله فعال: `V1.1-DOC1 — Shared Document and Attachment Foundation`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -137,6 +137,8 @@ Scope:
 **Non-Scope:** بارگذاری Dynamic و ناامن Binary/Plugin شخص ثالث در Runtime. V1.1 یک Platform Contract می‌سازد، نه Marketplace افزونه.
 
 **Gate خروج:** یک Reference Module باید از Manifest تا UI Navigation، Permission، Event و Tool Contract به‌طور کامل در تست اثبات شود.
+
+**Evidence:** Reference Module `platform.foundation` با Manifest schema نسخه‌دار، Permission مرکزی، Navigation fail-closed، Event v1 و Tool read-only در Candidate source commit `b61a644de91ec3a0cf4a6288e54185e174794e1f` اثبات شد. هر هشت Job در Run 77 (`35283742706`) سبز شدند؛ ۲۶۴ تست C#، ۱۲۸ تست Web، ۴ سناریوی مرورگر واقعی و Restore Drill دارای ۳۸ Migration پاس شدند. EXT1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
 
 ### `V1.1-DOC1` — Shared Document and Attachment Foundation
 

@@ -3,9 +3,16 @@
   "product": "PMCS",
   "releaseLine": "V1.1",
   "checkpoint": "PMCS-V1.1-EXT1-RC1",
-  "status": "validation-pending",
+  "status": "verified",
   "parentBranch": "v1.1-development",
   "parentCommit": "33115e17390f02ea2ca53edaf245fc843c022235",
+  "candidateSourceCommit": "b61a644de91ec3a0cf4a6288e54185e174794e1f",
+  "validationRunId": "35283742706",
+  "validationRunNumber": 77,
+  "validationConclusion": "success",
+  "validationUrl": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35283742706",
+  "qualificationArtifactId": "10523917601",
+  "qualificationArtifactDigest": "sha256:5c660d03d7f6c6b2a65e28735edcc6b1c2c273583fe4ca3fe232ed3195b98021",
   "runtimeBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
   "runtimeChanged": true,
   "moduleManifestSchema": "pmcs.module/v1",
@@ -17,7 +24,7 @@
     "navigationManifest": "implemented",
     "eventManifest": "implemented",
     "agentToolManifest": "implemented",
-    "fullCi": "pending"
+    "fullCi": "passed"
   },
   "security": {
     "unknownSchemaFailsClosed": true,
@@ -26,6 +33,15 @@
     "dynamicBinaryLoadingAllowed": false,
     "crossModulePersistenceAllowed": false,
     "agentDirectDatabaseAccessAllowed": false
+  },
+  "validation": {
+    "ciJobsPassed": 8,
+    "dotnetWarnings": 0,
+    "dotnetErrors": 0,
+    "csharpTestsPassed": 264,
+    "webTestsPassed": 128,
+    "browserScenariosPassed": 4,
+    "restoreMigrationsVerified": 38
   },
   "nextStage": "V1.1-DOC1"
 }
