@@ -11,6 +11,10 @@ test("UX1 candidate remains review-only and does not claim qualification", async
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   assert.equal(manifest.status, "owner-review-required");
   assert.equal(manifest.runtimeChanged, false);
+  assert.match(manifest.candidateSourceCommit, /^[0-9a-f]{40}$/u);
+  assert.match(manifest.validationRunId, /^\d+$/u);
+  assert.equal(manifest.validationConclusion, "success");
+  assert.match(manifest.validationUrl, /^https:\/\/github\.com\//u);
   assert.equal(manifest.gates["VX-G2"], "approved");
   assert.equal(manifest.gates["VX-G3"], "awaiting-owner-review");
   assert.notEqual(manifest.gates["VX-G5"], "approved");
@@ -55,7 +59,7 @@ test("audit and checkpoint keep open gates explicit", async () => {
   assert.match(audit, /۶۳ مقدار Hex/u);
   assert.match(audit, /screenshot baseline/u);
   assert.match(checkpoint, /Owner Review Required/u);
+  assert.match(checkpoint, /Run 73.*35279540996.*success/u);
   assert.match(checkpoint, /هیچ Runtime، Migration، Business Rule یا Permission را تغییر نمی‌دهد/u);
   assert.match(checkpoint, /VX-G3.*قبل از تأیید مالک محصول بسته اعلام نمی‌کند/u);
 });
-

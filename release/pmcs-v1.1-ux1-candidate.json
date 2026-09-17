@@ -6,6 +6,11 @@
   "status": "owner-review-required",
   "parentBranch": "v1.1-development",
   "parentCommit": "4e401ab9e2bfab5bd197e9789d7a87e91e8a5784",
+  "candidateSourceCommit": "d44e217c95e9619fb6014ea59db2c663e26646dc",
+  "validationRunId": "35279540996",
+  "validationRunNumber": 73,
+  "validationConclusion": "success",
+  "validationUrl": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35279540996",
   "runtimeChanged": false,
   "direction": "management-excellence",
   "approvedVisualCriteria": [
@@ -39,4 +44,3 @@
     "destinationStartsAsDraft": true
   }
 }
-
