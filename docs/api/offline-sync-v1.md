@@ -102,7 +102,9 @@ Command رسمی‌شده در Gateway نسخه ۲:
 
 Replay همان Operation/Payload نتیجه ذخیره‌شده را با `wasReplay=true` برمی‌گرداند. استفاده دوباره Operation ID با Payload متفاوت `sync.operation.reused` است.
 
-هر تلاش در یک Receipt عملیاتی payload-free با کلید Tenant/User/Device/Operation ثبت می‌شود. Receipt فقط Status، Revision/Conflict reference، تعداد تلاش/Replay، Correlation ID و زمان‌ها را نگه می‌دارد. Retry هم‌زمان یا پس از Crash نمی‌تواند Fact، Audit یا Change Feed دوم بسازد. Dependency یک Operation می‌تواند در Batch جاری یا Receipt پذیرفته‌شدهٔ Batch قبلی اثبات شود.
+هر تلاش در یک Receipt عملیاتی payload-free با کلید Tenant/User/Device/Operation ثبت می‌شود. کلید Idempotency داخلی نیز User و هش Device را در Scope خود دارد تا Operation ID یکسان میان دو کاربر هرگز باعث Replay یا Rejection متقاطع نشود. Receipt فقط Status، Revision/Conflict reference، تعداد تلاش/Replay، Correlation ID و زمان‌ها را نگه می‌دارد. Retry هم‌زمان یا پس از Crash نمی‌تواند Fact، Audit یا Change Feed دوم بسازد. استفادهٔ مجدد Operation ID با Payload متفاوت Reject می‌شود، اما Status/Revision پذیرفته‌شدهٔ Receipt قبلی را تنزل نمی‌دهد. Dependency یک Operation می‌تواند در Batch جاری یا Receipt پذیرفته‌شدهٔ Batch قبلی اثبات شود.
+
+`correlationId` معتبر Operation بدون جایگزینی با Trace اتفاقی HTTP در Audit، Outbox، Change Feed و آخرین تلاش Receipt نگه داشته می‌شود. Envelope نامعتبر فقط در Scope پروژهٔ Session ثبت می‌شود و متن‌های تشخیصی آن پیش از Persistence محدود می‌شوند؛ بنابراین Project ID یا فیلد بلند ارسالی Client نمی‌تواند دادهٔ تشخیصی پروژهٔ دیگری را آلوده کند یا Batch را با خطای Server متوقف سازد.
 
 ثبت اولیه Quality/HSE یک Draft provisional مستقل است: کلاینت فقط زیر Lease معتبر آن را نگه می‌دارد و پس از Handshake به Endpoint مالک QualitySafety می‌فرستد. آن Endpoint Permission، فعال‌بودن ماژول و Domain Rule جاری را دوباره کنترل می‌کند. Draft محلی Incident رسمی، شماره پرونده یا اعلان بحرانی نیست.
 

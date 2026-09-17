@@ -17,6 +17,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.IdentityAccess/Services/IdentityAdministrationWorker.cs",
   "src/backend/Pmcs.Modules.IdentityAccess/Services/KeycloakIdentityProviderAdministration.cs",
   "src/backend/Pmcs.Modules.FieldOperations/Endpoints/SyncEndpoints.cs",
+  "src/backend/Pmcs.Modules.FieldOperations/Properties/AssemblyInfo.cs",
   "src/backend/Pmcs.Modules.FieldOperations/Migrations/FieldOperationsLocationLinkMigration.cs",
   "src/backend/Pmcs.Modules.Platform/Migrations/PlatformIdempotencyRetentionMigration.cs",
   "src/backend/Pmcs.Modules.Platform/Migrations/PlatformMigrationLedgerNormalizationMigration.cs",
@@ -46,6 +47,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.QualityAssurance/Endpoints/QualityAssuranceEndpoints.cs",
   "src/backend/Pmcs.TestHarness/Program.cs",
   "src/backend/Pmcs.TestHarness/FileVerification.cs",
+  "src/backend/Pmcs.TestHarness/SyncVerification.cs",
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",
@@ -81,6 +83,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-01.md",
   "docs/checkpoints/qa-foundation-02.md",
   "docs/checkpoints/qa-foundation-03.md",
+  "docs/checkpoints/qa-foundation-04.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -88,8 +91,10 @@ const requiredFiles = [
   "tools/qa/seed-diagnostics.sh",
   "tools/qa/verify-database.sh",
   "tools/qa/verify-files-database.sh",
+  "tools/qa/verify-sync-database.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
+  "tests/Pmcs.Domain.Tests/OfflineOperationIdentityTests.cs",
   "ops/backup/postgres-backup.sh",
   "ops/backup/postgres-restore-drill.sh",
   "tools/integration-smoke.sh",
@@ -327,6 +332,8 @@ assert.match(syncGateway, /CheckpointOffer/);
 assert.match(syncGateway, /WriteAuditAsync/);
 assert.match(syncGateway, /RecordOperationReceiptAsync/);
 assert.match(syncGateway, /recentRejectedCount/);
+assert.match(syncGateway, /excluded\.code = 'sync\.operation\.reused'/);
+assert.match(syncGateway, /operationCorrelationId/);
 assert.doesNotMatch(
   readFileSync(join(root, "src/backend/Pmcs.Modules.Sync/Persistence/SyncPersistenceRecords.cs"), "utf8"),
   /class SyncOperationReceipt[\s\S]*?PayloadJson/,
@@ -347,6 +354,8 @@ const offlineFacts = readFileSync(
   join(root, "src/backend/Pmcs.Modules.FieldOperations/Endpoints/SyncEndpoints.cs"),
   "utf8",
 );
+assert.ok(offlineFacts.includes('$"sync:{context.UserId:N}:'));
+assert.match(offlineFacts, /RequestHash\.Create\(context\.DeviceId\)/);
 for (const source of [directFacts, offlineFacts]) {
   assert.match(source, /project\.location\.required/);
   assert.match(source, /projectLocationDirectory\.FindActiveAsync/);

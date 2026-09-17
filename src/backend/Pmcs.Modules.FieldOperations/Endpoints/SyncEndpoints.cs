@@ -44,7 +44,7 @@ internal sealed class OfflineDailyReportOperationHandler(
             return Unsupported(operation, "sync.command.unsupported", "Command is not supported by this API version.");
         }
 
-        var idempotencyKey = $"sync:{context.DeviceId}:{operation.OperationId}";
+        var idempotencyKey = CreateIdempotencyKey(context, operation);
         const string operationName = "sync.daily-report.capture-fact";
         var requestHash = RequestHash.Create(JsonSerializer.Serialize(operation, SerializerOptions));
 
@@ -429,4 +429,9 @@ internal sealed class OfflineDailyReportOperationHandler(
         options.Converters.Add(new JsonStringEnumConverter());
         return options;
     }
+
+    internal static string CreateIdempotencyKey(
+        OfflineFieldOperationContext context,
+        OfflineFieldOperation operation) =>
+        $"sync:{context.UserId:N}:{RequestHash.Create(context.DeviceId)}:{operation.OperationId}";
 }

@@ -296,11 +296,6 @@ internal static partial class SyncGatewayEndpoints
         }
 
         var session = sessionResult.Session!;
-        var context = new OfflineFieldOperationContext(
-            actor.TenantId,
-            actor.UserId,
-            request.DeviceId,
-            httpContext.TraceIdentifier);
         var results = new List<SyncOperationResponse>(request.Operations.Count);
         var resultByOperation = new Dictionary<string, OfflineFieldOperationStatus>(StringComparer.Ordinal);
         var leaseCache = new Dictionary<Guid, OfflineAuthorizationLease?>();
@@ -310,6 +305,9 @@ internal static partial class SyncGatewayEndpoints
                      .ThenBy(item => item.OperationId, StringComparer.Ordinal))
         {
             var operationNow = clock.UtcNow;
+            var operationCorrelationId = IsValidCorrelationId(requestOperation.CorrelationId)
+                ? requestOperation.CorrelationId
+                : httpContext.TraceIdentifier;
             var envelopeError = await ValidateEnvelopeAsync(
                 requestOperation,
                 session.ProjectId,
@@ -323,11 +321,11 @@ internal static partial class SyncGatewayEndpoints
                 results.Add(envelopeError);
                 resultByOperation[requestOperation.OperationId] = envelopeError.Status;
                 await RecordOperationReceiptAsync(
-                    db, actor, request.DeviceId, requestOperation, envelopeError,
-                    operationNow, httpContext.TraceIdentifier, cancellationToken);
+                    db, actor, session.ProjectId, request.DeviceId, requestOperation, envelopeError,
+                    operationNow, operationCorrelationId, cancellationToken);
                 await AuditSyncResultAsync(
-                    audit, actor, request.DeviceId, requestOperation, envelopeError.Status,
-                    envelopeError.Code, null, operationNow, httpContext.TraceIdentifier, cancellationToken);
+                    audit, actor, session.ProjectId, request.DeviceId, requestOperation, envelopeError.Status,
+                    envelopeError.Code, null, operationNow, operationCorrelationId, cancellationToken);
                 continue;
             }
 
@@ -352,14 +350,19 @@ internal static partial class SyncGatewayEndpoints
                 results.Add(rejected);
                 resultByOperation[requestOperation.OperationId] = rejected.Status;
                 await RecordOperationReceiptAsync(
-                    db, actor, request.DeviceId, requestOperation, rejected,
-                    operationNow, httpContext.TraceIdentifier, cancellationToken);
+                    db, actor, session.ProjectId, request.DeviceId, requestOperation, rejected,
+                    operationNow, operationCorrelationId, cancellationToken);
                 await AuditSyncResultAsync(
-                    audit, actor, request.DeviceId, requestOperation, rejected.Status,
-                    rejected.Code, null, operationNow, httpContext.TraceIdentifier, cancellationToken);
+                    audit, actor, session.ProjectId, request.DeviceId, requestOperation, rejected.Status,
+                    rejected.Code, null, operationNow, operationCorrelationId, cancellationToken);
                 continue;
             }
 
+            var context = new OfflineFieldOperationContext(
+                actor.TenantId,
+                actor.UserId,
+                request.DeviceId,
+                operationCorrelationId);
             var operation = new OfflineFieldOperation(
                 requestOperation.OperationId,
                 requestOperation.ProjectId,
@@ -393,13 +396,13 @@ internal static partial class SyncGatewayEndpoints
             results.Add(response);
             resultByOperation[requestOperation.OperationId] = response.Status;
             await RecordOperationReceiptAsync(
-                db, actor, request.DeviceId, requestOperation, response,
-                operationNow, httpContext.TraceIdentifier, cancellationToken);
+                db, actor, session.ProjectId, request.DeviceId, requestOperation, response,
+                operationNow, operationCorrelationId, cancellationToken);
             if (handled.Status != OfflineFieldOperationStatus.Applied)
             {
                 await AuditSyncResultAsync(
-                    audit, actor, request.DeviceId, requestOperation, handled.Status,
-                    handled.Code, conflictId, operationNow, httpContext.TraceIdentifier, cancellationToken);
+                    audit, actor, session.ProjectId, request.DeviceId, requestOperation, handled.Status,
+                    handled.Code, conflictId, operationNow, operationCorrelationId, cancellationToken);
             }
         }
 
@@ -986,6 +989,9 @@ internal static partial class SyncGatewayEndpoints
             operation.OfflineLeaseId == Guid.Empty || operation.AuthorizationVersion < 1 ||
             operation.LocalSequence < 1 || !IsValidCorrelationId(operation.CorrelationId) ||
             operation.DeviceTimezoneOffsetMinutes is < -840 or > 840 ||
+            !IsValidBoundedText(operation.EntityType, 120) ||
+            !IsValidBoundedText(operation.CommandType, 160) ||
+            operation.Payload.ValueKind == JsonValueKind.Undefined ||
             operation.Payload.GetRawText().Length > MaximumOperationPayloadCharacters)
         {
             return Rejected(operation, "sync.operation.envelope.invalid");
@@ -1136,32 +1142,48 @@ internal static partial class SyncGatewayEndpoints
     private static Task<int> RecordOperationReceiptAsync(
         SyncDbContext db,
         ICurrentActor actor,
+        Guid projectId,
         string deviceId,
         SyncOperationRequest operation,
         SyncOperationResponse response,
         DateTimeOffset attemptedAt,
         string correlationId,
-        CancellationToken cancellationToken) =>
-        db.Database.ExecuteSqlInterpolatedAsync($"""
+        CancellationToken cancellationToken)
+    {
+        if (!IsValidUlid(operation.OperationId))
+        {
+            return Task.FromResult(0);
+        }
+
+        var entityType = SafeDiagnosticText(operation.EntityType, 120, "Invalid");
+        var commandType = SafeDiagnosticText(operation.CommandType, 160, "Invalid");
+        return db.Database.ExecuteSqlInterpolatedAsync($"""
             insert into sync_control.operation_receipts (
                 id, tenant_id, project_id, user_id, device_id, operation_id, local_sequence,
                 entity_type, entity_id, command_type, status, code, conflict_id, server_revision,
                 attempt_count, replay_count, first_attempt_at, last_attempt_at, last_correlation_id)
             values (
-                {Guid.NewGuid()}, {actor.TenantId}, {operation.ProjectId}, {actor.UserId}, {deviceId},
-                {operation.OperationId}, {operation.LocalSequence}, {operation.EntityType}, {operation.EntityId},
-                {operation.CommandType}, {response.Status.ToString()}, {response.Code}, {response.ConflictId},
+                {Guid.NewGuid()}, {actor.TenantId}, {projectId}, {actor.UserId}, {deviceId},
+                {operation.OperationId}, {operation.LocalSequence}, {entityType}, {operation.EntityId},
+                {commandType}, {response.Status.ToString()}, {response.Code}, {response.ConflictId},
                 {response.ServerRevision}, 1, {(response.WasReplay ? 1 : 0)}, {attemptedAt}, {attemptedAt}, {correlationId})
             on conflict (tenant_id, user_id, device_id, operation_id) do update set
-                status = excluded.status,
-                code = excluded.code,
-                conflict_id = coalesce(excluded.conflict_id, sync_control.operation_receipts.conflict_id),
-                server_revision = coalesce(excluded.server_revision, sync_control.operation_receipts.server_revision),
+                status = case when excluded.code = 'sync.operation.reused'
+                    then sync_control.operation_receipts.status else excluded.status end,
+                code = case when excluded.code = 'sync.operation.reused'
+                    then sync_control.operation_receipts.code else excluded.code end,
+                conflict_id = case when excluded.code = 'sync.operation.reused'
+                    then sync_control.operation_receipts.conflict_id
+                    else coalesce(excluded.conflict_id, sync_control.operation_receipts.conflict_id) end,
+                server_revision = case when excluded.code = 'sync.operation.reused'
+                    then sync_control.operation_receipts.server_revision
+                    else coalesce(excluded.server_revision, sync_control.operation_receipts.server_revision) end,
                 attempt_count = sync_control.operation_receipts.attempt_count + 1,
                 replay_count = sync_control.operation_receipts.replay_count + excluded.replay_count,
                 last_attempt_at = excluded.last_attempt_at,
                 last_correlation_id = excluded.last_correlation_id;
             """, cancellationToken);
+    }
 
     private static bool IsUniqueViolation(DbUpdateException exception) =>
         exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
@@ -1181,6 +1203,7 @@ internal static partial class SyncGatewayEndpoints
     private static Task AuditSyncResultAsync(
         IAuditTrail audit,
         ICurrentActor actor,
+        Guid projectId,
         string deviceId,
         SyncOperationRequest operation,
         OfflineFieldOperationStatus status,
@@ -1188,26 +1211,30 @@ internal static partial class SyncGatewayEndpoints
         Guid? conflictId,
         DateTimeOffset now,
         string correlationId,
-        CancellationToken cancellationToken) =>
-        audit.WriteAsync(new AuditEntry(
+        CancellationToken cancellationToken)
+    {
+        var resourceType = SafeDiagnosticText(operation.EntityType, 120, "SyncOperation");
+        var commandType = SafeDiagnosticText(operation.CommandType, 160, "Invalid");
+        return audit.WriteAsync(new AuditEntry(
             actor.TenantId,
-            operation.ProjectId,
+            projectId,
             actor.UserId,
             status == OfflineFieldOperationStatus.Conflict ? "ConflictDetected" : "OfflineOperationRejected",
-            operation.EntityType,
+            resourceType,
             operation.EntityId.ToString(),
             now,
             new Dictionary<string, object?>
             {
-                ["operationId"] = operation.OperationId,
+                ["operationId"] = IsValidUlid(operation.OperationId) ? operation.OperationId : "invalid",
                 ["deviceId"] = deviceId,
-                ["commandType"] = operation.CommandType,
+                ["commandType"] = commandType,
                 ["status"] = status.ToString(),
                 ["code"] = code,
                 ["conflictId"] = conflictId,
                 ["localSequence"] = operation.LocalSequence
             },
             correlationId), cancellationToken);
+    }
 
     private static SyncConflictModel ToConflictModel(SyncConflictCase conflict) => new(
         conflict.Id,
@@ -1267,6 +1294,20 @@ internal static partial class SyncGatewayEndpoints
 
     private static bool IsValidCorrelationId(string? value) =>
         value is not null && CorrelationIdPattern().IsMatch(value);
+
+    private static bool IsValidBoundedText(string? value, int maximumLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length <= maximumLength && !normalized.Any(char.IsControl);
+    }
+
+    private static string SafeDiagnosticText(string? value, int maximumLength, string fallback) =>
+        IsValidBoundedText(value, maximumLength) ? value!.Trim() : fallback;
 
     private static JsonSerializerOptions CreateSerializerOptions()
     {

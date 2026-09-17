@@ -58,6 +58,7 @@ internal static partial class Program
                 "probe" => await ProbeAsync(),
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
+                "verify-sync" => await VerifySyncAsync(),
                 _ => WriteUsage()
             };
         }
@@ -468,7 +469,7 @@ internal static partial class Program
 
     private static int WriteUsage()
     {
-        Console.Error.WriteLine("Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files>");
+        Console.Error.WriteLine("Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-sync>");
         return 2;
     }
 

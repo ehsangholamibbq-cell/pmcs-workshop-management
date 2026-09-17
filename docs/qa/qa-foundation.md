@@ -52,12 +52,13 @@ PMCS_QA_S3_BUCKET='pmcs-qa-local' \
 ./tools/qa/seed-diagnostics.sh
 ```
 
-این Harness پس از Seed و Diagnostics، دستور `verify` را اجرا می‌کند. این دستور ۲۴ تصمیم مثبت/منفی Permission را برای هر ۱۲ Actor واقعی بررسی می‌کند و سپس یک Workflow واقعی Daily Report را با جداسازی نقش Site Supervisor، Technical Office و Observer اجرا می‌کند. سپس `verify-files` سناریوهای مثبت/منفی فایل، upload/download واقعی MinIO، یکپارچگی محتوا، Permission و Headerهای خصوصی را اجرا می‌کند. در پایان `tools/qa/verify-database.sh` و `tools/qa/verify-files-database.sh` وضعیت Workflow، Migration Ledger، Evidence lineage، Audit، Outbox، Idempotency و Notification را مستقیماً از PostgreSQL مستقل راستی‌آزمایی می‌کنند.
+این Harness پس از Seed و Diagnostics، دستور `verify` را اجرا می‌کند. این دستور ۲۴ تصمیم مثبت/منفی Permission را برای هر ۱۲ Actor واقعی بررسی می‌کند و سپس یک Workflow واقعی Daily Report را با جداسازی نقش Site Supervisor، Technical Office و Observer اجرا می‌کند. سپس `verify-files` سناریوهای مثبت/منفی فایل، upload/download واقعی MinIO، یکپارچگی محتوا، Permission و Headerهای خصوصی را اجرا می‌کند. دستور `verify-sync` نیز قطع/اتصال را با Lease قبلی و Session جدید، Retry و Duplicate، Operation ID یکسان میان دو کاربر، Conflict هم‌زمان، Resolution، Pull/Checkpoint، Diagnostics و Revocation دستگاه اجرا می‌کند. در پایان `tools/qa/verify-database.sh`، `tools/qa/verify-files-database.sh` و `tools/qa/verify-sync-database.sh` وضعیت Workflow، Migration Ledger، Evidence lineage، Offline Receipt، Actor/Correlation lineage، Audit، Outbox، Idempotency، Change Feed، Device/Lease/Session و Notification را مستقیماً از PostgreSQL مستقل راستی‌آزمایی می‌کنند.
 
 ## وضعیت Sliceها
 
 - Slice 1 زیرساخت امن Seed، Reset، Test Authentication، Diagnostics، Permission Preview و Audit را ساخته است.
 - Slice 2 ممیزی سراسری و Permission / Workflow / Database / Audit Verification مستقل را اضافه کرده است.
 - Slice 3 File / Attachment Verification مستقل، تشخیص امضای محتوا، کنترل یکپارچگی دانلود و Audit دریافت فایل را اضافه کرده است.
+- Slice 4 Offline / Sync Verification مستقل، Reconnect با Lease قبلی، Duplicate/Replay، جداسازی Idempotency دو کاربر، Conflict/Resolution، Local/Server checkpoint، Diagnostics و Device revocation را اضافه کرده است؛ تأیید CI متصل این Slice در حال انجام است.
 
-Full Qualification هنوز شامل Test Suiteهای مستقل Offline/Sync، UI/E2E، Agent/Exploratory، Regression Runner و Test Report Generator است. Multipart/Malware/Quarantine و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.
+Full Qualification هنوز شامل UI/E2E مرورگری (از جمله IndexedDB و قطع واقعی شبکه)، Agent/Exploratory، Regression Runner و Test Report Generator است. Multipart/Malware/Quarantine، Endurance چندروزه دستگاه و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.
