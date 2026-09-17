@@ -67,6 +67,7 @@ internal static class QualityAssuranceEndpoints
             actor,
             audit,
             clock,
+            null,
             "QaGateway.StatusRead",
             "status",
             new Dictionary<string, object?>
@@ -99,6 +100,7 @@ internal static class QualityAssuranceEndpoints
             actor,
             audit,
             clock,
+            null,
             "QaGateway.DiagnosticsRead",
             "diagnostics",
             new Dictionary<string, object?>
@@ -146,6 +148,7 @@ internal static class QualityAssuranceEndpoints
             actor,
             audit,
             clock,
+            projectId,
             "QaGateway.PermissionPreviewRead",
             projectId.ToString(),
             new Dictionary<string, object?>
@@ -183,6 +186,7 @@ internal static class QualityAssuranceEndpoints
         ICurrentActor actor,
         IAuditTrail audit,
         IClock clock,
+        Guid? projectId,
         string eventType,
         string resourceId,
         IReadOnlyDictionary<string, object?> data,
@@ -190,7 +194,7 @@ internal static class QualityAssuranceEndpoints
         audit.WriteAsync(
             new AuditEntry(
                 actor.TenantId,
-                null,
+                projectId,
                 actor.UserId,
                 eventType,
                 "QaGateway",

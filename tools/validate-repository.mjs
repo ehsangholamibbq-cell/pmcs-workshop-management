@@ -19,6 +19,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.FieldOperations/Endpoints/SyncEndpoints.cs",
   "src/backend/Pmcs.Modules.FieldOperations/Migrations/FieldOperationsLocationLinkMigration.cs",
   "src/backend/Pmcs.Modules.Platform/Migrations/PlatformIdempotencyRetentionMigration.cs",
+  "src/backend/Pmcs.Modules.Platform/Migrations/PlatformMigrationLedgerNormalizationMigration.cs",
   "src/backend/Pmcs.Modules.Platform/Services/IdempotencyRetentionWorker.cs",
   "src/backend/Pmcs.Modules.Projects/Domain/ProjectLocation.cs",
   "src/backend/Pmcs.Modules.Projects/Migrations/ProjectActivationMetadataMigration.cs",
@@ -76,11 +77,13 @@ const requiredFiles = [
   "docs/checkpoints/foundation-23.md",
   "docs/qa/qa-foundation.md",
   "docs/checkpoints/qa-foundation-01.md",
+  "docs/checkpoints/qa-foundation-02.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
   "tools/qa/reset-database.sh",
   "tools/qa/seed-diagnostics.sh",
+  "tools/qa/verify-database.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
@@ -137,6 +140,48 @@ for (const file of moduleFiles) {
     `Module reaches into another module persistence layer: ${relative(root, file)}`,
   );
 }
+
+const migrationFiles = moduleFiles.filter((file) => file.includes("/Migrations/"));
+const migrationModulesByProject = new Map();
+for (const file of migrationFiles) {
+  const source = readFileSync(file, "utf8");
+  const moduleName = source.match(/public string ModuleName => "([^"]+)";/)?.[1];
+  assert.ok(moduleName, `Migration module identity is missing: ${relative(root, file)}`);
+  assert.match(
+    moduleName,
+    /^[a-z]+(?:-[a-z]+)*$/,
+    `Migration module identity is not canonical: ${relative(root, file)}`,
+  );
+  const project = file.match(/src\/backend\/(Pmcs\.Modules\.[^/]+)/)?.[1];
+  const identities = migrationModulesByProject.get(project) ?? new Set();
+  identities.add(moduleName);
+  migrationModulesByProject.set(project, identities);
+}
+for (const [project, identities] of migrationModulesByProject) {
+  assert.equal(
+    identities.size,
+    1,
+    `${project} uses inconsistent migration module identities: ${[...identities].join(", ")}`,
+  );
+}
+
+const migrationSchemas = [...new Set(migrationFiles.flatMap((file) =>
+  [...readFileSync(file, "utf8").matchAll(/create schema if not exists ([a-z_]+);/g)]
+    .map((match) => match[1])))]
+  .sort();
+const resetScript = readFileSync(join(root, "tools/qa/reset-database.sh"), "utf8");
+const resetSchemaBlock = resetScript.match(/schemas=\(\n([\s\S]*?)\n\)/)?.[1];
+assert.ok(resetSchemaBlock, "QA reset schema inventory is missing.");
+const resetSchemas = resetSchemaBlock
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean)
+  .sort();
+assert.deepEqual(
+  resetSchemas,
+  migrationSchemas,
+  "QA reset schema inventory must exactly match the application migration schemas.",
+);
 
 const webPackage = JSON.parse(readFileSync(join(root, "src/web/package.json"), "utf8"));
 assert.equal(webPackage.engines.node, ">=24 <25");

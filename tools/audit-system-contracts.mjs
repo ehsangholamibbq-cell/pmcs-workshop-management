@@ -11,6 +11,14 @@ const mutations = registrations.filter((endpoint) => endpoint.method !== "GET");
 
 assert.ok(registrations.length >= 100, `Endpoint inventory unexpectedly shrank to ${registrations.length}.`);
 
+const duplicateRoutes = [...Map.groupBy(
+  registrations,
+  (endpoint) => `${endpoint.method} ${endpoint.path}`,
+)]
+  .filter(([, endpoints]) => endpoints.length > 1)
+  .flatMap(([, endpoints]) => endpoints.map(formatEndpoint));
+assert.deepEqual(duplicateRoutes, [], "Duplicate HTTP method/route registrations were found.");
+
 const protocolManagedMutations = new Map([
   ["POST /api/v1/sync/handshake", "Handshake issues a superseding lease under a serializable transaction."],
   ["POST /api/v1/sync/operations", "Each immutable operation carries its own operation id and stored receipt."],

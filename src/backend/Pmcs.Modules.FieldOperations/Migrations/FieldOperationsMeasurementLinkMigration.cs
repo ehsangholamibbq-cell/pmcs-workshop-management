@@ -4,7 +4,7 @@ namespace Pmcs.Modules.FieldOperations.Migrations;
 
 internal sealed class FieldOperationsMeasurementLinkMigration : IDatabaseMigration
 {
-    public string ModuleName => "field_operations";
+    public string ModuleName => "field-operations";
 
     public long Order => 430;
 

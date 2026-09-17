@@ -17,6 +17,7 @@ Test Authentication از کلید مستقل `PMCS_QA_AUTH_KEY` استفاده �
 - `GET /api/qa/v1/permissions/preview`
 
 هر فراخوانی Gateway نیازمند Permission مرکزی `qa.gateway.use` و دارای Audit Trail با Correlation ID است. Gateway هیچ DbContext یا جدول ماژولی را مستقیم نمی‌خواند.
+Audit مربوط به Permission Preview علاوه بر Tenant و Actor، شناسه Project هدف را نیز به‌صورت صریح نگه می‌دارد.
 
 ## Seed قطعی
 
@@ -36,6 +37,7 @@ PMCS_QA_RESET_CONFIRM='RESET:pmcs_qa_local' \
 ```
 
 Harness نام دیتابیس ADO و URI را مستقل می‌خواند، برابری آن‌ها و پیشوند `pmcs_qa_` را کنترل می‌کند و فقط با عبارت تأیید دقیق Schemaهای شناخته‌شده PMCS را حذف می‌کند. Production و دیتابیس فاقد پیشوند هیچ مسیر Reset ندارند.
+گیت معماری Repository نیز فهرست Schemaهای Migration را با فهرست Reset مقایسه می‌کند تا Schema جدید به‌صورت خاموش از Reset قطعی جا نماند.
 
 پس از Reset، Migration، Seed و Diagnostics با Harness اجرا می‌شود:
 
@@ -50,6 +52,11 @@ PMCS_QA_S3_BUCKET='pmcs-qa-local' \
 ./tools/qa/seed-diagnostics.sh
 ```
 
-## مرز Slice اول
+این Harness پس از Seed و Diagnostics، دستور `verify` را اجرا می‌کند. این دستور ۲۴ تصمیم مثبت/منفی Permission را برای هر ۱۲ Actor واقعی بررسی می‌کند و سپس یک Workflow واقعی Daily Report را با جداسازی نقش Site Supervisor، Technical Office و Observer اجرا می‌کند. در پایان `tools/qa/verify-database.sh` وضعیت Workflow، Migration Ledger، Audit، Outbox، Idempotency و Notification را مستقیماً از PostgreSQL مستقل راستی‌آزمایی می‌کند.
 
-این Slice زیرساخت امن Seed، Reset، Test Authentication، Diagnostics، Permission Preview و Audit را می‌سازد. Full Qualification هنوز شامل Test Suiteهای مستقل API/Contract، Permission matrix، Workflow/Database/Audit verification، File/Attachment، Offline/Sync، UI/E2E، Agent/Exploratory، Regression Runner و Test Report Generator است.
+## وضعیت Sliceها
+
+- Slice 1 زیرساخت امن Seed، Reset، Test Authentication، Diagnostics، Permission Preview و Audit را ساخته است.
+- Slice 2 ممیزی سراسری و Permission / Workflow / Database / Audit Verification مستقل را اضافه کرده است.
+
+Full Qualification هنوز شامل Test Suiteهای مستقل File/Attachment، Offline/Sync، UI/E2E، Agent/Exploratory، Regression Runner و Test Report Generator است.
