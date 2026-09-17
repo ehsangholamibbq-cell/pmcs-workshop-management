@@ -100,6 +100,17 @@ builder.Services
         options.Audience = builder.Configuration["Authentication:Audience"];
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("Pmcs.Authentication");
+                logger.LogWarning(context.Exception, "OIDC bearer authentication failed.");
+                return Task.CompletedTask;
+            }
+        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
