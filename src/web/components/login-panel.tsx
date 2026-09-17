@@ -8,10 +8,15 @@ import { safeApplicationReturnPath } from "@/lib/return-path";
 export function LoginPanel({ initialError = false }: { readonly initialError?: boolean }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [message, setMessage] = useState(
     initialError ? "ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید." : "",
   );
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -58,8 +63,8 @@ export function LoginPanel({ initialError = false }: { readonly initialError?: b
           <h2 id="login-title">ورود به حساب کاربری</h2>
           <p>برای ادامه به سرویس هویت سازمان هدایت می‌شوید.</p>
         </div>
-        <button type="button" disabled={isPending || isStarting || Boolean(session)} onClick={() => void startSignIn()}>
-          {isPending || isStarting || session ? "در حال بررسی…" : "ورود امن"}
+        <button type="button" disabled={!isHydrated || isPending || isStarting || Boolean(session)} onClick={() => void startSignIn()}>
+          {!isHydrated || isPending || isStarting || session ? "در حال بررسی…" : "ورود امن"}
         </button>
         {message && <p className="login-error" role="alert">{message}</p>}
         <small>رمز عبور و کد دومرحله‌ای در این برنامه دریافت یا ذخیره نمی‌شود.</small>
