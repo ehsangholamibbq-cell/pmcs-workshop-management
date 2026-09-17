@@ -17,7 +17,20 @@ internal static class ProductionConfigurationValidator
         }
 
         RejectEnabledDevelopmentSwitch(configuration, "PMCS_DEV_IDENTITY_ENABLED");
-        RejectEnabledDevelopmentSwitch(configuration, "PMCS_SEED_ENABLED");
+        if (environment.IsEnvironment("QA"))
+        {
+            if (IsEnabled(configuration, "PMCS_SEED_ENABLED") &&
+                !IsEnabled(configuration, "PMCS_QA_GATEWAY_ENABLED"))
+            {
+                throw new InvalidOperationException(
+                    "PMCS_SEED_ENABLED in QA requires PMCS_QA_GATEWAY_ENABLED and the isolated QA boundary.");
+            }
+        }
+        else
+        {
+            RejectEnabledDevelopmentSwitch(configuration, "PMCS_SEED_ENABLED");
+            RejectEnabledDevelopmentSwitch(configuration, "PMCS_QA_GATEWAY_ENABLED");
+        }
         releaseIdentity.ValidateForProduction();
 
         var authority = Require(configuration, "Authentication:Authority");
@@ -83,11 +96,14 @@ internal static class ProductionConfigurationValidator
 
     private static void RejectEnabledDevelopmentSwitch(IConfiguration configuration, string key)
     {
-        if (bool.TryParse(configuration[key], out var enabled) && enabled)
+        if (IsEnabled(configuration, key))
         {
             throw new InvalidOperationException($"{key} cannot be enabled outside Development.");
         }
     }
+
+    private static bool IsEnabled(IConfiguration configuration, string key) =>
+        bool.TryParse(configuration[key], out var enabled) && enabled;
 
     private static string Require(IConfiguration configuration, string key)
     {

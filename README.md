@@ -6,6 +6,8 @@
 
 `PMCS V1 — Feature Complete` after verified Checkpoint 24. The product is not yet Qualified, Final or Locked; QA Foundation is next:
 
+- QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
+
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
 - Platform foundations: audit، outbox، idempotency و migrations
@@ -204,5 +206,7 @@ npm run check
 - ممیزی جامع Blueprint و یکپارچگی: [`docs/audits/system-integrity-traceability-2026-09-13.md`](docs/audits/system-integrity-traceability-2026-09-13.md)
 - قرارداد Project Setup و Location: [`docs/api/project-setup-and-locations-v1.md`](docs/api/project-setup-and-locations-v1.md)
 - گزارش Checkpoint 24: [`docs/checkpoints/foundation-24.md`](docs/checkpoints/foundation-24.md)
+- مرز اجرایی QA Foundation: [`docs/qa/qa-foundation.md`](docs/qa/qa-foundation.md)
+- گزارش Slice اول QA Foundation: [`docs/checkpoints/qa-foundation-01.md`](docs/checkpoints/qa-foundation-01.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

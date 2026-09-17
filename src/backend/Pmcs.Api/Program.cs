@@ -26,9 +26,16 @@ using Pmcs.Modules.TechnicalOffice;
 using Pmcs.Modules.QualitySafety;
 using Pmcs.Modules.Sync;
 using Pmcs.Modules.WorkManagement;
+using Pmcs.Modules.QualityAssurance;
 
 var builder = WebApplication.CreateBuilder(args);
 var releaseIdentity = ReleaseIdentity.FromAssembly(typeof(Program).Assembly);
+var qaRuntime = QualityAssuranceRuntimeOptions.Create(
+    builder.Environment,
+    builder.Configuration,
+    releaseIdentity.Commit,
+    releaseIdentity.Version,
+    releaseIdentity.BuiltAt);
 ProductionConfigurationValidator.Validate(builder.Environment, builder.Configuration, releaseIdentity);
 
 const string authenticationScheme = "Pmcs";
@@ -56,12 +63,14 @@ IModule[] modules =
     new QualitySafetyModule(),
     new ProjectIntelligenceModule(),
     new IntelligenceModule(),
-    new WorkManagementModule()
+    new WorkManagementModule(),
+    new QualityAssuranceModule()
 ];
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton(qaRuntime);
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services
     .AddAuthentication(options =>
@@ -72,7 +81,10 @@ builder.Services
     .AddPolicyScheme(authenticationScheme, authenticationScheme, options =>
     {
         options.ForwardDefaultSelector = context =>
-            !builder.Environment.IsDevelopment() ||
+            qaRuntime.Enabled &&
+            context.Request.Headers.ContainsKey(QualityAssuranceAuthenticationHandler.ApiKeyHeaderName)
+                ? QualityAssuranceAuthenticationHandler.SchemeName
+                : !builder.Environment.IsDevelopment() ||
             context.Request.Headers["Authorization"].ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
                 ? JwtBearerDefaults.AuthenticationScheme
                 : DevelopmentIdentityAuthenticationHandler.SchemeName;
@@ -101,6 +113,9 @@ builder.Services
     })
     .AddScheme<AuthenticationSchemeOptions, DevelopmentIdentityAuthenticationHandler>(
         DevelopmentIdentityAuthenticationHandler.SchemeName,
+        _ => { })
+    .AddScheme<AuthenticationSchemeOptions, QualityAssuranceAuthenticationHandler>(
+        QualityAssuranceAuthenticationHandler.SchemeName,
         _ => { });
 builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(
     new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());

@@ -100,6 +100,23 @@ jobs:
             --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
             postgres:17-alpine sh -c \
             'apk add --no-cache bash >/dev/null && bash tools/checkpoint24-db-verification.sh'
+      - name: Verify QA Foundation database guard, reset, seed and diagnostics
+        env:
+          PMCS_QA_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_integration;Username=pmcs;Password=pmcs_integration_only
+          PMCS_QA_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_integration
+          PMCS_QA_RESET_CONFIRM: RESET:pmcs_qa_integration
+          PMCS_QA_AUTH_KEY: qa-ci-independent-key-0123456789abcdef
+          PMCS_QA_S3_ENDPOINT: http://127.0.0.1:9000
+          PMCS_QA_S3_ACCESS_KEY: pmcs_integration
+          PMCS_QA_S3_SECRET_KEY: pmcs_integration_only
+          PMCS_QA_S3_BUCKET: pmcs-qa-integration
+        run: |
+          PGPASSWORD=pmcs_integration_only createdb \
+            --host 127.0.0.1 \
+            --username pmcs \
+            pmcs_qa_integration
+          ./tools/qa/reset-database.sh
+          ./tools/qa/seed-diagnostics.sh
       - name: PostgreSQL backup and isolated restore drill
         run: |
           mkdir -p "${RUNNER_TEMP}/pmcs-backup"
@@ -137,7 +154,7 @@ jobs:
         with:
           node-version: 24
       - run: node --test tools/tests/*.test.mjs
-      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh tools/checkpoint22-db-verification.sh tools/checkpoint23-db-verification.sh tools/checkpoint24-db-verification.sh ops/backup/*.sh
+      - run: bash -n tools/release-smoke.sh tools/integration-smoke.sh tools/checkpoint22-db-verification.sh tools/checkpoint23-db-verification.sh tools/checkpoint24-db-verification.sh tools/qa/*.sh ops/backup/*.sh
 
   web:
     runs-on: ubuntu-latest

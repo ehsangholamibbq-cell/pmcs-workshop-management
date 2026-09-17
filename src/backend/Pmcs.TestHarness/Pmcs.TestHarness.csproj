@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
+  </ItemGroup>
+</Project>

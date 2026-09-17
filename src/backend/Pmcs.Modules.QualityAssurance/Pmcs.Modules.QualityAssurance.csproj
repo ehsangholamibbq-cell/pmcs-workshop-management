@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
+  </ItemGroup>
+</Project>

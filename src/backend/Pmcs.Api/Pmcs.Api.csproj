@@ -16,6 +16,7 @@
     <ProjectReference Include="../Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
     <ProjectReference Include="../Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <ProjectReference Include="../Pmcs.Modules.WorkManagement/Pmcs.Modules.WorkManagement.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

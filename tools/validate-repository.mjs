@@ -40,6 +40,9 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.Commercial/Domain/ProjectContract.cs",
   "src/backend/Pmcs.Modules.QualitySafety/Domain/QualitySafetyConfiguration.cs",
   "src/backend/Pmcs.Modules.QualitySafety/Domain/CorrectiveAction.cs",
+  "src/backend/Pmcs.Modules.QualityAssurance/QualityAssuranceRuntimeOptions.cs",
+  "src/backend/Pmcs.Modules.QualityAssurance/Endpoints/QualityAssuranceEndpoints.cs",
+  "src/backend/Pmcs.TestHarness/Program.cs",
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",
@@ -71,9 +74,13 @@ const requiredFiles = [
   "docs/api/my-work-notifications-v1.md",
   "docs/roadmaps/pmcs-v1-development-and-qualification.md",
   "docs/checkpoints/foundation-23.md",
+  "docs/qa/qa-foundation.md",
+  "docs/checkpoints/qa-foundation-01.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
+  "tools/qa/reset-database.sh",
+  "tools/qa/seed-diagnostics.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
@@ -106,6 +113,7 @@ const allowedProjectReferences = new Map([
   ["Pmcs.Modules.ProjectIntelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.IdentityAccess", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.WorkManagement", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
+  ["Pmcs.Modules.QualityAssurance", ["Pmcs.BuildingBlocks"]],
 ]);
 
 for (const [project, allowed] of allowedProjectReferences) {
@@ -167,7 +175,25 @@ assert.match(apiProgram, /ApiRateLimitPolicies\.IdentityAdministration/);
 assert.match(apiProgram, /UseMiddleware<ActorAccessMiddleware>/);
 assert.match(apiProgram, /UseMiddleware<ProjectLifecycleMiddleware>/);
 assert.match(apiProgram, /MapGet\("\/api\/v1\/release"/);
+assert.match(apiProgram, /QualityAssuranceAuthenticationHandler/);
+assert.match(apiProgram, /QualityAssuranceRuntimeOptions\.Create/);
 assert.doesNotMatch(apiProgram, /UseMiddleware<DevelopmentIdentityMiddleware>/);
+
+const qaEndpoints = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.QualityAssurance/Endpoints/QualityAssuranceEndpoints.cs"),
+  "utf8",
+);
+assert.match(qaEndpoints, /MapGroup\("\/api\/qa\/v1"\)/);
+assert.match(qaEndpoints, /IProjectPermissionService/);
+assert.match(qaEndpoints, /IAuditTrail/);
+assert.doesNotMatch(qaEndpoints, /DbContext|\.Persistence|Map(?:Post|Put|Patch|Delete)\(/);
+
+const qaRuntime = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.QualityAssurance/QualityAssuranceRuntimeOptions.cs"),
+  "utf8",
+);
+assert.match(qaRuntime, /DatabasePrefix = "pmcs_qa_"/);
+assert.match(qaRuntime, /Development or QA/);
 
 const releaseIdentity = readFileSync(
   join(root, "src/backend/Pmcs.Api/Infrastructure/ReleaseIdentity.cs"),
@@ -181,6 +207,7 @@ const productionConfiguration = readFileSync(
   "utf8",
 );
 assert.match(productionConfiguration, /PMCS_DEV_IDENTITY_ENABLED/);
+assert.match(productionConfiguration, /PMCS_QA_GATEWAY_ENABLED/);
 assert.match(productionConfiguration, /ObjectStorage:CreateBucketIfMissing/);
 assert.match(productionConfiguration, /IdentityProvisioning:ClientSecret/);
 assert.match(productionConfiguration, /ValidateForProduction/);

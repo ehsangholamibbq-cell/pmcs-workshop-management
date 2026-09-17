@@ -20,9 +20,14 @@ internal sealed class HttpCurrentActor(IHttpContextAccessor httpContextAccessor)
     {
         get
         {
+            var authenticationType = Context?.User.Identity?.AuthenticationType;
             if (string.Equals(
-                    Context?.User.Identity?.AuthenticationType,
+                    authenticationType,
                     DevelopmentIdentityAuthenticationHandler.SchemeName,
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    authenticationType,
+                    QualityAssuranceAuthenticationHandler.SchemeName,
                     StringComparison.Ordinal))
             {
                 return DateTimeOffset.MaxValue;
