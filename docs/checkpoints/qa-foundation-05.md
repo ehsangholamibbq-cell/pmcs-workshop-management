@@ -1,7 +1,7 @@
 # QA Foundation Slice 5 — Browser UI/E2E Verification
 
 - Date: 2026-09-17
-- Status: Implemented; connected verification pending
+- Status: Implemented and verified by connected CI
 - Product state: `PMCS V1 — Feature Complete`
 - Qualification state: In progress; not Qualified, Final or Locked
 - Governing roadmap: [`../roadmaps/pmcs-v1-development-and-qualification.md`](../roadmaps/pmcs-v1-development-and-qualification.md)
@@ -36,4 +36,16 @@ Agent/Exploratory and full-regression/reporting qualification remain open. PMCS 
 
 ## Connected verification
 
-Pending the connected CI run for this source revision.
+Verified source revision: [`59497c9`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/commit/59497c9a3d2609374cde58d2f805967addc79869)
+
+GitHub Actions evidence: [CI Run 64](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35244670937), with all seven jobs successful.
+
+- all four Playwright scenarios passed through the real Keycloak Authorization Code + PKCE and Next.js BFF path;
+- authenticated Persian RTL navigation, project routing, the canonical 42-cell Persian calendar and desktop/tablet/mobile overflow checks passed;
+- localized Loading/Error behavior passed without exposing the simulated English upstream detail;
+- the Offline queue survived a persistent Chromium close/reopen cycle and reconnected with exactly one accepted operation;
+- Architecture, Backend, Web, Integration, Identity Container and Pilot Contract gates all remained green, including the existing Permission/Workflow, File/Attachment, Offline/Sync and PostgreSQL backup/restore evidence.
+
+The review also corrected the Web route validator to accept every canonical stored .NET/PostgreSQL `Guid` value. The former RFC version/variant restriction incorrectly rejected the deterministic QA project identifier even though it is valid within the approved application identity contract.
+
+QA Foundation Slice 5 is closed. Agent/Exploratory and full-regression/reporting qualification remain open. PMCS V1 remains Feature Complete and is not yet Qualified, Final or Locked.
