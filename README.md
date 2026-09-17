@@ -8,7 +8,7 @@
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
-- QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence پیاده‌سازی شده است؛ تأیید CI متصل و مراحل بعدی Qualification هنوز باز هستند.
+- QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence با `21/21` assertion در CI متصل تأیید و بسته شده است؛ Offline/Sync مرحله مستقل بعدی Qualification است.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
