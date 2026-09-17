@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "product": "PMCS",
+  "releaseLine": "V1.1",
+  "checkpoint": "PMCS-V1.1-UX1-RC1",
+  "status": "owner-review-required",
+  "parentBranch": "v1.1-development",
+  "parentCommit": "4e401ab9e2bfab5bd197e9789d7a87e91e8a5784",
+  "runtimeChanged": false,
+  "direction": "management-excellence",
+  "approvedVisualCriteria": [
+    "login-composition",
+    "warmth",
+    "motion-intensity"
+  ],
+  "screens": [
+    "login",
+    "project-command-center",
+    "member-profile",
+    "project-duplication-wizard"
+  ],
+  "gates": {
+    "VX-G1": "evidence-in-progress",
+    "VX-G2": "approved",
+    "VX-G3": "awaiting-owner-review",
+    "VX-G4": "not-started",
+    "VX-G5": "not-started"
+  },
+  "constraints": {
+    "persianRtl": true,
+    "jalali": true,
+    "reducedMotion": true,
+    "arbitraryLoginCodeAllowed": false,
+    "duplicateOperationalData": false,
+    "duplicateFinancialData": false,
+    "duplicateMessages": false,
+    "duplicateFiles": false,
+    "duplicateAuditOrHistory": false,
+    "destinationStartsAsDraft": true
+  }
+}
+
