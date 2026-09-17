@@ -376,9 +376,9 @@ grep -q "\"supersededByReportId\":\"${correction_id}\"" <<<"${superseded_report}
 
 current_step="creating an evidence upload session"
 evidence_id="88888888-8888-8888-8888-888888888888"
-evidence_file="${temporary_directory}/integration-evidence.jpg"
-downloaded_file="${temporary_directory}/downloaded-evidence.jpg"
-printf 'PMCS integration object storage evidence\n' > "${evidence_file}"
+evidence_file="${temporary_directory}/integration-evidence.pdf"
+downloaded_file="${temporary_directory}/downloaded-evidence.pdf"
+printf '%%PDF-1.7\n%% PMCS integration object storage evidence\n%%%%EOF\n' > "${evidence_file}"
 evidence_size="$(wc -c < "${evidence_file}" | tr -d '[:space:]')"
 evidence_sha="$(sha256sum "${evidence_file}" | cut -d ' ' -f 1)"
 upload_session_response="$(curl --silent --fail \
@@ -387,7 +387,7 @@ upload_session_response="$(curl --silent --fail \
   --header "X-User-Id: ${user_id}" \
   --header "Idempotency-Key: integration-evidence-session" \
   --header 'Content-Type: application/json' \
-  --data "{\"clientGeneratedId\":\"${evidence_id}\",\"dailyReportId\":\"${report_id}\",\"dailyFactId\":\"${fact_id}\",\"originalFileName\":\"integration-evidence.jpg\",\"contentType\":\"image/jpeg\",\"sizeBytes\":${evidence_size},\"sha256\":\"${evidence_sha}\",\"capturedAtDevice\":\"${device_time}\"}" \
+  --data "{\"clientGeneratedId\":\"${evidence_id}\",\"dailyReportId\":\"${report_id}\",\"dailyFactId\":\"${fact_id}\",\"originalFileName\":\"integration-evidence.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${evidence_size},\"sha256\":\"${evidence_sha}\",\"capturedAtDevice\":\"${device_time}\"}" \
   "http://127.0.0.1:${port}/api/v1/projects/${project_id}/evidence/upload-sessions")"
 grep -q '"status":"PendingUpload"' <<<"${upload_session_response}"
 
@@ -397,7 +397,7 @@ curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
   --header "Idempotency-Key: integration-evidence-content" \
-  --header 'Content-Type: image/jpeg' \
+  --header 'Content-Type: application/pdf' \
   --data-binary "@${evidence_file}" \
   "http://127.0.0.1:${port}/api/v1/projects/${project_id}/evidence/${evidence_id}/content" | \
   grep -q '"status":"Uploaded"'

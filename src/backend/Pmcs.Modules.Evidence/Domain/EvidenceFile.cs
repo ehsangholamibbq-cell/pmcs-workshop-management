@@ -7,16 +7,6 @@ public sealed class EvidenceFile : AggregateRoot
     public const long MaximumSizeBytes = 25L * 1024L * 1024L;
     public const int SessionLifetimeHours = 24;
 
-    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/heic",
-        "image/heif",
-        "application/pdf"
-    };
-
     private EvidenceFile()
     {
     }
@@ -82,7 +72,7 @@ public sealed class EvidenceFile : AggregateRoot
         }
 
         var normalizedContentType = Required(contentType, 120, "evidence.content_type.invalid").ToLowerInvariant();
-        if (!AllowedContentTypes.Contains(normalizedContentType))
+        if (!EvidenceContentPolicy.IsAllowedContentType(normalizedContentType))
         {
             throw new DomainRuleException("evidence.content_type.unsupported", "Only supported images and PDF documents can be uploaded.");
         }

@@ -100,7 +100,7 @@ jobs:
             --env 'PMCS_VERIFICATION_DATABASE_URL=postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_integration' \
             postgres:17-alpine sh -c \
             'apk add --no-cache bash >/dev/null && bash tools/checkpoint24-db-verification.sh'
-      - name: Verify QA seed, diagnostics, permissions, workflow, database and audit
+      - name: Verify QA seed, diagnostics, permissions, workflow, database, audit and files
         env:
           PMCS_QA_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_integration;Username=pmcs;Password=pmcs_integration_only
           PMCS_QA_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_integration

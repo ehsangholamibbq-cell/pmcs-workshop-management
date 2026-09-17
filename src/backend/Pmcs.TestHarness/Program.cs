@@ -6,7 +6,7 @@ using Pmcs.Modules.QualityAssurance;
 
 namespace Pmcs.TestHarness;
 
-internal static class Program
+internal static partial class Program
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -57,6 +57,7 @@ internal static class Program
                 "manifest" => WriteManifest(),
                 "probe" => await ProbeAsync(),
                 "verify" => await VerifyAsync(),
+                "verify-files" => await VerifyFilesAsync(),
                 _ => WriteUsage()
             };
         }
@@ -467,7 +468,7 @@ internal static class Program
 
     private static int WriteUsage()
     {
-        Console.Error.WriteLine("Usage: Pmcs.TestHarness <guard|manifest|probe|verify>");
+        Console.Error.WriteLine("Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files>");
         return 2;
     }
 

@@ -140,7 +140,7 @@ internal static class EvidenceEndpoints
                 request.ContentType,
                 request.SizeBytes,
                 request.Sha256,
-                BuildObjectKey(actor.TenantId, projectId, request.ClientGeneratedId, request.OriginalFileName),
+                BuildObjectKey(actor.TenantId, projectId, request.ClientGeneratedId, request.ContentType),
                 request.CapturedAtDevice,
                 actor.UserId,
                 clock.UtcNow);
@@ -258,9 +258,16 @@ internal static class EvidenceEndpoints
             return Results.UnprocessableEntity(new { code = "evidence.sha256.mismatch" });
         }
 
+        if (!EvidenceContentPolicy.MatchesSignature(
+                evidence.ContentType,
+                content.GetBuffer().AsSpan(0, checked((int)content.Length))))
+        {
+            return Results.UnprocessableEntity(new { code = "evidence.content_signature.mismatch" });
+        }
+
         var receipt = await objectStorage.PutAsync(
             evidence.ObjectKey, evidence.ContentType, evidence.Sha256, content, cancellationToken);
-        if (receipt.SizeBytes != evidence.SizeBytes)
+        if (receipt.SizeBytes != evidence.SizeBytes || string.IsNullOrWhiteSpace(receipt.ETag))
         {
             await objectStorage.DeleteAsync(evidence.ObjectKey, cancellationToken);
             return Results.Problem(
@@ -289,10 +296,13 @@ internal static class EvidenceEndpoints
     private static async Task<IResult> DownloadAsync(
         Guid projectId,
         Guid evidenceId,
+        HttpContext httpContext,
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         EvidenceDbContext dbContext,
         IObjectStorage objectStorage,
+        IAuditTrail auditTrail,
+        IClock clock,
         CancellationToken cancellationToken)
     {
         if (!actor.IsAuthenticated)
@@ -312,9 +322,50 @@ internal static class EvidenceEndpoints
         }
 
         var content = await objectStorage.ReadAsync(evidence.ObjectKey, cancellationToken);
-        return content is null
-            ? Results.NotFound()
-            : Results.File(content.Bytes, evidence.ContentType, evidence.OriginalFileName, enableRangeProcessing: true);
+        if (content is null)
+        {
+            return Results.NotFound();
+        }
+
+        var storedHash = Convert.ToHexString(SHA256.HashData(content.Bytes)).ToLowerInvariant();
+        if (content.Bytes.LongLength != evidence.SizeBytes ||
+            !string.Equals(storedHash, evidence.Sha256, StringComparison.Ordinal) ||
+            !string.Equals(content.ContentType, evidence.ContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Object storage integrity verification failed.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = "evidence.storage_integrity.failed"
+                });
+        }
+
+        await auditTrail.WriteAsync(
+            new AuditEntry(
+                actor.TenantId,
+                evidence.ProjectId,
+                actor.UserId,
+                "EvidenceDownloaded",
+                "EvidenceFile",
+                evidence.Id.ToString(),
+                clock.UtcNow,
+                new Dictionary<string, object?>
+                {
+                    ["dailyReportId"] = evidence.DailyReportId,
+                    ["dailyFactId"] = evidence.DailyFactId,
+                    ["contentType"] = evidence.ContentType,
+                    ["sizeBytes"] = evidence.SizeBytes,
+                    ["sha256"] = evidence.Sha256,
+                    ["revision"] = evidence.Revision
+                },
+                httpContext.TraceIdentifier),
+            cancellationToken);
+        return Results.File(
+            content.Bytes,
+            evidence.ContentType,
+            evidence.OriginalFileName,
+            enableRangeProcessing: true);
     }
 
     private static async Task<MemoryStream> ReadUploadAsync(
@@ -356,16 +407,9 @@ internal static class EvidenceEndpoints
     private static string ContentUrl(this EvidenceFile evidence) =>
         $"/api/v1/projects/{evidence.ProjectId}/evidence/{evidence.Id}/content";
 
-    private static string BuildObjectKey(Guid tenantId, Guid projectId, Guid evidenceId, string fileName)
-    {
-        var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        if (extension.Length > 12 || extension.Any(character => !char.IsLetterOrDigit(character) && character != '.'))
-        {
-            extension = string.Empty;
-        }
-
-        return $"tenants/{tenantId:N}/projects/{projectId:N}/evidence/{evidenceId:N}{extension}";
-    }
+    private static string BuildObjectKey(Guid tenantId, Guid projectId, Guid evidenceId, string contentType) =>
+        $"tenants/{tenantId:N}/projects/{projectId:N}/evidence/{evidenceId:N}" +
+        EvidenceContentPolicy.CanonicalExtension(contentType.Trim().ToLowerInvariant());
 
     private static Task<EvidenceFile?> FindAsync(
         EvidenceDbContext dbContext,

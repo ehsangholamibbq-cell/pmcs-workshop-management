@@ -10,7 +10,7 @@
 | `PUT` | `/api/v1/projects/{projectId}/evidence/{evidenceId}/content` | `evidence.upload` | اعتبارسنجی و انتقال باینری به S3-compatible storage |
 | `GET` | `/api/v1/projects/{projectId}/evidence/{evidenceId}/content` | `evidence.read` | دریافت private object از مسیر مجوزدار API |
 
-Create Session و Upload Content هر دو `Idempotency-Key` می‌خواهند. شناسه client-generated و SHA-256 سبب می‌شوند Retry همان فایل، رکورد جدید نسازد. فرمت‌های مجاز JPEG، PNG، WebP، HEIC/HEIF و PDF و سقف اندازه ۲۵ MiB است.
+Create Session و Upload Content هر دو `Idempotency-Key` می‌خواهند. شناسه client-generated و SHA-256 سبب می‌شوند Retry همان فایل، رکورد جدید نسازد. فرمت‌های مجاز JPEG، PNG، WebP، HEIC/HEIF و PDF و سقف اندازه ۲۵ MiB است. علاوه بر MIME اعلامی، امضای باینری فایل با قالب مورد انتظار تطبیق داده می‌شود و پسوند Object Key از Content Type تأییدشده ساخته می‌شود.
 
 ترتیب PWA:
 
@@ -21,7 +21,10 @@ Create Session و Upload Content هر دو `Idempotency-Key` می‌خواهند
 5. کنترل hash و اندازه در API؛
 6. PUT و HEAD در Object Storage؛
 7. تغییر وضعیت metadata از `PendingUpload` به `Uploaded`؛
-8. حذف Blob حجیم از دستگاه و نگهداری نتیجه Sync.
+8. هنگام Download، تطبیق مجدد اندازه، SHA-256 و Content Type شیء خصوصی با metadata و ثبت Audit دانلود؛
+9. حذف Blob حجیم از دستگاه و نگهداری نتیجه Sync.
+
+Multipart resume، Malware Scan/Quarantine، safe preview/thumbnail و retention/legal-hold در Hardening/Pilot باقی می‌مانند و این قرارداد آن‌ها را انجام‌شده اعلام نمی‌کند.
 
 ## Action Control
 

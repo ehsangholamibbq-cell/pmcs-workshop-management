@@ -52,11 +52,12 @@ PMCS_QA_S3_BUCKET='pmcs-qa-local' \
 ./tools/qa/seed-diagnostics.sh
 ```
 
-این Harness پس از Seed و Diagnostics، دستور `verify` را اجرا می‌کند. این دستور ۲۴ تصمیم مثبت/منفی Permission را برای هر ۱۲ Actor واقعی بررسی می‌کند و سپس یک Workflow واقعی Daily Report را با جداسازی نقش Site Supervisor، Technical Office و Observer اجرا می‌کند. در پایان `tools/qa/verify-database.sh` وضعیت Workflow، Migration Ledger، Audit، Outbox، Idempotency و Notification را مستقیماً از PostgreSQL مستقل راستی‌آزمایی می‌کند.
+این Harness پس از Seed و Diagnostics، دستور `verify` را اجرا می‌کند. این دستور ۲۴ تصمیم مثبت/منفی Permission را برای هر ۱۲ Actor واقعی بررسی می‌کند و سپس یک Workflow واقعی Daily Report را با جداسازی نقش Site Supervisor، Technical Office و Observer اجرا می‌کند. سپس `verify-files` سناریوهای مثبت/منفی فایل، upload/download واقعی MinIO، یکپارچگی محتوا، Permission و Headerهای خصوصی را اجرا می‌کند. در پایان `tools/qa/verify-database.sh` و `tools/qa/verify-files-database.sh` وضعیت Workflow، Migration Ledger، Evidence lineage، Audit، Outbox، Idempotency و Notification را مستقیماً از PostgreSQL مستقل راستی‌آزمایی می‌کنند.
 
 ## وضعیت Sliceها
 
 - Slice 1 زیرساخت امن Seed، Reset، Test Authentication، Diagnostics، Permission Preview و Audit را ساخته است.
 - Slice 2 ممیزی سراسری و Permission / Workflow / Database / Audit Verification مستقل را اضافه کرده است.
+- Slice 3 File / Attachment Verification مستقل، تشخیص امضای محتوا، کنترل یکپارچگی دانلود و Audit دریافت فایل را اضافه کرده است.
 
-Full Qualification هنوز شامل Test Suiteهای مستقل File/Attachment، Offline/Sync، UI/E2E، Agent/Exploratory، Regression Runner و Test Report Generator است.
+Full Qualification هنوز شامل Test Suiteهای مستقل Offline/Sync، UI/E2E، Agent/Exploratory، Regression Runner و Test Report Generator است. Multipart/Malware/Quarantine و چرخه واقعی Object Storage نیز Gate صریح Hardening/Pilot باقی می‌مانند.

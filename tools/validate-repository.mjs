@@ -36,6 +36,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.Intelligence/Domain/AdvisoryInsight.cs",
   "src/backend/Pmcs.Modules.Intelligence/Services/PermissionAwareContextAssembler.cs",
   "src/backend/Pmcs.Modules.Evidence/Domain/EvidenceFile.cs",
+  "src/backend/Pmcs.Modules.Evidence/Domain/EvidenceContentPolicy.cs",
   "src/backend/Pmcs.Modules.ActionControl/Domain/ManagementAction.cs",
   "src/backend/Pmcs.Modules.Finance/Domain/FinancialRecord.cs",
   "src/backend/Pmcs.Modules.Commercial/Domain/ProjectContract.cs",
@@ -44,6 +45,7 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.QualityAssurance/QualityAssuranceRuntimeOptions.cs",
   "src/backend/Pmcs.Modules.QualityAssurance/Endpoints/QualityAssuranceEndpoints.cs",
   "src/backend/Pmcs.TestHarness/Program.cs",
+  "src/backend/Pmcs.TestHarness/FileVerification.cs",
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",
@@ -78,12 +80,14 @@ const requiredFiles = [
   "docs/qa/qa-foundation.md",
   "docs/checkpoints/qa-foundation-01.md",
   "docs/checkpoints/qa-foundation-02.md",
+  "docs/checkpoints/qa-foundation-03.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
   "tools/qa/reset-database.sh",
   "tools/qa/seed-diagnostics.sh",
   "tools/qa/verify-database.sh",
+  "tools/qa/verify-files-database.sh",
   "tests/Pmcs.Domain.Tests/Pmcs.Domain.Tests.csproj",
   "tests/Pmcs.Domain.Tests/InfrastructureBoundaryTests.cs",
   "ops/backup/postgres-backup.sh",
@@ -239,6 +243,14 @@ const qaRuntime = readFileSync(
 );
 assert.match(qaRuntime, /DatabasePrefix = "pmcs_qa_"/);
 assert.match(qaRuntime, /Development or QA/);
+
+const evidenceEndpoints = readFileSync(
+  join(root, "src/backend/Pmcs.Modules.Evidence/Endpoints/EvidenceEndpoints.cs"),
+  "utf8",
+);
+assert.match(evidenceEndpoints, /EvidenceContentPolicy\.MatchesSignature/);
+assert.match(evidenceEndpoints, /EvidenceDownloaded/);
+assert.match(evidenceEndpoints, /evidence\.storage_integrity\.failed/);
 
 const releaseIdentity = readFileSync(
   join(root, "src/backend/Pmcs.Api/Infrastructure/ReleaseIdentity.cs"),
