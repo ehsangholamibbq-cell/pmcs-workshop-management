@@ -32,6 +32,12 @@ test("V1.1 governance baseline pins exact and distinct runtime and repository co
   assert.equal(manifest.developmentBranch, "v1.1-development");
   assert.equal(manifest.runtimeChangesAfterParentBaseline, false);
   assert.ok(["governance-candidate", "architecture-approved"].includes(manifest.status));
+  if (manifest.status === "architecture-approved") {
+    assert.match(manifest.governanceSourceCommit, /^[0-9a-f]{40}$/u);
+    assert.match(manifest.governanceValidationRunId, /^\d+$/u);
+    assert.equal(manifest.governanceValidationRunConclusion, "success");
+    assert.match(manifest.governanceValidationRunUrl, /^https:\/\/github\.com\//u);
+  }
 });
 
 test("every required V1.1 governance contract is present", () => {
@@ -81,4 +87,3 @@ function read(path) {
 function readJson(path) {
   return JSON.parse(read(path));
 }
-

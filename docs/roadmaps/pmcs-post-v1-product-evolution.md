@@ -2,7 +2,7 @@
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
 - نسخه سند: `1.2.0`
-- وضعیت: مصوب برای برنامه‌ریزی و آغاز Design/Architecture؛ مسیر بصری تصویب شده و پیاده‌سازی محصول هنوز آغاز نشده است
+- وضعیت: `Architecture Approved`؛ مسیر بصری تصویب شده و پیاده‌سازی محصول هنوز آغاز نشده است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -82,6 +82,8 @@ Commit شروع Repository برای شاخهٔ V1.1 باید هنگام ایجا
 - ایجاد Checkpoint Manifest بدون ادعای Feature Complete یا Qualified.
 
 **Gate خروج:** `Governance Approved`؛ بدون این Gate هیچ کد محصولی V1.1 آغاز نمی‌شود.
+
+**Evidence:** Gate با Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` و Run 71 (`35275795712`) بسته شد. Main/Runtime V1 تغییر نکرده است.
 
 ### `V1.1-UX1` — Visual Excellence، Design System و High-Fidelity Product Prototype
 

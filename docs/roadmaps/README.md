@@ -18,7 +18,9 @@
 | Locked Product Baseline | `PMCS V1` |
 | Source baseline commit | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | Active planning line | `PMCS V1.1` |
-| V1.1 state | `Governance Candidate | Visual Direction Approved` |
+| V1.1 state | `Architecture Approved | Visual Direction Approved` |
 | V1.1 branch | `v1.1-development` |
 | V1.1 repository start commit | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | V1.1 product code started | خیر |
+| V1.1 governance source | `d4ac64ea818c7e48476b650b84dafe31bf1872a4` |
+| V1.1 governance CI | Run 71 / `35275795712` / `success` |

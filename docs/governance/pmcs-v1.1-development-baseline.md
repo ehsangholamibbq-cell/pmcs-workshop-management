@@ -1,7 +1,7 @@
 # PMCS V1.1 — Development Baseline
 
 - شناسه: `PMCS-GOV-V1.1-BASELINE-001`
-- وضعیت: Governance Candidate
+- وضعیت: `Architecture Approved`
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - شاخه توسعه: `v1.1-development`
 
@@ -28,11 +28,13 @@
 | --- | --- |
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
-| State | `Planned / Governance Candidate` |
+| State | `Architecture Approved` |
 | Product runtime implementation | شروع نشده |
 | Database migration | افزوده نشده |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
+
+Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` در Run 71 (`35275795712`) با هفت Suite و Qualification Report سبز تأیید شد. این Approval فقط G0 را می‌بندد و هیچ Runtime/Migration جدیدی را جزو Baseline قفل‌شده V1 نمی‌کند.
 
 ## ۳. قرارداد شاخه و ادغام
 
@@ -66,4 +68,3 @@ Art Direction تصویب شده است، اما `VX-G1 Audit Complete` و `VX-G3
 - Migration جدید باید forward-only و سازگار با rollback Runtime باشد؛
 - هیچ rollback مجاز نیست دادهٔ جدید را حذف کند؛
 - هر Candidate باید Upgrade از Locked Baseline و Restore Drill مستقل را اجرا کند.
-
