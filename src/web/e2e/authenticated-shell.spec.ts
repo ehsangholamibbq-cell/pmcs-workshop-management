@@ -70,5 +70,5 @@ test("loading and failure states stay explicit and localized", async ({ page }) 
 
   await expect(page.getByRole("heading", { name: "داده سبد در دسترس نیست" })).toBeVisible();
   await expect(page.getByText("Sensitive upstream failure must not reach the user")).toHaveCount(0);
-  await expect(page.getByText(/در حال حاضر مشکلی در سرور رخ داده است/u)).toBeVisible();
+  await expect(page.locator(".portfolio-empty-panel").getByText(/در حال حاضر مشکلی در سرور رخ داده است/u)).toBeVisible();
 });
