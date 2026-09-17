@@ -120,7 +120,7 @@ public sealed partial class ModuleCatalog : IModuleCatalog
 {
     public const string PlatformVersion = "1.1.0";
 
-    private readonly IReadOnlyDictionary<string, ModuleDescriptor> modulesById;
+    private readonly Dictionary<string, ModuleDescriptor> modulesById;
 
     private ModuleCatalog(IReadOnlyList<ModuleDescriptor> modules)
     {
@@ -401,7 +401,7 @@ public sealed partial class ModuleCatalog : IModuleCatalog
 
     private static void ValidateSafeRoute(string route)
     {
-        if (string.IsNullOrWhiteSpace(route) || route.Length > 240 || !route.StartsWith("/", StringComparison.Ordinal) ||
+        if (string.IsNullOrWhiteSpace(route) || route.Length > 240 || !route.StartsWith('/') ||
             route.StartsWith("//", StringComparison.Ordinal) || route.Contains("..", StringComparison.Ordinal) ||
             route.Contains('\\') || route.Contains("://", StringComparison.Ordinal))
         {

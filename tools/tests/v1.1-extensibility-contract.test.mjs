@@ -44,7 +44,7 @@ test("reference module connects permission, navigation, event and read-only tool
   }
   assert.match(endpoints, /HasTenantPermissionAsync/u);
   assert.doesNotMatch(endpoints, /DbContext|\.Persistence|Map(?:Post|Put|Patch|Delete)\(/u);
-  assert.match(web, /module\.schemaVersion !== moduleManifestSchemaVersion/u);
+  assert.match(web, /descriptor\.schemaVersion !== moduleManifestSchemaVersion/u);
   assert.match(web, /grantedPermissions\.has\(item\.permission\)/u);
   assert.match(web, /enabledFeatures\.has\(item\.featureFlag\)/u);
   assert.match(web, /isSafeApplicationRoute/u);

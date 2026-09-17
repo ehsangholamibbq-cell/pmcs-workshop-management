@@ -77,12 +77,12 @@ export function resolveVisibleNavigation(
 ): readonly NavigationManifestModel[] {
   const visible = new Map<string, NavigationManifestModel>();
 
-  for (const module of modules) {
-    if (module.schemaVersion !== moduleManifestSchemaVersion || module.isLegacy) {
+  for (const descriptor of modules) {
+    if (descriptor.schemaVersion !== moduleManifestSchemaVersion || descriptor.isLegacy) {
       continue;
     }
 
-    for (const item of module.navigationItems) {
+    for (const item of descriptor.navigationItems) {
       if (!grantedPermissions.has(item.permission) || !enabledFeatures.has(item.featureFlag) ||
           !isSafeApplicationRoute(item.route) || visible.has(item.id)) {
         continue;
