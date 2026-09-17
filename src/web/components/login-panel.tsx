@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { safeApplicationReturnPath } from "@/lib/return-path";
@@ -8,15 +8,12 @@ import { safeApplicationReturnPath } from "@/lib/return-path";
 export function LoginPanel({ initialError = false }: { readonly initialError?: boolean }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const [isStarting, setIsStarting] = useState(false);
   const [message, setMessage] = useState(
     initialError ? "ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید." : "",
   );
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (session) {
@@ -76,4 +73,8 @@ export function LoginPanel({ initialError = false }: { readonly initialError?: b
 function safeReturnTo(): string {
   if (typeof window === "undefined") return "/portfolio";
   return safeApplicationReturnPath(new URLSearchParams(window.location.search).get("returnTo"));
+}
+
+function subscribeToHydration(): () => void {
+  return () => undefined;
 }
