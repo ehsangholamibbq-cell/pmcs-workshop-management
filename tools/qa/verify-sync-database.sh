@@ -15,8 +15,8 @@ site_supervisor_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 technical_office_id="50000000-0000-4000-8000-000000000002"
 site_supervisor_key_id="aaaaaaaaaaaa4aaa8aaaaaaaaaaaaaaa"
 technical_office_key_id="50000000000040008000000000000002"
-primary_device_id="qa-sync-primary-device"
-negative_device_id="qa-sync-negative-device"
+primary_device_id="pmcs-qa-harness"
+negative_device_id="pmcs-qa-harness"
 primary_operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1D"
 conflict_operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1E"
 invalid_envelope_operation_id="01K4ZQ9G5V7Q0M8M2V4R6D8F1F"
@@ -142,12 +142,12 @@ expect_equal \
 expect_equal \
   "invalid envelopes are durable bounded rejections in session scope" \
   "2|2|2" \
-  "select count(*)::text || '|' || count(*) filter (where status = 'Rejected' and code = 'sync.operation.envelope.invalid')::text || '|' || count(*) filter (where project_id = '${project_id}')::text from sync_control.operation_receipts where tenant_id = '${tenant_id}' and user_id = '${site_supervisor_id}' and device_id = '${negative_device_id}' and operation_id in ('${invalid_envelope_operation_id}', '${cross_project_operation_id}');"
+  "select count(*)::text || '|' || count(*) filter (where status = 'Rejected' and code = 'sync.operation.envelope.invalid')::text || '|' || count(*) filter (where project_id = '${project_id}')::text from sync_control.operation_receipts where tenant_id = '${tenant_id}' and user_id = '${manager_id}' and device_id = '${negative_device_id}' and operation_id in ('${invalid_envelope_operation_id}', '${cross_project_operation_id}');"
 
 expect_equal \
   "invalid diagnostic text is safely bounded" \
   "Invalid|DailyReport" \
-  "select string_agg(entity_type, '|' order by operation_id) from sync_control.operation_receipts where tenant_id = '${tenant_id}' and user_id = '${site_supervisor_id}' and device_id = '${negative_device_id}' and operation_id in ('${invalid_envelope_operation_id}', '${cross_project_operation_id}');"
+  "select string_agg(entity_type, '|' order by operation_id) from sync_control.operation_receipts where tenant_id = '${tenant_id}' and user_id = '${manager_id}' and device_id = '${negative_device_id}' and operation_id in ('${invalid_envelope_operation_id}', '${cross_project_operation_id}');"
 
 expect_equal \
   "cross-project invalid envelope cannot poison another project" \
@@ -157,7 +157,7 @@ expect_equal \
 expect_equal \
   "revoked device closes leases and sessions" \
   "Revoked|true|0|0" \
-  "select device.status || '|' || (device.revoked_at is not null)::text || '|' || (select count(*) from sync_control.offline_leases where tenant_id = '${tenant_id}' and user_id = '${site_supervisor_id}' and device_id = '${negative_device_id}' and status <> 'Revoked')::text || '|' || (select count(*) from sync_control.sessions where tenant_id = '${tenant_id}' and user_id = '${site_supervisor_id}' and device_id = '${negative_device_id}' and closed_at is null)::text from sync_control.devices device where device.tenant_id = '${tenant_id}' and device.user_id = '${site_supervisor_id}' and device.device_id = '${negative_device_id}';"
+  "select device.status || '|' || (device.revoked_at is not null)::text || '|' || (select count(*) from sync_control.offline_leases where tenant_id = '${tenant_id}' and user_id = '${manager_id}' and device_id = '${negative_device_id}' and status <> 'Revoked')::text || '|' || (select count(*) from sync_control.sessions where tenant_id = '${tenant_id}' and user_id = '${manager_id}' and device_id = '${negative_device_id}' and closed_at is null)::text from sync_control.devices device where device.tenant_id = '${tenant_id}' and device.user_id = '${manager_id}' and device.device_id = '${negative_device_id}';"
 
 expect_equal \
   "operation diagnostics remain payload-free" \

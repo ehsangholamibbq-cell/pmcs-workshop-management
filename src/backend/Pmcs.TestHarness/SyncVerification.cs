@@ -7,8 +7,8 @@ namespace Pmcs.TestHarness;
 
 internal static partial class Program
 {
-    private const string PrimaryDeviceId = "qa-sync-primary-device";
-    private const string NegativeDeviceId = "qa-sync-negative-device";
+    private const string PrimaryDeviceId = "pmcs-qa-harness";
+    private const string NegativeDeviceId = "pmcs-qa-harness";
     private const string PrimaryOperationId = "01K4ZQ9G5V7Q0M8M2V4R6D8F1D";
     private const string ConflictOperationId = "01K4ZQ9G5V7Q0M8M2V4R6D8F1E";
     private const string InvalidEnvelopeOperationId = "01K4ZQ9G5V7Q0M8M2V4R6D8F1F";
@@ -50,7 +50,7 @@ internal static partial class Program
         var projectManager = PmcsTestDataSet.QaSuperAdministrator;
 
         var incompatible = await OpenSyncSessionAsync(
-            client, key, siteSupervisor, "qa-sync-version-probe", protocolVersion: 2);
+            client, key, siteSupervisor, PrimaryDeviceId, protocolVersion: 2);
         Record(
             assertions,
             "sync.compatibility.unsupported-protocol",
@@ -59,7 +59,7 @@ internal static partial class Program
             $"http={(int)incompatible.StatusCode}");
 
         var observerDenied = await OpenSyncSessionAsync(
-            client, key, observer, "qa-sync-observer-device");
+            client, key, observer, PrimaryDeviceId);
         Record(
             assertions,
             "sync.permission.observer-handshake-denied",
@@ -454,7 +454,7 @@ internal static partial class Program
             $"http={(int)diagnostics.StatusCode};state={ReadString(diagnostics.Payload, "recoveryState")};lag={ReadInt64(diagnostics.Payload, "checkpointLag")}");
 
         var negativeHandshake = await OpenSyncSessionAsync(
-            client, key, siteSupervisor, NegativeDeviceId, pendingOperations: 2);
+            client, key, projectManager, NegativeDeviceId, pendingOperations: 2);
         var negativeSessionId = ReadGuid(negativeHandshake.Payload, "sessionId");
         var negativeLeaseId = ReadNestedGuid(negativeHandshake.Payload, "lease", "leaseId");
         var negativeAuthorizationVersion = ReadNestedInt64(
@@ -495,7 +495,7 @@ internal static partial class Program
         var rejectedEnvelopes = await SendSyncAsync(
             client,
             key,
-            siteSupervisor,
+            projectManager,
             HttpMethod.Post,
             "/api/v1/sync/operations",
             new { deviceId = NegativeDeviceId, operations = new[] { invalidEnvelope, crossProject } },
@@ -521,7 +521,7 @@ internal static partial class Program
         var devices = await SendAsync(
             client,
             key,
-            siteSupervisor,
+            projectManager,
             HttpMethod.Get,
             "/api/v1/sync/devices");
         var negativeRegistrationId = ReadArrayItemGuid(
@@ -545,7 +545,7 @@ internal static partial class Program
         var revoked = await SendAsync(
             client,
             key,
-            siteSupervisor,
+            projectManager,
             HttpMethod.Post,
             $"/api/v1/sync/devices/{negativeRegistrationId}/revoke",
             new { baseRevision = negativeDeviceRevision, reason = "QA deterministic revocation probe" });
@@ -558,7 +558,7 @@ internal static partial class Program
         var revokedSessionPush = await PushOperationAsync(
             client,
             key,
-            siteSupervisor,
+            projectManager,
             NegativeDeviceId,
             negativeSessionId,
             invalidEnvelope);
@@ -570,7 +570,7 @@ internal static partial class Program
             $"http={(int)revokedSessionPush.StatusCode}");
 
         var revokedHandshake = await OpenSyncSessionAsync(
-            client, key, siteSupervisor, NegativeDeviceId, pendingOperations: 1);
+            client, key, projectManager, NegativeDeviceId, pendingOperations: 1);
         Record(
             assertions,
             "sync.device.revoked-reconnect-requires-purge-review",
@@ -583,7 +583,7 @@ internal static partial class Program
         var revokedDiagnostics = await SendAsync(
             client,
             key,
-            siteSupervisor,
+            projectManager,
             HttpMethod.Get,
             $"/api/v1/sync/diagnostics?projectId={PmcsTestDataSet.ProjectId}&deviceId={NegativeDeviceId}");
         Record(
