@@ -2,7 +2,7 @@ using Pmcs.BuildingBlocks.Application;
 
 namespace Pmcs.Api.Infrastructure;
 
-internal sealed partial class ActorAccessMiddleware(RequestDelegate next, ILogger<ActorAccessMiddleware> logger)
+internal sealed partial class ActorAccessMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(
         HttpContext context,
@@ -17,6 +17,8 @@ internal sealed partial class ActorAccessMiddleware(RequestDelegate next, ILogge
 
         if (!actor.IsAuthenticated || !actor.TokenIssuedAt.HasValue)
         {
+            var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger<ActorAccessMiddleware>();
             LogInvalidActorClaims(logger, actor.TenantId != Guid.Empty, actor.UserId != Guid.Empty, actor.TokenIssuedAt.HasValue);
             await WriteProblemAsync(context, StatusCodes.Status401Unauthorized, "authentication.claims.invalid");
             return;
