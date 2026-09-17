@@ -155,16 +155,17 @@ internal static partial class Program
             !wrongKey.Body.Contains(wrongKeyValue, StringComparison.Ordinal),
             $"http={(int)wrongKey.StatusCode}");
 
-        var paddedKey = await SendExploratoryAsync(
+        var changedKeyValue = key[..^1] + (key[^1] == 'x' ? 'y' : 'x');
+        var changedKey = await SendExploratoryAsync(
             client,
             HttpMethod.Get,
             "/api/qa/v1/status",
-            QaHeaders($" {key} ", PmcsTestDataSet.TenantId, administrator.UserId));
+            QaHeaders(changedKeyValue, PmcsTestDataSet.TenantId, administrator.UserId));
         Record(
             assertions,
-            "exploratory.authentication.key-is-exact",
-            paddedKey.StatusCode == HttpStatusCode.Unauthorized,
-            $"http={(int)paddedKey.StatusCode}");
+            "exploratory.authentication.one-byte-key-change-denied",
+            changedKey.StatusCode == HttpStatusCode.Unauthorized,
+            $"http={(int)changedKey.StatusCode}");
 
         var duplicateKeyHeaders = QaHeaders(key, PmcsTestDataSet.TenantId, administrator.UserId);
         duplicateKeyHeaders["X-Pmcs-QA-Key"] = [key, key];
