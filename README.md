@@ -8,8 +8,8 @@
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
-- QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence با `21/21` assertion در CI متصل تأیید و بسته شده است؛ Offline/Sync مرحله مستقل بعدی Qualification است.
-- QA Foundation Slice 4: آزمون مستقل Offline/Sync شامل Reconnect، Replay/Duplicate، جداسازی دو کاربر، Conflict/Resolution، Checkpoint/Diagnostics و Device revocation پیاده‌سازی شده و در انتظار تأیید CI متصل است.
+- QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence با `21/21` assertion در CI متصل تأیید و بسته شده است.
+- QA Foundation Slice 4: آزمون مستقل Offline/Sync شامل Reconnect، Replay/Duplicate، جداسازی دو کاربر، Conflict/Resolution، Checkpoint/Diagnostics و Device revocation با `28/28` assertion در CI متصل تأیید و بسته شده است؛ UI/E2E مرحله مستقل بعدی Qualification است.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
@@ -213,5 +213,6 @@ npm run check
 - گزارش Slice اول QA Foundation: [`docs/checkpoints/qa-foundation-01.md`](docs/checkpoints/qa-foundation-01.md)
 - گزارش Slice دوم QA Foundation: [`docs/checkpoints/qa-foundation-02.md`](docs/checkpoints/qa-foundation-02.md)
 - گزارش Slice سوم QA Foundation: [`docs/checkpoints/qa-foundation-03.md`](docs/checkpoints/qa-foundation-03.md)
+- گزارش Slice چهارم QA Foundation: [`docs/checkpoints/qa-foundation-04.md`](docs/checkpoints/qa-foundation-04.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

@@ -1,7 +1,7 @@
 # QA Foundation Slice 4 — Offline and Sync Verification
 
 - Date: 2026-09-17
-- Status: Implemented; connected verification pending
+- Status: Implemented and verified by connected CI
 - Product state: `PMCS V1 — Feature Complete`
 - Qualification state: In progress; not Qualified, Final or Locked
 - Governing roadmap: [`../roadmaps/pmcs-v1-development-and-qualification.md`](../roadmaps/pmcs-v1-development-and-qualification.md)
@@ -42,4 +42,19 @@ UI/E2E, exploratory-agent and full-regression/reporting qualification remain ope
 
 ## Connected verification
 
-Pending the connected CI run for this source revision.
+Verified source revision: [`7f48128`](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/commit/7f4812872e430929ef3fe41db318cc1a99b3b086)
+
+GitHub Actions evidence: [CI Run 47](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35225498676), with all six jobs successful.
+
+- Backend Release build and all `253/253` domain tests passed.
+- Web validation passed with `124/124` tests, lint, Persian audits, TypeScript and production build.
+- Repository validation passed across `277` C# module files; the contract audit confirmed `239` endpoints, `188` mutations and `5` documented protocol-managed mutations.
+- QA permission/workflow verification passed `32/32` assertions.
+- File/attachment verification remained green at `21/21` assertions.
+- Offline/Sync verification passed `28/28` assertions against the real API and PostgreSQL, including reconnect with a superseded Lease, exact replay, changed-payload Operation ID reuse, two-user identity isolation, concurrent conflict/resolution, Pull/Checkpoint recovery, bounded invalid envelopes and device revocation.
+- Direct PostgreSQL Offline/Sync verification confirmed Receipt preservation, user-scoped Idempotency, immutable actor/correlation lineage, payload-free diagnostics, conflict resolution, Checkpoint alignment and Session/Lease closure.
+- Checkpoints 22–24 evidence, OIDC container verification, `8/8` pilot-contract tests and the backup/restore drill with `38` migrations all remained green.
+
+The first connected candidate, [CI Run 46](https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35224877016), correctly stopped because the QA Harness supplied arbitrary Device IDs while Test Authentication deliberately binds the authenticated Device to `pmcs-qa-harness`. The Harness was aligned with that security boundary without weakening production or QA authentication, and Run 47 then passed the complete scenario.
+
+QA Foundation Slice 4 is closed. The next independent qualification slice is UI/E2E; exploratory-agent and full-regression/reporting qualification remain open. PMCS V1 remains Feature Complete and is not yet Qualified, Final or Locked.
