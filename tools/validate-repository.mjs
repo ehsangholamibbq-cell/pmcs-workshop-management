@@ -235,12 +235,18 @@ const exploratoryVerification = readFileSync(
   "utf8",
 );
 const seedDiagnostics = readFileSync(join(root, "tools/qa/seed-diagnostics.sh"), "utf8");
+const readme = readFileSync(join(root, "README.md"), "utf8");
+const qaFoundationStatus = readFileSync(join(root, "docs/qa/qa-foundation.md"), "utf8");
 assert.match(testHarnessProgram, /"verify-exploratory" => await VerifyExploratoryAsync\(\)/);
 assert.match(exploratoryVerification, /deterministic-persona-explorer/);
 assert.match(exploratoryVerification, /role-header-cannot-escalate/);
 assert.match(exploratoryVerification, /destructive-route-absent/);
 assert.match(exploratoryVerification, /preview-simulation-does-not-persist/);
 assert.match(seedDiagnostics, /-- verify-exploratory/);
+assert.match(readme, /QA Foundation Slice 6:[^\n]*173\/173/);
+assert.doesNotMatch(readme, /QA Foundation Slice 5:[^\n]*در انتظار تأیید/);
+assert.match(qaFoundationStatus, /Slice 6[^\n]*173\/173[^\n]*Run 67/);
+assert.doesNotMatch(qaFoundationStatus, /Slice 5[^\n]*در حال انجام است/);
 
 for (const file of [
   "src/backend/Pmcs.Modules.ActionControl/Domain/GovernanceRules.cs",

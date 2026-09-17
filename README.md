@@ -10,7 +10,8 @@
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
 - QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence با `21/21` assertion در CI متصل تأیید و بسته شده است.
 - QA Foundation Slice 4: آزمون مستقل Offline/Sync شامل Reconnect، Replay/Duplicate، جداسازی دو کاربر، Conflict/Resolution، Checkpoint/Diagnostics و Device revocation با `28/28` assertion در CI متصل تأیید و بسته شده است.
-- QA Foundation Slice 5: Gate مستقل Playwright روی Compose واقعی برای Login مبتنی بر Keycloak/BFF، RTL/Responsive، تقویم شمسی، Loading/Error/Empty و چرخه Offline/IndexedDB/Browser Restart/Reconnect پیاده‌سازی شده و در انتظار تأیید CI متصل است.
+- QA Foundation Slice 5: Gate مستقل Playwright روی Compose واقعی برای Login مبتنی بر Keycloak/BFF، RTL/Responsive، تقویم شمسی، Loading/Error/Empty و چرخه Offline/IndexedDB/Browser Restart/Reconnect در Runهای 64 و 65 تأیید و بسته شده است.
+- QA Foundation Slice 6: Agent/Exploratory Runner قطعی، ۱۲ Persona و ۱۲ سطح خواندنی، مرزهای منفی Authentication/Tenant/Project و نبود Route مخرب با `173/173` assertion در Run 67 تأیید و بسته شده است. Regression Runner، Test Report Generator و Full Regression نهایی همچنان باز هستند.
 
 - Modular Monolith backend skeleton
 - Tenant/actor boundary توسعه
