@@ -24,6 +24,8 @@
 
 The `ui-e2e` CI job starts the existing Compose topology with isolated PostgreSQL, Keycloak, BFF, API and MinIO services. A preparation script uses the already limited identity-administration service account to make the existing demo user deterministic only inside that disposable Keycloak database. It clears required actions and installs a permanent test-only password at runtime; the checked-in realm continues to require first-login password replacement and TOTP, direct password grants remain disabled, and no production or QA authentication boundary is weakened.
 
+The login scenario starts from the application's canonical `/login` route with an allow-listed `returnTo` value, then follows the real browser redirect to Keycloak and back through the BFF callback. It does not depend on client-hydration timing of a protected page redirect.
+
 Playwright retains Tenant/User-scoped browser state only in the ephemeral CI runner. The offline test uses a real persistent Chromium profile, closes it, restarts while disconnected, verifies the public offline shell and IndexedDB queue, then reconnects through the same authenticated BFF session. It does not cache authenticated HTML in the Service Worker.
 
 ## Deliberate boundary

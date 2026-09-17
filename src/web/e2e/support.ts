@@ -16,7 +16,7 @@ export interface StoredOperation {
 }
 
 export async function loginThroughOidc(page: Page, destination = "/portfolio"): Promise<void> {
-  await page.goto(destination);
+  await page.goto(`/login?returnTo=${encodeURIComponent(destination)}`);
   await expect(page).toHaveURL(/\/login(?:\?|$)/u);
   await page.getByRole("button", { name: "ورود امن" }).click();
   await expect(page).toHaveURL(/localhost:8081\/realms\/pmcs\/protocol\/openid-connect\/auth/u);
