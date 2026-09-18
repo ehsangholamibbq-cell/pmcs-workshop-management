@@ -134,11 +134,11 @@ internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) :
 
             using (var regularFont = File.OpenRead(options.PdfRegularFontPath))
             {
-                FontManager.RegisterFontFromStream(regularFont);
+                FontManager.RegisterFont(regularFont);
             }
             using (var boldFont = File.OpenRead(options.PdfBoldFontPath))
             {
-                FontManager.RegisterFontFromStream(boldFont);
+                FontManager.RegisterFont(boldFont);
             }
             configuredSignature = signature;
         }
