@@ -437,6 +437,93 @@ curl --silent --fail \
   --data "{\"baseRevision\":${setup_revision}}" \
   "http://127.0.0.1:${port}/api/v1/projects/${setup_project_id}/activate" | grep -q '"status":"Active"'
 
+current_step="checking controlled project bootstrap preview, replay, execute and independent activation"
+bootstrap_key="integration-project-bootstrap-create"
+bootstrap_payload="{\"sourceProjectId\":\"${setup_project_id}\",\"target\":{\"code\":\"CI-BOOT-01\",\"name\":\"Integration bootstrap target\",\"projectType\":\"Building\",\"executionPhase\":\"PreConstruction\",\"countryCode\":\"IR\",\"region\":\"Qazvin\",\"startDate\":\"2026-10-01\",\"plannedFinishDate\":\"2027-10-01\",\"shortDescription\":\"Controlled bootstrap destination\",\"timeZone\":\"Asia/Tehran\",\"baseCurrencyCode\":\"IRR\",\"unitSystem\":\"Metric\",\"offlinePolicyAccepted\":true},\"categories\":[\"BaseSettings\",\"Calendar\",\"Locations\",\"RoleTemplates\",\"WorkflowTemplates\",\"FormTemplates\",\"ReportTemplates\",\"Lookups\",\"Members\",\"NotificationDefaults\",\"GroupDefaults\"],\"members\":[{\"userId\":\"${user_id}\",\"roleCode\":\"ProjectManager\",\"accessScope\":\"Project\"}],\"conflictPolicy\":\"FailOnConflict\"}"
+bootstrap_preview="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header "Idempotency-Key: ${bootstrap_key}" \
+  --header 'Content-Type: application/json' \
+  --data "${bootstrap_payload}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps")"
+bootstrap_plan_id="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).planId)' "${bootstrap_preview}")"
+bootstrap_target_id="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).targetProjectId)' "${bootstrap_preview}")"
+bootstrap_plan_revision="$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).planRevision))' "${bootstrap_preview}")"
+bootstrap_digest="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).previewDigest)' "${bootstrap_preview}")"
+grep -q '"status":"PreviewReady"' <<<"${bootstrap_preview}"
+grep -q '"status":"Draft"' <<<"${bootstrap_preview}"
+grep -q '"blocked":0' <<<"${bootstrap_preview}"
+if [[ -z "${bootstrap_plan_id}" || -z "${bootstrap_target_id}" || -z "${bootstrap_digest}" ]]; then
+  echo "Project bootstrap preview did not return stable plan, target and digest identities." >&2
+  exit 1
+fi
+
+bootstrap_replay="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header "Idempotency-Key: ${bootstrap_key}" \
+  --header 'Content-Type: application/json' \
+  --data "${bootstrap_payload}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps")"
+grep -Eq "\"planId\"[[:space:]]*:[[:space:]]*\"${bootstrap_plan_id}\"" <<<"${bootstrap_replay}"
+
+bootstrap_execute_payload="{\"baseRevision\":${bootstrap_plan_revision},\"previewDigest\":\"${bootstrap_digest}\"}"
+bootstrap_result="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-project-bootstrap-execute' \
+  --header 'Content-Type: application/json' \
+  --data "${bootstrap_execute_payload}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps/${bootstrap_plan_id}/execute")"
+grep -q '"status":"Completed"' <<<"${bootstrap_result}"
+grep -q '"status":"Draft"' <<<"${bootstrap_result}"
+grep -q '"code":"operational-data-excluded","passed":true' <<<"${bootstrap_result}"
+bootstrap_completed_revision="$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).planRevision))' "${bootstrap_result}")"
+bootstrap_target_revision="$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).targetProject.revision))' "${bootstrap_result}")"
+
+bootstrap_execute_replay="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-project-bootstrap-execute' \
+  --header 'Content-Type: application/json' \
+  --data "${bootstrap_execute_payload}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps/${bootstrap_plan_id}/execute")"
+grep -Eq "\"planId\"[[:space:]]*:[[:space:]]*\"${bootstrap_plan_id}\"" <<<"${bootstrap_execute_replay}"
+
+curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps/${bootstrap_plan_id}/result" | \
+  grep -q '"status":"Completed"'
+
+bootstrap_activation="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-project-bootstrap-activate' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${bootstrap_completed_revision},\"targetBaseRevision\":${bootstrap_target_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/project-bootstraps/${bootstrap_plan_id}/activate")"
+grep -q '"status":"Activated"' <<<"${bootstrap_activation}"
+grep -q '"status":"Active"' <<<"${bootstrap_activation}"
+bootstrap_database_state="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --tuples-only --no-align --set ON_ERROR_STOP=1 --command \
+  "select plan.status || '|' ||
+      (select count(*) from field_operations.daily_reports report where report.tenant_id = plan.tenant_id and report.project_id = plan.target_project_id)::text || '|' ||
+      (select count(*) from identity_access.project_memberships membership where membership.tenant_id = plan.tenant_id and membership.project_id = plan.target_project_id and membership.user_id = '${user_id}' and membership.status = 'Active')::text || '|' ||
+      (select count(*) from foundation.audit_events audit where audit.tenant_id = plan.tenant_id and audit.project_id = plan.target_project_id and audit.event_type = 'ProjectBootstrapCompleted')::text || '|' ||
+      (select count(*) from foundation.outbox_messages message where message.tenant_id = plan.tenant_id and message.project_id = plan.target_project_id and message.event_type = 'projects.bootstrap.completed.v1')::text
+    from projects.project_bootstrap_plans plan
+    where plan.tenant_id = '${tenant_id}' and plan.id = '${bootstrap_plan_id}';")"
+if [[ "${bootstrap_database_state}" != "Activated|0|1|1|1" ]]; then
+  echo "Project bootstrap persistence boundary is invalid: ${bootstrap_database_state}." >&2
+  exit 1
+fi
+
 current_step="checking the required project Location boundary"
 location_guard_report="$(curl --silent --fail \
   --request POST \

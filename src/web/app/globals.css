@@ -778,6 +778,437 @@
   background: rgba(255, 255, 255, 0.68);
 }
 
+.project-bootstrap-page {
+  width: min(88rem, calc(100% - 2rem));
+  min-height: 100vh;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 3.5rem) 0 5rem;
+}
+
+.project-bootstrap-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.project-bootstrap-header > div:first-child {
+  max-width: 52rem;
+}
+
+.project-bootstrap-account {
+  min-width: 15rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.project-bootstrap-account > a {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.bootstrap-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 2rem;
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.bootstrap-steps button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 3rem;
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.bootstrap-steps button span {
+  display: grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.7rem;
+}
+
+.bootstrap-steps button.active {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: #153c4f;
+}
+
+.bootstrap-steps button:disabled:not(.active) {
+  opacity: 0.48;
+}
+
+.bootstrap-message {
+  margin: 1rem 0 0;
+  padding: 0.8rem 1rem;
+  border-right: 0.25rem solid var(--teal);
+  border-radius: 0.6rem;
+  color: #24454a;
+  background: var(--soft-teal);
+}
+
+.bootstrap-message.offline {
+  border-color: #a76b23;
+  color: #6e4a1f;
+  background: var(--soft-amber);
+}
+
+.bootstrap-workspace,
+.bootstrap-panel {
+  margin-top: 1rem;
+}
+
+.bootstrap-panel {
+  padding: clamp(1.1rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.bootstrap-panel-heading {
+  max-width: 55rem;
+  margin-bottom: 1.25rem;
+}
+
+.bootstrap-panel-heading h2,
+.bootstrap-panel-heading p {
+  margin-top: 0;
+}
+
+.bootstrap-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.bootstrap-form-grid label,
+.bootstrap-policy {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.bootstrap-form-grid input,
+.bootstrap-form-grid select,
+.bootstrap-form-grid textarea,
+.bootstrap-policy select {
+  width: 100%;
+}
+
+.bootstrap-form-grid textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.bootstrap-form-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.bootstrap-form-grid .checkbox-row,
+.bootstrap-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.bootstrap-form-grid .checkbox-row input,
+.bootstrap-confirm input {
+  width: auto;
+}
+
+.bootstrap-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.bootstrap-category-grid label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.65rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: #fbfcfb;
+  cursor: pointer;
+}
+
+.bootstrap-category-grid label.selected {
+  border-color: rgba(21, 60, 79, 0.55);
+  background: #eff5f5;
+  box-shadow: inset 0 0 0 1px rgba(21, 60, 79, 0.12);
+}
+
+.bootstrap-category-grid input {
+  grid-row: 1 / 3;
+  margin-top: 0.15rem;
+}
+
+.bootstrap-category-grid strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.bootstrap-category-grid span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.bootstrap-policy {
+  max-width: 26rem;
+  margin-top: 1rem;
+}
+
+.bootstrap-member-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.bootstrap-member-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.4fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: #fbfcfb;
+}
+
+.bootstrap-member-list article.selected {
+  border-color: rgba(23, 107, 98, 0.42);
+  background: var(--soft-teal);
+}
+
+.bootstrap-member-list label,
+.bootstrap-member-list label span {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.bootstrap-member-list label span {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bootstrap-member-list small {
+  color: var(--muted);
+}
+
+.bootstrap-note,
+.bootstrap-blocked {
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.75rem;
+  color: var(--muted);
+  background: #f8faf9;
+}
+
+.bootstrap-blocked {
+  color: #7d3131;
+  border-color: rgba(164, 61, 61, 0.4);
+  background: #fff2f2;
+}
+
+.bootstrap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.bootstrap-actions .primary-link {
+  width: auto;
+}
+
+.bootstrap-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.bootstrap-summary div {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: #f8faf9;
+}
+
+.bootstrap-summary strong {
+  color: #153c4f;
+  font-size: 1.35rem;
+}
+
+.bootstrap-summary span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.bootstrap-preview-table {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.bootstrap-preview-table article {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-right: 0.25rem solid #557b70;
+  border-radius: 0.65rem;
+  background: #f7faf8;
+}
+
+.bootstrap-preview-table article > span {
+  align-self: start;
+  width: fit-content;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  color: #25634d;
+  background: #dcefe6;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.bootstrap-preview-table article.disposition-skipped {
+  border-color: #899591;
+}
+
+.bootstrap-preview-table article.disposition-skipped > span {
+  color: #53605c;
+  background: #e7ecea;
+}
+
+.bootstrap-preview-table article.disposition-conflict,
+.bootstrap-preview-table article.disposition-blocked {
+  border-color: #a43d3d;
+  background: #fff5f4;
+}
+
+.bootstrap-preview-table article.disposition-conflict > span,
+.bootstrap-preview-table article.disposition-blocked > span {
+  color: #842e2e;
+  background: #f3d8d6;
+}
+
+.bootstrap-preview-table article div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.bootstrap-preview-table small,
+.bootstrap-preview-table p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.73rem;
+}
+
+.bootstrap-exclusions {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #faf9f5;
+}
+
+.bootstrap-exclusions summary {
+  color: #5d4d2c;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.bootstrap-exclusions li {
+  margin-top: 0.4rem;
+  color: var(--muted);
+}
+
+.bootstrap-confirm {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  background: #eef4f6;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.bootstrap-validation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.bootstrap-validation article {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(23, 107, 98, 0.28);
+  border-radius: 0.75rem;
+  background: var(--soft-teal);
+}
+
+.bootstrap-validation article.failed {
+  border-color: rgba(164, 61, 61, 0.35);
+  background: #fff2f2;
+}
+
+.bootstrap-validation span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+@media (max-width: 900px) {
+  .bootstrap-form-grid,
+  .bootstrap-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bootstrap-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .project-bootstrap-header,
+  .bootstrap-member-list article {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .bootstrap-form-grid,
+  .bootstrap-category-grid,
+  .bootstrap-summary,
+  .bootstrap-validation,
+  .bootstrap-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .bootstrap-preview-table article {
+    grid-template-columns: 1fr;
+  }
+}
+
 .project-location-settings h3,
 .project-location-settings p {
   margin-bottom: 0;

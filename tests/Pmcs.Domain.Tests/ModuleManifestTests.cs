@@ -1,10 +1,30 @@
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.Modules.Platform;
+using Pmcs.Modules.Projects;
 
 namespace Pmcs.Domain.Tests;
 
 public sealed class ModuleManifestTests
 {
+    [Fact]
+    public void ProjectsPublishesControlledBootstrapContracts()
+    {
+        var descriptor = new ProjectsModule().Descriptor;
+
+        Assert.Equal(ModuleManifestSchemas.VersionOne, descriptor.SchemaVersion);
+        Assert.Equal("projects.core", descriptor.ModuleId);
+        Assert.Contains("identity-access.core", descriptor.Dependencies);
+        Assert.Contains("projects.controlled-bootstrap", descriptor.Capabilities);
+        Assert.Contains(descriptor.Permissions, item => item.Key == "projects.bootstrap.preview");
+        Assert.Contains(descriptor.Permissions, item => item.Key == "projects.bootstrap.create");
+        Assert.Contains(descriptor.Permissions, item => item.Key == "projects.bootstrap.members_copy");
+        Assert.Contains(descriptor.Permissions, item => item.Key == "projects.bootstrap.activate");
+        Assert.Contains(descriptor.NavigationItems, item =>
+            item.Route == "/project-bootstraps" && item.Permission == "projects.bootstrap.preview");
+        Assert.Contains(descriptor.Events, item =>
+            item.Name == "projects.bootstrap.completed" && item.Version == 1);
+    }
+
     [Fact]
     public void PlatformReferenceModulePublishesTheCompleteExtensionContract()
     {

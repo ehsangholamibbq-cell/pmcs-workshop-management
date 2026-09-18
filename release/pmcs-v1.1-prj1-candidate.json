@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "pmcs.feature-candidate/v1",
+  "productVersion": "1.1.0",
+  "stage": "V1.1-PRJ1",
+  "status": "validation-pending",
+  "parentStage": "V1.1-IAM1",
+  "parentSourceCommit": "86f9f4efd086e4e67823a930fcb3ef1b7249b71f",
+  "integrationParentCommit": "84a0ecab7d44c345d7580eccbe5d9f3df95c32f9",
+  "sourceCommit": null,
+  "sourceTree": null,
+  "workflowRun": null,
+  "migration": {
+    "ledgerCount": 41,
+    "module": "projects",
+    "version": "20260918-007",
+    "order": 306
+  },
+  "contracts": {
+    "api": "docs/api/project-bootstrap-v1.md",
+    "contributorCatalog": "pmcs.project-bootstrap/v1.0.0",
+    "event": "projects.bootstrap.completed.v1",
+    "permissions": [
+      "projects.bootstrap.preview",
+      "projects.bootstrap.create",
+      "projects.bootstrap.members_copy",
+      "projects.bootstrap.activate"
+    ]
+  },
+  "localEvidence": {
+    "webUnitTests": 139,
+    "systemEndpoints": 265,
+    "systemMutations": 201,
+    "protocolManagedMutations": 5,
+    "webBuild": "passed",
+    "repositoryValidation": "passed"
+  },
+  "qualificationClaims": {
+    "featureCheckpointClosed": false,
+    "featureComplete": false,
+    "qualified": false,
+    "final": false,
+    "baselineLocked": false
+  }
+}

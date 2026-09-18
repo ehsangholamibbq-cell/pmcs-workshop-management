@@ -54,8 +54,18 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "40" \
+  "41" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "controlled project bootstrap migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'projects' and version = '20260918-007';"
+
+expect_equal \
+  "controlled project bootstrap table is available" \
+  "1" \
+  "select count(*) from information_schema.tables where table_schema = 'projects' and table_name = 'project_bootstrap_plans';"
 
 expect_equal \
   "identity experience migration identity" \

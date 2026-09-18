@@ -103,6 +103,7 @@ public sealed class IdentityAccessModule : IModule
 
         services.AddDbContext<IdentityAccessDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IProjectPermissionService, ProjectPermissionService>();
+        services.AddScoped<IProjectMembershipBootstrapService, ProjectMembershipBootstrapService>();
         services.AddScoped<IActorAccessValidator, ActorAccessValidator>();
         services.AddScoped<IProjectAssigneeDirectory, ProjectAssigneeDirectory>();
         services.AddScoped<IProjectLeadershipDirectory, ProjectLeadershipDirectory>();

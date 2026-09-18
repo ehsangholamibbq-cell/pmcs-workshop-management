@@ -26,6 +26,10 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.Platform/Migrations/PlatformMigrationLedgerNormalizationMigration.cs",
   "src/backend/Pmcs.Modules.Platform/Services/IdempotencyRetentionWorker.cs",
   "src/backend/Pmcs.Modules.Projects/Domain/ProjectLocation.cs",
+  "src/backend/Pmcs.Modules.Projects/Domain/ProjectBootstrapPlan.cs",
+  "src/backend/Pmcs.Modules.Projects/Endpoints/ProjectBootstrapEndpoints.cs",
+  "src/backend/Pmcs.Modules.Projects/Migrations/ProjectBootstrapMigration.cs",
+  "src/backend/Pmcs.Modules.Projects/Services/ProjectBootstrapContributorCatalog.cs",
   "src/backend/Pmcs.Modules.Projects/Migrations/ProjectActivationMetadataMigration.cs",
   "src/backend/Pmcs.Modules.Projects/Migrations/ProjectLocationMigration.cs",
   "src/backend/Pmcs.Modules.Sync/Endpoints/SyncGatewayEndpoints.cs",
@@ -59,6 +63,8 @@ const requiredFiles = [
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",
+  "src/web/components/project-bootstrap-wizard.tsx",
+  "src/web/app/project-bootstraps/page.tsx",
   "src/web/app/portfolio/page.tsx",
   "src/web/app/admin/users/page.tsx",
   "src/web/app/projects/[projectId]/page.tsx",
@@ -91,6 +97,7 @@ const requiredFiles = [
   "docs/adr/0023-persian-calendar-user-boundary.md",
   "docs/adr/0024-project-lifecycle-location-and-integrity.md",
   "docs/api/project-setup-and-locations-v1.md",
+  "docs/api/project-bootstrap-v1.md",
   "docs/api/shared-documents-v1.md",
   "docs/audits/system-integrity-traceability-2026-09-13.md",
   "docs/checkpoints/foundation-19.md",
@@ -112,6 +119,7 @@ const requiredFiles = [
   "docs/checkpoints/qa-foundation-07.md",
   "docs/checkpoints/pmcs-v1-qualification.md",
   "docs/checkpoints/v1.1-doc1-candidate.md",
+  "docs/checkpoints/v1.1-prj1-candidate.md",
   "docs/runbooks/pilot-release.md",
   "tools/checkpoint22-db-verification.sh",
   "tools/checkpoint23-db-verification.sh",
@@ -143,6 +151,7 @@ const requiredFiles = [
   "release/pmcs-v1-qualification.json",
   "release/pmcs-v1-baseline.json",
   "release/pmcs-v1.1-doc1-candidate.json",
+  "release/pmcs-v1.1-prj1-candidate.json",
 ];
 
 for (const file of requiredFiles) {

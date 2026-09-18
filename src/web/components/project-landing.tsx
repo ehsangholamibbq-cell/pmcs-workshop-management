@@ -167,6 +167,7 @@ function ProjectLandingContent() {
         </div>
         <div className="project-landing-account">
           <Link href="/profile">پروفایل من</Link>
+          {session.tenantRole === "TenantAdministrator" && <Link href="/project-bootstraps">ساخت از روی پروژهٔ موجود</Link>}
           {session.tenantRole === "TenantAdministrator" && <Link href="/admin/login-experience">ظاهر صفحه ورود</Link>}
           <SessionBadge />
         </div>
