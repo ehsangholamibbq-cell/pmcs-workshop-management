@@ -283,6 +283,10 @@ expect_equal \
   "after-storage crash window preserves one document without a reporting output" \
   "Processing|Rendering|1|1|0|1" \
   "select run.status || '|' || run.pipeline_stage || '|' || run.attempt_count::text || '|' || (select count(*) from reporting.report_snapshots where run_id = run.id)::text || '|' || (select count(*) from reporting.report_outputs where run_id = run.id)::text || '|' || (select count(*) from foundation.audit_events where event_type = 'GeneratedReportDocumentReleased' and correlation_id = run.correlation_id)::text from reporting.report_runs run where run.id = '${after_storage_run_id}';"
+expect_equal \
+  "orphan inventory identifies the crash-after-storage document" \
+  "1" \
+  "select count(*) from documents.assets asset join foundation.audit_events event on event.event_type = 'GeneratedReportDocumentReleased' and event.resource_type = 'DocumentAsset' and event.resource_id = asset.id::text join reporting.report_runs run on run.correlation_id = event.correlation_id and run.id = '${after_storage_run_id}' left join reporting.report_outputs output on output.id = asset.owner_id and output.tenant_id = asset.tenant_id and output.project_id = asset.project_id where asset.owner_type = 'ReportOutput' and output.id is null;"
 crash_process "${after_pid}"
 execute "update reporting.report_runs set claimed_at = now() - interval '11 minutes' where id = '${after_storage_run_id}' and status = 'Processing' and pipeline_stage = 'Rendering';"
 
@@ -293,6 +297,10 @@ wait_equal \
   "after-storage stale rendering lease reuses the stable document" \
   "Succeeded|2|1" \
   "select status || '|' || attempt_count::text || '|' || output_count::text from reporting.report_runs where id = '${after_storage_run_id}';"
+expect_equal \
+  "orphan inventory is empty after stable recovery" \
+  "0" \
+  "select count(*) from documents.assets asset join foundation.audit_events event on event.event_type = 'GeneratedReportDocumentReleased' and event.resource_type = 'DocumentAsset' and event.resource_id = asset.id::text join reporting.report_runs run on run.correlation_id = event.correlation_id and run.id = '${after_storage_run_id}' left join reporting.report_outputs output on output.id = asset.owner_id and output.tenant_id = asset.tenant_id and output.project_id = asset.project_id where asset.owner_type = 'ReportOutput' and output.id is null;"
 stop_process "${after_recovery_pid}"
 
 execute "update reporting.report_runs set status = 'Processing', pipeline_stage = 'BuildingSnapshot', attempt_count = 1, claimed_at = now() - interval '11 minutes', started_at = now() - interval '11 minutes', next_attempt_at = null, diagnostic_code = null, diagnostic_detail = null, revision = revision + 1 where id = '${stale_lease_run_id}' and status = 'Queued';"
@@ -323,4 +331,4 @@ expect_equal \
   "select (select data->>'workerInstanceId' from foundation.audit_events where event_type = 'CertifiedReportRenderingStarted' and resource_id = '${before_storage_run_id}' order by occurred_at limit 1) || '|' || (select data->>'workerInstanceId' from foundation.audit_events where event_type = 'CertifiedReportRenderingResumed' and resource_id = '${before_storage_run_id}' order by occurred_at limit 1) || '|' || (select data->>'workerInstanceId' from foundation.audit_events where event_type = 'CertifiedReportRenderingStarted' and resource_id = '${after_storage_run_id}' order by occurred_at limit 1) || '|' || (select data->>'workerInstanceId' from foundation.audit_events where event_type = 'CertifiedReportRenderingResumed' and resource_id = '${after_storage_run_id}' order by occurred_at limit 1) || '|' || (select data->>'workerInstanceId' from foundation.audit_events where event_type = 'CertifiedReportSnapshotBuilt' and resource_id = '${stale_lease_run_id}' order by occurred_at limit 1);"
 
 stop_process "${stale_pid}"
-printf '{"status":"passed","stage":"reporting-worker-recovery-regression","assertions":15}\n'
+printf '{"status":"passed","stage":"reporting-worker-recovery-regression","assertions":17}\n'

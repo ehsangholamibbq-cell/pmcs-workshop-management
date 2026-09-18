@@ -62,6 +62,9 @@ internal static partial class Program
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
+                "prepare-reporting-worker-revocation" => await PrepareReportingWorkerRevocationAsync(),
+                "verify-reporting-worker-revocation" => await VerifyReportingWorkerRevocationAsync(),
+                "verify-reporting-object-security" => await VerifyReportingObjectSecurityAsync(),
                 "verify-sync" => await VerifySyncAsync(),
                 "verify-exploratory" => await VerifyExploratoryAsync(),
                 _ => WriteUsage()
@@ -475,7 +478,10 @@ internal static partial class Program
     private static int WriteUsage()
     {
         Console.Error.WriteLine(
-            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|verify-reporting-cancellation|verify-sync|verify-exploratory>");
+            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
+            "verify-reporting-cancellation|prepare-reporting-recovery|verify-reporting-recovery|" +
+            "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
+            "verify-reporting-object-security|verify-sync|verify-exploratory>");
         return 2;
     }
 

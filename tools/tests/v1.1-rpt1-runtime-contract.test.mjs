@@ -14,9 +14,13 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingWorkerRevocationVerification.cs",
+    "tools/qa/verify-reporting-object-security.sh",
     "tools/qa/verify-reporting-recovery.sh",
     "tools/qa/verify-reporting-security.sh",
+    "tools/qa/verify-reporting-worker-revocation.sh",
   ]) assert.equal(existsSync(path), true, `Missing ${path}`);
 
   const module = read(`${moduleRoot}/ReportingModule.cs`);
@@ -137,7 +141,12 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(security, /tampered report metadata fails closed/u);
   const recoveryHarness = read("src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs");
   const recovery = read("tools/qa/verify-reporting-recovery.sh");
+  const revocationHarness = read("src/backend/Pmcs.TestHarness/ReportingWorkerRevocationVerification.cs");
+  const revocation = read("tools/qa/verify-reporting-worker-revocation.sh");
+  const objectSecurityHarness = read("src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs");
+  const objectSecurity = read("tools/qa/verify-reporting-object-security.sh");
   const qualificationOptions = read(`${moduleRoot}/ReportingWorkerQualificationOptions.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   assert.match(recoveryHarness, /"concurrency-locked"/u);
   assert.match(recoveryHarness, /"crash-after-storage"/u);
   assert.match(recoveryHarness, /reporting\.recovery\.\{fixture\.Code\}\.completed-once/u);
@@ -147,17 +156,37 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(recovery, /after-storage crash window/u);
   assert.match(recovery, /stale snapshot-building lease is reclaimed/u);
   assert.match(recovery, /kill -KILL/u);
+  assert.match(recovery, /orphan inventory identifies the crash-after-storage document/u);
+  assert.match(recovery, /orphan inventory is empty after stable recovery/u);
+  assert.match(revocationHarness, /reporting\.worker-revocation\.failed-before-storage/u);
+  assert.match(revocationHarness, /reporting\.permission\.revoked/u);
+  assert.match(revocation, /BeforeStoragePermissionRecheck/u);
+  assert.match(revocation, /revocation during rendering fails before storage/u);
+  assert.match(revocation, /worker-time revocation records both denied permissions/u);
+  assert.match(worker, /BeforeStoragePermissionRecheck[\s\S]*?RequireProcessingPermissionsAsync[\s\S]*?PublishReportOutputAsync/u);
+  assert.match(worker, /RecordRenderingPermissionSnapshot/u);
+  assert.match(objectSecurityHarness, /byte-tamper\.verify-fails-closed/u);
+  assert.match(objectSecurityHarness, /missing\.verify-fails-closed/u);
+  assert.match(objectSecurityHarness, /malformed\.verify-fails-closed/u);
+  assert.match(objectSecurityHarness, /finally[\s\S]*?PutObjectAsync/u);
+  assert.match(objectSecurity, /exactly four integrity-failure audits/u);
   assert.match(qualificationOptions, /qualification pauses require the isolated QA gateway/u);
   assert.match(qualificationOptions, /PMCS_QA_GATEWAY_ENABLED/u);
+  assert.match(qualificationOptions, /QualificationPauseSeconds must be between 1 and 60/u);
   assert.match(seed, /ReportingCenter__PdfLicense=Unconfigured/u);
   assert.match(seed, /-- verify-reporting/u);
   assert.match(seed, /start_api false[\s\S]*?-- verify-reporting-cancellation/u);
   assert.match(seed, /verify-reporting-security\.sh/u);
+  assert.match(seed, /verify-reporting-object-security\.sh/u);
   assert.match(seed, /verify-reporting-recovery\.sh/u);
+  assert.match(seed, /verify-reporting-worker-revocation\.sh/u);
   assert.match(database, /certified output is a released governed document/u);
   assert.match(database, /certified reporting transactional outbox coverage/u);
   assert.match(database, /queued report cancellation is final and unclaimed/u);
   assert.match(database, /worker concurrency and recovery runs completed with bounded attempts/u);
+  assert.match(database, /worker-time permission revocation fails before document publication/u);
+  assert.match(database, /generated report orphan inventory is empty after recovery/u);
+  assert.match(database, /object and metadata tamper attempts are audited/u);
 });
 
 test("RPT1 is disabled by default until renderers and qualification are complete", () => {

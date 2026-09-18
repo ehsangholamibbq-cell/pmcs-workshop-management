@@ -373,6 +373,17 @@ internal sealed partial class ReportGenerationWorker(
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
         }
 
+        await PauseForQualificationAsync(
+            ReportingWorkerQualificationPausePoint.BeforeStoragePermissionRecheck,
+            run.Id,
+            cancellationToken);
+        permissionSnapshotJson = await RequireProcessingPermissionsAsync(
+            permissionService,
+            claimed,
+            cancellationToken);
+        run.RecordRenderingPermissionSnapshot(permissionSnapshotJson);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         foreach (var item in rendered)
         {
             var document = await publisher.PublishReportOutputAsync(
@@ -570,7 +581,9 @@ internal sealed partial class ReportGenerationWorker(
         }
 
         LogQualificationPause(logger, qualification.WorkerInstanceId, point, runId);
-        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        await Task.Delay(
+            qualification.PauseDuration ?? Timeout.InfiniteTimeSpan,
+            cancellationToken);
     }
 
     private static async Task<ClaimedRun?> ClaimNextRenderingAsync(

@@ -265,6 +265,7 @@ public sealed class ReportingTests
         Assert.StartsWith("worker-", options.WorkerInstanceId, StringComparison.Ordinal);
         Assert.Equal(ReportingWorkerQualificationPausePoint.None, options.PausePoint);
         Assert.Null(options.TargetRunId);
+        Assert.Null(options.PauseDuration);
     }
 
     [Fact]
@@ -304,8 +305,57 @@ public sealed class ReportingTests
         Assert.Equal("qa-worker-a", options.WorkerInstanceId);
         Assert.Equal(ReportingWorkerQualificationPausePoint.AfterStorage, options.PausePoint);
         Assert.Equal(targetRunId, options.TargetRunId);
+        Assert.Null(options.PauseDuration);
         Assert.True(options.ShouldPause(ReportingWorkerQualificationPausePoint.AfterStorage, targetRunId));
         Assert.False(options.ShouldPause(ReportingWorkerQualificationPausePoint.BeforeStorage, targetRunId));
+    }
+
+    [Fact]
+    public void WorkerQualificationPauseAcceptsABoundedQaDuration()
+    {
+        var targetRunId = Guid.NewGuid();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PMCS_QA_GATEWAY_ENABLED"] = "true",
+                ["ReportingCenter:WorkerInstanceId"] = "qa-worker-revocation",
+                ["ReportingCenter:QualificationPausePoint"] = "BeforeStoragePermissionRecheck",
+                ["ReportingCenter:QualificationTargetRunId"] = targetRunId.ToString(),
+                ["ReportingCenter:QualificationPauseSeconds"] = "7"
+            })
+            .Build();
+
+        var options = ReportingWorkerQualificationOptions.Create(configuration);
+
+        Assert.Equal(
+            ReportingWorkerQualificationPausePoint.BeforeStoragePermissionRecheck,
+            options.PausePoint);
+        Assert.Equal(TimeSpan.FromSeconds(7), options.PauseDuration);
+        Assert.True(options.ShouldPause(
+            ReportingWorkerQualificationPausePoint.BeforeStoragePermissionRecheck,
+            targetRunId));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("61")]
+    [InlineData("invalid")]
+    public void WorkerQualificationPauseRejectsAnInvalidDuration(string pauseSeconds)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PMCS_QA_GATEWAY_ENABLED"] = "true",
+                ["ReportingCenter:QualificationPausePoint"] = "BeforeStoragePermissionRecheck",
+                ["ReportingCenter:QualificationTargetRunId"] = Guid.NewGuid().ToString(),
+                ["ReportingCenter:QualificationPauseSeconds"] = pauseSeconds
+            })
+            .Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ReportingWorkerQualificationOptions.Create(configuration));
+
+        Assert.Contains("between 1 and 60", exception.Message, StringComparison.Ordinal);
     }
 
     private static ReportRun CreateRun()

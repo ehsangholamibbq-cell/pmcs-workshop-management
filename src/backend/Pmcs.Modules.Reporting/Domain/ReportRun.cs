@@ -148,6 +148,22 @@ public sealed class ReportRun : AggregateRoot
         AdvanceRevision();
     }
 
+    public void RecordRenderingPermissionSnapshot(string processingPermissionSnapshotJson)
+    {
+        if (Status != ReportRunStatus.Processing || PipelineStage != ReportPipelineStage.Rendering ||
+            !SnapshotId.HasValue || OutputCount > 0)
+        {
+            throw new DomainRuleException(
+                "reporting.run.invalid_state",
+                "Rendering permission evidence cannot be recorded for this run.");
+        }
+
+        ProcessingPermissionSnapshotJson = RequiredJson(
+            processingPermissionSnapshotJson,
+            "reporting.permission_snapshot.invalid");
+        AdvanceRevision();
+    }
+
     public void Requeue(string diagnosticCode, DateTimeOffset nextAttemptAt)
     {
         if (Status != ReportRunStatus.Processing || PipelineStage != ReportPipelineStage.BuildingSnapshot ||

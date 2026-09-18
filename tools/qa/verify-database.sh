@@ -23,6 +23,7 @@ reporting_concurrency_skipped_run_id="71000000-0000-4000-8000-000000000005"
 reporting_crash_before_storage_run_id="71000000-0000-4000-8000-000000000006"
 reporting_crash_after_storage_run_id="71000000-0000-4000-8000-000000000007"
 reporting_stale_lease_run_id="71000000-0000-4000-8000-000000000008"
+reporting_worker_revocation_run_id="71000000-0000-4000-8000-000000000009"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -247,6 +248,31 @@ expect_equal \
   "select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('qa-rpt1-recovery-concurrency-locked', 'qa-rpt1-recovery-concurrency-skipped', 'qa-rpt1-recovery-crash-before-storage', 'qa-rpt1-recovery-crash-after-storage', 'qa-rpt1-recovery-stale-lease');"
 
 expect_equal \
+  "worker-time permission revocation fails before document publication" \
+  "Failed|Failed|1|0|reporting.permission.revoked|1|0" \
+  "select run.status || '|' || run.pipeline_stage || '|' || run.attempt_count::text || '|' || run.output_count::text || '|' || coalesce(run.diagnostic_code, '<none>') || '|' || (select count(*) from reporting.report_snapshots where run_id = run.id)::text || '|' || (select count(*) from foundation.audit_events event where event.correlation_id = run.correlation_id and event.event_type = 'GeneratedReportDocumentReleased')::text from reporting.report_runs run where run.tenant_id = '${tenant_id}' and run.project_id = '${project_id}' and run.id = '${reporting_worker_revocation_run_id}';"
+
+expect_equal \
+  "worker-time revocation stores denied permission evidence" \
+  "2" \
+  "select count(*) from reporting.report_runs run cross join lateral jsonb_array_elements(run.processing_permission_snapshot->'decisions') decision where run.id = '${reporting_worker_revocation_run_id}' and decision->>'operation' in ('reporting.run.create', 'field.daily-reports.read') and not (decision->>'allowed')::boolean;"
+
+expect_equal \
+  "worker-time revocation audit and idempotency are singular" \
+  "1|1" \
+  "select (select count(*) from foundation.audit_events where event_type = 'CertifiedReportRunFailed' and resource_type = 'ReportRun' and resource_id = '${reporting_worker_revocation_run_id}' and data->>'workerInstanceId' = 'qa-rpt1-worker-revocation' and data->>'diagnosticCode' = 'reporting.permission.revoked')::text || '|' || (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key = 'qa-rpt1-worker-revocation')::text;"
+
+expect_equal \
+  "generated report orphan inventory is empty after recovery" \
+  "0" \
+  "select count(*) from documents.assets asset left join reporting.report_outputs output on output.id = asset.owner_id and output.tenant_id = asset.tenant_id and output.project_id = asset.project_id where asset.tenant_id = '${tenant_id}' and asset.project_id = '${project_id}' and asset.owner_type = 'ReportOutput' and output.id is null;"
+
+expect_equal \
+  "object and metadata tamper attempts are audited" \
+  "5" \
+  "select count(*) from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and event_type = 'CertifiedReportOutputIntegrityFailed' and resource_type = 'ReportOutput' and resource_id in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}');"
+
+expect_equal \
   "reporting snapshots remain immutable across render retry" \
   "2|2|0" \
   "select count(*)::text || '|' || count(distinct run_id)::text || '|' || count(*) filter (where sha256 !~ '^[0-9a-f]{64}$' or source_manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}');"
@@ -268,7 +294,7 @@ expect_equal \
 
 expect_equal \
   "certified reporting audit lifecycle coverage" \
-  "2|2|1|1|1|2|2|1" \
+  "2|2|1|1|1|3|2|1" \
   "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportSnapshotBuilt')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCompleted')::text || '|' || count(*) filter (where event_type = 'GeneratedReportDocumentReleased')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputDownloaded')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputVerified')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunFailed')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunRetried')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and ((resource_type = 'ReportRun' and resource_id in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}')) or (event_type = 'GeneratedReportDocumentReleased' and data->>'ownerId' in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')) or (resource_type = 'ReportOutput' and resource_id in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')));"
 
 expect_equal \

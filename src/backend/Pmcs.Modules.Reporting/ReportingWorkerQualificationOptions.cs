@@ -5,7 +5,8 @@ namespace Pmcs.Modules.Reporting;
 internal sealed record ReportingWorkerQualificationOptions(
     string WorkerInstanceId,
     ReportingWorkerQualificationPausePoint PausePoint,
-    Guid? TargetRunId)
+    Guid? TargetRunId,
+    TimeSpan? PauseDuration)
 {
     private const string QaGatewayConfigurationKey = "PMCS_QA_GATEWAY_ENABLED";
 
@@ -35,6 +36,8 @@ internal sealed record ReportingWorkerQualificationOptions(
                         "ReportingCenter:QualificationPausePoint is invalid.");
 
         Guid? targetRunId = null;
+        TimeSpan? pauseDuration = null;
+        var configuredPauseSeconds = configuration["ReportingCenter:QualificationPauseSeconds"]?.Trim();
         if (pausePoint != ReportingWorkerQualificationPausePoint.None)
         {
             var qaGatewayEnabled = bool.TryParse(
@@ -54,9 +57,29 @@ internal sealed record ReportingWorkerQualificationOptions(
                     "ReportingCenter:QualificationTargetRunId is required for a qualification pause.");
             }
             targetRunId = parsedTargetRunId;
+
+            if (!string.IsNullOrWhiteSpace(configuredPauseSeconds))
+            {
+                if (!int.TryParse(configuredPauseSeconds, out var parsedPauseSeconds) ||
+                    parsedPauseSeconds is < 1 or > 60)
+                {
+                    throw new InvalidOperationException(
+                        "ReportingCenter:QualificationPauseSeconds must be between 1 and 60.");
+                }
+                pauseDuration = TimeSpan.FromSeconds(parsedPauseSeconds);
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(configuredPauseSeconds))
+        {
+            throw new InvalidOperationException(
+                "ReportingCenter:QualificationPauseSeconds requires a qualification pause point.");
         }
 
-        return new ReportingWorkerQualificationOptions(workerInstanceId, pausePoint, targetRunId);
+        return new ReportingWorkerQualificationOptions(
+            workerInstanceId,
+            pausePoint,
+            targetRunId,
+            pauseDuration);
     }
 
     public bool ShouldPause(ReportingWorkerQualificationPausePoint point, Guid runId) =>
@@ -68,5 +91,6 @@ internal enum ReportingWorkerQualificationPausePoint
     None = 0,
     AfterSnapshotRowLock = 1,
     BeforeStorage = 2,
-    AfterStorage = 3
+    AfterStorage = 3,
+    BeforeStoragePermissionRecheck = 4
 }
