@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | در جریان روی شاخه V1.1؛ PRJ1 تا source commit `e1b5bf6` تأیید شده است |
-| Database migration | ۴۱ Migration؛ Restore Drill در Run 92 پاس |
+| Product runtime implementation | RPT1 Slice 01 در source commit `2208bb1`؛ فقط Local structural candidate و هنوز Unqualified |
+| Database migration | ۴۲ Migration در Source؛ آخرین Restore Drill متصلِ اثبات‌شده همچنان ۴۱ Migration در Run 92 است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -41,6 +41,13 @@ PRJ1 با Candidate source commit `e1b5bf6af813af7324065edc1c91eecf2391eccd` و 
 Definition of Ready مرحله RPT1 با شناسه `PMCS-V1.1-RPT1-DOR1` روی source commit جاری
 ثبت شد. این بسته ADR، معماری، API، Permission/Threat، Test Matrix و Runbook را قفل می‌کند، اما
 هیچ تغییر Runtime یا Migration ایجاد نمی‌کند و Gate خروج RPT1 همچنان باز است.
+
+اولین Slice پیاده‌سازی RPT1 با source commit
+`2208bb1828dea571b81a3eb615ddd13250520c73` و tree
+`257d8c80f45435e462563e38bb3c5fa12c77808b` ثبت شد. Migration 42، Reporting core، Source
+contract، API اولیه، Snapshot worker و Agent read-only manifests/application service در Source
+وجود دارند، اما چون Build/CI متصل، PostgreSQL/Restore و Rendererهای PDF/XLSX هنوز Evidence ندارند،
+این Commit Baseline تأییدشده یا Checkpoint بسته محسوب نمی‌شود. Feature flag پیش‌فرض خاموش است.
 
 ## ۳. قرارداد شاخه و ادغام
 

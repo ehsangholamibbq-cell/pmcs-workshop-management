@@ -180,3 +180,12 @@ Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 نقطهٔ دقیق ادامه: ساخت Definition of Ready و سپس اولین Vertical Slice مستقل
 `V1.1-RPT1` برای «گزارش روزانه رسمی و زنجیرهٔ اصلاحات» روی Semantic Read Model
 permission-aware، بدون Query مستقیم به Persistence ماژول FieldOperations.
+
+## ۱۱. Addendum ادامه پس از ممیزی
+
+جدول‌ها و جمع‌بندی بالا Snapshot زمان انجام ممیزی و پیش از Runtime هستند. پس از بسته‌شدن DoR،
+اولین Vertical Slice در Source Candidate
+`2208bb1828dea571b81a3eb615ddd13250520c73` پیاده شد و Evidence آن در
+`docs/checkpoints/v1.1-rpt1-slice-01-candidate.md` ثبت شده است. این ادامه نتیجهٔ ممیزی را تغییر
+نمی‌دهد: تصمیمی جا نیفتاده است، RPT1 هنوز بسته نشده، Feature flag پیش‌فرض خاموش است و مرحلهٔ بعد
+Generated Document/PDF/XLSX و Qualification متصل است.

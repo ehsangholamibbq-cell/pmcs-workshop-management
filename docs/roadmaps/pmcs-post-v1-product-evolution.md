@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.8.0`
+- نسخه سند: `1.9.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -256,6 +256,15 @@ Scope معماری:
 `db08eef7477356f164783dc783a4993f24f39a10` ثبت شد. ADR 0029، معماری Semantic Snapshot،
 API، Permission/Threat contract، Test Matrix و Runbook آماده‌اند. این Evidence فقط آغاز
 پیاده‌سازی RPT1 را مجاز می‌کند و هیچ Runtime/Migration یا Gate خروج RPT1 را کامل اعلام نمی‌کند.
+
+**Implementation Slice 01:** Source Candidate با commit
+`2208bb1828dea571b81a3eb615ddd13250520c73` و tree
+`257d8c80f45435e462563e38bb3c5fa12c77808b` ثبت شد. Module/Descriptor، Migration 42،
+Catalog/Create/Get/List، Source contract زنجیره گزارش روزانه، canonical Snapshot، Worker claim،
+Permission re-evaluation، Role mapping، read-only Agent manifests/application service و جلوگیری از
+generic Documents access برای `ReportOutput` پیاده شده‌اند. Feature flag پیش‌فرض خاموش است و این
+Candidate هنوز Build/CI/connected integration، Rendererهای PDF/XLSX، Download/Verify، Golden،
+Restore و Full Regression ندارد؛ در نتیجه RPT1 همچنان فعال و باز است.
 
 ### `V1.1-COL1` — Project Collaboration
 

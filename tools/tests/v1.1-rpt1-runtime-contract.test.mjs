@@ -77,6 +77,16 @@ test("RPT1 is disabled by default until renderers and qualification are complete
   assert.match(options, /workerEnabled = phase1Enabled &&/u);
 });
 
+test("RPT1 slice checkpoint separates source implementation from qualification", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-01-candidate.md");
+  assert.match(checkpoint, /2208bb1828dea571b81a3eb615ddd13250520c73/u);
+  assert.match(checkpoint, /Local structural evidence only \| Unqualified/u);
+  assert.match(checkpoint, /37\/37 passed/u);
+  assert.match(checkpoint, /dotnet[\s\S]*پاس‌شده اعلام نمی‌شوند/u);
+  assert.match(checkpoint, /Generated Document publish\/read contract/u);
+  assert.match(checkpoint, /Feature flag[\s\S]*پیش‌فرض خاموش/u);
+});
+
 function read(path) {
   return readFileSync(path, "utf8");
 }
