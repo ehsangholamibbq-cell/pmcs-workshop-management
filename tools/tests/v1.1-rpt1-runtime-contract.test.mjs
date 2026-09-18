@@ -96,7 +96,7 @@ test("generated outputs use the Documents owner contract and certified renderers
   assert.match(worker, /rendered\.Add[\s\S]*?foreach \(var item in rendered\)[\s\S]*?PublishReportOutputAsync/u);
   assert.match(worker, /reporting\.report\.completed\.v1/u);
   assert.match(pdf, /ContentFromRightToLeft/u);
-  assert.match(pdf, /FontManager\.RegisterFontFromFile/u);
+  assert.match(pdf, /File\.OpenRead[\s\S]*FontManager\.RegisterFontFromStream/u);
   assert.match(xlsx, /rightToLeft/u);
   assert.match(xlsx, /CompressionLevel\.NoCompression/u);
   assert.doesNotMatch(xlsx, /<f>|WriteStartElement\("f"/u);

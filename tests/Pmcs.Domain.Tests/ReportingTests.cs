@@ -126,11 +126,9 @@ public sealed class ReportingTests
         var reportId = Guid.NewGuid();
         var chain = Chain(reportId);
         var parameters = new DailyReportReportParameters(reportId, true);
-        var builder = new DailyReportSnapshotBuilder();
-
-        var first = builder.Build(
+        var first = DailyReportSnapshotBuilder.Build(
             Guid.NewGuid(), tenantId, project, Cutoff, parameters, chain, Cutoff.AddMinutes(1));
-        var second = builder.Build(
+        var second = DailyReportSnapshotBuilder.Build(
             Guid.NewGuid(), tenantId, project, Cutoff, parameters, chain, Cutoff.AddMinutes(30));
 
         Assert.Equal(ReportDataStatus.Available, first.DataStatus);
@@ -145,7 +143,7 @@ public sealed class ReportingTests
     {
         var tenantId = Guid.NewGuid();
         var reportId = Guid.NewGuid();
-        var snapshot = new DailyReportSnapshotBuilder().Build(
+        var snapshot = DailyReportSnapshotBuilder.Build(
             Guid.NewGuid(),
             tenantId,
             Project(tenantId),

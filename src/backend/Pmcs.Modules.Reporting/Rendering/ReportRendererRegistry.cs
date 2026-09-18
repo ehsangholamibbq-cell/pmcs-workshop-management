@@ -4,7 +4,7 @@ namespace Pmcs.Modules.Reporting.Rendering;
 
 internal sealed class ReportRendererRegistry(IEnumerable<IReportRenderer> renderers)
 {
-    private readonly IReadOnlyDictionary<ReportFormat, IReportRenderer> byFormat = renderers
+    private readonly Dictionary<ReportFormat, IReportRenderer> byFormat = renderers
         .ToDictionary(renderer => renderer.Format);
 
     public IReportRenderer Require(ReportFormat format) =>

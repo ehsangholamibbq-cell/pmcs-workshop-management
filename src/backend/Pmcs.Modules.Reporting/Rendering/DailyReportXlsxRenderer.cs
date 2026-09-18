@@ -326,11 +326,11 @@ internal sealed class DailyReportXlsxRenderer : IReportRenderer
         writer.WriteEndElement();
     }
 
-    private static void WriteStringRow(XmlWriter writer, int rowNumber, IReadOnlyList<string> cells, int style)
+    private static void WriteStringRow(XmlWriter writer, int rowNumber, string[] cells, int style)
     {
         writer.WriteStartElement("row", SpreadsheetNamespace);
         writer.WriteAttributeString("r", rowNumber.ToString(CultureInfo.InvariantCulture));
-        for (var index = 0; index < cells.Count; index++)
+        for (var index = 0; index < cells.Length; index++)
         {
             WriteStringCell(writer, rowNumber, index + 1, cells[index], style);
         }

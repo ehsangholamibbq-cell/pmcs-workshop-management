@@ -132,8 +132,14 @@ internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) :
                     "The certified Persian PDF font files are not available.");
             }
 
-            FontManager.RegisterFontFromFile(options.PdfRegularFontPath);
-            FontManager.RegisterFontFromFile(options.PdfBoldFontPath);
+            using (var regularFont = File.OpenRead(options.PdfRegularFontPath))
+            {
+                FontManager.RegisterFontFromStream(regularFont);
+            }
+            using (var boldFont = File.OpenRead(options.PdfBoldFontPath))
+            {
+                FontManager.RegisterFontFromStream(boldFont);
+            }
             configuredSignature = signature;
         }
     }
@@ -299,19 +305,24 @@ internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) :
     {
         container.BorderTop(1).BorderColor("#D1DBE8").PaddingTop(6).Row(row =>
         {
-            row.RelativeItem().ContentFromLeftToRight().Text(text =>
-            {
-                text.Span(request.VerificationCode).SemiBold();
-                text.Span("  |  ");
-                text.Span(request.ManifestSha256[..12]);
-            }).FontSize(6.5f).FontColor("#5D6B80");
-            row.AutoItem().Text(text =>
-            {
-                text.Span("صفحه ");
-                text.CurrentPageNumber();
-                text.Span(" از ");
-                text.TotalPages();
-            }).FontSize(7).FontColor("#5D6B80");
+            row.RelativeItem()
+                .ContentFromLeftToRight()
+                .DefaultTextStyle(style => style.FontSize(6.5f).FontColor("#5D6B80"))
+                .Text(text =>
+                {
+                    text.Span(request.VerificationCode).SemiBold();
+                    text.Span("  |  ");
+                    text.Span(request.ManifestSha256[..12]);
+                });
+            row.AutoItem()
+                .DefaultTextStyle(style => style.FontSize(7).FontColor("#5D6B80"))
+                .Text(text =>
+                {
+                    text.Span("صفحه ");
+                    text.CurrentPageNumber();
+                    text.Span(" از ");
+                    text.TotalPages();
+                });
         });
     }
 
@@ -324,7 +335,7 @@ internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) :
     private static IContainer SummaryValueCell(IContainer container) => container
         .Border(0.5f).BorderColor("#C8D6E8").Padding(5);
 
-    private static void FactHeader(TableDescriptor table, string value) => table.Cell()
+    private static void FactHeader(TableCellDescriptor header, string value) => header.Cell()
         .Background("#DCE8F5").Border(0.5f).BorderColor("#AFC3DE").Padding(4)
         .AlignMiddle().Text(value).SemiBold().FontSize(7.5f);
 

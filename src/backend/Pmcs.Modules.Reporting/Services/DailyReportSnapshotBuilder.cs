@@ -5,11 +5,11 @@ using Pmcs.Modules.Reporting.Endpoints;
 
 namespace Pmcs.Modules.Reporting.Services;
 
-internal sealed class DailyReportSnapshotBuilder
+internal static class DailyReportSnapshotBuilder
 {
     public const string SnapshotSchemaVersion = "pmcs.reporting.daily-report/v1";
 
-    public ReportSnapshot Build(
+    public static ReportSnapshot Build(
         Guid runId,
         Guid tenantId,
         ProjectControlProfile project,

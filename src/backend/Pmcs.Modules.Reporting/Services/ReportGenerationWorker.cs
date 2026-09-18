@@ -156,7 +156,6 @@ internal sealed partial class ReportGenerationWorker(
         var permissionService = services.GetRequiredService<IProjectPermissionService>();
         var projectDirectory = services.GetRequiredService<IProjectDirectory>();
         var source = services.GetRequiredService<IDailyReportReportingSource>();
-        var snapshotBuilder = services.GetRequiredService<DailyReportSnapshotBuilder>();
         var dbContext = services.GetRequiredService<ReportingDbContext>();
         var clock = services.GetRequiredService<IClock>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
@@ -200,7 +199,7 @@ internal sealed partial class ReportGenerationWorker(
             claimed.AsOfUtc,
             cancellationToken);
         var builtAt = clock.UtcNow;
-        var snapshot = snapshotBuilder.Build(
+        var snapshot = DailyReportSnapshotBuilder.Build(
             claimed.Id,
             claimed.TenantId,
             project,

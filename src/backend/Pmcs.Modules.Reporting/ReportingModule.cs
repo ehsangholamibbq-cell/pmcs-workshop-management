@@ -105,7 +105,6 @@ public sealed class ReportingModule : IModule
         services.AddSingleton(ReportingRendererOptions.Create(configuration));
         services.AddDbContext<ReportingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IReportingReadService, ReportingReadService>();
-        services.AddScoped<DailyReportSnapshotBuilder>();
         services.AddSingleton<IReportRenderer, DailyReportPdfRenderer>();
         services.AddSingleton<IReportRenderer, DailyReportXlsxRenderer>();
         services.AddSingleton<ReportRendererRegistry>();
