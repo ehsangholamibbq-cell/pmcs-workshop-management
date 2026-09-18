@@ -110,6 +110,9 @@ stop_api
 start_api false
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting-cancellation
 
+stop_api
+./tools/qa/verify-reporting-recovery.sh
+
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
 ./tools/qa/verify-sync-database.sh

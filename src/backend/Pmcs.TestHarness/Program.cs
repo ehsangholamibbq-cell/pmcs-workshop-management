@@ -60,6 +60,8 @@ internal static partial class Program
                 "verify-files" => await VerifyFilesAsync(),
                 "verify-reporting" => await VerifyReportingAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
+                "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
+                "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
                 "verify-sync" => await VerifySyncAsync(),
                 "verify-exploratory" => await VerifyExploratoryAsync(),
                 _ => WriteUsage()

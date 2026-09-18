@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
+using Microsoft.Extensions.Configuration;
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.Modules.FieldOperations.Contracts;
@@ -253,6 +254,58 @@ public sealed class ReportingTests
                 document.Root!.DescendantsAndSelf(),
                 element => Assert.NotEqual(XNamespace.None, element.Name.Namespace));
         }
+    }
+
+    [Fact]
+    public void WorkerQualificationPauseIsDisabledByDefault()
+    {
+        var options = ReportingWorkerQualificationOptions.Create(
+            new ConfigurationBuilder().Build());
+
+        Assert.StartsWith("worker-", options.WorkerInstanceId, StringComparison.Ordinal);
+        Assert.Equal(ReportingWorkerQualificationPausePoint.None, options.PausePoint);
+        Assert.Null(options.TargetRunId);
+    }
+
+    [Fact]
+    public void WorkerQualificationPauseRequiresTheIsolatedQaBoundary()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ReportingCenter:WorkerInstanceId"] = "qa-worker-a",
+                ["ReportingCenter:QualificationPausePoint"] = "BeforeStorage",
+                ["ReportingCenter:QualificationTargetRunId"] = Guid.NewGuid().ToString()
+            })
+            .Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ReportingWorkerQualificationOptions.Create(configuration));
+
+        Assert.Contains("isolated QA gateway", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WorkerQualificationPauseAcceptsAnExplicitQaTarget()
+    {
+        var targetRunId = Guid.NewGuid();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PMCS_QA_GATEWAY_ENABLED"] = "true",
+                ["ReportingCenter:WorkerInstanceId"] = "qa-worker-a",
+                ["ReportingCenter:QualificationPausePoint"] = "AfterStorage",
+                ["ReportingCenter:QualificationTargetRunId"] = targetRunId.ToString()
+            })
+            .Build();
+
+        var options = ReportingWorkerQualificationOptions.Create(configuration);
+
+        Assert.Equal("qa-worker-a", options.WorkerInstanceId);
+        Assert.Equal(ReportingWorkerQualificationPausePoint.AfterStorage, options.PausePoint);
+        Assert.Equal(targetRunId, options.TargetRunId);
+        Assert.True(options.ShouldPause(ReportingWorkerQualificationPausePoint.AfterStorage, targetRunId));
+        Assert.False(options.ShouldPause(ReportingWorkerQualificationPausePoint.BeforeStorage, targetRunId));
     }
 
     private static ReportRun CreateRun()

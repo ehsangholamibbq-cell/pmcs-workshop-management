@@ -18,6 +18,11 @@ workflow_fact_id="70000000-0000-4000-8000-000000000002"
 reporting_succeeded_run_id="71000000-0000-4000-8000-000000000001"
 reporting_license_failure_run_id="71000000-0000-4000-8000-000000000002"
 reporting_cancelled_run_id="71000000-0000-4000-8000-000000000003"
+reporting_concurrency_locked_run_id="71000000-0000-4000-8000-000000000004"
+reporting_concurrency_skipped_run_id="71000000-0000-4000-8000-000000000005"
+reporting_crash_before_storage_run_id="71000000-0000-4000-8000-000000000006"
+reporting_crash_after_storage_run_id="71000000-0000-4000-8000-000000000007"
+reporting_stale_lease_run_id="71000000-0000-4000-8000-000000000008"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -215,6 +220,31 @@ expect_equal \
   "cancelled report idempotency receipts are singular" \
   "1|1" \
   "select count(*) filter (where key = 'qa-rpt1-cancel-create')::text || '|' || count(*) filter (where key = 'qa-rpt1-cancel')::text from foundation.idempotency_records where tenant_id = '${tenant_id}';"
+
+expect_equal \
+  "worker concurrency and recovery runs completed with bounded attempts" \
+  "5|5|1,1,2,2,2" \
+  "select count(*)::text || '|' || count(*) filter (where status = 'Succeeded' and pipeline_stage = 'Complete' and output_count = 1)::text || '|' || string_agg(attempt_count::text, ',' order by id) from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id in ('${reporting_concurrency_locked_run_id}', '${reporting_concurrency_skipped_run_id}', '${reporting_crash_before_storage_run_id}', '${reporting_crash_after_storage_run_id}', '${reporting_stale_lease_run_id}');"
+
+expect_equal \
+  "worker recovery outputs retain one-to-one governed document ownership" \
+  "5|5|5|0" \
+  "select count(distinct run.id)::text || '|' || count(distinct output.id)::text || '|' || count(distinct asset.id)::text || '|' || count(*) filter (where asset.status <> 'Released' or asset.owner_type <> 'ReportOutput' or asset.owner_id <> output.id or asset.sha256 <> output.sha256)::text from reporting.report_runs run join reporting.report_outputs output on output.run_id = run.id join documents.assets asset on asset.id = output.generated_document_id where run.id in ('${reporting_concurrency_locked_run_id}', '${reporting_concurrency_skipped_run_id}', '${reporting_crash_before_storage_run_id}', '${reporting_crash_after_storage_run_id}', '${reporting_stale_lease_run_id}');"
+
+expect_equal \
+  "crashed rendering attempts have one start, one resume and one completion" \
+  "1|1|1|1|1|1" \
+  "select count(*) filter (where resource_id = '${reporting_crash_before_storage_run_id}' and event_type = 'CertifiedReportRenderingStarted')::text || '|' || count(*) filter (where resource_id = '${reporting_crash_before_storage_run_id}' and event_type = 'CertifiedReportRenderingResumed')::text || '|' || count(*) filter (where resource_id = '${reporting_crash_before_storage_run_id}' and event_type = 'CertifiedReportRunCompleted')::text || '|' || count(*) filter (where resource_id = '${reporting_crash_after_storage_run_id}' and event_type = 'CertifiedReportRenderingStarted')::text || '|' || count(*) filter (where resource_id = '${reporting_crash_after_storage_run_id}' and event_type = 'CertifiedReportRenderingResumed')::text || '|' || count(*) filter (where resource_id = '${reporting_crash_after_storage_run_id}' and event_type = 'CertifiedReportRunCompleted')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}';"
+
+expect_equal \
+  "after-storage recovery reuses one document publication" \
+  "1|1" \
+  "select (select count(*) from foundation.audit_events event join reporting.report_runs run on run.correlation_id = event.correlation_id where run.id = '${reporting_crash_after_storage_run_id}' and event.event_type = 'GeneratedReportDocumentReleased')::text || '|' || (select count(*) from foundation.outbox_messages event join reporting.report_runs run on run.correlation_id = event.correlation_id where run.id = '${reporting_crash_after_storage_run_id}' and event.event_type = 'documents.asset.released.v1')::text;"
+
+expect_equal \
+  "worker recovery idempotency receipts are singular" \
+  "5" \
+  "select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('qa-rpt1-recovery-concurrency-locked', 'qa-rpt1-recovery-concurrency-skipped', 'qa-rpt1-recovery-crash-before-storage', 'qa-rpt1-recovery-crash-after-storage', 'qa-rpt1-recovery-stale-lease');"
 
 expect_equal \
   "reporting snapshots remain immutable across render retry" \

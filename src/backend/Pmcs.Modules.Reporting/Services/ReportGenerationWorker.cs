@@ -22,6 +22,7 @@ namespace Pmcs.Modules.Reporting.Services;
 internal sealed partial class ReportGenerationWorker(
     IServiceScopeFactory scopeFactory,
     ReportingRuntimeOptions runtime,
+    ReportingWorkerQualificationOptions qualification,
     ILogger<ReportGenerationWorker> logger) : BackgroundService
 {
     internal const int MaximumAttempts = 3;
@@ -227,6 +228,7 @@ internal sealed partial class ReportGenerationWorker(
                 new Dictionary<string, object?>
                 {
                     ["executor"] = "SystemWorker",
+                    ["workerInstanceId"] = qualification.WorkerInstanceId,
                     ["requestedBy"] = claimed.RequestedBy,
                     ["snapshotId"] = snapshot.Id,
                     ["snapshotHash"] = snapshot.Sha256,
@@ -324,6 +326,7 @@ internal sealed partial class ReportGenerationWorker(
                     new Dictionary<string, object?>
                     {
                         ["executor"] = "SystemWorker",
+                        ["workerInstanceId"] = qualification.WorkerInstanceId,
                         ["requestedBy"] = run.RequestedBy,
                         ["snapshotId"] = snapshot.Id,
                         ["snapshotHash"] = snapshot.Sha256,
@@ -333,6 +336,11 @@ internal sealed partial class ReportGenerationWorker(
                 cancellationToken);
             await startTransaction.CommitAsync(cancellationToken);
         }
+
+        await PauseForQualificationAsync(
+            ReportingWorkerQualificationPausePoint.BeforeStorage,
+            run.Id,
+            cancellationToken);
 
         var formats = DeserializeFormats(run.RequestedFormatsJson);
         var rendered = new List<PreparedArtifact>(formats.Length);
@@ -400,6 +408,11 @@ internal sealed partial class ReportGenerationWorker(
             }
         }
 
+        await PauseForQualificationAsync(
+            ReportingWorkerQualificationPausePoint.AfterStorage,
+            run.Id,
+            cancellationToken);
+
         var completedAt = clock.UtcNow;
         foreach (var item in rendered)
         {
@@ -458,6 +471,7 @@ internal sealed partial class ReportGenerationWorker(
                     new Dictionary<string, object?>
                     {
                         ["executor"] = "SystemWorker",
+                        ["workerInstanceId"] = qualification.WorkerInstanceId,
                         ["requestedBy"] = run.RequestedBy,
                         ["snapshotId"] = snapshot.Id,
                         ["snapshotHash"] = snapshot.Sha256,
@@ -479,7 +493,7 @@ internal sealed partial class ReportGenerationWorker(
         await completionTransaction.CommitAsync(cancellationToken);
     }
 
-    private static async Task<ClaimedRun?> ClaimNextSnapshotAsync(
+    private async Task<ClaimedRun?> ClaimNextSnapshotAsync(
         ReportingDbContext dbContext,
         DateTimeOffset now,
         CancellationToken cancellationToken)
@@ -517,6 +531,11 @@ internal sealed partial class ReportGenerationWorker(
             return null;
         }
 
+        await PauseForQualificationAsync(
+            ReportingWorkerQualificationPausePoint.AfterSnapshotRowLock,
+            claimed.Id,
+            cancellationToken);
+
         await using var update = new NpgsqlCommand(
             """
             update reporting.report_runs
@@ -538,6 +557,20 @@ internal sealed partial class ReportGenerationWorker(
         await update.ExecuteNonQueryAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return claimed;
+    }
+
+    private async Task PauseForQualificationAsync(
+        ReportingWorkerQualificationPausePoint point,
+        Guid runId,
+        CancellationToken cancellationToken)
+    {
+        if (!qualification.ShouldPause(point, runId))
+        {
+            return;
+        }
+
+        LogQualificationPause(logger, qualification.WorkerInstanceId, point, runId);
+        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
     }
 
     private static async Task<ClaimedRun?> ClaimNextRenderingAsync(
@@ -673,6 +706,7 @@ internal sealed partial class ReportGenerationWorker(
                 new Dictionary<string, object?>
                 {
                     ["executor"] = "SystemWorker",
+                    ["workerInstanceId"] = qualification.WorkerInstanceId,
                     ["requestedBy"] = claimed.RequestedBy,
                     ["diagnosticCode"] = code,
                     ["attempt"] = run.AttemptCount,
@@ -903,4 +937,14 @@ internal sealed partial class ReportGenerationWorker(
         Level = LogLevel.Information,
         Message = "Reporting run {RunId} completed for project {ProjectId}.")]
     private static partial void LogRunCompleted(ILogger logger, Guid runId, Guid projectId);
+
+    [LoggerMessage(
+        EventId = 6106,
+        Level = LogLevel.Warning,
+        Message = "Reporting QA worker {WorkerInstanceId} paused at {PausePoint} for run {RunId}.")]
+    private static partial void LogQualificationPause(
+        ILogger logger,
+        string workerInstanceId,
+        ReportingWorkerQualificationPausePoint pausePoint,
+        Guid runId);
 }

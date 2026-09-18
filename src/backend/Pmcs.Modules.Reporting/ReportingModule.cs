@@ -102,6 +102,7 @@ public sealed class ReportingModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
 
         services.AddSingleton(ReportingRuntimeOptions.Create(configuration));
+        services.AddSingleton(ReportingWorkerQualificationOptions.Create(configuration));
         services.AddSingleton(ReportingRendererOptions.Create(configuration));
         services.AddDbContext<ReportingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IReportingReadService, ReportingReadService>();
