@@ -238,7 +238,7 @@ expect_equal \
 
 expect_equal \
   "certified reporting audit lifecycle coverage" \
-  "2|2|1|1|1|1|2|1" \
+  "2|2|1|1|1|2|2|1" \
   "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportSnapshotBuilt')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCompleted')::text || '|' || count(*) filter (where event_type = 'GeneratedReportDocumentReleased')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputDownloaded')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputVerified')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunFailed')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunRetried')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and ((resource_type = 'ReportRun' and resource_id in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}')) or (event_type = 'GeneratedReportDocumentReleased' and data->>'ownerId' in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')) or (resource_type = 'ReportOutput' and resource_id in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')));"
 
 expect_equal \
