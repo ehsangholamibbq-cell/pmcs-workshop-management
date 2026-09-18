@@ -240,7 +240,7 @@ curl --silent --fail \
   --dump-header "${login_logo_headers}" \
   --output "${login_logo_download}" \
   "http://127.0.0.1:${port}/api/v1/public/login-experience/assets/logo?tenantId=${tenant_id}&version=1"
-grep -qi '^Cache-Control: public, max-age=31536000, immutable' "${login_logo_headers}"
+grep -Eqi '^Cache-Control:[[:space:]]*public,[[:space:]]*max-age=31536000,[[:space:]]*immutable' "${login_logo_headers}"
 if [[ "$(sha256sum "${login_logo_download}" | cut -d ' ' -f 1)" != "${login_logo_sha}" ]]; then
   echo "Published login asset roundtrip changed the verified object content." >&2
   exit 1
