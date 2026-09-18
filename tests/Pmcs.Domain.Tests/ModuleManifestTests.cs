@@ -108,6 +108,28 @@ public sealed class ModuleManifestTests
     }
 
     [Fact]
+    public void PermissionSegmentsMayUseTheCataloguedUnderscoreConvention()
+    {
+        var descriptor = ValidDescriptor("test.alpha") with
+        {
+            Permissions =
+            [
+                new PermissionManifest(
+                    "test.alpha.members_copy",
+                    PermissionScope.Project,
+                    ManifestRiskClass.High,
+                    "Copy selected memberships.")
+            ]
+        };
+
+        var catalog = ModuleCatalog.Create([descriptor]);
+
+        Assert.Contains(
+            catalog.GetRequired("test.alpha").Permissions,
+            item => item.Key == "test.alpha.members_copy");
+    }
+
+    [Fact]
     public void AgentToolSchemasMustBeJsonObjects()
     {
         var descriptor = ValidDescriptor("test.alpha") with

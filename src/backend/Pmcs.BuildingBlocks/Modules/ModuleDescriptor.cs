@@ -274,7 +274,7 @@ public sealed partial class ModuleCatalog : IModuleCatalog
 
         foreach (var permission in module.Permissions)
         {
-            ValidateIdentifier(permission.Key, "permission key");
+            ValidatePermissionIdentifier(permission.Key, "permission key");
             ValidateText(permission.Description, "permission description", 300);
         }
 
@@ -283,7 +283,7 @@ public sealed partial class ModuleCatalog : IModuleCatalog
             ValidateIdentifier(navigation.Id, "navigation id");
             ValidateSafeRoute(navigation.Route);
             ValidateText(navigation.Label, "navigation label", 120);
-            ValidateIdentifier(navigation.Permission, "navigation permission");
+            ValidatePermissionIdentifier(navigation.Permission, "navigation permission");
             ValidateIdentifier(navigation.FeatureFlag, "feature flag");
             if (navigation.Order is < 0 or > 100_000)
             {
@@ -296,7 +296,7 @@ public sealed partial class ModuleCatalog : IModuleCatalog
         {
             ValidateIdentifier(tool.Id, "tool id");
             ValidateText(tool.Description, "tool description", 500);
-            ValidateIdentifier(tool.Permission, "tool permission");
+            ValidatePermissionIdentifier(tool.Permission, "tool permission");
             ValidateJsonObject(tool.InputSchema, $"input schema for tool '{tool.Id}'");
             ValidateJsonObject(tool.OutputSchema, $"output schema for tool '{tool.Id}'");
             if (tool.AccessMode == ToolAccessMode.ControlledWrite && tool.RiskClass == ManifestRiskClass.Low)
@@ -376,6 +376,15 @@ public sealed partial class ModuleCatalog : IModuleCatalog
         }
     }
 
+    private static void ValidatePermissionIdentifier(string value, string kind)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 160 ||
+            !PermissionIdentifierRegex().IsMatch(value))
+        {
+            throw new InvalidOperationException($"Invalid {kind} '{value}'.");
+        }
+    }
+
     private static void ValidateSemanticVersion(string value, string kind)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > 80 || !SemanticVersionRegex().IsMatch(value))
@@ -427,6 +436,9 @@ public sealed partial class ModuleCatalog : IModuleCatalog
 
     [GeneratedRegex(@"^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+$", RegexOptions.CultureInvariant)]
     private static partial Regex IdentifierRegex();
+
+    [GeneratedRegex(@"^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$", RegexOptions.CultureInvariant)]
+    private static partial Regex PermissionIdentifierRegex();
 
     [GeneratedRegex(@"^[a-z][a-z0-9-]*$", RegexOptions.CultureInvariant)]
     private static partial Regex SingleSegmentIdentifierRegex();
