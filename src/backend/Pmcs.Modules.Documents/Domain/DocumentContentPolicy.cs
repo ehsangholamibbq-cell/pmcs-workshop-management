@@ -8,7 +8,7 @@ internal static class DocumentContentPolicy
     private static readonly byte[] PngSignature =
         [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
-    private static readonly IReadOnlyDictionary<string, string[]> Extensions =
+    private static readonly Dictionary<string, string[]> Extensions =
         new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             ["image/jpeg"] = [".jpg", ".jpeg"],
