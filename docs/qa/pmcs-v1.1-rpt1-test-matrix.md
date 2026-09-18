@@ -168,7 +168,7 @@ Assertions:
 
 ## ۱۳. Coverage موجود در Source Candidate Slice 02
 
-commit `f65a97b6a67e38b1cd48df12356089f8568120ea` پوشش Source زیر را اضافه کرده است:
+commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` پوشش Source زیر را اضافه کرده است:
 
 - Domain tests برای retry/cancel guard، stable identity، Jalali/Tehran و formula escaping؛
 - deterministic XLSX byte test، OpenXML namespace/RTL/no-formula و verification path؛

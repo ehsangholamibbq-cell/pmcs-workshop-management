@@ -32,5 +32,5 @@
 | V1.1 PRJ1 CI | Run 92 / `35355855215` / `success` |
 | V1.1 RPT1 DoR | `PMCS-V1.1-RPT1-DOR1` / Ready for Implementation / no runtime change |
 | V1.1 RPT1 Slice 01 | source `43cac1b83ac7764fe6005fee108029597091a238` / local structural candidate / unqualified |
-| V1.1 RPT1 Slice 02 | source `f65a97b6a67e38b1cd48df12356089f8568120ea` / generated outputs source candidate / connected qualification open |
+| V1.1 RPT1 Slice 02 | source `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` / generated outputs source candidate / connected qualification open |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

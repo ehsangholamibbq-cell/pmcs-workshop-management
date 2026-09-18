@@ -5,8 +5,8 @@
 - وضعیت: `Implementation Source Candidate | Connected Qualification Open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Source Candidate: `f65a97b6a67e38b1cd48df12356089f8568120ea`
-- Source tree: `003def5bd630412c54aca74896c517861c732bcb`
+- آخرین Source Candidate: `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5`
+- Source tree: `6c7f0714490066ac1259e05e9e6af6da1d3067af`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -275,7 +275,7 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 
 ## ۱۶. وضعیت پیاده‌سازی Source Candidate
 
-در commit `f65a97b6a67e38b1cd48df12356089f8568120ea` موارد زیر در Source وجود دارند:
+در commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` موارد زیر در Source وجود دارند:
 
 - Rendererهای PDF/XLSX، فرمت شمسی/RTL، stable identity و manifest/verification؛
 - انتشار Generated Document با read-after-write، signature/size/SHA check و Retention `LongTerm`؛

@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `f65a97b`؛ Local source candidate و هنوز Unqualified |
+| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `1cb7e28`؛ connected candidate و هنوز Unqualified |
 | Database migration | ۴۳ Migration در Source؛ آخرین Restore Drill متصلِ اثبات‌شده همچنان ۴۱ Migration در Run 92 است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -49,14 +49,15 @@ contract، API اولیه، Snapshot worker و Agent read-only manifests/applica
 وجود دارند، اما چون Build/CI متصل، PostgreSQL/Restore و Rendererهای PDF/XLSX هنوز Evidence ندارند،
 این Commit Baseline تأییدشده یا Checkpoint بسته محسوب نمی‌شود. Feature flag پیش‌فرض خاموش است.
 
-Slice 02 با source commit `f65a97b6a67e38b1cd48df12356089f8568120ea` و tree
-`003def5bd630412c54aca74896c517861c732bcb` مسیر Generated Document، Rendererهای PDF/XLSX،
+Slice 02 با source commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` و tree
+`6c7f0714490066ac1259e05e9e6af6da1d3067af` مسیر Generated Document، Rendererهای PDF/XLSX،
 `Rendering → Succeeded`، Retry/Cancel، Download/Verify، Migration 43 و هارنس connected QA را در
 Source اضافه کرد. ابزارها `39/39`، Web `139/139`، Web check، Repository validator و system contract
-audit محلی پاس شدند. بااین‌حال Build/Test C#، PostgreSQL/Object Storage، Restore Drill 43 Migration،
-PDF license/golden، Permission revocation، concurrency/load و CI روی SHA بالا اجرا نشده‌اند؛ بنابراین
-RPT1 هنوز Active است و این source commit Baseline تأییدشده یا Checkpoint بسته نیست. هر سه switch
-Phase 1، output access و Worker به‌طور پیش‌فرض خاموش‌اند.
+audit محلی پاس شدند. Connected CI Run 94 سه analyzer failure را آشکار کرد که در SHA بالا رفع شدند؛
+اما Build/Test C#، PostgreSQL/Object Storage، Restore Drill 43 Migration، PDF license/golden،
+Permission revocation، concurrency/load و CI روی SHA اصلاح‌شده هنوز پاس نشده‌اند. بنابراین RPT1
+همچنان Active است و این source commit Baseline تأییدشده یا Checkpoint بسته نیست. هر سه switch Phase
+1، output access و Worker به‌طور پیش‌فرض خاموش‌اند.
 
 ## ۳. قرارداد شاخه و ادغام
 

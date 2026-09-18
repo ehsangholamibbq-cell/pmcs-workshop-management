@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Source implemented in `f65a97b6a67e38b1cd48df12356089f8568120ea`؛ connected qualification open
+- Status: Source implemented in `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5`؛ connected qualification open
 
 ## ۱. قواعد عمومی
 

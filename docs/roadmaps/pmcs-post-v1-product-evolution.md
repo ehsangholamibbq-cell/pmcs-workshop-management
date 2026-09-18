@@ -267,8 +267,8 @@ Candidate هنوز Build/CI/connected integration، Rendererهای PDF/XLSX، Do
 Restore و Full Regression ندارد؛ در نتیجه RPT1 همچنان فعال و باز است.
 
 **Implementation Slice 02:** Source Candidate با commit
-`f65a97b6a67e38b1cd48df12356089f8568120ea` و tree
-`003def5bd630412c54aca74896c517861c732bcb` ثبت شد. Generated Document publish/read با
+`1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` و tree
+`6c7f0714490066ac1259e05e9e6af6da1d3067af` ثبت شد. Generated Document publish/read با
 read-after-write integrity، Rendererهای PDF/XLSX، RTL/Jalali/Persian formatting، stable
 output/document identity، Worker rendering/finalization، Retry/Cancel، Download/Verify، integrity
 Audit، rollback-aware output access، Migration 43 و هارنس PostgreSQL/Object Storage در Source

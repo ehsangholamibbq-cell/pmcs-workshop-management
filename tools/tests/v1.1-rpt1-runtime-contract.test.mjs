@@ -144,8 +144,8 @@ test("RPT1 slice checkpoint separates source implementation from qualification",
 
 test("RPT1 generated-output checkpoint pins source evidence without closing qualification", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-02-candidate.md");
-  assert.match(checkpoint, /f65a97b6a67e38b1cd48df12356089f8568120ea/u);
-  assert.match(checkpoint, /003def5bd630412c54aca74896c517861c732bcb/u);
+  assert.match(checkpoint, /1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5/u);
+  assert.match(checkpoint, /6c7f0714490066ac1259e05e9e6af6da1d3067af/u);
   assert.match(checkpoint, /39\/39 passed/u);
   assert.match(checkpoint, /139\/139 passed/u);
   assert.match(checkpoint, /۳۳۴ فایل C# ماژولی/u);

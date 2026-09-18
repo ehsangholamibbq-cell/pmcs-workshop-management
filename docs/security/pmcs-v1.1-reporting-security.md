@@ -108,7 +108,7 @@ contract هیچ دادهٔ محرمانهٔ HSE/مالی یا فایل binary ر
 
 ## ۸. وضعیت کنترل‌های Source Candidate
 
-در commit `f65a97b6a67e38b1cd48df12356089f8568120ea`، Generated Document با object key
+در commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5`، Generated Document با object key
 server-generated، signature/size/SHA validation، read-after-write و exact-byte check منتشر می‌شود؛
 generic Documents برای `ReportOutput` بسته می‌ماند و Download/Verify مالک/type/version/tenant/
 project/classification/retention/manifest/hash را دوباره کنترل می‌کند. mismatch با پاسخ 502 و Audit

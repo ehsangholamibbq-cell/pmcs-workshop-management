@@ -193,8 +193,8 @@ Generated Document/PDF/XLSX و Qualification متصل است.
 ## ۱۲. Addendum — Source Candidate دوم RPT1
 
 مرحلهٔ بعدی پیش‌بینی‌شده در Addendum قبل، در Source Candidate
-`f65a97b6a67e38b1cd48df12356089f8568120ea` با tree
-`003def5bd630412c54aca74896c517861c732bcb` ادامه یافت. Generated Document، PDF/XLSX adapter،
+`1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` با tree
+`6c7f0714490066ac1259e05e9e6af6da1d3067af` ادامه یافت. Generated Document، PDF/XLSX adapter،
 Worker finalization، Retry/Cancel، Download/Verify، Migration 43 و هارنس connected در Source
 وجود دارند. رگرسیون Node/Web و کنترل‌های ساختاری محلی سبز است، اما C# و PostgreSQL/Object Storage
 در این محیط اجرا نشده‌اند و PDF license/golden نیز باز است.
