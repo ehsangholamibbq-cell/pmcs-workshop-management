@@ -158,7 +158,7 @@ internal static partial class Program
             $"http={(int)result.StatusCode};code={ReadOptionalString(result.Payload, "code")}");
 
     private static async Task<ReportingStoredObject> ReadObjectAsync(
-        IAmazonS3 storage,
+        AmazonS3Client storage,
         string bucket,
         string objectKey)
     {
@@ -171,7 +171,7 @@ internal static partial class Program
     }
 
     private static async Task PutObjectAsync(
-        IAmazonS3 storage,
+        AmazonS3Client storage,
         string bucket,
         string objectKey,
         string contentType,
