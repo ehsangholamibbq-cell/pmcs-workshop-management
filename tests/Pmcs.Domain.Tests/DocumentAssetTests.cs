@@ -3,6 +3,7 @@ using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.Documents;
 using Pmcs.Modules.Documents.Domain;
 using Pmcs.Modules.Documents.Scanning;
+using Pmcs.Modules.IdentityAccess.Services;
 
 namespace Pmcs.Domain.Tests;
 
@@ -208,6 +209,12 @@ public sealed class DocumentAssetTests
             permission.RiskClass == Pmcs.BuildingBlocks.Modules.ManifestRiskClass.Critical);
         Assert.Contains(descriptor.Events, integrationEvent =>
             integrationEvent.Name == "documents.asset.released" && integrationEvent.Version == 1);
+        Assert.True(ProjectPermissionService.GrantsRole("Observer", "documents.read"));
+        Assert.False(ProjectPermissionService.GrantsRole("Observer", "documents.upload"));
+        Assert.True(ProjectPermissionService.GrantsRole("SiteSupervisor", "documents.upload"));
+        Assert.False(ProjectPermissionService.GrantsRole(
+            "SiteSupervisor",
+            "documents.quarantine.release"));
     }
 
     private static DocumentAsset Create(

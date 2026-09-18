@@ -453,7 +453,8 @@ fi
 
 current_step="verifying shared document upload, quarantine, permission and release"
 document_uploader_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
-document_reader_id="50000000-0000-4000-8000-000000000001"
+document_unregistered_id="50000000-0000-4000-8000-000000000001"
+document_reader_id="${document_uploader_id}"
 document_id="81000000-0000-4000-8000-000000000001"
 document_denied_id="81000000-0000-4000-8000-000000000002"
 document_infected_id="81000000-0000-4000-8000-000000000003"
@@ -478,13 +479,13 @@ grep -q '"versionNumber":1' <<<"${document_session}"
 document_denied_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
-  --header "X-User-Id: ${document_reader_id}" \
-  --header 'Idempotency-Key: integration-document-observer-denied' \
+  --header "X-User-Id: ${document_unregistered_id}" \
+  --header 'Idempotency-Key: integration-document-unregistered-denied' \
   --header 'Content-Type: application/json' \
   --data "{\"clientGeneratedId\":\"${document_denied_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectGeneral\",\"ownerId\":\"${project_id}\",\"originalFileName\":\"denied.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${document_size},\"sha256\":\"${document_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
   "http://127.0.0.1:${port}/api/v1/upload-sessions")"
 if [[ "${document_denied_status}" != "403" ]]; then
-  echo "Expected an Observer document upload to return 403; received ${document_denied_status}." >&2
+  echo "Expected an unregistered actor document upload to return 403; received ${document_denied_status}." >&2
   exit 1
 fi
 
@@ -510,6 +511,19 @@ document_quarantine_download_status="$(curl --silent --output /dev/null --write-
   "http://127.0.0.1:${port}/api/v1/documents/${document_id}/content")"
 if [[ "${document_quarantine_download_status}" != "409" ]]; then
   echo "Expected quarantined content download to return 409; received ${document_quarantine_download_status}." >&2
+  exit 1
+fi
+
+document_uploader_release_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${document_uploader_id}" \
+  --header 'Idempotency-Key: integration-document-uploader-release-denied' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${document_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/documents/${document_id}/release")"
+if [[ "${document_uploader_release_status}" != "403" ]]; then
+  echo "Expected a Site Supervisor quarantine release to return 403; received ${document_uploader_release_status}." >&2
   exit 1
 fi
 
@@ -637,6 +651,13 @@ document_receipt_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc -
   "select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('integration-document-session','integration-document-content','integration-document-release','integration-document-duplicate','integration-document-version-2','integration-document-infected-session','integration-document-infected-content');")"
 if [[ "${document_receipt_count}" != "7" ]]; then
   echo "Shared document idempotency receipts are incomplete: ${document_receipt_count}." >&2
+  exit 1
+fi
+document_denied_receipt_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command \
+  "select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('integration-document-unregistered-denied','integration-document-uploader-release-denied','integration-document-infected-release');")"
+if [[ "${document_denied_receipt_count}" != "0" ]]; then
+  echo "Rejected document operations left success idempotency receipts: ${document_denied_receipt_count}." >&2
   exit 1
 fi
 
