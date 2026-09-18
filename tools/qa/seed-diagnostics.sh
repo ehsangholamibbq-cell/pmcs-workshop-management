@@ -44,7 +44,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://127.0.0.1:${port}" ConnectionStrings__Pmcs="${PMCS_QA_CONNECTION_STRING}" PMCS_DEV_IDENTITY_ENABLED=false PMCS_SEED_ENABLED=true PMCS_QA_GATEWAY_ENABLED=true PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" ProjectStateRefresh__Enabled=false AdvisoryIntelligence__WorkerEnabled=false ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" ObjectStorage__BucketName="${PMCS_QA_S3_BUCKET}" ObjectStorage__Region="us-east-1" ObjectStorage__ForcePathStyle=true ObjectStorage__CreateBucketIfMissing=true dotnet run --project src/backend/Pmcs.Api/Pmcs.Api.csproj --configuration Release --no-build --no-launch-profile >"${log_file}" 2>&1 &
+ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://127.0.0.1:${port}" ConnectionStrings__Pmcs="${PMCS_QA_CONNECTION_STRING}" PMCS_DEV_IDENTITY_ENABLED=false PMCS_SEED_ENABLED=true PMCS_QA_GATEWAY_ENABLED=true PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" ProjectStateRefresh__Enabled=false AdvisoryIntelligence__WorkerEnabled=false ReportingCenter__Phase1Enabled=true ReportingCenter__OutputAccessEnabled=true ReportingCenter__WorkerEnabled=true ReportingCenter__PollSeconds=1 ReportingCenter__PdfLicense=Unconfigured ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" ObjectStorage__BucketName="${PMCS_QA_S3_BUCKET}" ObjectStorage__Region="us-east-1" ObjectStorage__ForcePathStyle=true ObjectStorage__CreateBucketIfMissing=true dotnet run --project src/backend/Pmcs.Api/Pmcs.Api.csproj --configuration Release --no-build --no-launch-profile >"${log_file}" 2>&1 &
 api_pid=$!
 
 ready=false
@@ -68,6 +68,7 @@ fi
 qa_base_url="http://127.0.0.1:${port}"
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- probe
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-files
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-sync
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-exploratory

@@ -165,6 +165,42 @@ public sealed class ReportRun : AggregateRoot
         AdvanceRevision();
     }
 
+    public void RequeueRendering(string diagnosticCode, DateTimeOffset nextAttemptAt)
+    {
+        if (Status != ReportRunStatus.Processing ||
+            PipelineStage is not (ReportPipelineStage.SnapshotReady or ReportPipelineStage.Rendering) ||
+            !SnapshotId.HasValue || OutputCount > 0)
+        {
+            throw new DomainRuleException("reporting.run.invalid_state", "Report rendering cannot be requeued.");
+        }
+
+        PipelineStage = ReportPipelineStage.SnapshotReady;
+        DiagnosticCode = Required(diagnosticCode, 120, "reporting.diagnostic.invalid");
+        DiagnosticDetail = null;
+        NextAttemptAt = nextAttemptAt.ToUniversalTime();
+        ClaimedAt = null;
+        AdvanceRevision();
+    }
+
+    public void RetryFailed(DateTimeOffset retriedAt)
+    {
+        if (Status != ReportRunStatus.Failed || OutputCount > 0)
+        {
+            throw new DomainRuleException("reporting.run.not_retryable", "Report run is not retryable.");
+        }
+
+        Status = SnapshotId.HasValue ? ReportRunStatus.Processing : ReportRunStatus.Queued;
+        PipelineStage = SnapshotId.HasValue
+            ? ReportPipelineStage.SnapshotReady
+            : ReportPipelineStage.Queued;
+        ClaimedAt = null;
+        CompletedAt = null;
+        NextAttemptAt = retriedAt.ToUniversalTime();
+        DiagnosticCode = "reporting.retry.requested";
+        DiagnosticDetail = null;
+        AdvanceRevision();
+    }
+
     public void BeginRendering(DateTimeOffset startedAt)
     {
         if (Status != ReportRunStatus.Processing || PipelineStage != ReportPipelineStage.SnapshotReady ||
@@ -181,7 +217,7 @@ public sealed class ReportRun : AggregateRoot
     public void Cancel(DateTimeOffset cancelledAt)
     {
         if (Status is ReportRunStatus.Succeeded or ReportRunStatus.Failed or ReportRunStatus.Cancelled ||
-            OutputCount > 0)
+            PipelineStage == ReportPipelineStage.Rendering || OutputCount > 0)
         {
             throw new DomainRuleException("reporting.run.already_final", "A final report run cannot be cancelled.");
         }

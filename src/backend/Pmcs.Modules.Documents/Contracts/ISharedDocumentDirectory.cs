@@ -14,6 +14,8 @@ public sealed record ReleasedDocumentReference(
     long SizeBytes,
     string Sha256,
     DocumentClassification Classification,
+    DocumentRetentionPolicy RetentionPolicy,
+    bool LegalHold,
     DateTimeOffset ReleasedAt,
     long Revision);
 

@@ -15,6 +15,10 @@ ARG PMCS_RELEASE_COMMIT=development
 ARG PMCS_RELEASE_VERSION=0.0.0-dev
 LABEL org.opencontainers.image.revision="${PMCS_RELEASE_COMMIT}" \
       org.opencontainers.image.version="${PMCS_RELEASE_VERSION}"
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app .
 USER $APP_UID

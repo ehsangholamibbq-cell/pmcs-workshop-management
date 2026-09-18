@@ -15,6 +15,9 @@ site_supervisor_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 technical_office_id="50000000-0000-4000-8000-000000000002"
 workflow_report_id="70000000-0000-4000-8000-000000000001"
 workflow_fact_id="70000000-0000-4000-8000-000000000002"
+reporting_succeeded_run_id="71000000-0000-4000-8000-000000000001"
+reporting_license_failure_run_id="71000000-0000-4000-8000-000000000002"
+system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
   psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
@@ -54,13 +57,28 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "42" \
+  "43" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
   "certified reporting migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260918-001';"
+
+expect_equal \
+  "certified reporting verification-code migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260918-002';"
+
+expect_equal \
+  "legacy unique reporting verification-code constraint removed" \
+  "0" \
+  "select count(*) from pg_constraint where conrelid = 'reporting.report_outputs'::regclass and conname = 'report_outputs_verification_code_key';"
+
+expect_equal \
+  "deterministic reporting verification-code lookup is non-unique" \
+  "1" \
+  "select count(*) from pg_index index_state join pg_class index_class on index_class.oid = index_state.indexrelid join pg_class table_class on table_class.oid = index_state.indrelid join pg_namespace schema_state on schema_state.oid = table_class.relnamespace where schema_state.nspname = 'reporting' and table_class.relname = 'report_outputs' and index_class.relname = 'ix_reporting_outputs_verification_code' and not index_state.indisunique;"
 
 expect_equal \
   "controlled project bootstrap migration identity" \
@@ -161,5 +179,50 @@ expect_at_least \
   "submitted workflow notification evidence" \
   "1" \
   "select count(*) from work_management.notifications where tenant_id = '${tenant_id}' and project_id = '${project_id}' and category = 'DailyReportReview' and target_id = '${workflow_report_id}';"
+
+expect_equal \
+  "certified XLSX run completed exactly once" \
+  "Succeeded|Complete|1|1|<none>" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || coalesce(diagnostic_code, '<none>') from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_succeeded_run_id}';"
+
+expect_equal \
+  "unconfigured PDF renderer failed closed after explicit retry" \
+  "Failed|Failed|2|0|reporting.renderer.license_unconfigured" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || coalesce(diagnostic_code, '<none>') from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_license_failure_run_id}';"
+
+expect_equal \
+  "reporting snapshots remain immutable across render retry" \
+  "2|2|0" \
+  "select count(*)::text || '|' || count(distinct run_id)::text || '|' || count(*) filter (where sha256 !~ '^[0-9a-f]{64}$' or source_manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}');"
+
+expect_equal \
+  "certified XLSX output metadata is complete" \
+  "1|Xlsx|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|LongTerm|Active|0" \
+  "select count(*)::text || '|' || min(format) || '|' || min(content_type) || '|' || min(retention_policy) || '|' || min(archive_state) || '|' || count(*) filter (where size_bytes <= 0 or sha256 !~ '^[0-9a-f]{64}$' or manifest_sha256 !~ '^[0-9a-f]{64}$' or verification_code !~ '^RPT-([0-9A-F]{4}-){4}[0-9A-F]{4}$')::text from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_succeeded_run_id}';"
+
+expect_equal \
+  "failed PDF run published no partial output" \
+  "0" \
+  "select count(*) from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_license_failure_run_id}';"
+
+expect_equal \
+  "certified output is a released governed document" \
+  "1" \
+  "select count(*) from reporting.report_outputs output join documents.assets asset on asset.id = output.generated_document_id and asset.tenant_id = output.tenant_id and asset.project_id = output.project_id and asset.owner_type = 'ReportOutput' and asset.owner_id = output.id and asset.version_number = 1 and asset.original_file_name = output.file_name and asset.content_type = output.content_type and asset.size_bytes = output.size_bytes and asset.sha256 = output.sha256 and asset.classification = output.classification and asset.retention_policy = output.retention_policy and asset.retention_policy = 'LongTerm' and asset.retain_until >= asset.created_at + interval '10 years' and not asset.legal_hold and asset.status = 'Released' and asset.scan_verdict = 'Clean' and asset.scan_provider = 'pmcs-generated-content' and asset.created_by = '${system_actor_id}' and asset.released_by = '${system_actor_id}' and asset.released_at is not null where output.tenant_id = '${tenant_id}' and output.project_id = '${project_id}' and output.run_id = '${reporting_succeeded_run_id}';"
+
+expect_equal \
+  "certified reporting audit lifecycle coverage" \
+  "2|2|1|1|1|1|2|1" \
+  "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportSnapshotBuilt')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCompleted')::text || '|' || count(*) filter (where event_type = 'GeneratedReportDocumentReleased')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputDownloaded')::text || '|' || count(*) filter (where event_type = 'CertifiedReportOutputVerified')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunFailed')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunRetried')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and ((resource_type = 'ReportRun' and resource_id in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}')) or (event_type = 'GeneratedReportDocumentReleased' and data->>'ownerId' in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')) or (resource_type = 'ReportOutput' and resource_id in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}')));"
+
+expect_equal \
+  "certified reporting transactional outbox coverage" \
+  "2|1|1|1" \
+  "select count(*) filter (where event_type = 'Reporting.ReportRunQueued' and payload->>'id' in ('${reporting_succeeded_run_id}', '${reporting_license_failure_run_id}'))::text || '|' || count(*) filter (where event_type = 'reporting.report.completed.v1' and payload->>'runId' = '${reporting_succeeded_run_id}')::text || '|' || count(*) filter (where event_type = 'documents.asset.released.v1' and payload->>'ownerType' = 'ReportOutput' and payload->>'ownerId' in (select id::text from reporting.report_outputs where run_id = '${reporting_succeeded_run_id}'))::text || '|' || count(*) filter (where event_type = 'Reporting.ReportRunRetried' and payload->>'id' = '${reporting_license_failure_run_id}')::text from foundation.outbox_messages where tenant_id = '${tenant_id}' and project_id = '${project_id}';"
+
+expect_equal \
+  "certified reporting idempotency receipts are singular" \
+  "1|1|1" \
+  "select count(*) filter (where key = 'qa-rpt1-xlsx-create')::text || '|' || count(*) filter (where key = 'qa-rpt1-pdf-license-create')::text || '|' || count(*) filter (where key = 'qa-rpt1-pdf-license-retry')::text from foundation.idempotency_records where tenant_id = '${tenant_id}';"
 
 printf 'QA permission, workflow, database and audit verification passed for %s.\n' "${database_name}"

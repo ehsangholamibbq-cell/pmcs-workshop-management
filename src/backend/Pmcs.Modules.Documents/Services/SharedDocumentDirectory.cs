@@ -45,6 +45,8 @@ internal sealed class SharedDocumentDirectory(
                 asset.SizeBytes,
                 asset.Sha256,
                 asset.Classification,
+                asset.RetentionPolicy,
+                asset.LegalHold,
                 asset.ReleasedAt!.Value,
                 asset.Revision))
             .ToListAsync(cancellationToken);
@@ -103,6 +105,8 @@ internal sealed class SharedDocumentDirectory(
             asset.SizeBytes,
             asset.Sha256,
             asset.Classification,
+            asset.RetentionPolicy,
+            asset.LegalHold,
             asset.ReleasedAt!.Value,
             asset.Revision);
         return new ReleasedDocumentContent(reference, content.Bytes);

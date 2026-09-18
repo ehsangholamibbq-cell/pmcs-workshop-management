@@ -8,6 +8,7 @@ using Pmcs.Modules.Reporting.Endpoints;
 using Pmcs.Modules.Reporting.Contracts;
 using Pmcs.Modules.Reporting.Migrations;
 using Pmcs.Modules.Reporting.Persistence;
+using Pmcs.Modules.Reporting.Rendering;
 using Pmcs.Modules.Reporting.Services;
 
 namespace Pmcs.Modules.Reporting;
@@ -24,7 +25,8 @@ public sealed class ReportingModule : IModule
         [
             "reporting.catalog",
             "reporting.certified-runs",
-            "reporting.semantic-snapshots"
+            "reporting.semantic-snapshots",
+            "reporting.generated-outputs"
         ],
         ["documents.shared", "legacy.fieldoperations", "platform.foundation", "projects.core"],
         "reporting",
@@ -100,10 +102,15 @@ public sealed class ReportingModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
 
         services.AddSingleton(ReportingRuntimeOptions.Create(configuration));
+        services.AddSingleton(ReportingRendererOptions.Create(configuration));
         services.AddDbContext<ReportingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IReportingReadService, ReportingReadService>();
         services.AddScoped<DailyReportSnapshotBuilder>();
+        services.AddSingleton<IReportRenderer, DailyReportPdfRenderer>();
+        services.AddSingleton<IReportRenderer, DailyReportXlsxRenderer>();
+        services.AddSingleton<ReportRendererRegistry>();
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddHostedService<ReportGenerationWorker>();
     }
 

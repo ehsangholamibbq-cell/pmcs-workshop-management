@@ -1,3 +1,6 @@
+using System.IO.Compression;
+using System.Text;
+using System.Xml.Linq;
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.Modules.FieldOperations.Contracts;
@@ -7,6 +10,7 @@ using Pmcs.Modules.Projects.Domain;
 using Pmcs.Modules.Reporting;
 using Pmcs.Modules.Reporting.Domain;
 using Pmcs.Modules.Reporting.Endpoints;
+using Pmcs.Modules.Reporting.Rendering;
 using Pmcs.Modules.Reporting.Services;
 
 namespace Pmcs.Domain.Tests;
@@ -71,6 +75,35 @@ public sealed class ReportingTests
             "reporting.run.invalid_state",
             Assert.Throws<DomainRuleException>(() =>
                 run.AttachSnapshot(Guid.NewGuid(), "{\"allowed\":true}", Cutoff.AddSeconds(3))).Code);
+    }
+
+    [Fact]
+    public void RenderingRetryPreservesSnapshotAndRenderingCannotBeCancelled()
+    {
+        var run = CreateRun();
+        var snapshotId = Guid.NewGuid();
+
+        run.StartAttempt("{\"allowed\":true}", Cutoff.AddSeconds(1));
+        run.AttachSnapshot(snapshotId, "{\"allowed\":true}", Cutoff.AddSeconds(2));
+        run.BeginRendering(Cutoff.AddSeconds(3));
+
+        Assert.Equal(
+            "reporting.run.already_final",
+            Assert.Throws<DomainRuleException>(() => run.Cancel(Cutoff.AddSeconds(4))).Code);
+
+        run.RequeueRendering("reporting.renderer.transient", Cutoff.AddMinutes(1));
+        Assert.Equal(ReportRunStatus.Processing, run.Status);
+        Assert.Equal(ReportPipelineStage.SnapshotReady, run.PipelineStage);
+        Assert.Equal(snapshotId, run.SnapshotId);
+        Assert.Equal("reporting.renderer.transient", run.DiagnosticCode);
+
+        run.Fail("reporting.renderer.transient", null, Cutoff.AddMinutes(2));
+        run.RetryFailed(Cutoff.AddMinutes(3));
+
+        Assert.Equal(ReportRunStatus.Processing, run.Status);
+        Assert.Equal(ReportPipelineStage.SnapshotReady, run.PipelineStage);
+        Assert.Equal(snapshotId, run.SnapshotId);
+        Assert.Equal("reporting.retry.requested", run.DiagnosticCode);
     }
 
     [Fact]
@@ -154,6 +187,74 @@ public sealed class ReportingTests
         Assert.Equal(ReportOutputArchiveState.Archived, output.ArchiveState);
     }
 
+    [Fact]
+    public void ArtifactIdentityAndPersianFormattingAreStableAndSpreadsheetSafe()
+    {
+        var runId = Guid.Parse("10000000-0000-4000-8000-000000000001");
+
+        var firstPdf = ReportArtifactIdentity.OutputId(runId, ReportFormat.Pdf);
+        var secondPdf = ReportArtifactIdentity.OutputId(runId, ReportFormat.Pdf);
+        var xlsx = ReportArtifactIdentity.OutputId(runId, ReportFormat.Xlsx);
+
+        Assert.Equal(firstPdf, secondPdf);
+        Assert.NotEqual(firstPdf, xlsx);
+        Assert.Equal(
+            ReportArtifactIdentity.DocumentId(firstPdf),
+            ReportArtifactIdentity.DocumentId(secondPdf));
+        Assert.Equal("۱۴۰۳/۱۲/۳۰", PersianReportFormatting.FormatDate(new DateOnly(2025, 3, 20)));
+        Assert.Equal("۱۴۰۴/۰۱/۰۱", PersianReportFormatting.FormatDate(new DateOnly(2025, 3, 21)));
+        Assert.Equal("۱۴۰۴/۱۲/۲۹", PersianReportFormatting.FormatDate(new DateOnly(2026, 3, 20)));
+        Assert.Equal("۱۴۰۵/۰۱/۰۱", PersianReportFormatting.FormatDate(new DateOnly(2026, 3, 21)));
+        Assert.True(PersianReportFormatting.FormatInstant(Cutoff, "Asia/Tehran")
+            .EndsWith("۱۵:۳۰", StringComparison.Ordinal));
+        Assert.Equal("'=SUM(A1:A2)", PersianReportFormatting.SafeSpreadsheetText("=SUM(A1:A2)"));
+        Assert.Equal("'+1", PersianReportFormatting.SafeSpreadsheetText("+1"));
+        Assert.Equal("'-1", PersianReportFormatting.SafeSpreadsheetText("-1"));
+        Assert.Equal("'@cmd", PersianReportFormatting.SafeSpreadsheetText("@cmd"));
+    }
+
+    [Fact]
+    public void CertifiedXlsxIsDeterministicRtlNamespaceCorrectAndFormulaFree()
+    {
+        var request = CreateXlsxRenderRequest("=HYPERLINK(\"https://invalid.example\",\"x\")");
+        var renderer = new DailyReportXlsxRenderer();
+
+        var first = renderer.Render(request);
+        var second = renderer.Render(request);
+
+        Assert.True(first.Bytes.SequenceEqual(second.Bytes));
+        Assert.Equal(first.Sha256, second.Sha256);
+        Assert.Equal((byte)'P', first.Bytes[0]);
+        Assert.Equal((byte)'K', first.Bytes[1]);
+
+        using var stream = new MemoryStream(first.Bytes, writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        Assert.Equal(9, archive.Entries.Count);
+        var metadataXml = ReadEntry(archive, "xl/worksheets/sheet1.xml");
+        var dataXml = ReadEntry(archive, "xl/worksheets/sheet2.xml");
+        var spreadsheet = (XNamespace)"http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var metadata = XDocument.Parse(metadataXml);
+        var data = XDocument.Parse(dataXml);
+
+        Assert.Equal(spreadsheet + "worksheet", metadata.Root!.Name);
+        Assert.Equal("1", metadata.Descendants(spreadsheet + "sheetView").Single()
+            .Attribute("rightToLeft")?.Value);
+        Assert.Equal("1", data.Descendants(spreadsheet + "sheetView").Single()
+            .Attribute("rightToLeft")?.Value);
+        Assert.Empty(metadata.Descendants(spreadsheet + "f"));
+        Assert.Empty(data.Descendants(spreadsheet + "f"));
+        Assert.Contains("'=HYPERLINK", dataXml, StringComparison.Ordinal);
+        Assert.Contains($"/outputs/{request.OutputId}/verify", metadataXml, StringComparison.Ordinal);
+
+        foreach (var entryName in new[] { "[Content_Types].xml", "_rels/.rels", "xl/_rels/workbook.xml.rels", "docProps/app.xml" })
+        {
+            var document = XDocument.Parse(ReadEntry(archive, entryName));
+            Assert.All(
+                document.Root!.DescendantsAndSelf(),
+                element => Assert.NotEqual(XNamespace.None, element.Name.Namespace));
+        }
+    }
+
     private static ReportRun CreateRun()
     {
         var parametersJson = CanonicalJson.Serialize(new DailyReportReportParameters(Guid.NewGuid(), true));
@@ -217,14 +318,66 @@ public sealed class ReportingTests
         "LongTerm",
         Cutoff);
 
-    private static DailyReportReportingChain Chain(Guid reportId)
+    private static ReportRenderRequest CreateXlsxRenderRequest(string description)
+    {
+        var runId = Guid.Parse("10000000-0000-4000-8000-000000000001");
+        var outputId = ReportArtifactIdentity.OutputId(runId, ReportFormat.Xlsx);
+        var reportId = Guid.Parse("70000000-0000-4000-8000-000000000001");
+        var chain = Chain(reportId, description);
+        var project = new ReportProjectRenderIdentity(
+            Guid.Parse("30000000-0000-4000-8000-000000000001"),
+            "PRJ-001",
+            "پروژه آزمون",
+            "Asia/Tehran",
+            7);
+        var snapshot = new DailyReportRenderSnapshot(
+            DailyReportSnapshotBuilder.SnapshotSchemaVersion,
+            "daily-report-certified",
+            "1.0.0",
+            ReportDataStatus.Available,
+            project,
+            Cutoff,
+            new DailyReportReportParameters(reportId, true),
+            chain.RootReportId,
+            chain.CurrentOfficialReportId,
+            new string('f', 64),
+            chain.Versions);
+        return new ReportRenderRequest(
+            runId,
+            outputId,
+            Guid.Parse("10000000-0000-4000-8000-000000000002"),
+            Guid.Parse("10000000-0000-4000-8000-000000000003"),
+            "daily-report-certified",
+            "1.0.0",
+            new string('c', 64),
+            "daily-report-renderer/v1",
+            "daily-report-layout/v1",
+            ReportFormat.Xlsx,
+            "daily-report-PRJ-001-1405-06-27-r1.xlsx",
+            "RPT-1111-2222-3333-4444-5555",
+            new string('d', 64),
+            new string('e', 64),
+            new string('f', 64),
+            Cutoff,
+            snapshot);
+    }
+
+    private static string ReadEntry(ZipArchive archive, string name)
+    {
+        var entry = archive.GetEntry(name)
+            ?? throw new InvalidOperationException($"Workbook entry '{name}' is missing.");
+        using var reader = new StreamReader(entry.Open(), Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
+    private static DailyReportReportingChain Chain(Guid reportId, string description = "اجرای بتن‌ریزی")
     {
         var factId = Guid.NewGuid();
         var fact = new DailyReportReportingFact(
             factId,
             Guid.NewGuid(),
             DailyReportReportingFactKind.WorkProgress,
-            "اجرای بتن‌ریزی",
+            description,
             "سازه",
             Guid.NewGuid(),
             "زون A",

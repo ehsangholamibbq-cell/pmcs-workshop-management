@@ -74,6 +74,7 @@ public sealed class DocumentsModule : IModule
         services.AddSingleton<IDocumentObjectStorage, S3DocumentObjectStorage>();
         services.AddSingleton<IContentScanner, DeterministicContentScanner>();
         services.AddScoped<ISharedDocumentDirectory, SharedDocumentDirectory>();
+        services.AddScoped<IGeneratedDocumentPublisher, GeneratedDocumentPublisher>();
         services.AddSingleton<IDatabaseMigration, DocumentsInitialMigration>();
     }
 

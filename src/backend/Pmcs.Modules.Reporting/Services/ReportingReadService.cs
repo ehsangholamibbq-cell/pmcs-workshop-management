@@ -9,7 +9,8 @@ namespace Pmcs.Modules.Reporting.Services;
 
 internal sealed class ReportingReadService(
     ReportingDbContext dbContext,
-    IProjectPermissionService permissionService) : IReportingReadService
+    IProjectPermissionService permissionService,
+    ReportingRuntimeOptions runtime) : IReportingReadService
 {
     private const string CatalogPermission = "reporting.catalog.read";
     private const string OutputPermission = "reporting.output.download";
@@ -22,7 +23,7 @@ internal sealed class ReportingReadService(
         Guid projectId,
         CancellationToken cancellationToken = default)
     {
-        if (!await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
                 tenantId,
                 actorUserId,
                 projectId,
@@ -66,7 +67,7 @@ internal sealed class ReportingReadService(
         int limit = 50,
         CancellationToken cancellationToken = default)
     {
-        if (!await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
                 tenantId,
                 actorUserId,
                 projectId,
@@ -109,7 +110,7 @@ internal sealed class ReportingReadService(
         Guid runId,
         CancellationToken cancellationToken = default)
     {
-        if (!await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
                 tenantId,
                 actorUserId,
                 projectId,
@@ -132,7 +133,7 @@ internal sealed class ReportingReadService(
         Guid outputId,
         CancellationToken cancellationToken = default)
     {
-        if (!await HasPermissionsAsync(
+        if (!runtime.OutputAccessEnabled || !await HasPermissionsAsync(
                 tenantId,
                 actorUserId,
                 projectId,

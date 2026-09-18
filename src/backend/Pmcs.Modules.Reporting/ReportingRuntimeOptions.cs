@@ -4,6 +4,7 @@ namespace Pmcs.Modules.Reporting;
 
 public sealed record ReportingRuntimeOptions(
     bool Phase1Enabled,
+    bool OutputAccessEnabled,
     bool WorkerEnabled,
     TimeSpan PollingInterval)
 {
@@ -12,6 +13,9 @@ public sealed record ReportingRuntimeOptions(
         var phase1Enabled = bool.TryParse(
             configuration["ReportingCenter:Phase1Enabled"],
             out var enabled) && enabled;
+        var outputAccessEnabled = phase1Enabled || (bool.TryParse(
+            configuration["ReportingCenter:OutputAccessEnabled"],
+            out var outputAccess) && outputAccess);
         var workerEnabled = phase1Enabled && bool.TryParse(
             configuration["ReportingCenter:WorkerEnabled"],
             out var worker) && worker;
@@ -22,6 +26,7 @@ public sealed record ReportingRuntimeOptions(
                 : 5;
         return new ReportingRuntimeOptions(
             phase1Enabled,
+            outputAccessEnabled,
             workerEnabled,
             TimeSpan.FromSeconds(pollSeconds));
     }

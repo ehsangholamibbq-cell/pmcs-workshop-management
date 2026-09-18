@@ -27,10 +27,15 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(module, /ToolAccessMode\.ReadOnly/u);
   assert.match(module, /IReportingReadService/u);
   assert.doesNotMatch(module, /Intelligence|OpenAI|LLM/u);
+  const readService = read(`${moduleRoot}/Services/ReportingReadService.cs`);
+  assert.match(readService, /runtime\.Phase1Enabled/u);
+  assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migration 42 owns reporting schema and seeds only the certified definition", () => {
+test("migration 42 owns reporting schema and migration 43 preserves deterministic verification", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
+  const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
+  const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
   assert.match(migration, /public string Version => "20260918-001"/u);
   assert.match(migration, /create schema if not exists reporting/u);
@@ -43,7 +48,12 @@ test("migration 42 owns reporting schema and seeds only the certified definition
   ]) assert.match(migration, new RegExp(`reporting\\.${table}`, "u"));
   assert.match(migration, /daily-report-certified/u);
   assert.match(migration, /'1\.0\.0'/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"42"/u);
+  assert.match(verificationMigration, /public long Order => 1201/u);
+  assert.match(verificationMigration, /public string Version => "20260918-002"/u);
+  assert.match(verificationMigration, /drop constraint if exists report_outputs_verification_code_key/u);
+  assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
+  assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"43"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -69,12 +79,57 @@ test("generic Documents routes fail closed for ReportOutput", () => {
   assert.match(endpoints, /documents\.report_output\.generated_only/u);
 });
 
+test("generated outputs use the Documents owner contract and certified renderers", () => {
+  const publisherContract = read("src/backend/Pmcs.Modules.Documents/Contracts/IGeneratedDocumentPublisher.cs");
+  const publisher = read("src/backend/Pmcs.Modules.Documents/Services/GeneratedDocumentPublisher.cs");
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const pdf = read(`${moduleRoot}/Rendering/DailyReportPdfRenderer.cs`);
+  const xlsx = read(`${moduleRoot}/Rendering/DailyReportXlsxRenderer.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  assert.match(publisherContract, /PublishReportOutputAsync/u);
+  assert.doesNotMatch(publisherContract, /ObjectKey|Presign|UploadSession/u);
+  assert.match(publisher, /DocumentOwnerType\.ReportOutput/u);
+  assert.match(publisher, /MatchesSignature/u);
+  assert.match(publisher, /ReadAsync\(objectKey/u);
+  assert.match(publisher, /SequenceEqual\(request\.Bytes\)/u);
+  assert.match(worker, /ReportRendererRegistry/u);
+  assert.match(worker, /rendered\.Add[\s\S]*?foreach \(var item in rendered\)[\s\S]*?PublishReportOutputAsync/u);
+  assert.match(worker, /reporting\.report\.completed\.v1/u);
+  assert.match(pdf, /ContentFromRightToLeft/u);
+  assert.match(pdf, /FontManager\.RegisterFontFromFile/u);
+  assert.match(xlsx, /rightToLeft/u);
+  assert.match(xlsx, /CompressionLevel\.NoCompression/u);
+  assert.doesNotMatch(xlsx, /<f>|WriteStartElement\("f"/u);
+  assert.match(endpoints, /outputs\/\{outputId:guid\}\/content/u);
+  assert.match(endpoints, /outputs\/\{outputId:guid\}\/verify/u);
+  assert.match(endpoints, /DocumentOwnerType\.ReportOutput/u);
+  assert.match(endpoints, /reporting\.output\.integrity_failed/u);
+  assert.match(endpoints, /CertifiedReportOutputIntegrityFailed/u);
+});
+
+test("connected RPT1 qualification covers API, worker, storage and database evidence", () => {
+  const harness = read("src/backend/Pmcs.TestHarness/ReportingVerification.cs");
+  const seed = read("tools/qa/seed-diagnostics.sh");
+  const database = read("tools/qa/verify-database.sh");
+  assert.match(harness, /reporting\.xlsx\.create\.idempotent-replay/u);
+  assert.match(harness, /reporting\.xlsx\.download\.integrity/u);
+  assert.match(harness, /reporting\.xlsx\.verify\.valid/u);
+  assert.match(harness, /reporting\.pdf\.license\.fail-closed/u);
+  assert.match(harness, /reporting\.pdf\.retry\.bounded/u);
+  assert.match(seed, /ReportingCenter__PdfLicense=Unconfigured/u);
+  assert.match(seed, /-- verify-reporting/u);
+  assert.match(database, /certified output is a released governed document/u);
+  assert.match(database, /certified reporting transactional outbox coverage/u);
+});
+
 test("RPT1 is disabled by default until renderers and qualification are complete", () => {
   const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
   const options = read(`${moduleRoot}/ReportingRuntimeOptions.cs`);
   assert.match(options, /workerEnabled = phase1Enabled &&/u);
+  assert.match(options, /outputAccessEnabled = phase1Enabled \|\|/u);
 });
 
 test("RPT1 slice checkpoint separates source implementation from qualification", () => {

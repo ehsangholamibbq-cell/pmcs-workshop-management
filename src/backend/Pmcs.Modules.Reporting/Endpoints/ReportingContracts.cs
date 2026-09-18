@@ -58,6 +58,15 @@ public sealed record ReportRunResponse(
     IReadOnlyCollection<ReportOutputMetadataResponse> Outputs,
     ReportRunLinks Links);
 
+public sealed record ReportOutputVerificationResponse(
+    string VerificationCode,
+    string Status,
+    string DefinitionCode,
+    string TemplateVersion,
+    DateTimeOffset AsOfUtc,
+    string Sha256,
+    bool Archived);
+
 internal sealed record ReportPermissionSnapshot(
     string PolicyVersion,
     Guid ActorUserId,

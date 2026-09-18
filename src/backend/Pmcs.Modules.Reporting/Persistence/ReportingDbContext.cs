@@ -139,7 +139,7 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.ArchivedAt).HasColumnName("archived_at");
             builder.HasIndex(item => new { item.RunId, item.Format }).IsUnique();
             builder.HasIndex(item => item.GeneratedDocumentId).IsUnique();
-            builder.HasIndex(item => item.VerificationCode).IsUnique();
+            builder.HasIndex(item => item.VerificationCode);
         });
     }
 }
