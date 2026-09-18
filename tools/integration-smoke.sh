@@ -6,10 +6,12 @@ set -euo pipefail
 : "${PMCS_TEST_S3_ACCESS_KEY:?Set PMCS_TEST_S3_ACCESS_KEY.}"
 : "${PMCS_TEST_S3_SECRET_KEY:?Set PMCS_TEST_S3_SECRET_KEY.}"
 : "${PMCS_TEST_S3_BUCKET:?Set PMCS_TEST_S3_BUCKET.}"
+: "${PMCS_VERIFICATION_DATABASE_URL:?Set PMCS_VERIFICATION_DATABASE_URL to the integration PostgreSQL URI.}"
 
 command -v curl >/dev/null
 command -v dotnet >/dev/null
 command -v sha256sum >/dev/null
+command -v psql >/dev/null
 
 port="${PMCS_TEST_PORT:-5088}"
 if ! [[ "${port}" =~ ^[0-9]+$ ]] || (( port < 1024 || port > 65535 )); then
@@ -121,6 +123,9 @@ module_catalog="$(curl --silent --fail \
 grep -q '"schemaVersion":"pmcs.module/v1"' <<<"${module_catalog}"
 grep -q '"schemaVersion":"pmcs.module/legacy-v1"' <<<"${module_catalog}"
 grep -q '"moduleId":"platform.foundation"' <<<"${module_catalog}"
+grep -q '"moduleId":"documents.shared"' <<<"${module_catalog}"
+grep -q '"key":"documents.release_quarantine"' <<<"${module_catalog}"
+grep -q '"name":"documents.asset.released","version":1' <<<"${module_catalog}"
 grep -q '"id":"platform.modules.describe"' <<<"${module_catalog}"
 grep -q '"name":"platform.module-catalog.snapshot","version":1' <<<"${module_catalog}"
 
@@ -443,6 +448,113 @@ curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/projects/${project_id}/evidence/${evidence_id}/content"
 if [[ "$(sha256sum "${downloaded_file}" | cut -d ' ' -f 1)" != "${evidence_sha}" ]]; then
   echo "Evidence roundtrip changed the object content." >&2
+  exit 1
+fi
+
+current_step="verifying shared document upload, quarantine, permission and release"
+document_uploader_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+document_reader_id="50000000-0000-4000-8000-000000000001"
+document_id="81000000-0000-4000-8000-000000000001"
+document_denied_id="81000000-0000-4000-8000-000000000002"
+document_infected_id="81000000-0000-4000-8000-000000000003"
+document_version_id="81000000-0000-4000-8000-000000000004"
+document_file="${temporary_directory}/shared-document.pdf"
+document_download="${temporary_directory}/shared-document-download.pdf"
+printf '%%PDF-1.7\n%% PMCS shared document foundation\n%%%%EOF\n' > "${document_file}"
+document_size="$(wc -c < "${document_file}" | tr -d '[:space:]')"
+document_sha="$(sha256sum "${document_file}" | cut -d ' ' -f 1)"
+document_payload="{\"clientGeneratedId\":\"${document_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectGeneral\",\"ownerId\":\"${project_id}\",\"originalFileName\":\"shared-document.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${document_size},\"sha256\":\"${document_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}"
+document_session="$(curl --silent --fail +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-session' +  --header 'Content-Type: application/json' +  --data "${document_payload}" +  "http://127.0.0.1:${port}/api/v1/upload-sessions")"
+grep -q '"status":"PendingUpload"' <<<"${document_session}"
+grep -q '"versionNumber":1' <<<"${document_session}"
+
+document_denied_status="$(curl --silent --output /dev/null --write-out '%{http_code}' +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_reader_id}" +  --header 'Idempotency-Key: integration-document-observer-denied' +  --header 'Content-Type: application/json' +  --data "{\"clientGeneratedId\":\"${document_denied_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectGeneral\",\"ownerId\":\"${project_id}\",\"originalFileName\":\"denied.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${document_size},\"sha256\":\"${document_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" +  "http://127.0.0.1:${port}/api/v1/upload-sessions")"
+if [[ "${document_denied_status}" != "403" ]]; then
+  echo "Expected an Observer document upload to return 403; received ${document_denied_status}." >&2
+  exit 1
+fi
+
+document_upload="$(curl --silent --fail +  --request PUT +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-content' +  --header 'Content-Type: application/pdf' +  --data-binary "@${document_file}" +  "http://127.0.0.1:${port}/api/v1/documents/${document_id}/content")"
+grep -q '"status":"Quarantined"' <<<"${document_upload}"
+grep -q '"scanVerdict":"Clean"' <<<"${document_upload}"
+document_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${document_upload}")"
+if [[ "${document_revision}" != "2" ]]; then
+  echo "Expected the quarantined document revision to be 2; received ${document_revision}." >&2
+  exit 1
+fi
+
+document_quarantine_download_status="$(curl --silent --output /dev/null --write-out '%{http_code}' +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_reader_id}" +  "http://127.0.0.1:${port}/api/v1/documents/${document_id}/content")"
+if [[ "${document_quarantine_download_status}" != "409" ]]; then
+  echo "Expected quarantined content download to return 409; received ${document_quarantine_download_status}." >&2
+  exit 1
+fi
+
+document_release="$(curl --silent --fail +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${user_id}" +  --header 'Idempotency-Key: integration-document-release' +  --header 'Content-Type: application/json' +  --data "{\"baseRevision\":${document_revision}}" +  "http://127.0.0.1:${port}/api/v1/documents/${document_id}/release")"
+grep -q '"status":"Released"' <<<"${document_release}"
+grep -q '"revision":3' <<<"${document_release}"
+
+curl --silent --fail +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_reader_id}" +  --output "${document_download}" +  "http://127.0.0.1:${port}/api/v1/documents/${document_id}/content"
+if [[ "$(sha256sum "${document_download}" | cut -d ' ' -f 1)" != "${document_sha}" ]]; then
+  echo "Shared document roundtrip changed the object content." >&2
+  exit 1
+fi
+
+document_duplicate="$(curl --silent --fail +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-duplicate' +  --header 'Content-Type: application/json' +  --data "${document_payload}" +  "http://127.0.0.1:${port}/api/v1/upload-sessions")"
+grep -q '"status":"Released"' <<<"${document_duplicate}"
+grep -q '"versionNumber":1' <<<"${document_duplicate}"
+
+document_version_session="$(curl --silent --fail +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-version-2' +  --header 'Content-Type: application/json' +  --data "{\"clientGeneratedId\":\"${document_version_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectGeneral\",\"ownerId\":\"${project_id}\",\"originalFileName\":\"shared-document.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${document_size},\"sha256\":\"${document_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" +  "http://127.0.0.1:${port}/api/v1/upload-sessions")"
+grep -q '"versionNumber":2' <<<"${document_version_session}"
+
+infected_file="${temporary_directory}/scanner-test.txt"
+printf 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE' > "${infected_file}"
+infected_size="$(wc -c < "${infected_file}" | tr -d '[:space:]')"
+infected_sha="$(sha256sum "${infected_file}" | cut -d ' ' -f 1)"
+curl --silent --fail +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-infected-session' +  --header 'Content-Type: application/json' +  --data "{\"clientGeneratedId\":\"${document_infected_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectChat\",\"ownerId\":\"${report_id}\",\"originalFileName\":\"scanner-test.txt\",\"contentType\":\"text/plain\",\"sizeBytes\":${infected_size},\"sha256\":\"${infected_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" +  "http://127.0.0.1:${port}/api/v1/upload-sessions" >/dev/null
+infected_response_file="${temporary_directory}/infected-response.json"
+infected_status="$(curl --silent --output "${infected_response_file}" --write-out '%{http_code}' +  --request PUT +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${document_uploader_id}" +  --header 'Idempotency-Key: integration-document-infected-content' +  --header 'Content-Type: text/plain' +  --data-binary "@${infected_file}" +  "http://127.0.0.1:${port}/api/v1/documents/${document_infected_id}/content")"
+if [[ "${infected_status}" != "422" ]]; then
+  echo "Expected the scanner test file to return 422; received ${infected_status}." >&2
+  exit 1
+fi
+grep -q '"code":"documents.scan.infected"' "${infected_response_file}"
+grep -q '"status":"Rejected"' "${infected_response_file}"
+
+infected_release_status="$(curl --silent --output /dev/null --write-out '%{http_code}' +  --request POST +  --header "X-Tenant-Id: ${tenant_id}" +  --header "X-User-Id: ${user_id}" +  --header 'Idempotency-Key: integration-document-infected-release' +  --header 'Content-Type: application/json' +  --data '{"baseRevision":2}' +  "http://127.0.0.1:${port}/api/v1/documents/${document_infected_id}/release")"
+if [[ "${infected_release_status}" != "400" ]]; then
+  echo "Expected an infected document release to fail closed with 400; received ${infected_release_status}." >&2
+  exit 1
+fi
+
+current_step="verifying shared document database, audit and outbox isolation"
+document_database_state="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select status || '|' || scan_verdict || '|' || revision::text || '|' || version_number::text || '|' || (storage_etag is not null and released_by = '${user_id}')::text from documents.assets where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${document_id}';")"
+if [[ "${document_database_state}" != "Released|Clean|3|1|true" ]]; then
+  echo "Unexpected released document database state: ${document_database_state}." >&2
+  exit 1
+fi
+infected_database_state="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select status || '|' || scan_verdict || '|' || revision::text || '|' || (storage_etag is null)::text from documents.assets where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${document_infected_id}';")"
+if [[ "${infected_database_state}" != "Rejected|Infected|2|true" ]]; then
+  echo "Unexpected rejected document database state: ${infected_database_state}." >&2
+  exit 1
+fi
+denied_document_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select count(*) from documents.assets where id = '${document_denied_id}';")"
+if [[ "${denied_document_count}" != "0" ]]; then
+  echo "A denied document upload created metadata." >&2
+  exit 1
+fi
+document_audit_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select count(distinct event_type) from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and resource_type = 'DocumentAsset' and resource_id = '${document_id}' and event_type in ('DocumentUploadSessionCreated','DocumentQuarantined','DocumentReleased','DocumentDownloaded');")"
+if [[ "${document_audit_count}" != "4" ]]; then
+  echo "Shared document audit coverage is incomplete." >&2
+  exit 1
+fi
+document_release_event_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and project_id = '${project_id}' and event_type = 'documents.asset.released.v1' and payload->>'assetId' = '${document_id}' and not (payload ? 'sha256') and not (payload ? 'originalFileName');")"
+if [[ "${document_release_event_count}" != "1" ]]; then
+  echo "The released document event is missing or exposes unsafe payload fields." >&2
+  exit 1
+fi
+document_receipt_count="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 +  --tuples-only --no-align --command +  "select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('integration-document-session','integration-document-content','integration-document-release','integration-document-duplicate','integration-document-version-2','integration-document-infected-session','integration-document-infected-content');")"
+if [[ "${document_receipt_count}" != "7" ]]; then
+  echo "Shared document idempotency receipts are incomplete: ${document_receipt_count}." >&2
   exit 1
 fi
 

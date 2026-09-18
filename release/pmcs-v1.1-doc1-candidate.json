@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "product": "PMCS",
+  "releaseLine": "V1.1",
+  "checkpoint": "PMCS-V1.1-DOC1-RC1",
+  "status": "validation-pending",
+  "parentBranch": "v1.1-development",
+  "parentCommit": "ce4beb3a5a4aff6368c2719f0dc6ca1a170fbca5",
+  "runtimeBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "moduleId": "documents.shared",
+  "migration": {
+    "module": "documents",
+    "version": "20260918-001",
+    "expectedLedgerSize": 39
+  },
+  "security": {
+    "privateObjectStorage": true,
+    "sha256Verified": true,
+    "signatureVerified": true,
+    "quarantineRequired": true,
+    "criticalReleasePermission": "documents.release_quarantine",
+    "tenantAndProjectIsolation": true,
+    "crossModulePersistenceAllowed": false,
+    "publicEventContainsBinaryOrStorageKey": false
+  },
+  "gates": {
+    "domainTests": "implemented",
+    "webOfflineQueueTests": "implemented",
+    "postgresMinioRoundtrip": "implemented",
+    "permissionAndQuarantineNegativeTests": "implemented",
+    "fullCi": "pending"
+  },
+  "nextStage": "V1.1-IAM1"
+}

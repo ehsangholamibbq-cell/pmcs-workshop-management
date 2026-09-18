@@ -17,6 +17,7 @@ using Pmcs.Modules.Platform;
 using Pmcs.Modules.ProjectIntelligence;
 using Pmcs.Modules.Projects;
 using Pmcs.Modules.Evidence;
+using Pmcs.Modules.Documents;
 using Pmcs.Modules.ActionControl;
 using Pmcs.Modules.Finance;
 using Pmcs.Modules.Commercial;
@@ -61,6 +62,7 @@ IModule[] modules =
     new PlanningModule(),
     new TechnicalOfficeModule(),
     new EvidenceModule(),
+    new DocumentsModule(),
     new ActionControlModule(),
     new CommercialModule(),
     new FinanceModule(),

@@ -11,6 +11,7 @@
     <ProjectReference Include="../Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Documents/Pmcs.Modules.Documents.csproj" />
     <ProjectReference Include="../Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />

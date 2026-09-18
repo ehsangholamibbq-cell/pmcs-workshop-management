@@ -12,6 +12,7 @@
     <Project Path="src/backend/Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <Project Path="src/backend/Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
     <Project Path="src/backend/Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Documents/Pmcs.Modules.Documents.csproj" />
     <Project Path="src/backend/Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
     <Project Path="src/backend/Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
     <Project Path="src/backend/Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />

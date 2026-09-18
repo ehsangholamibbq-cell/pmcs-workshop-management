@@ -25,6 +25,7 @@ fi
 schemas=(
   action_control
   commercial
+  documents
   evidence
   field_operations
   finance

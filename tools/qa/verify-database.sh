@@ -54,8 +54,13 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "38" \
+  "39" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "shared documents migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'documents' and version = '20260918-001';"
 
 expect_equal \
   "canonical field-operations measurement migration identity" \
