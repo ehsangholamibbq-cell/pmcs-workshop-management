@@ -102,7 +102,7 @@ Profile در پروژه‌های مختلف Reference می‌شود؛ اما `Pr
 - `member-profile.read-directory` برای مشاهده در محدوده سازمانی مجاز یا پروژه مشترک؛
 - `member-profile.manage-directory` برای مدیریت سازمانی؛
 - `projects.bootstrap.create` برای ساخت پروژه از مبدأ؛
-- `projects.members.copy` برای انتقال عضویت‌ها.
+- `projects.bootstrap.members_copy` برای انتقال عضویت‌ها.
 
 Bootstrap فقط داخل یک Tenant مجاز است. هر Run دارای Correlation ID، Idempotency key، Actor، Source/Target، Descriptor version، Preview digest، نتیجه و Audit کامل است. اجرای ناقص نباید پروژهٔ مقصد را Active کند.
 

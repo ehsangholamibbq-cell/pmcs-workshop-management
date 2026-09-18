@@ -1,16 +1,16 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.6.0`
-- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1 و IAM1 بسته شده‌اند و PRJ1 فعال است
-- تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
+- نسخه سند: `1.7.0`
+- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
+- تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-PRJ1 — Controlled Project Bootstrap and Duplication`
+- مرحله فعال: `V1.1-RPT1 — Reporting Center Phase 1`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -205,7 +205,7 @@ Scope:
 
 کنترل‌های الزامی:
 
-- فقط داخل یک Tenant و با Permissionهای مستقل `projects.bootstrap.create` و `projects.members.copy`؛
+- فقط داخل یک Tenant و با Permissionهای مستقل `projects.bootstrap.create` و `projects.bootstrap.members_copy`؛
 - حساب کاربر Duplicate نمی‌شود؛ فقط Membership جدید به Identity موجود ساخته می‌شود؛
 - عضو غیرفعال، تعلیق‌شده یا ناسازگار در Preview با دلیل `Skipped/Blocked` نمایش داده می‌شود؛
 - اجرای Idempotent با Correlation ID، Audit، Dry-run، conflict policy و نتیجهٔ قابل دانلود؛
@@ -214,6 +214,8 @@ Scope:
 - هر Template/Module باید صریحاً Clone contract و Version compatibility خود را اعلام کند.
 
 **Gate خروج:** تست Preview/execute parity، permission و cross-tenant denial، inactive-member handling، idempotency، partial failure recovery، audit، عدم کپی دادهٔ عملیاتی و Activation مستقل.
+
+**Evidence:** Plan/Digest/Expiry، یازده Contributor نسخه‌دار، Membership reference-only، denylist دادهٔ عملیاتی، Wizard فارسی و Activation مستقل در Candidate source commit `e1b5bf6af813af7324065edc1c91eecf2391eccd` اثبات شد. هر هشت Job در Run 92 (`35355855215`) سبز شدند؛ ۲۸۴ تست C#، ۱۳۹ تست Web، پنج سناریوی مرورگر واقعی، connected bootstrap regression و Restore Drill دارای ۴۱ Migration پاس شدند. PRJ1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
 
 ### `V1.1-RPT1` — Reporting Center Phase 1
 
@@ -498,3 +500,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.1.0` | بازیابی و ثبت مستقل هفت Stage Agent مدیریتی و ایجاد Visual Excellence Program سراسری |
 | `1.2.0` | تصویب مسیر «مدیریت ممتاز»، Login قابل پیکربندی، پروفایل شخصی عضو و Project Bootstrap/Duplication کنترل‌شده |
 | `1.6.0` | ثبت Evidence قطعی IAM1 و فعال‌سازی PRJ1 پس از سبزشدن هشت Job CI |
+| `1.7.0` | ثبت Evidence قطعی PRJ1 و فعال‌سازی RPT1 پس از سبزشدن هشت Job CI |

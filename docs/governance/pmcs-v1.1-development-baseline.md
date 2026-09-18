@@ -28,15 +28,15 @@
 | --- | --- |
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
-| State | `Development | UX1/EXT1/DOC1/IAM1 Closed | PRJ1 Active` |
-| Product runtime implementation | در جریان روی شاخه V1.1؛ IAM1 تا source commit `86f9f4e` تأیید شده است |
-| Database migration | ۴۰ Migration؛ Restore Drill در Run 88 پاس |
+| State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
+| Product runtime implementation | در جریان روی شاخه V1.1؛ PRJ1 تا source commit `e1b5bf6` تأیید شده است |
+| Database migration | ۴۱ Migration؛ Restore Drill در Run 92 پاس |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
 Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` در Run 71 (`35275795712`) با هفت Suite و Qualification Report سبز تأیید شد. این Approval فقط G0 را می‌بندد و هیچ Runtime/Migration جدیدی را جزو Baseline قفل‌شده V1 نمی‌کند.
 
-IAM1 با Candidate source commit `86f9f4efd086e4e67823a930fcb3ef1b7249b71f` و Run 88 (`35345558791`) در هر هشت Job تأیید شد. این Evidence فقط Checkpoint توسعه IAM1 را می‌بندد؛ PMCS V1.1 هنوز Feature Complete، Qualified، Final یا Locked نیست و مرحله فعال `V1.1-PRJ1` است.
+PRJ1 با Candidate source commit `e1b5bf6af813af7324065edc1c91eecf2391eccd` و Run 92 (`35355855215`) در هر هشت Job تأیید شد. ۲۸۴ تست C#، ۱۳۹ تست Web، پنج سناریوی مرورگر واقعی، connected bootstrap regression و Restore Drill دارای ۴۱ Migration پاس شدند. این Evidence فقط Checkpoint توسعه PRJ1 را می‌بندد؛ PMCS V1.1 هنوز Feature Complete، Qualified، Final یا Locked نیست و مرحله فعال `V1.1-RPT1` است.
 
 ## ۳. قرارداد شاخه و ادغام
 
