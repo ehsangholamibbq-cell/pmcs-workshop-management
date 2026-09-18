@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.4.0`
-- وضعیت: `V1.1 Development`؛ UX1 و EXT1 بسته شده‌اند و DOC1 فعال است
+- نسخه سند: `1.5.0`
+- وضعیت: `V1.1 Development`؛ UX1، EXT1 و DOC1 بسته شده‌اند و IAM1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,7 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-DOC1 — Shared Document and Attachment Foundation`
+- مرحله فعال: `V1.1-IAM1 — Configurable Login and Minimal Member Profile`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -157,6 +157,8 @@ Scope:
 رکوردهای Evidence موجود بدون Migration پنهان و بدون تغییر معنا حفظ می‌شوند. تبدیل یا اشتراک فایل میان Contextها فقط با Command صریح انجام می‌شود.
 
 **Gate خروج:** تست Upload/Download/Retry/Duplicate/Permission/Quarantine/Audit و جداسازی Tenant/Project.
+
+**Evidence:** ماژول مستقل `documents.shared`، Migration شماره ۳۹، Object Storage خصوصی، Offline upload queue و مرزهای Permission/Quarantine در Candidate source commit `3fb9f3cb9d14cef5ecbc3de1a3f1f266e88e0e11` اثبات شد. هر هشت Job در Run 83 (`35338895848`) سبز شدند؛ ۲۷۴ تست C#، ۱۳۰ تست Web، ۴ سناریوی مرورگر واقعی و Restore Drill دارای ۳۹ Migration پاس شدند. DOC1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
 
 ### `V1.1-IAM1` — Configurable Login and Minimal Member Profile
 
