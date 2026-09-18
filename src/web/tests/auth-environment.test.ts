@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { readAuthEnvironment } from "../lib/auth-environment.ts";
 
@@ -57,4 +58,19 @@ test("development HTTP switch cannot be used with a public host", () => {
     }),
     /محلی/u,
   );
+});
+
+test("compose injects the login tenant into the web service only", () => {
+  const compose = readFileSync(new URL("../../../docker-compose.yml", import.meta.url), "utf8");
+  const keycloakSection = compose.slice(
+    compose.indexOf("\n  keycloak:\n"),
+    compose.indexOf("\n  minio:\n"),
+  );
+  const webSection = compose.slice(
+    compose.indexOf("\n  web:\n"),
+    compose.indexOf("\nvolumes:\n"),
+  );
+
+  assert.match(webSection, /PMCS_LOGIN_TENANT_ID/u);
+  assert.doesNotMatch(keycloakSection, /PMCS_LOGIN_TENANT_ID/u);
 });
