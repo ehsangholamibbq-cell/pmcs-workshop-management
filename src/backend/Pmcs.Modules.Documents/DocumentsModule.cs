@@ -50,7 +50,7 @@ public sealed class DocumentsModule : IModule
                 ManifestRiskClass.High,
                 "Change document classification, retention and legal-hold metadata."),
             new PermissionManifest(
-                "documents.release_quarantine",
+                "documents.quarantine.release",
                 PermissionScope.Tenant,
                 ManifestRiskClass.Critical,
                 "Release a clean quarantined document for permission-aware download.")

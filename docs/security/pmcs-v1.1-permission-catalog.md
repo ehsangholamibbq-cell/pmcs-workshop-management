@@ -36,7 +36,7 @@
 | `documents.read` | Owner/Project | Medium | خواندن فایل Released مجاز |
 | `documents.upload` | Owner/Project | Medium | ایجاد Upload Session |
 | `documents.classify` | Project/Tenant | High | تعیین Classification/Retention |
-| `documents.release_quarantine` | Tenant | Critical | Release کنترل‌شده پس از Scanner policy |
+| `documents.quarantine.release` | Tenant | Critical | Release کنترل‌شده پس از Scanner policy |
 | `collaboration.room.read` | Project | Low | مشاهده Room پروژه |
 | `collaboration.message.send` | Project | Medium | ارسال پیام در Room |
 | `collaboration.attachment.upload` | Project | Medium | پیوست از Shared Documents |
@@ -53,7 +53,7 @@
 ## ۳. Separation of Duties
 
 - `branding.login.publish` با صرف `branding.login.preview` اعطا نمی‌شود؛
-- `documents.release_quarantine` از Upload و Classification جدا است؛
+- `documents.quarantine.release` از Upload و Classification جدا است؛
 - `projects.bootstrap.create` به‌تنهایی اجازه کپی اعضا یا Activation نمی‌دهد؛
 - `collaboration.record.convert` علاوه بر Permission Chat، Permission Domain مقصد را نیز لازم دارد؛
 - `reporting.template.publish` از اجرای گزارش جدا است؛
@@ -71,4 +71,3 @@
 ## ۵. Gate تست
 
 هر Permission جدید باید دست‌کم Allow، Deny، No Context، Cross Tenant، Cross Project، Suspended Actor، Revoked Membership و Agent-inherited cases داشته باشد. UI پنهان‌شدن کنترل را به‌عنوان شواهد Permission نمی‌پذیرد؛ API رفتار نهایی را تعیین می‌کند.
-

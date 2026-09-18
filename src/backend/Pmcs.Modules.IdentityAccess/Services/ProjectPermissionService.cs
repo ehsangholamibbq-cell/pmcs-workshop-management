@@ -23,7 +23,7 @@ internal sealed class ProjectPermissionService(
             "projects.setup.configure",
             "projects.setup.configure-sensitive",
             "sync.devices.manage",
-            "documents.release_quarantine"
+            "documents.quarantine.release"
         };
 
     private static readonly HashSet<string> OperationalRoles =

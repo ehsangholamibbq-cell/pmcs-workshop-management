@@ -34,7 +34,7 @@ Supported owner types:
 - Version number is assigned by the server per tenant/owner pair.
 - Binary content is never readable before `Released`.
 - A clean scan does not auto-release the asset.
-- `documents.release_quarantine` is a separate Tenant/Critical permission.
+- `documents.quarantine.release` is a separate Tenant/Critical permission.
 - Restricted assets require a tenant-wide read grant even when they are project-owned.
 
 ## Endpoints
@@ -46,7 +46,7 @@ Supported owner types:
 | GET | `/api/v1/documents/{id}/content` | `documents.read` | Integrity-verified released bytes |
 | POST | `/api/v1/upload-sessions` | `documents.upload` | Stable resumable session |
 | PUT | `/api/v1/documents/{id}/content` | `documents.upload` | Hash/signature scan and quarantine |
-| POST | `/api/v1/documents/{id}/release` | `documents.release_quarantine` | Critical manual release |
+| POST | `/api/v1/documents/{id}/release` | `documents.quarantine.release` | Critical manual release |
 | PUT | `/api/v1/documents/{id}/classification` | `documents.classify` | Revision-controlled governance |
 
 Every mutation requires `Idempotency-Key`. Release and classification also require the current

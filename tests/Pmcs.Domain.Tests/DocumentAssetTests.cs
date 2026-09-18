@@ -203,7 +203,7 @@ public sealed class DocumentAssetTests
 
         Assert.Equal("documents.shared", descriptor.ModuleId);
         Assert.Contains(descriptor.Permissions, permission =>
-            permission.Key == "documents.release_quarantine" &&
+            permission.Key == "documents.quarantine.release" &&
             permission.Scope == Pmcs.BuildingBlocks.Modules.PermissionScope.Tenant &&
             permission.RiskClass == Pmcs.BuildingBlocks.Modules.ManifestRiskClass.Critical);
         Assert.Contains(descriptor.Events, integrationEvent =>

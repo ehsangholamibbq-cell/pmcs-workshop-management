@@ -73,7 +73,7 @@ test("permission catalog separates sensitive duties", () => {
     "identity.profile.photo_update_self",
     "projects.bootstrap.members_copy",
     "projects.bootstrap.activate",
-    "documents.release_quarantine",
+    "documents.quarantine.release",
     "collaboration.record.convert",
     "intelligence.tool.invoke_read",
   ]) assert.match(catalog, new RegExp(permission.replaceAll(".", "\\."), "u"));

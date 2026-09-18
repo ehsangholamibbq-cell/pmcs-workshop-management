@@ -527,7 +527,7 @@ internal static class DocumentEndpoints
         if (!await permissionService.HasTenantPermissionAsync(
                 actor.TenantId,
                 actor.UserId,
-                "documents.release_quarantine",
+                "documents.quarantine.release",
                 cancellationToken))
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
