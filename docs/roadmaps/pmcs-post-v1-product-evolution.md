@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.7.0`
+- نسخه سند: `1.8.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -252,6 +252,11 @@ Scope معماری:
 
 **Gate خروج:** Golden-file و visual print tests، determinism، Permission، Snapshot/Audit، Jalali/RTL و بازتولید خروجی از Template Version یکسان.
 
+**Definition of Ready:** بسته `PMCS-V1.1-RPT1-DOR1` روی Parent commit
+`db08eef7477356f164783dc783a4993f24f39a10` ثبت شد. ADR 0029، معماری Semantic Snapshot،
+API، Permission/Threat contract، Test Matrix و Runbook آماده‌اند. این Evidence فقط آغاز
+پیاده‌سازی RPT1 را مجاز می‌کند و هیچ Runtime/Migration یا Gate خروج RPT1 را کامل اعلام نمی‌کند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -501,3 +506,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.2.0` | تصویب مسیر «مدیریت ممتاز»، Login قابل پیکربندی، پروفایل شخصی عضو و Project Bootstrap/Duplication کنترل‌شده |
 | `1.6.0` | ثبت Evidence قطعی IAM1 و فعال‌سازی PRJ1 پس از سبزشدن هشت Job CI |
 | `1.7.0` | ثبت Evidence قطعی PRJ1 و فعال‌سازی RPT1 پس از سبزشدن هشت Job CI |
+| `1.8.0` | ثبت ممیزی تداوم و Definition of Ready مرحله RPT1؛ بدون تغییر Runtime |

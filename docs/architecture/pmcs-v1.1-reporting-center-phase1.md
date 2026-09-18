@@ -1,0 +1,262 @@
+# PMCS V1.1 — معماری Reporting Center Phase 1
+
+- شناسه: `PMCS-ARCH-RPT1-001`
+- نسخه: `1.0.0`
+- وضعیت: `Definition of Ready`
+- Checkpoint: `V1.1-RPT1`
+- Parent commit: `db08eef7477356f164783dc783a4993f24f39a10`
+- مرجع تصمیم: ADR 0029
+
+## ۱. Scope
+
+RPT1 یک Bounded Context مستقل برای گزارش‌های استاندارد و Certified می‌سازد:
+
+- Catalog و Template Versioning؛
+- اجرای غیرهم‌زمان و قابل Retry؛
+- Semantic Snapshot permission-aware با `asOf`؛
+- PDF و XLSX؛ CSV فقط برای Dataset جدولی مجاز؛
+- Output immutable با SHA-256، Retention، Archive و Audit؛
+- RTL، تاریخ شمسی، ارقام فارسی و Time Zone پروژه؛
+- Header/Footer، Revision، شماره صفحه، Watermark و Verification code؛
+- `NoData/NotConfigured/InsufficientData` بدون صفر ساختگی؛
+- نخستین Vertical Slice: گزارش روزانه رسمی و زنجیره اصلاحات.
+
+## ۲. Non-Scope
+
+- Drag-and-drop Report Designer؛
+- Query یا SQL دلخواه کاربر؛
+- Scheduled delivery و Subscription؛
+- Word output؛
+- Dashboard builder؛
+- تولید KPI/عدد توسط LLM؛
+- لینک عمومی ناشناس؛
+- Offline generation؛ Client فقط می‌تواند Draft پارامتر را محلی نگه دارد.
+
+## ۳. مرز ماژول
+
+`Pmcs.Modules.Reporting` دارای Descriptor غیر Legacy با شناسه `reporting.center` است.
+
+Dependencyهای مجاز:
+
+- `Pmcs.BuildingBlocks` برای Clock، Actor، Audit/Outbox/Idempotency و Manifest؛
+- `Pmcs.Modules.Projects` فقط از `IProjectDirectory`؛
+- `Pmcs.Modules.FieldOperations` فقط از `IDailyReportReportingSource`؛
+- `Pmcs.Modules.Documents` فقط از Contract انتشار/خواندن Generated Document؛
+- `Pmcs.Modules.IdentityAccess` به‌صورت مستقیم لازم نیست؛ Permission از BuildingBlocks contract تزریق می‌شود.
+
+هیچ Import از namespace `Persistence` ماژول دیگر و هیچ SQL روی Schema دیگر مجاز نیست.
+
+## ۴. Permission و Classification
+
+| عملیات | Permission | Scope | Risk |
+| --- | --- | --- | --- |
+| Catalog/List/Get | `reporting.catalog.read` | Project/Tenant | Low |
+| Create Run/Retry | `reporting.run.create` | Project/Tenant | Medium |
+| Run/Output metadata | `reporting.catalog.read` | Project/Tenant | Low |
+| Download | `reporting.output.download` + Source permissions | Project/Tenant | Medium |
+| Publish Template | `reporting.template.publish` | Tenant | High |
+
+گزارش روزانه علاوه بر Permissionهای Reporting به `field.daily-reports.read` نیاز دارد. Template
+permission requirement را نسخه‌دار اعلام می‌کند. Output بیشترین Classification میان Definition،
+پارامتر و Source را می‌گیرد؛ downgrade خودکار ممنوع است.
+
+Permission snapshot شامل Policy version، actor، project، required operations، result، source و
+evaluation time است. Snapshot مجوز دائمی ایجاد نمی‌کند و در processing/download دوباره ارزیابی می‌شود.
+
+## ۵. Aggregateها و Persistence
+
+### `ReportDefinition`
+
+- `id`, `code`, `title`, `description`؛
+- `scope`, `classification`, `supportedFormats`؛
+- `requiredPermissions`؛
+- `parameterSchemaVersion`؛
+- `status = Active|Retired`؛
+- `currentTemplateVersionId`.
+
+RPT1 Definitionها allowlist و migration-seeded هستند؛ endpoint ساخت Definition عمومی ندارد.
+
+### `ReportTemplateVersion`
+
+- `id`, `definitionId`, semantic `version`؛
+- `rendererContractVersion`, `layoutContractVersion`؛
+- `contentDigest`, `publishedAt`, `retiredAt`؛
+- `pageSize`, `orientation`, `locale`, `calendar`؛
+- immutable پس از Publish.
+
+### `ReportRun`
+
+- Tenant/Project/Definition/Template identity؛
+- canonical parameters و `parametersHash`؛
+- `asOfUtc`, project time zone؛
+- requester، Correlation ID و Idempotency identity؛
+- request/processing permission snapshots؛
+- status، attempts، claimed/started/completed timestamps؛
+- safe diagnostic code/detail، next retry؛
+- snapshot id و output count؛
+- optimistic revision.
+
+### `ReportSnapshot`
+
+- immutable canonical semantic JSON؛
+- `schemaVersion`, `dataStatus`, `sourceManifest`؛
+- SHA-256 lowercase؛
+- builtAt و source cut-off؛
+- هیچ Secret، Token یا object key ندارد.
+
+### `ReportOutput`
+
+- run/snapshot/template identity؛
+- format، media type، file name؛
+- Generated Document ID؛
+- size و SHA-256؛
+- verification code و manifest hash؛
+- classification، retention و archive state؛
+- immutable پس از success.
+
+## ۶. جدول‌ها و Migration
+
+Schema مالک: `reporting`.
+
+| جدول | هدف |
+| --- | --- |
+| `report_definitions` | Catalog allowlist |
+| `report_template_versions` | Template immutable |
+| `report_runs` | lifecycle و diagnostics |
+| `report_snapshots` | semantic snapshot canonical |
+| `report_outputs` | output manifest و Document reference |
+
+Migration نخست با order بعد از ۱۱۰۰ Documents و Migration شماره ۴۲ ثبت می‌شود. Migration فقط
+Expand است و هیچ جدول V1/V1.1 موجود را تغییر معنا نمی‌دهد. Restore drill باید ۴۲ Migration را
+نگه دارد. QA reset inventory باید Schema جدید را دقیقاً شامل شود.
+
+## ۷. Application Contract منبع گزارش روزانه
+
+`IDailyReportReportingSource.LoadChainAsync(tenantId, projectId, reportId, asOfUtc)` فقط DTOهای
+read-only زیر را برمی‌گرداند:
+
+- Root report و نسخه‌های رسمی `Approved/Superseded` که تا `asOf` رسمی شده‌اند؛
+- report date، narrative، location و actor/time metadata؛
+- `rootReportId/versionNumber/supersedes/supersededBy/supersededAt`؛
+- aggregate revision و Factهای نسخه؛
+- Fact lineage شامل `copiedFromFactId`، Location ID/name، quantity/unit و impact؛
+- current official version در `asOf`.
+
+قواعد as-of:
+
+1. نسخه‌ای که بعد از cutoff تأیید شده، دیده نمی‌شود؛
+2. نسخه‌ای در cutoff رسمی است که `approvedAt <= asOf` و
+   `supersededAt is null || supersededAt > asOf`؛
+3. Draft/Submitted/Returned هرگز وارد Snapshot رسمی نمی‌شوند؛
+4. نبود نسخهٔ رسمی `NoData` است، نه گزارش خالی یا صفر؛
+5. Reporting هیچ وضعیت Source را تغییر نمی‌دهد.
+
+## ۸. Pipeline اجرا
+
+1. API Actor/Tenant/Project و Definition/format/parameter را validate می‌کند؛
+2. Permissionهای Reporting و Source بررسی و Snapshot درخواست ثبت می‌شوند؛
+3. Idempotent Run با status `Queued` و Audit/Outbox در transaction ایجاد می‌شود؛
+4. Worker Run را با `FOR UPDATE SKIP LOCKED` claim می‌کند؛
+5. Permission و Project status دوباره بررسی می‌شوند؛
+6. Source contract Snapshot معنایی را می‌سازد؛
+7. canonical serializer hash را تولید می‌کند؛
+8. Rendererهای درخواست‌شده bytes قطعی می‌سازند؛
+9. هر output از Generated Document contract عبور می‌کند؛
+10. Snapshot/Output/Run success و Outbox اتمیک ثبت می‌شوند؛
+11. دانلود فقط با current Permission و hash verification انجام می‌شود.
+
+Retry پس از publish ناقص از stable output identity استفاده می‌کند و duplicate Document یا Output
+نمی‌سازد. Partial failure تا کامل‌شدن همه formatهای درخواست‌شده `Succeeded` اعلام نمی‌شود.
+
+## ۹. خطا و State
+
+| Code | معنا | Retry |
+| --- | --- | --- |
+| `reporting.source.no_data` | نسخه رسمی در cutoff وجود ندارد | خیر، مگر پارامتر جدید |
+| `reporting.source.insufficient_data` | Source رسمی است ولی داده لازم ناقص است | خیر |
+| `reporting.permission.revoked` | Permission پس از Queue لغو شده | خیر |
+| `reporting.template.retired` | Template pin‌شده دیگر قابل اجرا نیست | خیر |
+| `reporting.renderer.transient` | خطای موقت Renderer/Storage | محدود |
+| `reporting.output.integrity_failed` | hash/size/media mismatch | Fail-closed |
+| `reporting.run.timeout` | پردازش از budget عبور کرده | محدود |
+
+Diagnostics فقط code، attempt، duration، component و Correlation ID دارد. Source payload، Narrative،
+نام فایل حساس، Token یا stack trace خام در log/API ذخیره نمی‌شود.
+
+## ۱۰. Output contract
+
+### PDF
+
+- PDF واقعی، نه screenshot؛
+- فونت فارسی embed و RTL/Bidi صحیح؛
+- A4/A3 و Portrait/Landscape طبق Template؛
+- header جدول تکرارشونده، page break کنترل‌شده و شماره صفحه؛
+- Header/Footer، لوگو، عنوان، پروژه، تاریخ شمسی، Revision و cutoff؛
+- Watermark برای Draft/Archive فقط طبق state؛
+- Verification code/QR بدون public bypass؛
+- metadata ثابت و deterministic.
+
+### XLSX
+
+- workbook استاندارد و بدون Macro؛
+- sheet metadata + sheet داده؛
+- Freeze pane، filter و column type ثابت؛
+- تاریخ قابل مشاهده شمسی به‌صورت متن صریح و UTC/ISO در sheet metadata؛
+- عدد canonical و unit/currency در ستون مستقل؛
+- formula از Source یا کاربر پذیرفته نمی‌شود؛ مقدارها server-calculated هستند؛
+- cellهایی که با `=`, `+`, `-`, `@` شروع می‌شوند به‌عنوان text امن نوشته می‌شوند.
+
+## ۱۱. Offline و Concurrency
+
+- generation/download online-only است؛
+- Draft پارامتر در Client Fact رسمی نیست؛
+- `Idempotency-Key` برای Create/Retry اجباری است؛
+- Template و parameter version در Run pin می‌شوند؛
+- دو Run همسان می‌توانند برای Audit جدا باشند، اما retry همان Run duplicate نمی‌سازد؛
+- Worker claim، attempt و finalization optimistic/transactional است؛
+- cancellation فقط پیش از immutable output مجاز است.
+
+## ۱۲. Retention و Archive
+
+- Retention پیش‌فرض گزارش رسمی `LongTerm` است؛
+- Template/Definition می‌تواند Policy طولانی‌تر تعیین کند، کوتاه‌ترشدن نیازمند Permission و Audit است؛
+- Legal Hold از Shared Documents پیروی می‌کند؛
+- حذف فیزیکی در RPT1 API وجود ندارد؛
+- Retire/Archive metadata خروجی و Snapshot را بازنویسی نمی‌کند؛
+- Source حذف یا اصلاح نمی‌تواند Output تاریخی را بی‌صدا تغییر دهد.
+
+## ۱۳. Observability و SLO اولیه
+
+- queue depth، oldest queued age، processing duration و success/failure/retry count؛
+- render duration/size به تفکیک Definition/format بدون label حساس؛
+- download integrity failure و permission denial؛
+- health state برای Worker و storage adapter؛
+- Correlation از API تا Run، Snapshot، Document، Audit و Outbox؛
+- budget اولیه: P95 ساخت گزارش روزانه دوفرمتی زیر ۳۰ ثانیه در dataset مرجع؛
+- maximum صفحات/ردیف/حجم با fail-closed policy و تست load تعیین می‌شود.
+
+## ۱۴. Rollout و Rollback
+
+1. Migration Expand و Catalog seed؛
+2. Feature flag `reporting.phase1` خاموش؛
+3. Smoke روی dataset ایزوله و Golden files؛
+4. فعال‌سازی محدود برای Admin/Project Manager؛
+5. اندازه‌گیری queue/render/storage؛
+6. فعال‌سازی role mapping مصوب؛
+7. rollback با خاموش‌کردن Feature flag و Worker؛ داده/Output موجود حفظ می‌شوند؛
+8. Contract/column فقط پس از compatibility window در نسخه آینده قابل جمع‌کردن است.
+
+## ۱۵. Acceptance قابل‌اندازه‌گیری
+
+- هیچ Cross-module Persistence import یا SQL وجود ندارد؛
+- تمام reads با current Tenant/Project/Permission محدود می‌شوند؛
+- Run create/retry idempotent و audited است؛
+- Permission revocation میان Queue و processing و پیش از download اثبات می‌شود؛
+- Daily Report as-of و chain reconstruction با Golden dataset deterministic است؛
+- یک Template/version/parameter/source، Snapshot hash یکسان می‌دهد؛
+- PDF/XLSX hash و bytes در replay یکسان‌اند یا metadata nondeterministic پیش از hash حذف می‌شود؛
+- Jalali/RTL/Persian digits و Time Zone در Golden/visual tests پاس می‌شوند؛
+- NoData/InsufficientData بدون عدد ساختگی است؛
+- download عمومی Documents برای `ReportOutput` fail-closed است؛
+- Migration/restore، worker crash/retry و object storage partial failure تست می‌شوند؛
+- Full Regression V1 و Checkpointهای بسته‌شده V1.1 پاس می‌ماند.

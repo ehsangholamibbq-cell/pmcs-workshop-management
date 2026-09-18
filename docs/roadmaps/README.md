@@ -4,9 +4,9 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.7.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.8.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
-| Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.1.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
+| Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
 
 سیاست لازم‌الاجرای Version و Baseline: `../governance/pmcs-version-and-baseline-policy.md`.
@@ -30,4 +30,5 @@
 | V1.1 IAM1 CI | Run 88 / `35345558791` / `success` |
 | V1.1 PRJ1 source | `e1b5bf6af813af7324065edc1c91eecf2391eccd` |
 | V1.1 PRJ1 CI | Run 92 / `35355855215` / `success` |
+| V1.1 RPT1 DoR | `PMCS-V1.1-RPT1-DOR1` / Ready for Implementation / no runtime change |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

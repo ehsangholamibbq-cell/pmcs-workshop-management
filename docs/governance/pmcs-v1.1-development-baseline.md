@@ -38,6 +38,10 @@ Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` در Run 71 
 
 PRJ1 با Candidate source commit `e1b5bf6af813af7324065edc1c91eecf2391eccd` و Run 92 (`35355855215`) در هر هشت Job تأیید شد. ۲۸۴ تست C#، ۱۳۹ تست Web، پنج سناریوی مرورگر واقعی، connected bootstrap regression و Restore Drill دارای ۴۱ Migration پاس شدند. این Evidence فقط Checkpoint توسعه PRJ1 را می‌بندد؛ PMCS V1.1 هنوز Feature Complete، Qualified، Final یا Locked نیست و مرحله فعال `V1.1-RPT1` است.
 
+Definition of Ready مرحله RPT1 با شناسه `PMCS-V1.1-RPT1-DOR1` روی source commit جاری
+ثبت شد. این بسته ADR، معماری، API، Permission/Threat، Test Matrix و Runbook را قفل می‌کند، اما
+هیچ تغییر Runtime یا Migration ایجاد نمی‌کند و Gate خروج RPT1 همچنان باز است.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛

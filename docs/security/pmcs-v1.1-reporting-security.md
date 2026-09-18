@@ -1,0 +1,107 @@
+# PMCS V1.1 — Reporting Permission، Classification و Threat Contract
+
+- شناسه: `PMCS-SEC-RPT1-001`
+- نسخه: `1.0.0`
+- وضعیت: Definition of Ready
+- Checkpoint: `V1.1-RPT1`
+
+## ۱. اصل دسترسی
+
+گزارش یک راه میان‌بر برای دیدن داده نیست. Actor فقط وقتی Definition، Run، Snapshot metadata یا
+Output را می‌بیند که هم Permission مربوط به Reporting و هم Permissionهای Source همان Definition
+را در Scope جاری داشته باشد.
+
+سه ارزیابی مستقل لازم است:
+
+1. هنگام Create Run؛
+2. هنگام پردازش Worker؛
+3. هنگام View/Download/Verify.
+
+Permission snapshot فقط Evidence است و به Token دائمی تبدیل نمی‌شود.
+
+## ۲. Role mapping اولیه
+
+| Role | Catalog | Create Run | Download | Publish Template |
+| --- | --- | --- | --- | --- |
+| Tenant Administrator | Allow | Allow | Allow | Allow |
+| Project Manager | Allow | Allow | Allow | Deny |
+| Project Controller | Allow | Allow | Allow | Deny |
+| Technical Office | Allow | Allow | Allow | Deny |
+| Site Supervisor | Allow | Allow فقط گزارش‌های Source مجاز | Allow | Deny |
+| Finance Manager/Operator | Allow فقط Definitionهای Source مجاز | مطابق Source | مطابق Source | Deny |
+| Procurement/Quality/HSE | Allow فقط Definitionهای Source مجاز | مطابق Source | مطابق Source | Deny |
+| Observer | Catalog و Download خواندنی مطابق Source | Deny Create | Allow مطابق Source | Deny |
+| Portfolio Viewer | Catalog/Run/Download فقط در Project scopeهای مجاز | Allow Definitionهای read-only | Allow | Deny |
+
+Role mapping به‌تنهایی کافی نیست؛ Project membership فعال، Source permission، Classification و
+هر Field-level restriction دوباره اعمال می‌شود. `reporting.*` مجوز `hse.confidential.read`،
+`governance.sensitive.read` یا هر Permission حساس دیگری تولید نمی‌کند.
+
+## ۳. Classification propagation
+
+- Output حداقل Classification خود Definition را دارد؛
+- بالاترین Classification Source/Field واردشده بر Output اعمال می‌شود؛
+- فیلد بدون Permission به‌جای mask مبهم، طبق Template یا حذف می‌شود یا کل Definition برای Actor
+  unavailable می‌شود؛ رفتار هر Definition ثابت و تست‌شده است؛
+- Restricted output از generic Documents list/download حذف می‌شود؛
+- Notification گزارش فقط metadata classification-safe دارد؛
+- نام فایل نباید شرح حساس یا نام فرد HSE را افشا کند.
+
+گزارش روزانه اولیه فقط داده‌ای را وارد می‌کند که `field.daily-reports.read` اجازه می‌دهد و Source
+contract هیچ دادهٔ محرمانهٔ HSE/مالی یا فایل binary را ضمنی join نمی‌کند.
+
+## ۴. Threat model
+
+| تهدید | کنترل |
+| --- | --- |
+| Cross-tenant/project IDOR | Tenant/Project predicate، current Actor و negative tests |
+| Revocation پس از Queue | re-evaluation در Worker و download |
+| SQL/Template injection | Catalog allowlist، parameter parser بسته، عدم دریافت SQL/code |
+| Spreadsheet formula injection | نوشتن text امن برای prefixهای `= + - @` و عدم Macro |
+| Stored HTML/script | Renderer هیچ HTML/JS کاربر را اجرا نمی‌کند؛ text encode می‌شود |
+| Path/object-key traversal | object key فقط Documents adapter می‌سازد؛ Reporting key دریافت نمی‌کند |
+| Hash substitution | Snapshot/output SHA-256، media/size/signature verify و immutable manifest |
+| Retry duplicate | stable output identity، idempotency و unique constraints |
+| Stale source | `asOf`، source revision/official timestamps و snapshot hash |
+| Log leakage | code/correlation/duration only؛ no payload/query/token/object key |
+| Public QR bypass | QR فقط شناسه verification است؛ endpoint همچنان Auth/Permission می‌خواهد |
+| Decompression/zip bomb در XLSX | فقط Server renderer تولید می‌کند؛ download content محدود و hash شده است |
+| Resource exhaustion | row/page/size/time budget، queue quota، rate limit و cancellation |
+
+## ۵. Data minimization و Audit
+
+- Snapshot فقط فیلدهای لازم Template را نگه می‌دارد؛
+- Permission snapshot Role header یا Token خام ذخیره نمی‌کند؛
+- IP، credential، provider secret و payload کامل در Audit نیست؛
+- Audit create/process/retry/download/verify شامل Actor، Project، Run/Output، Template version،
+  `asOf`, result، Correlation ID و hash است؛
+- مشاهده و Download Output Restricted نیز Audit می‌شود؛
+- System worker با actor type صریح اجرا می‌شود و هرگز به‌جای requester ثبت نمی‌شود.
+
+## ۶. Retention و Privacy
+
+- output و snapshot دارای Retention policy نسخه‌دار هستند؛
+- Legal Hold از Shared Documents رعایت می‌شود؛
+- hard delete endpoint در RPT1 وجود ندارد؛
+- archive دسترسی را افزایش نمی‌دهد؛
+- تغییر Profile/Role بعدی نام یا permission snapshot تاریخی را بازنویسی نمی‌کند؛
+- Download پس از انقضای Membership یا Revocation fail-closed است.
+
+## ۷. Negative gate اجباری
+
+حداقل سناریوهای زیر باید در CI متصل پاس شوند:
+
+- Tenant A با Output Tenant B؛
+- Project A با Run Project B؛
+- Actor دارای `reporting.run.create` ولی فاقد Source permission؛
+- Actor دارای Source read ولی فاقد create/download؛
+- Membership suspended/revoked میان Queue و processing؛
+- Permission revoked پس از success و پیش از download؛
+- generic Documents download برای `ReportOutput`؛
+- تغییر `outputId/documentId/ownerId`؛
+- template/parameter ناشناخته؛
+- payload spreadsheet formula؛
+- hash، size، media type یا object bytes دستکاری‌شده؛
+- retry هم‌زمان و Worker crash-after-storage-before-commit؛
+- QR/Verification بدون Session؛
+- Agent Tool آینده با Permission کمتر از user یا تلاش privilege elevation.
