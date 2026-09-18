@@ -54,8 +54,13 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "41" \
+  "42" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "certified reporting migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260918-001';"
 
 expect_equal \
   "controlled project bootstrap migration identity" \

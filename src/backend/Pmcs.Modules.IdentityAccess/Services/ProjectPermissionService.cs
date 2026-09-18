@@ -28,6 +28,7 @@ internal sealed class ProjectPermissionService(
             "projects.calendar.configure",
             "projects.setup.configure",
             "projects.setup.configure-sensitive",
+            "reporting.template.publish",
             "sync.devices.manage",
             "documents.quarantine.release"
         };
@@ -441,7 +442,7 @@ internal sealed class ProjectPermissionService(
             },
             ["ProjectController"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "projects.read", "project-state.read", "planning.measurement-items.read",
+                "projects.read", "project-state.read", "field.daily-reports.read", "planning.measurement-items.read",
                 "planning.progress.read", "planning.baselines.read", "planning.milestones.read",
                 "technical.read", "financial-state.read", "commercial-state.read", "supply.read",
                 "quality.read", "hse.read", "evidence.read", "documents.read", "documents.upload",
@@ -455,6 +456,25 @@ internal sealed class ProjectPermissionService(
                 "decisions.implement", "decisions.review-effect",
                 "escalations.acknowledge", "escalations.manage"
             }
+        };
+
+    private static readonly Dictionary<string, IReadOnlySet<string>> ReportingRolePermissions =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Observer"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "reporting.catalog.read", "reporting.output.download"
+            },
+            ["SiteSupervisor"] = ReportingOperatorPermissions(),
+            ["TechnicalOffice"] = ReportingOperatorPermissions(),
+            ["FinanceOperator"] = ReportingOperatorPermissions(),
+            ["FinanceManager"] = ReportingOperatorPermissions(),
+            ["ContractAdministrator"] = ReportingOperatorPermissions(),
+            ["ProcurementOperator"] = ReportingOperatorPermissions(),
+            ["ProcurementManager"] = ReportingOperatorPermissions(),
+            ["QualityController"] = ReportingOperatorPermissions(),
+            ["HseOfficer"] = ReportingOperatorPermissions(),
+            ["ProjectController"] = ReportingOperatorPermissions()
         };
 
     public async Task<bool> HasTenantPermissionAsync(
@@ -674,6 +694,7 @@ internal sealed class ProjectPermissionService(
 
     private static string[] KnownOperations() => ProjectRolePermissions.Values
         .SelectMany(permissions => permissions)
+        .Concat(ReportingRolePermissions.Values.SelectMany(permissions => permissions))
         .Where(permission => permission != "*")
         .Concat(AdministratorOnlyPermissions)
         .Concat([
@@ -722,11 +743,24 @@ internal sealed class ProjectPermissionService(
                 string.Equals(permission, "hse.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "governance.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "platform.modules.read", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.catalog.read", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.run.create", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.output.download", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool GrantsRole(string roleCode, string permission) =>
         ProjectRolePermissions.TryGetValue(roleCode, out var permissions) &&
         (permissions.Contains("*") || permissions.Contains(permission) ||
-            string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase));
+            string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)) ||
+        ReportingRolePermissions.TryGetValue(roleCode, out var reportingPermissions) &&
+        reportingPermissions.Contains(permission);
+
+    private static IReadOnlySet<string> ReportingOperatorPermissions() =>
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "reporting.catalog.read",
+            "reporting.run.create",
+            "reporting.output.download"
+        };
 }

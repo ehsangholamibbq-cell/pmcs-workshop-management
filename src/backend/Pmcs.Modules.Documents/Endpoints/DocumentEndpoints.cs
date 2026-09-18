@@ -86,7 +86,9 @@ internal static class DocumentEndpoints
         }
 
         var query = dbContext.Assets.AsNoTracking()
-            .Where(asset => asset.TenantId == actor.TenantId && asset.Status != DocumentAssetStatus.Deleted);
+            .Where(asset => asset.TenantId == actor.TenantId &&
+                asset.Status != DocumentAssetStatus.Deleted &&
+                asset.OwnerType != DocumentOwnerType.ReportOutput);
         if (projectId.HasValue)
         {
             query = query.Where(asset => asset.ProjectId == projectId.Value);
@@ -128,7 +130,8 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null || asset.Status == DocumentAssetStatus.Deleted)
+        if (asset is null || asset.OwnerType == DocumentOwnerType.ReportOutput ||
+            asset.Status == DocumentAssetStatus.Deleted)
         {
             return Results.NotFound();
         }
@@ -342,7 +345,7 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null)
+        if (asset is null || asset.OwnerType == DocumentOwnerType.ReportOutput)
         {
             return Results.NotFound();
         }
@@ -542,7 +545,7 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null)
+        if (asset is null || asset.OwnerType == DocumentOwnerType.ReportOutput)
         {
             return Results.NotFound();
         }
@@ -637,7 +640,7 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null)
+        if (asset is null || asset.OwnerType == DocumentOwnerType.ReportOutput)
         {
             return Results.NotFound();
         }
@@ -715,7 +718,8 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null || asset.Status == DocumentAssetStatus.Deleted)
+        if (asset is null || asset.OwnerType == DocumentOwnerType.ReportOutput ||
+            asset.Status == DocumentAssetStatus.Deleted)
         {
             return Results.NotFound();
         }
@@ -847,6 +851,11 @@ internal static class DocumentEndpoints
         DocumentAsset asset,
         CancellationToken cancellationToken)
     {
+        if (asset.OwnerType == DocumentOwnerType.ReportOutput)
+        {
+            return false;
+        }
+
         if (asset.OwnerType is DocumentOwnerType.MemberProfile or DocumentOwnerType.LoginExperience)
         {
             return await HasOwnerReadPermissionAsync(
@@ -945,6 +954,11 @@ internal static class DocumentEndpoints
 
     private static string? ValidateOwnerUploadPolicy(CreateDocumentUploadSessionRequest request)
     {
+        if (request.OwnerType == DocumentOwnerType.ReportOutput)
+        {
+            return "documents.report_output.generated_only";
+        }
+
         if (request.OwnerType == DocumentOwnerType.MemberProfile)
         {
             if (!IsImage(request.ContentType) || request.SizeBytes > 5L * 1024L * 1024L)

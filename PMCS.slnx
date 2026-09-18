@@ -18,6 +18,7 @@
     <Project Path="src/backend/Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
     <Project Path="src/backend/Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <Project Path="src/backend/Pmcs.Modules.WorkManagement/Pmcs.Modules.WorkManagement.csproj" />
+    <Project Path="src/backend/Pmcs.Modules.Reporting/Pmcs.Modules.Reporting.csproj" />
     <Project Path="src/backend/Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
     <Project Path="src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj" />
   </Folder>

@@ -28,6 +28,7 @@ using Pmcs.Modules.QualitySafety;
 using Pmcs.Modules.Sync;
 using Pmcs.Modules.WorkManagement;
 using Pmcs.Modules.QualityAssurance;
+using Pmcs.Modules.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 var releaseIdentity = ReleaseIdentity.FromAssembly(typeof(Program).Assembly);
@@ -70,6 +71,7 @@ IModule[] modules =
     new ProjectIntelligenceModule(),
     new IntelligenceModule(),
     new WorkManagementModule(),
+    new ReportingModule(),
     new QualityAssuranceModule()
 ];
 var moduleCatalog = ModuleCatalog.Create(modules.Select(module => module.Descriptor));

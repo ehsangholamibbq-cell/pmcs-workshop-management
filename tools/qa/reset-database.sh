@@ -36,6 +36,7 @@ schemas=(
   project_intelligence
   projects
   quality_safety
+  reporting
   sync_control
   technical_office
   work_management
