@@ -28,7 +28,8 @@ internal static partial class Program
             throw new InvalidOperationException("PMCS_QA_REPORTING_OUTPUT_ID must be a non-empty UUID.");
         }
         if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var endpointUri) ||
-            endpointUri.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps))
+            (!string.Equals(endpointUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(endpointUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException("PMCS_QA_S3_ENDPOINT must be an absolute HTTP or HTTPS URL.");
         }
