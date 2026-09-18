@@ -226,5 +226,6 @@ npm run check
 - Checkpoint آمادگی RPT1: [`docs/checkpoints/v1.1-rpt1-readiness.md`](docs/checkpoints/v1.1-rpt1-readiness.md)
 - Source Candidate اول RPT1: [`docs/checkpoints/v1.1-rpt1-slice-01-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-01-candidate.md)
 - Source Candidate دوم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-02-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-02-candidate.md)
+- Recovery/Security Candidate سوم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-03-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-03-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

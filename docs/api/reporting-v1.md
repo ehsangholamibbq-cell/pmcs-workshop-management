@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Source implemented in `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`؛ core connected regression passed in Run 99؛ extended RPT1 qualification open
+- Status: Runtime implemented in `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`؛ latest qualification candidate `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` passed Run 102؛ extended RPT1 gates open
 
 ## ۱. قواعد عمومی
 

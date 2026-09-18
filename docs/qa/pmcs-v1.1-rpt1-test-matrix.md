@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-QA-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Connected core regression passed؛ RPT1 extended qualification open
+- وضعیت: Connected core + cancel/security regression passed؛ RPT1 extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -190,3 +190,17 @@ Qualification artifact `10562821142` نیز هفت Suite و صفر failure ثب�
 این موفقیت فقط coverage فعلی CI را اثبات می‌کند. PDF با license واقعی و Golden/pixel، Golden معنایی
 کامل، malformed/tamper و revocation گسترده، concurrency دو Worker، crash windows، cancellation
 متصل، load/soak، observability و Browser UI اختصاصی Reporting همچنان Gate باز هستند.
+
+## ۱۴. Coverage افزوده‌شده در Qualification Slice 03
+
+Candidate `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` با tree
+`aa4063214ad1dea8fac19685a81818623296c24c` در Run 102 (`35383686315`) موارد زیر را متصل پاس کرد:
+
+- `6/6` assertion Cancel با Worker خاموش، replay و final-state/no-output؛
+- `6/6` کنترل security برای anonymous/cross-tenant، generic Documents، Membership suspension،
+  metadata tamper fail-closed/Audit و restore؛
+- assertion دیتابیس Audit/Outbox/Idempotency لغو؛
+- حفظ `13/13` هارنس Core Reporting، Restore ۴۳ Migration و هر هفت Suite Regression.
+
+این coverage، worker-time revocation، object-byte tamper، concurrency/crash، load/soak،
+observability، Golden و UI اختصاصی Reporting را پاس‌شده اعلام نمی‌کند.

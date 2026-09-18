@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Connected core operations candidate passed؛ extended recovery/observability qualification open
+- Status: Connected core + cancel/security candidate passed؛ extended recovery/observability qualification open
 
 ## Health و Metrics
 
@@ -136,3 +136,8 @@ Audit، Outbox و Idempotency را کنترل می‌کند.
 assertion Reporting، QA database verification و Restore Drill ۴۳ Migration را پاس کرد. این نتیجه
 جایگزین crash/concurrency/revocation/tamper/load یا PDF Golden نیست؛ نبود آن Evidenceها نباید
 به‌عنوان Healthy/Qualified تفسیر شود.
+
+Run 102 (`35383686315`) مسیر عملیاتی دوم را نیز اجرا کرد: API با Worker خاموش بالا آمد، Run پیش از
+claim لغو شد و replay/final-state بدون side effect تکراری ماند. سپس tenant/auth isolation، قطع
+Download پس از suspend شدن Membership و metadata tamper/restore آزموده شد. این رویه فقط در QA
+database ایزوله مجاز است؛ دستکاری مستقیم fixture هرگز Runbook تولید نیست.

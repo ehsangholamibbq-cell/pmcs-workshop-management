@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-SEC-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Source controls implemented؛ connected core negative gates passed؛ extended gates open
+- وضعیت: Connected core + first extended negative gates passed؛ remaining gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -120,3 +120,9 @@ assertion را پاس کرد: Observer deny، replay/conflict، cross-project de
 license fail-closed. این Evidence جایگزین Gateهای باقی‌ماندهٔ بخش ۷ نیست: cross-tenant، revocation
 میان Queue/processing/download، tamper/malformed object، retry هم‌زمان/crash window، verification
 بدون Session و آزمون privilege elevation Tool هنوز باید به qualification متصل افزوده شوند.
+
+Run 102 (`35383686315`) شش کنترل متصل دیگر را پاس کرد: Verify ناشناس، cross-tenant، منع generic
+Documents content، suspend شدن Membership پیش از Download، metadata hash tamper با پاسخ 502/Audit
+و Verify سالم پس از restore. Cancel نیز با Worker خاموش در شش assertion مستقل، idempotent و بدون
+Snapshot/Output اثبات شد. هنوز revocation میان Queue/processing، object-byte/missing-object tamper،
+دو Worker/crash window و Tool privilege elevation باز هستند.

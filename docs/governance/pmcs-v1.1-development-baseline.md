@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `ef5d68e`؛ core connected regression passed و Gate خروج RPT1 باز |
+| Product runtime implementation | RPT1 Slice 01–03 تا source commit `b4da1e9`؛ core + cancel/security connected regression passed و Gate خروج RPT1 باز |
 | Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 99 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -59,6 +59,14 @@ Restore Drill ۴۳ Migration پاس شدند. این نتیجه PDF license/gold
 کامل Permission revocation/tamper، observability و UI اختصاصی Reporting را نمی‌بندد. بنابراین RPT1
 همچنان Active است و این source commit Baseline قفل‌شده یا Checkpoint بسته نیست. هر سه switch Phase
 1، output access و Worker به‌طور پیش‌فرض خاموش‌اند.
+
+Qualification Slice 03 با source commit `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` و tree
+`aa4063214ad1dea8fac19685a81818623296c24c` هیچ API/Domain/Migration جدیدی ایجاد نکرد؛ هارنس و
+orchestration متصل را برای Cancel با Worker خاموش، replay/final-state، anonymous/cross-tenant،
+generic Documents isolation، Membership suspension پس از success و metadata tamper fail-closed
+گسترش داد. Run 102 (`35383686315`) هر هشت Job، ۱۲ assertion جدید، Restore ۴۳ Migration و
+Qualification report را پاس کرد. Gateهای worker-time revocation، دو Worker/crash، object-byte
+tamper، load، observability، Golden و UI همچنان بازند؛ پس RPT1 Active باقی می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

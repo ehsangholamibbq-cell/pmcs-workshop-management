@@ -216,3 +216,14 @@ scenario موجود و Qualification artifact هفت-Suite‌ای با صفر fa
 این Addendum نتیجهٔ ممیزی تداوم را تقویت می‌کند و ترتیب Roadmap را تغییر نمی‌دهد. RPT1 هنوز برای
 PDF license/golden، crash/concurrency/revocation/tamper/load، observability و UI اختصاصی Reporting
 باز است؛ COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب و مرز مصوب باقی مانده‌اند.
+
+## ۱۴. Addendum — Recovery و Extended Security Evidence
+
+Qualification Slice سوم با source commit `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` و tree
+`aa4063214ad1dea8fac19685a81818623296c24c` در Run 102 (`35383686315`) هر هشت Job را پاس کرد.
+Cancel/replay با Worker خاموش، anonymous/cross-tenant isolation، منع generic Documents، revocation
+پس از success و metadata tamper fail-closed/restore به Evidence متصل تبدیل شدند.
+
+این ادامه نه Scope را کوچک کرده و نه ترتیب Agent را تغییر داده است. Gateهای worker-time revocation،
+دو Worker/crash، object-byte tamper، load، observability، Golden PDF/XLSX و UI Reporting همچنان
+بازند و نقطهٔ ادامه RPT1 هستند.

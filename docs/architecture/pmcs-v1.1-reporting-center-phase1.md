@@ -5,9 +5,9 @@
 - وضعیت: `Connected implementation candidate passed | RPT1 exit gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Source Candidate: `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`
-- Source tree: `4deccade8899a2438485fb1304cd918115af2654`
-- Connected evidence: Run 99 (`35381177208`) — `success`
+- آخرین Qualification Candidate: `b4da1e951debf76e1ba3b398bde2ccf60fbde5de`
+- Source tree: `aa4063214ad1dea8fac19685a81818623296c24c`
+- Connected evidence: Run 102 (`35383686315`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -290,3 +290,8 @@ PostgreSQL/Object Storage با `13/13` assertion گزارش، Restore Drill کا
 هفت Suite و Qualification report همگی پاس شدند. این Evidence، PDF deterministic/golden با license
 واقعی، crash/concurrency/load/soak، مجموعهٔ کامل Permission revocation/tamper، metrics/heartbeat و
 UI تولیدی Reporting را پوشش نمی‌دهد؛ این Gateها برای بستن RPT1 باز هستند.
+
+Qualification Slice 03 در Run 102 بدون تغییر معماری Runtime، Cancel با Worker خاموش، replay و
+final-state guards، tenant/auth isolation، generic Documents isolation، revocation پس از success و
+metadata tamper fail-closed/restore را متصل اثبات کرد. این Evidence با worker-time revocation، دو
+Worker/stale lease/crash window، object-byte tamper و observability/Golden/UI برابر نیست.
