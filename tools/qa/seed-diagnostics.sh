@@ -29,41 +29,73 @@ fi
 
 log_file="$(mktemp)"
 api_pid=""
+stop_api() {
+  if [[ -n "${api_pid}" ]] && kill -0 "${api_pid}" 2>/dev/null; then
+    kill "${api_pid}"
+    wait "${api_pid}" 2>/dev/null || true
+  fi
+  api_pid=""
+}
+
 cleanup() {
   exit_code=$?
   set +e
   if (( exit_code != 0 )); then
     sed -n '1,240p' "${log_file}" >&2
   fi
-  if [[ -n "${api_pid}" ]] && kill -0 "${api_pid}" 2>/dev/null; then
-    kill "${api_pid}"
-    wait "${api_pid}" 2>/dev/null || true
-  fi
+  stop_api
   rm -f -- "${log_file}"
   exit "${exit_code}"
 }
 trap cleanup EXIT
 
-ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://127.0.0.1:${port}" ConnectionStrings__Pmcs="${PMCS_QA_CONNECTION_STRING}" PMCS_DEV_IDENTITY_ENABLED=false PMCS_SEED_ENABLED=true PMCS_QA_GATEWAY_ENABLED=true PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" ProjectStateRefresh__Enabled=false AdvisoryIntelligence__WorkerEnabled=false ReportingCenter__Phase1Enabled=true ReportingCenter__OutputAccessEnabled=true ReportingCenter__WorkerEnabled=true ReportingCenter__PollSeconds=1 ReportingCenter__PdfLicense=Unconfigured ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" ObjectStorage__BucketName="${PMCS_QA_S3_BUCKET}" ObjectStorage__Region="us-east-1" ObjectStorage__ForcePathStyle=true ObjectStorage__CreateBucketIfMissing=true dotnet run --project src/backend/Pmcs.Api/Pmcs.Api.csproj --configuration Release --no-build --no-launch-profile >"${log_file}" 2>&1 &
-api_pid=$!
+start_api() {
+  local worker_enabled="$1"
+  : >"${log_file}"
+  ASPNETCORE_ENVIRONMENT=Development \
+  ASPNETCORE_URLS="http://127.0.0.1:${port}" \
+  ConnectionStrings__Pmcs="${PMCS_QA_CONNECTION_STRING}" \
+  PMCS_DEV_IDENTITY_ENABLED=false \
+  PMCS_SEED_ENABLED=true \
+  PMCS_QA_GATEWAY_ENABLED=true \
+  PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" \
+  ProjectStateRefresh__Enabled=false \
+  AdvisoryIntelligence__WorkerEnabled=false \
+  ReportingCenter__Phase1Enabled=true \
+  ReportingCenter__OutputAccessEnabled=true \
+  ReportingCenter__WorkerEnabled="${worker_enabled}" \
+  ReportingCenter__PollSeconds=1 \
+  ReportingCenter__PdfLicense=Unconfigured \
+  ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" \
+  ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" \
+  ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" \
+  ObjectStorage__BucketName="${PMCS_QA_S3_BUCKET}" \
+  ObjectStorage__Region="us-east-1" \
+  ObjectStorage__ForcePathStyle=true \
+  ObjectStorage__CreateBucketIfMissing=true \
+  dotnet run --project src/backend/Pmcs.Api/Pmcs.Api.csproj --configuration Release --no-build --no-launch-profile >"${log_file}" 2>&1 &
+  api_pid=$!
 
-ready=false
-for _ in {1..60}; do
-  if ! kill -0 "${api_pid}" 2>/dev/null; then
-    echo "PMCS API exited before QA readiness." >&2
+  local ready=false
+  for _ in {1..60}; do
+    if ! kill -0 "${api_pid}" 2>/dev/null; then
+      echo "PMCS API exited before QA readiness." >&2
+      exit 1
+    fi
+    if curl --silent --fail "http://127.0.0.1:${port}/health/ready" >/dev/null; then
+      ready=true
+      break
+    fi
+    sleep 1
+  done
+
+  if [[ "${ready}" != true ]]; then
+    echo "PMCS QA API did not become ready within 60 seconds." >&2
     exit 1
   fi
-  if curl --silent --fail "http://127.0.0.1:${port}/health/ready" >/dev/null; then
-    ready=true
-    break
-  fi
-  sleep 1
-done
+}
 
-if [[ "${ready}" != true ]]; then
-  echo "PMCS QA API did not become ready within 60 seconds." >&2
-  exit 1
-fi
+start_api true
 
 qa_base_url="http://127.0.0.1:${port}"
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- probe
@@ -72,6 +104,12 @@ PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet 
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-files
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-sync
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-exploratory
+PMCS_QA_BASE_URL="${qa_base_url}" ./tools/qa/verify-reporting-security.sh
+
+stop_api
+start_api false
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting-cancellation
+
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
 ./tools/qa/verify-sync-database.sh

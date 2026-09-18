@@ -17,6 +17,7 @@ workflow_report_id="70000000-0000-4000-8000-000000000001"
 workflow_fact_id="70000000-0000-4000-8000-000000000002"
 reporting_succeeded_run_id="71000000-0000-4000-8000-000000000001"
 reporting_license_failure_run_id="71000000-0000-4000-8000-000000000002"
+reporting_cancelled_run_id="71000000-0000-4000-8000-000000000003"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -189,6 +190,31 @@ expect_equal \
   "unconfigured PDF renderer failed closed after explicit retry" \
   "Failed|Failed|2|0|reporting.renderer.license_unconfigured" \
   "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || coalesce(diagnostic_code, '<none>') from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_license_failure_run_id}';"
+
+expect_equal \
+  "queued report cancellation is final and unclaimed" \
+  "Cancelled|Cancelled|0|0|<none>" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || coalesce(diagnostic_code, '<none>') from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_cancelled_run_id}';"
+
+expect_equal \
+  "cancelled report has no snapshot or output" \
+  "0|0" \
+  "select (select count(*) from reporting.report_snapshots where run_id = '${reporting_cancelled_run_id}')::text || '|' || (select count(*) from reporting.report_outputs where run_id = '${reporting_cancelled_run_id}')::text;"
+
+expect_equal \
+  "cancelled report audit lifecycle is singular" \
+  "1|1" \
+  "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCancelled')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and resource_type = 'ReportRun' and resource_id = '${reporting_cancelled_run_id}';"
+
+expect_equal \
+  "cancelled report transactional outbox is singular" \
+  "1|1" \
+  "select count(*) filter (where event_type = 'Reporting.ReportRunQueued')::text || '|' || count(*) filter (where event_type = 'Reporting.ReportRunCancelled')::text from foundation.outbox_messages where tenant_id = '${tenant_id}' and project_id = '${project_id}' and payload->>'id' = '${reporting_cancelled_run_id}';"
+
+expect_equal \
+  "cancelled report idempotency receipts are singular" \
+  "1|1" \
+  "select count(*) filter (where key = 'qa-rpt1-cancel-create')::text || '|' || count(*) filter (where key = 'qa-rpt1-cancel')::text from foundation.idempotency_records where tenant_id = '${tenant_id}';"
 
 expect_equal \
   "reporting snapshots remain immutable across render retry" \

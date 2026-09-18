@@ -13,6 +13,8 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Endpoints/ReportingEndpoints.cs`,
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
+    "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
+    "tools/qa/verify-reporting-security.sh",
   ]) assert.equal(existsSync(path), true, `Missing ${path}`);
 
   const module = read(`${moduleRoot}/ReportingModule.cs`);
@@ -120,10 +122,24 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(harness, /reporting\.xlsx\.verify\.valid/u);
   assert.match(harness, /reporting\.pdf\.license\.fail-closed/u);
   assert.match(harness, /reporting\.pdf\.retry\.bounded/u);
+  const cancellation = read("src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs");
+  assert.match(cancellation, /reporting\.cancel\.accepted-before-rendering/u);
+  assert.match(cancellation, /reporting\.cancel\.idempotent-replay/u);
+  assert.match(cancellation, /reporting\.cancel\.final-state-rejected/u);
+  assert.match(cancellation, /reporting\.cancel\.remains-final-without-output/u);
+  const security = read("tools/qa/verify-reporting-security.sh");
+  assert.match(security, /anonymous report verification is denied/u);
+  assert.match(security, /cross-tenant report verification is denied/u);
+  assert.match(security, /generic Documents download hides ReportOutput/u);
+  assert.match(security, /suspended membership cannot download/u);
+  assert.match(security, /tampered report metadata fails closed/u);
   assert.match(seed, /ReportingCenter__PdfLicense=Unconfigured/u);
   assert.match(seed, /-- verify-reporting/u);
+  assert.match(seed, /start_api false[\s\S]*?-- verify-reporting-cancellation/u);
+  assert.match(seed, /verify-reporting-security\.sh/u);
   assert.match(database, /certified output is a released governed document/u);
   assert.match(database, /certified reporting transactional outbox coverage/u);
+  assert.match(database, /queued report cancellation is final and unclaimed/u);
 });
 
 test("RPT1 is disabled by default until renderers and qualification are complete", () => {
