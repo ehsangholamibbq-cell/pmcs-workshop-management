@@ -243,7 +243,7 @@ internal static class ReportingEndpoints
             request.ClientGeneratedId,
             definitionCode,
             templateVersion,
-            asOfUtc,
+            request.AsOfUtc?.ToUniversalTime(),
             formats,
             parameters));
         var requestHash = RequestHash.Create(canonicalRequest);
@@ -1283,7 +1283,7 @@ internal static class ReportingEndpoints
         Guid ClientGeneratedId,
         string DefinitionCode,
         string TemplateVersion,
-        DateTimeOffset AsOfUtc,
+        DateTimeOffset? AsOfUtc,
         IReadOnlyCollection<ReportFormat> Formats,
         DailyReportReportParameters Parameters);
 }

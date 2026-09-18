@@ -105,6 +105,10 @@ test("generated outputs use the Documents owner contract and certified renderers
   assert.match(endpoints, /DocumentOwnerType\.ReportOutput/u);
   assert.match(endpoints, /reporting\.output\.integrity_failed/u);
   assert.match(endpoints, /CertifiedReportOutputIntegrityFailed/u);
+  assert.match(
+    endpoints,
+    /new CreateRunIdentity\([\s\S]*?request\.AsOfUtc\?\.ToUniversalTime\(\),[\s\S]*?formats,[\s\S]*?parameters\)/u,
+  );
 });
 
 test("connected RPT1 qualification covers API, worker, storage and database evidence", () => {
