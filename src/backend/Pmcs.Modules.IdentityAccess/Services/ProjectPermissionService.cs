@@ -756,7 +756,7 @@ internal sealed class ProjectPermissionService(
         ReportingRolePermissions.TryGetValue(roleCode, out var reportingPermissions) &&
         reportingPermissions.Contains(permission);
 
-    private static IReadOnlySet<string> ReportingOperatorPermissions() =>
+    private static HashSet<string> ReportingOperatorPermissions() =>
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "reporting.catalog.read",

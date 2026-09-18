@@ -95,18 +95,7 @@ internal sealed class DailyReportReportingSource(FieldOperationsDbContext dbCont
     private static DailyReportReportingFact Map(DailyReportFact fact) => new(
         fact.Id,
         fact.CopiedFromFactId,
-        fact.Kind switch
-        {
-            DailyFactKind.WorkProgress => DailyReportReportingFactKind.WorkProgress,
-            DailyFactKind.Labor => DailyReportReportingFactKind.Labor,
-            DailyFactKind.Equipment => DailyReportReportingFactKind.Equipment,
-            DailyFactKind.Material => DailyReportReportingFactKind.Material,
-            DailyFactKind.Issue => DailyReportReportingFactKind.Issue,
-            DailyFactKind.Stoppage => DailyReportReportingFactKind.Stoppage,
-            DailyFactKind.SiteCondition => DailyReportReportingFactKind.SiteCondition,
-            DailyFactKind.Note => DailyReportReportingFactKind.Note,
-            _ => throw new ArgumentOutOfRangeException(nameof(fact.Kind), fact.Kind, "Unsupported fact kind.")
-        },
+        Map(fact.Kind),
         fact.Description,
         fact.Category,
         fact.LocationId,
@@ -115,17 +104,32 @@ internal sealed class DailyReportReportingSource(FieldOperationsDbContext dbCont
         fact.Unit,
         fact.ResourceCount,
         fact.Hours,
-        fact.ImpactLevel switch
-        {
-            null => null,
-            DailyImpactLevel.Low => DailyReportReportingImpactLevel.Low,
-            DailyImpactLevel.Medium => DailyReportReportingImpactLevel.Medium,
-            DailyImpactLevel.High => DailyReportReportingImpactLevel.High,
-            DailyImpactLevel.Critical => DailyReportReportingImpactLevel.Critical,
-            _ => throw new ArgumentOutOfRangeException(nameof(fact.ImpactLevel), fact.ImpactLevel, "Unsupported impact level.")
-        },
+        Map(fact.ImpactLevel),
         fact.ReferenceCode,
         fact.MeasurementItemId,
         fact.CreatedBy,
         fact.CreatedAt);
+
+    private static DailyReportReportingFactKind Map(DailyFactKind kind) => kind switch
+    {
+        DailyFactKind.WorkProgress => DailyReportReportingFactKind.WorkProgress,
+        DailyFactKind.Labor => DailyReportReportingFactKind.Labor,
+        DailyFactKind.Equipment => DailyReportReportingFactKind.Equipment,
+        DailyFactKind.Material => DailyReportReportingFactKind.Material,
+        DailyFactKind.Issue => DailyReportReportingFactKind.Issue,
+        DailyFactKind.Stoppage => DailyReportReportingFactKind.Stoppage,
+        DailyFactKind.SiteCondition => DailyReportReportingFactKind.SiteCondition,
+        DailyFactKind.Note => DailyReportReportingFactKind.Note,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported fact kind.")
+    };
+
+    private static DailyReportReportingImpactLevel? Map(DailyImpactLevel? impactLevel) => impactLevel switch
+    {
+        null => null,
+        DailyImpactLevel.Low => DailyReportReportingImpactLevel.Low,
+        DailyImpactLevel.Medium => DailyReportReportingImpactLevel.Medium,
+        DailyImpactLevel.High => DailyReportReportingImpactLevel.High,
+        DailyImpactLevel.Critical => DailyReportReportingImpactLevel.Critical,
+        _ => throw new ArgumentOutOfRangeException(nameof(impactLevel), impactLevel, "Unsupported impact level.")
+    };
 }
