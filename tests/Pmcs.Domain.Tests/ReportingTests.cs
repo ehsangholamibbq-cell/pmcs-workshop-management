@@ -203,8 +203,10 @@ public sealed class ReportingTests
         Assert.Equal("۱۴۰۴/۰۱/۰۱", PersianReportFormatting.FormatDate(new DateOnly(2025, 3, 21)));
         Assert.Equal("۱۴۰۴/۱۲/۲۹", PersianReportFormatting.FormatDate(new DateOnly(2026, 3, 20)));
         Assert.Equal("۱۴۰۵/۰۱/۰۱", PersianReportFormatting.FormatDate(new DateOnly(2026, 3, 21)));
-        Assert.True(PersianReportFormatting.FormatInstant(Cutoff, "Asia/Tehran")
-            .EndsWith("۱۵:۳۰", StringComparison.Ordinal));
+        Assert.EndsWith(
+            "۱۵:۳۰",
+            PersianReportFormatting.FormatInstant(Cutoff, "Asia/Tehran"),
+            StringComparison.Ordinal);
         Assert.Equal("'=SUM(A1:A2)", PersianReportFormatting.SafeSpreadsheetText("=SUM(A1:A2)"));
         Assert.Equal("'+1", PersianReportFormatting.SafeSpreadsheetText("+1"));
         Assert.Equal("'-1", PersianReportFormatting.SafeSpreadsheetText("-1"));
