@@ -3,16 +3,36 @@
   "product": "PMCS",
   "releaseLine": "V1.1",
   "checkpoint": "PMCS-V1.1-IAM1-RC1",
-  "status": "validation-pending",
+  "status": "verified",
   "parentBranch": "v1.1-development",
   "parentCommit": "862b7fb12a78b6bc180584b12e70e05b8a42fe76",
+  "candidateSourceCommit": "86f9f4efd086e4e67823a930fcb3ef1b7249b71f",
   "runtimeBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
   "moduleId": "identity-access.core",
+  "validation": {
+    "runNumber": 88,
+    "runId": "35345558791",
+    "conclusion": "success",
+    "requiredJobs": 8,
+    "qualificationArtifact": {
+      "id": 10545724946,
+      "digest": "sha256:3bbe89619ac98b0d33c6507e29f2088ddc6a7b59db0312bdf666ac5a0e4efc1d"
+    }
+  },
   "migration": {
     "module": "identity-access",
     "version": "20260918-002",
     "order": 204,
     "expectedLedgerSize": 40
+  },
+  "counts": {
+    "dotnetTests": 279,
+    "webTests": 137,
+    "browserScenarios": 5,
+    "csharpModuleFiles": 297,
+    "endpoints": 259,
+    "mutations": 197,
+    "protocolManagedMutations": 5
   },
   "boundaries": {
     "authenticationConfigurationMutable": false,
@@ -24,13 +44,13 @@
     "agentDirectDatabaseAccess": false
   },
   "gates": {
-    "domainTests": "implemented",
-    "webAndLocalization": "passed-locally",
-    "postgresMinioRoundtrip": "implemented",
-    "realBrowserFlow": "implemented",
-    "permissionAuditOutboxIdempotency": "implemented",
-    "fullCi": "pending"
+    "domainTests": "passed",
+    "webAndLocalization": "passed",
+    "postgresMinioRoundtrip": "passed",
+    "realBrowserFlow": "passed",
+    "permissionAuditOutboxIdempotency": "passed",
+    "restoreDrill": "passed",
+    "fullCi": "passed"
   },
   "nextStage": "V1.1-PRJ1"
 }
-

@@ -28,13 +28,15 @@
 | --- | --- |
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
-| State | `Architecture Approved` |
-| Product runtime implementation | شروع نشده |
-| Database migration | افزوده نشده |
+| State | `Development | UX1/EXT1/DOC1/IAM1 Closed | PRJ1 Active` |
+| Product runtime implementation | در جریان روی شاخه V1.1؛ IAM1 تا source commit `86f9f4e` تأیید شده است |
+| Database migration | ۴۰ Migration؛ Restore Drill در Run 88 پاس |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
 Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` در Run 71 (`35275795712`) با هفت Suite و Qualification Report سبز تأیید شد. این Approval فقط G0 را می‌بندد و هیچ Runtime/Migration جدیدی را جزو Baseline قفل‌شده V1 نمی‌کند.
+
+IAM1 با Candidate source commit `86f9f4efd086e4e67823a930fcb3ef1b7249b71f` و Run 88 (`35345558791`) در هر هشت Job تأیید شد. این Evidence فقط Checkpoint توسعه IAM1 را می‌بندد؛ PMCS V1.1 هنوز Feature Complete، Qualified، Final یا Locked نیست و مرحله فعال `V1.1-PRJ1` است.
 
 ## ۳. قرارداد شاخه و ادغام
 

@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.5.0`
-- وضعیت: `V1.1 Development`؛ UX1، EXT1 و DOC1 بسته شده‌اند و IAM1 فعال است
+- نسخه سند: `1.6.0`
+- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1 و IAM1 بسته شده‌اند و PRJ1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,7 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-IAM1 — Configurable Login and Minimal Member Profile`
+- مرحله فعال: `V1.1-PRJ1 — Controlled Project Bootstrap and Duplication`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -179,6 +179,9 @@ Scope:
 **Non-Scope:** شبکهٔ اجتماعی شخصی، Follow، Status، پیام خصوصی، رزومهٔ گسترده، Gallery و پروفایل عمومی اینترنتی.
 
 **Gate خروج:** تست Authentication isolation، Descriptor version/rollback، asset failure fallback، self/admin permission، image validation، privacy و نمایش سازگار Profile در چند پروژه.
+
+
+**Evidence:** پروفایل یکپارچه عضو، Avatar خصوصی، Login Descriptor نسخه‌دار و مسیر بصری «مدیریت ممتاز» در Candidate source commit `86f9f4efd086e4e67823a930fcb3ef1b7249b71f` اثبات شد. هر هشت Job در Run 88 (`35345558791`) سبز شدند؛ ۲۷۹ تست C#، ۱۳۷ تست Web، ۵ سناریوی مرورگر واقعی و Restore Drill دارای ۴۰ Migration پاس شدند. IAM1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
 
 ### `V1.1-PRJ1` — Controlled Project Bootstrap and Duplication
 
@@ -494,3 +497,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.0.0` | ایجاد Roadmap Post-V1، Collaboration، Reporting، Extensibility و Baseline governance |
 | `1.1.0` | بازیابی و ثبت مستقل هفت Stage Agent مدیریتی و ایجاد Visual Excellence Program سراسری |
 | `1.2.0` | تصویب مسیر «مدیریت ممتاز»، Login قابل پیکربندی، پروفایل شخصی عضو و Project Bootstrap/Duplication کنترل‌شده |
+| `1.6.0` | ثبت Evidence قطعی IAM1 و فعال‌سازی PRJ1 پس از سبزشدن هشت Job CI |
