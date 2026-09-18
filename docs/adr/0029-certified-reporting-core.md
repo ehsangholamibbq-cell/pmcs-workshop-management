@@ -2,7 +2,7 @@
 
 - وضعیت: Accepted for `V1.1-RPT1`
 - تاریخ: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
-- Parent baseline: `PMCS V1.1 / db08eef7477356f164783dc783a4993f24f39a10`
+- Parent baseline: `PMCS V1.1 / 720de8869e251f5a4c39a6940a76e9929232706b`
 - تصمیم جایگزین‌شده: ندارد
 
 ## Context

@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01 در source commit `2208bb1`؛ فقط Local structural candidate و هنوز Unqualified |
-| Database migration | ۴۲ Migration در Source؛ آخرین Restore Drill متصلِ اثبات‌شده همچنان ۴۱ Migration در Run 92 است |
+| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `f65a97b`؛ Local source candidate و هنوز Unqualified |
+| Database migration | ۴۳ Migration در Source؛ آخرین Restore Drill متصلِ اثبات‌شده همچنان ۴۱ Migration در Run 92 است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -43,11 +43,20 @@ Definition of Ready مرحله RPT1 با شناسه `PMCS-V1.1-RPT1-DOR1` روی
 هیچ تغییر Runtime یا Migration ایجاد نمی‌کند و Gate خروج RPT1 همچنان باز است.
 
 اولین Slice پیاده‌سازی RPT1 با source commit
-`2208bb1828dea571b81a3eb615ddd13250520c73` و tree
+`43cac1b83ac7764fe6005fee108029597091a238` و tree
 `257d8c80f45435e462563e38bb3c5fa12c77808b` ثبت شد. Migration 42، Reporting core، Source
 contract، API اولیه، Snapshot worker و Agent read-only manifests/application service در Source
 وجود دارند، اما چون Build/CI متصل، PostgreSQL/Restore و Rendererهای PDF/XLSX هنوز Evidence ندارند،
 این Commit Baseline تأییدشده یا Checkpoint بسته محسوب نمی‌شود. Feature flag پیش‌فرض خاموش است.
+
+Slice 02 با source commit `f65a97b6a67e38b1cd48df12356089f8568120ea` و tree
+`003def5bd630412c54aca74896c517861c732bcb` مسیر Generated Document، Rendererهای PDF/XLSX،
+`Rendering → Succeeded`، Retry/Cancel، Download/Verify، Migration 43 و هارنس connected QA را در
+Source اضافه کرد. ابزارها `39/39`، Web `139/139`، Web check، Repository validator و system contract
+audit محلی پاس شدند. بااین‌حال Build/Test C#، PostgreSQL/Object Storage، Restore Drill 43 Migration،
+PDF license/golden، Permission revocation، concurrency/load و CI روی SHA بالا اجرا نشده‌اند؛ بنابراین
+RPT1 هنوز Active است و این source commit Baseline تأییدشده یا Checkpoint بسته نیست. هر سه switch
+Phase 1، output access و Worker به‌طور پیش‌فرض خاموش‌اند.
 
 ## ۳. قرارداد شاخه و ادغام
 

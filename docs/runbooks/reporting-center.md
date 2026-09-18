@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Definition of Ready
+- Status: Source Candidate available؛ connected operations qualification open
 
 ## Health و Metrics
 
@@ -18,6 +18,10 @@
 
 Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی‌شود.
 
+این فهرست target عملیاتی RPT1 است. در Source Candidate Slice 02، Audit/diagnostic/correlation
+پیاده شده‌اند اما metrics exporter و Worker heartbeat هنوز Evidence اجرایی ندارند؛ نبود آن‌ها نباید
+به‌عنوان Healthy تفسیر شود.
+
 ## تشخیص Run گیرکرده
 
 1. Correlation ID، Run ID، Definition، Template version و status را بخوانید؛
@@ -32,8 +36,9 @@ Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی�
 
 - claim منقضی فقط پس از lease/timeout رسمی آزاد می‌شود؛
 - Worker جدید همان stable output identity را استفاده می‌کند؛
-- اگر Document منتشر ولی transaction نهایی نشده، reconciliation آن را به همان Run متصل یا به‌صورت
-  orphan امن علامت‌گذاری می‌کند؛ Document دوم ساخته نمی‌شود؛
+- اگر Document منتشر ولی transaction نهایی نشده، retry با stable identity همان Document و bytes را
+  دوباره verify می‌کند و Document دوم نمی‌سازد؛ automated orphan sweeper هنوز در این Candidate
+  پیاده نشده و تا Slice recovery باید inventory آن به‌صورت عملیاتی ثبت شود؛
 - اگر database commit شده ولی response قطع شده، Idempotency replay همان Run را برمی‌گرداند؛
 - Snapshot/hash موجود پیش از render مجدد verify می‌شود.
 
@@ -64,11 +69,25 @@ Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی�
 - Template file/code یا digest موجود بازنویسی نمی‌شود؛
 - Run Queued با نسخه retired طبق policy fail می‌شود و خودکار روی نسخه دیگر منتقل نمی‌شود.
 
+## PDF license و فونت Certified
+
+- `ReportingCenter:PdfLicense` به‌طور پیش‌فرض `Unconfigured` است؛ در این حالت PDF با
+  `reporting.renderer.license_unconfigured` fail-closed می‌شود؛
+- انتخاب `Community`، `Professional` یا `Enterprise` فقط پس از تأیید حقوقی/تجاری سازمان مجاز است؛
+- انتخاب tier در code یا image به‌صورت ضمنی ممنوع است؛
+- image فعلی `fonts-dejavu-core` را نصب می‌کند و مسیر Regular/Bold صریح است؛ نبود فایل با
+  `reporting.renderer.font_missing` متوقف می‌شود؛
+- قبل از enable کردن PDF، version/digest image و فونت باید در Golden evidence ثبت شود؛
+- qualification باید دو رندر یک Run را byte-for-byte مقایسه کند؛ تا آن زمان deterministic بودن PDF
+  اثبات‌شده نیست.
+
 ## Feature rollback
 
-1. feature flag `reporting.phase1` را برای create خاموش کنید؛
-2. download/verify خروجی موجود را فقط در صورت نبود Incident امنیتی فعال نگه دارید؛
-3. Worker را graceful drain و سپس disable کنید؛
+1. `ReportingCenter:Phase1Enabled=false` را برای Catalog/Create/Run mutation اعمال کنید؛
+2. `ReportingCenter:WorkerEnabled=false` را اعمال و Worker را graceful drain کنید؛ Worker بدون
+   Phase 1 نیز fail-closed است؛
+3. فقط در صورت نبود Incident امنیتی، `ReportingCenter:OutputAccessEnabled=true` را برای
+   Download/Verify خروجی موجود نگه دارید؛ در Incident integrity آن را نیز false کنید؛
 4. Runهای Processing را Cancel/Retry خودکار نکنید؛ inventory ثبت کنید؛
 5. Schema یا Output را حذف نکنید؛
 6. پس از fix، migration forward و regression اجرا شود؛
@@ -76,7 +95,7 @@ Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی�
 
 ## Backup/Restore drill
 
-- Database backup باید تمام جدول‌های `reporting` را داشته باشد؛
+- Database backup باید تمام جدول‌های `reporting` و ledger کامل ۴۳ Migration را داشته باشد؛
 - Object Storage version/reference متناظر ثبت شود؛
 - restore روی Database ایزوله انجام شود؛
 - Catalog/template digest، Run/Snapshot/Output counts و hash نمونه تطبیق داده شوند؛
@@ -104,3 +123,14 @@ Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی�
 - access token، cookie یا API key؛
 - query string دارای پارامتر حساس؛
 - stack trace خام در پاسخ کاربر.
+
+## Qualification command فعلی
+
+`tools/qa/seed-diagnostics.sh` در محیط ایزوله، Phase 1 و Worker را فقط برای QA روشن می‌کند و
+`verify-reporting` را اجرا می‌کند. سناریوی فعلی XLSX را از Catalog تا Queue، Snapshot، Worker،
+Generated Document، Download و Verify دنبال می‌کند و PDF با license تنظیم‌نشده را fail-closed و
+Retry محدود می‌سنجد. سپس `verify-database.sh` وضعیت Run/Snapshot/Output، Migration 43، Retention،
+Audit، Outbox و Idempotency را کنترل می‌کند.
+
+این دستور در محیط فاقد `dotnet`، PostgreSQL و Object Storage اجراشدنی نیست؛ وجود هارنس در Source
+جایگزین نتیجهٔ CI متصل نیست.

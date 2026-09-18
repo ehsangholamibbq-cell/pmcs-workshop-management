@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.0.0`
-- وضعیت: Definition of Ready
+- نسخه: `1.1.0`
+- وضعیت: Source controls implemented؛ connected negative gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -105,3 +105,16 @@ contract هیچ دادهٔ محرمانهٔ HSE/مالی یا فایل binary ر
 - retry هم‌زمان و Worker crash-after-storage-before-commit؛
 - QR/Verification بدون Session؛
 - Agent Tool آینده با Permission کمتر از user یا تلاش privilege elevation.
+
+## ۸. وضعیت کنترل‌های Source Candidate
+
+در commit `f65a97b6a67e38b1cd48df12356089f8568120ea`، Generated Document با object key
+server-generated، signature/size/SHA validation، read-after-write و exact-byte check منتشر می‌شود؛
+generic Documents برای `ReportOutput` بسته می‌ماند و Download/Verify مالک/type/version/tenant/
+project/classification/retention/manifest/hash را دوباره کنترل می‌کند. mismatch با پاسخ 502 و Audit
+مجزا fail-closed است. XLSX macro/external link/formula تولید نمی‌کند و prefixهای خطرناک را text
+می‌نویسد. تمام feature switchها default-off هستند.
+
+سناریوی Source هارنس Observer deny، replay/conflict، cross-project denial، integrity دانلود و PDF
+license fail-closed را پوشش می‌دهد؛ اجرای واقعی آن و سایر Negative Gateهای بخش ۷ هنوز به CI متصل
+PostgreSQL/Object Storage نیاز دارد و پاس‌شده اعلام نمی‌شود.

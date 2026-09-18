@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.0.0`
-- وضعیت: Definition of Ready
+- نسخه: `1.1.0`
+- وضعیت: Source coverage implemented؛ connected qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -40,7 +40,7 @@ Artifact متعلق به SHA دیگر Gate را fail می‌کند.
 
 ## ۴. Integration — PostgreSQL و Object Storage
 
-- Migration 42 و Catalog seed؛
+- Migration 42، Catalog seed و Migration forward شمارهٔ 43 برای non-unique verification lookup؛
 - create/queue/claim/process/success transaction؛
 - crash پیش و پس از object upload؛
 - retry بدون duplicate Run/Output/Document؛
@@ -165,3 +165,22 @@ Assertions:
 - known limitations و Non-Scope؛
 - artifact digest و retention؛
 - Checkpoint document بدون ادعای V1.1 Feature Complete/Qualified/Locked.
+
+## ۱۳. Coverage موجود در Source Candidate Slice 02
+
+commit `f65a97b6a67e38b1cd48df12356089f8568120ea` پوشش Source زیر را اضافه کرده است:
+
+- Domain tests برای retry/cancel guard، stable identity، Jalali/Tehran و formula escaping؛
+- deterministic XLSX byte test، OpenXML namespace/RTL/no-formula و verification path؛
+- contract test برای مالکیت Documents، render-before-publish، output gates، Migration 43 و default-off؛
+- TestHarness متصل برای Observer deny، Create replay/conflict، Queue/Worker/XLSX، Download/Verify،
+  cross-project denial و PDF license fail-closed + explicit retry؛
+- assertion دیتابیس برای Run/Snapshot/Output، Released Document، Retention، Audit، Outbox و
+  Idempotency؛
+- رگرسیون محلی اجراشده: ابزارها `39/39`، Web `139/139`، lint، audit فارسی/تقویم و Web build؛
+  Repository validator روی ۳۳۴ فایل و system contract audit روی ۲۷۴ endpoint / ۲۰۴ mutation پاس شد.
+
+این شواهد جایگزین C# execution نیستند. `dotnet`، PostgreSQL و Object Storage در محیط محلی موجود
+نبودند؛ بنابراین Domain testهای C# و TestHarness متصل هنوز نتیجهٔ pass ندارند. PDF با license واقعی،
+Golden/pixel، malformed/tamper، revocation، concurrency دو Worker، crash windows، cancellation
+متصل، load/soak، restore 43 Migration، Browser UI و CI هشت‌Job همچنان Gate باز هستند.

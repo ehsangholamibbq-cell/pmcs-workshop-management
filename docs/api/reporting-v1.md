@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Definition of Ready
+- Status: Source implemented in `f65a97b6a67e38b1cd48df12356089f8568120ea`؛ connected qualification open
 
 ## ۱. قواعد عمومی
 
@@ -80,6 +80,7 @@ Permission:
   "definitionCode": "daily-report-certified",
   "templateVersion": "1.0.0",
   "status": "Queued",
+  "pipelineStage": "Queued",
   "asOfUtc": "2026-09-18T12:00:00Z",
   "requestedFormats": ["Pdf", "Xlsx"],
   "attemptCount": 0,
@@ -108,6 +109,7 @@ Permission: `reporting.catalog.read` و Source permission جاری.
 {
   "id": "...",
   "status": "Succeeded",
+  "pipelineStage": "Complete",
   "dataStatus": "Available",
   "definitionCode": "daily-report-certified",
   "templateVersion": "1.0.0",
@@ -121,7 +123,7 @@ Permission: `reporting.catalog.read` و Source permission جاری.
     {
       "id": "...",
       "format": "Pdf",
-      "fileName": "گزارش-روزانه-PRJ-1405-06-27-r2.pdf",
+      "fileName": "daily-report-PRJ-1405-06-27-r2.pdf",
       "contentType": "application/pdf",
       "sizeBytes": 48231,
       "sha256": "...",
@@ -133,6 +135,8 @@ Permission: `reporting.catalog.read` و Source permission جاری.
 ```
 
 Failure detail فقط code و توضیح امن می‌دهد؛ stack trace، Source payload و object key برگردانده نمی‌شود.
+`NoData` و `InsufficientData` failure نیستند؛ در `dataStatus` ثبت می‌شوند و خروجی صریح بدون عدد
+ساختگی ساخته می‌شود.
 
 ## ۵. Retry و Cancel
 
@@ -145,7 +149,7 @@ Idempotency-Key: <stable-key>
 - Retry فقط برای Failureهای retryable و در سقف policy مجاز است؛
 - Permissionها دوباره بررسی می‌شوند؛
 - Retry Output تکراری ایجاد نمی‌کند؛
-- Cancel فقط `Queued` یا `Processing` پیش از انتشار immutable output را هدف می‌گیرد؛
+- Cancel فقط پیش از ورود Run به `Rendering` و پیش از هر immutable output مجاز است؛
 - Run موفق حذف یا overwrite نمی‌شود.
 
 ## ۶. Download
@@ -161,8 +165,11 @@ Permission:
 - Tenant/Project/Classification جاری.
 
 Server باید Document owner/type، released state، size، content type و SHA-256 را verify کند. هر mismatch
-با `502 reporting.output.integrity_failed` متوقف می‌شود. generic Documents endpoint برای owner type
-`ReportOutput` پاسخ content نمی‌دهد.
+با `502 reporting.output.integrity_failed` متوقف و با event ممیزی
+`CertifiedReportOutputIntegrityFailed` ثبت می‌شود. generic Documents endpoint برای owner type
+`ReportOutput` پاسخ content نمی‌دهد. Download/Verify می‌تواند در rollback با
+`ReportingCenter:Phase1Enabled=false` و `ReportingCenter:OutputAccessEnabled=true` برای خروجی‌های
+موجود روشن بماند؛ Create/Catalog/Run mutation در این حالت بسته است.
 
 Headerهای لازم:
 
@@ -203,14 +210,19 @@ GET /api/v1/projects/{projectId}/reports/outputs/{outputId}/verify
 | 400 | `reporting.definition.invalid` | Definition ناشناخته یا retired |
 | 400 | `reporting.parameters.invalid` | پارامتر ناسازگار با schema |
 | 400 | `reporting.format.unsupported` | format خارج allowlist |
+| 400 | `reporting.as_of.future` | cutoff در آینده است |
 | 403 | `reporting.permission.denied` | Reporting permission ندارد |
 | 403 | `reporting.source_permission.denied` | Source permission ندارد |
 | 404 | `reporting.run.not_found` | Run در Scope Actor وجود ندارد |
 | 409 | `reporting.run.not_retryable` | Retry مجاز نیست |
 | 409 | `reporting.run.already_final` | Run immutable شده است |
-| 422 | `reporting.source.no_data` | نسخه رسمی در cutoff وجود ندارد |
-| 422 | `reporting.source.insufficient_data` | داده رسمی ناکافی است |
 | 502 | `reporting.output.integrity_failed` | Artifact با Manifest تطبیق ندارد |
+
+Diagnosticهای Worker مانند `reporting.permission.revoked`، `reporting.template.retired`،
+`reporting.renderer.license_unconfigured`، `reporting.renderer.font_missing` و
+`documents.generated.storage_unavailable` در `diagnosticCode` Run دیده می‌شوند؛ آن‌ها پاسخ HTTP
+مستقیم Create نیستند. `PdfLicense=Unconfigured` حالت fail-closed پیش‌فرض است و تا انتخاب حقوقی
+صریح Community/Professional/Enterprise تغییر نمی‌کند.
 
 ## ۹. Versioning
 

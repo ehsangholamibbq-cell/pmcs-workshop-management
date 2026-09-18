@@ -203,6 +203,8 @@ npm run check
 ## مستندات
 
 - Roadmap قطعی توسعه و Qualification: [`docs/roadmaps/pmcs-v1-development-and-qualification.md`](docs/roadmaps/pmcs-v1-development-and-qualification.md)
+- Roadmap فعال Post-V1 و تکامل V1.1/V1.2/V2.x: [`docs/roadmaps/pmcs-post-v1-product-evolution.md`](docs/roadmaps/pmcs-post-v1-product-evolution.md)
+- Registry رسمی Roadmapها و وضعیت مرحلهٔ فعال: [`docs/roadmaps/README.md`](docs/roadmaps/README.md)
 - تصمیم‌های معماری: [`docs/adr`](docs/adr)
 - API و قراردادهای توسعه: [`docs/api`](docs/api)
 - پایه Permission: [`docs/security`](docs/security)
@@ -221,5 +223,8 @@ npm run check
 - گزارش Slice ششم QA Foundation: [`docs/checkpoints/qa-foundation-06.md`](docs/checkpoints/qa-foundation-06.md)
 - گزارش Slice هفتم QA Foundation: [`docs/checkpoints/qa-foundation-07.md`](docs/checkpoints/qa-foundation-07.md)
 - گزارش نهایی Qualification و قفل V1: [`docs/checkpoints/pmcs-v1-qualification.md`](docs/checkpoints/pmcs-v1-qualification.md)
+- Checkpoint آمادگی RPT1: [`docs/checkpoints/v1.1-rpt1-readiness.md`](docs/checkpoints/v1.1-rpt1-readiness.md)
+- Source Candidate اول RPT1: [`docs/checkpoints/v1.1-rpt1-slice-01-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-01-candidate.md)
+- Source Candidate دوم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-02-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-02-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.9.0`
+- نسخه سند: `1.10.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -253,18 +253,30 @@ Scope معماری:
 **Gate خروج:** Golden-file و visual print tests، determinism، Permission، Snapshot/Audit، Jalali/RTL و بازتولید خروجی از Template Version یکسان.
 
 **Definition of Ready:** بسته `PMCS-V1.1-RPT1-DOR1` روی Parent commit
-`db08eef7477356f164783dc783a4993f24f39a10` ثبت شد. ADR 0029، معماری Semantic Snapshot،
+`720de8869e251f5a4c39a6940a76e9929232706b` ثبت شد. ADR 0029، معماری Semantic Snapshot،
 API، Permission/Threat contract، Test Matrix و Runbook آماده‌اند. این Evidence فقط آغاز
 پیاده‌سازی RPT1 را مجاز می‌کند و هیچ Runtime/Migration یا Gate خروج RPT1 را کامل اعلام نمی‌کند.
 
 **Implementation Slice 01:** Source Candidate با commit
-`2208bb1828dea571b81a3eb615ddd13250520c73` و tree
+`43cac1b83ac7764fe6005fee108029597091a238` و tree
 `257d8c80f45435e462563e38bb3c5fa12c77808b` ثبت شد. Module/Descriptor، Migration 42،
 Catalog/Create/Get/List، Source contract زنجیره گزارش روزانه، canonical Snapshot، Worker claim،
 Permission re-evaluation، Role mapping، read-only Agent manifests/application service و جلوگیری از
 generic Documents access برای `ReportOutput` پیاده شده‌اند. Feature flag پیش‌فرض خاموش است و این
 Candidate هنوز Build/CI/connected integration، Rendererهای PDF/XLSX، Download/Verify، Golden،
 Restore و Full Regression ندارد؛ در نتیجه RPT1 همچنان فعال و باز است.
+
+**Implementation Slice 02:** Source Candidate با commit
+`f65a97b6a67e38b1cd48df12356089f8568120ea` و tree
+`003def5bd630412c54aca74896c517861c732bcb` ثبت شد. Generated Document publish/read با
+read-after-write integrity، Rendererهای PDF/XLSX، RTL/Jalali/Persian formatting، stable
+output/document identity، Worker rendering/finalization، Retry/Cancel، Download/Verify، integrity
+Audit، rollback-aware output access، Migration 43 و هارنس PostgreSQL/Object Storage در Source
+پیاده شده‌اند. رگرسیون محلی ابزارها `39/39` و Web `139/139` به‌همراه Web check، architecture
+validator و system contract audit سبز است. این Candidate هنوز Build/Test C# و اجرای connected
+هارنس، Restore 43 Migration، PDF license/golden، crash/concurrency/load، revocation و CI هشت‌Job
+ندارد؛ Feature/Worker/OutputAccess پیش‌فرض خاموش‌اند و RPT1 بسته نشده است. نقطهٔ ادامه اجرای همین
+Candidate در محیط متصل و سپس تکمیل Gateهای Golden/Recovery/Observability است، نه شروع معماری جدید.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -516,3 +528,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.6.0` | ثبت Evidence قطعی IAM1 و فعال‌سازی PRJ1 پس از سبزشدن هشت Job CI |
 | `1.7.0` | ثبت Evidence قطعی PRJ1 و فعال‌سازی RPT1 پس از سبزشدن هشت Job CI |
 | `1.8.0` | ثبت ممیزی تداوم و Definition of Ready مرحله RPT1؛ بدون تغییر Runtime |
+| `1.9.0` | ثبت Source Candidate اولین Slice هسته RPT1؛ بدون ادعای Qualification |
+| `1.10.0` | ثبت Source Candidate دوم RPT1 برای Generated Document، PDF/XLSX، Download/Verify و هارنس متصل؛ Gate خروج همچنان باز |

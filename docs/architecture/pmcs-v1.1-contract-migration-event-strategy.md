@@ -41,7 +41,7 @@ Route و Label و Feature flag را اعلام می‌کند؛ نمایش Naviga
 | Identity Access | `MemberProfile` | Self-service روی `/api/v1/member-profile` و Directory روی `/api/v1/member-profiles/{userId}` |
 | Projects | `ProjectBootstrapPlan/Run` | `/api/v1/project-bootstraps` |
 | Documents | `Document/Asset/UploadSession` | `/api/v1/documents` و `/api/v1/upload-sessions` |
-| Reporting | `ReportDefinition/Run/Output` | `/api/v1/reports` |
+| Reporting | `ReportDefinition/Run/Output` | `/api/v1/projects/{projectId}/reports` |
 | Collaboration | `ProjectRoom/Message` | `/api/v1/projects/{projectId}/collaboration` |
 | Intelligence | `IntelligenceSession/ToolInvocation` | `/api/v1/intelligence` |
 

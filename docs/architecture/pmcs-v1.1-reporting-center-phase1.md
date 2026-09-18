@@ -1,10 +1,12 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.0.0`
-- وضعیت: `Definition of Ready`
+- نسخه: `1.1.0`
+- وضعیت: `Implementation Source Candidate | Connected Qualification Open`
 - Checkpoint: `V1.1-RPT1`
-- Parent commit: `db08eef7477356f164783dc783a4993f24f39a10`
+- Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
+- آخرین Source Candidate: `f65a97b6a67e38b1cd48df12356089f8568120ea`
+- Source tree: `003def5bd630412c54aca74896c517861c732bcb`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -126,9 +128,12 @@ Schema مالک: `reporting`.
 | `report_snapshots` | semantic snapshot canonical |
 | `report_outputs` | output manifest و Document reference |
 
-Migration نخست با order بعد از ۱۱۰۰ Documents و Migration شماره ۴۲ ثبت می‌شود. Migration فقط
-Expand است و هیچ جدول V1/V1.1 موجود را تغییر معنا نمی‌دهد. Restore drill باید ۴۲ Migration را
-نگه دارد. QA reset inventory باید Schema جدید را دقیقاً شامل شود.
+Migration اولیه با order بعد از ۱۱۰۰ Documents و شمارهٔ ۴۲ ثبت شده است. Migration forward شمارهٔ
+۴۳ قید unique قدیمی `verification_code` را به index غیر unique تبدیل می‌کند، زیرا دو Run با
+Manifest معنایی یکسان می‌توانند کد راستی‌آزمایی یکسان ولی Output identity مستقل داشته باشند.
+هر دو Migration فقط Expand/forward-compatible هستند و هیچ جدول V1/V1.1 موجود را تغییر معنا
+نمی‌دهند. Restore drill بعدی باید inventory کامل ۴۳ Migration را نگه دارد. QA reset inventory
+Schema جدید را دقیقاً شامل می‌شود.
 
 ## ۷. Application Contract منبع گزارش روزانه
 
@@ -160,9 +165,12 @@ read-only زیر را برمی‌گرداند:
 5. Permission و Project status دوباره بررسی می‌شوند؛
 6. Source contract Snapshot معنایی را می‌سازد؛
 7. canonical serializer hash را تولید می‌کند؛
-8. Rendererهای درخواست‌شده bytes قطعی می‌سازند؛
-9. هر output از Generated Document contract عبور می‌کند؛
-10. Snapshot/Output/Run success و Outbox اتمیک ثبت می‌شوند؛
+8. تمام Rendererهای درخواست‌شده ابتدا bytes را می‌سازند و اعتبارسنجی می‌کنند تا خطای قطعی یک
+   format پیش از انتشار format دیگر رخ دهد؛
+9. هر output با stable identity از Generated Document contract عبور می‌کند؛ انتشار Document،
+   Audit و Outbox مربوط به Documents در transaction مالک Documents ثبت می‌شود؛
+10. Outputها، Run success، Audit و `reporting.report.completed.v1` در transaction مالک Reporting
+    ثبت می‌شوند؛ Snapshot پیش‌تر با Audit مستقل و immutable ثبت شده است؛
 11. دانلود فقط با current Permission و hash verification انجام می‌شود.
 
 Retry پس از publish ناقص از stable output identity استفاده می‌کند و duplicate Document یا Output
@@ -172,11 +180,12 @@ Retry پس از publish ناقص از stable output identity استفاده می
 
 | Code | معنا | Retry |
 | --- | --- | --- |
-| `reporting.source.no_data` | نسخه رسمی در cutoff وجود ندارد | خیر، مگر پارامتر جدید |
-| `reporting.source.insufficient_data` | Source رسمی است ولی داده لازم ناقص است | خیر |
+| `NoData` / `InsufficientData` | Data status صریح؛ Output بدون عدد ساختگی تولید می‌شود | خطا نیست |
 | `reporting.permission.revoked` | Permission پس از Queue لغو شده | خیر |
 | `reporting.template.retired` | Template pin‌شده دیگر قابل اجرا نیست | خیر |
 | `reporting.renderer.transient` | خطای موقت Renderer/Storage | محدود |
+| `reporting.renderer.license_unconfigured` | mode حقوقی QuestPDF عمداً انتخاب نشده است | فقط Retry صریح پس از پیکربندی |
+| `reporting.renderer.font_missing` | فونت فارسی Certified در runtime موجود نیست | فقط Retry صریح پس از اصلاح image |
 | `reporting.output.integrity_failed` | hash/size/media mismatch | Fail-closed |
 | `reporting.run.timeout` | پردازش از budget عبور کرده | محدود |
 
@@ -189,12 +198,14 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 
 - PDF واقعی، نه screenshot؛
 - فونت فارسی embed و RTL/Bidi صحیح؛
-- A4/A3 و Portrait/Landscape طبق Template؛
+- Template نخست A4/Portrait است؛ A3/Landscape فقط با Template version مستقل و Golden جدید؛
 - header جدول تکرارشونده، page break کنترل‌شده و شماره صفحه؛
 - Header/Footer، لوگو، عنوان، پروژه، تاریخ شمسی، Revision و cutoff؛
 - Watermark برای Draft/Archive فقط طبق state؛
 - Verification code/QR بدون public bypass؛
-- metadata ثابت و deterministic.
+- metadata ثابت و deterministic؛
+- Adapter فعلی QuestPDF است، اما `PdfLicense` تا تصمیم حقوقی صریح `Unconfigured` می‌ماند و PDF
+  در این وضعیت با code امن fail می‌شود؛ هیچ license tier به‌طور ضمنی انتخاب نمی‌شود.
 
 ### XLSX
 
@@ -238,12 +249,13 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 ## ۱۴. Rollout و Rollback
 
 1. Migration Expand و Catalog seed؛
-2. Feature flag `reporting.phase1` خاموش؛
+2. Feature flagهای `ReportingCenter:Phase1Enabled`، `OutputAccessEnabled` و Worker پیش‌فرض خاموش؛
 3. Smoke روی dataset ایزوله و Golden files؛
 4. فعال‌سازی محدود برای Admin/Project Manager؛
 5. اندازه‌گیری queue/render/storage؛
 6. فعال‌سازی role mapping مصوب؛
-7. rollback با خاموش‌کردن Feature flag و Worker؛ داده/Output موجود حفظ می‌شوند؛
+7. rollback با خاموش‌کردن Phase 1 و Worker انجام می‌شود؛ در صورت نبود Incident امنیتی، فقط
+   `OutputAccessEnabled=true` برای Download/Verify خروجی‌های موجود روشن می‌ماند؛ داده حذف نمی‌شود؛
 8. Contract/column فقط پس از compatibility window در نسخه آینده قابل جمع‌کردن است.
 
 ## ۱۵. Acceptance قابل‌اندازه‌گیری
@@ -260,3 +272,17 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - download عمومی Documents برای `ReportOutput` fail-closed است؛
 - Migration/restore، worker crash/retry و object storage partial failure تست می‌شوند؛
 - Full Regression V1 و Checkpointهای بسته‌شده V1.1 پاس می‌ماند.
+
+## ۱۶. وضعیت پیاده‌سازی Source Candidate
+
+در commit `f65a97b6a67e38b1cd48df12356089f8568120ea` موارد زیر در Source وجود دارند:
+
+- Rendererهای PDF/XLSX، فرمت شمسی/RTL، stable identity و manifest/verification؛
+- انتشار Generated Document با read-after-write، signature/size/SHA check و Retention `LongTerm`؛
+- Worker مسیر `SnapshotReady → Rendering → Succeeded`، retry محدود و recovery با stable identity؛
+- Retry/Cancel، Download/Verify، integrity audit و output-access rollback switch؛
+- Migration 43، TestHarness متصل و assertionهای PostgreSQL/Documents/Audit/Outbox/Idempotency.
+
+این Snapshot هنوز Build/Test C#، اجرای PostgreSQL/Object Storage، PDF deterministic/golden،
+Restore Drill، concurrency/load/soak، Permission revocation و CI Qualification روی SHA بالا را
+پاس‌شده اعلام نمی‌کند. Metrics/heartbeat عملیاتی و UI تولیدی نیز در Sliceهای بعدی باز هستند.

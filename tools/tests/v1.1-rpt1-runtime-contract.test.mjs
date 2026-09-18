@@ -134,12 +134,25 @@ test("RPT1 is disabled by default until renderers and qualification are complete
 
 test("RPT1 slice checkpoint separates source implementation from qualification", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-01-candidate.md");
-  assert.match(checkpoint, /2208bb1828dea571b81a3eb615ddd13250520c73/u);
+  assert.match(checkpoint, /43cac1b83ac7764fe6005fee108029597091a238/u);
   assert.match(checkpoint, /Local structural evidence only \| Unqualified/u);
   assert.match(checkpoint, /37\/37 passed/u);
   assert.match(checkpoint, /dotnet[\s\S]*پاس‌شده اعلام نمی‌شوند/u);
   assert.match(checkpoint, /Generated Document publish\/read contract/u);
   assert.match(checkpoint, /Feature flag[\s\S]*پیش‌فرض خاموش/u);
+});
+
+test("RPT1 generated-output checkpoint pins source evidence without closing qualification", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-02-candidate.md");
+  assert.match(checkpoint, /f65a97b6a67e38b1cd48df12356089f8568120ea/u);
+  assert.match(checkpoint, /003def5bd630412c54aca74896c517861c732bcb/u);
+  assert.match(checkpoint, /39\/39 passed/u);
+  assert.match(checkpoint, /139\/139 passed/u);
+  assert.match(checkpoint, /۳۳۴ فایل C# ماژولی/u);
+  assert.match(checkpoint, /dotnet[\s\S]*پاس‌شده اعلام نمی‌شوند/u);
+  assert.match(checkpoint, /PdfLicense[\s\S]*Unconfigured/u);
+  assert.match(checkpoint, /هفت Stage Agent/u);
+  assert.match(checkpoint, /هنوز `Feature Complete`[\s\S]*نیست/u);
 });
 
 function read(path) {

@@ -6,7 +6,7 @@
 - خط فعال: `PMCS V1.1`
 - وضعیت رسمی خط فعال: `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
-- Worktree source commit: `db08eef7477356f164783dc783a4993f24f39a10`
+- Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
 
 ## ۱. هدف و روش
@@ -185,7 +185,21 @@ permission-aware، بدون Query مستقیم به Persistence ماژول Field
 
 جدول‌ها و جمع‌بندی بالا Snapshot زمان انجام ممیزی و پیش از Runtime هستند. پس از بسته‌شدن DoR،
 اولین Vertical Slice در Source Candidate
-`2208bb1828dea571b81a3eb615ddd13250520c73` پیاده شد و Evidence آن در
+`43cac1b83ac7764fe6005fee108029597091a238` پیاده شد و Evidence آن در
 `docs/checkpoints/v1.1-rpt1-slice-01-candidate.md` ثبت شده است. این ادامه نتیجهٔ ممیزی را تغییر
 نمی‌دهد: تصمیمی جا نیفتاده است، RPT1 هنوز بسته نشده، Feature flag پیش‌فرض خاموش است و مرحلهٔ بعد
 Generated Document/PDF/XLSX و Qualification متصل است.
+
+## ۱۲. Addendum — Source Candidate دوم RPT1
+
+مرحلهٔ بعدی پیش‌بینی‌شده در Addendum قبل، در Source Candidate
+`f65a97b6a67e38b1cd48df12356089f8568120ea` با tree
+`003def5bd630412c54aca74896c517861c732bcb` ادامه یافت. Generated Document، PDF/XLSX adapter،
+Worker finalization، Retry/Cancel، Download/Verify، Migration 43 و هارنس connected در Source
+وجود دارند. رگرسیون Node/Web و کنترل‌های ساختاری محلی سبز است، اما C# و PostgreSQL/Object Storage
+در این محیط اجرا نشده‌اند و PDF license/golden نیز باز است.
+
+این ادامه هیچ تصمیم Blueprint/Roadmap یا ترتیب Agent را تغییر نمی‌دهد. RPT1 همچنان مرحلهٔ فعال است؛
+COL1، UX2، INT1 و هفت Stage مستقل Agent در جای مصوب خود باقی مانده‌اند. نقطهٔ دقیق ادامه، اجرای
+Candidate موجود در CI متصل، رفع هر خطای Build/Integration، سپس Golden/Recovery/Observability و
+Gateهای باقیمانده RPT1 است؛ بازطراحی یا شروع دوبارهٔ Reporting مجاز نیست.
