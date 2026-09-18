@@ -141,3 +141,15 @@ Run 102 (`35383686315`) مسیر عملیاتی دوم را نیز اجرا کر
 claim لغو شد و replay/final-state بدون side effect تکراری ماند. سپس tenant/auth isolation، قطع
 Download پس از suspend شدن Membership و metadata tamper/restore آزموده شد. این رویه فقط در QA
 database ایزوله مجاز است؛ دستکاری مستقیم fixture هرگز Runbook تولید نیست.
+
+Run 104 (`35390054888`) مسیر `tools/qa/verify-reporting-recovery.sh` را نیز پاس کرد. این مسیر دو
+Process مستقل Worker را با application name و instance ID جدا اجرا می‌کند، lock اولین Run را پشت
+pause `AfterSnapshotRowLock` نگه می‌دارد، عبور Worker دوم با `SKIP LOCKED` را می‌سنجد و سپس
+`SIGKILL`، stale lease و crashهای `BeforeStorage`/`AfterStorage` را بازیابی می‌کند. preparation و
+harness نهایی هر `5/5` و orchestration هر `15/15` assertion را پاس کردند؛ attemptهای نهایی
+`1,1,2,2,2` و تعداد Output/Document برای هر Run دقیقاً یک بود.
+
+این pauseها ابزار عملیاتی Production نیستند. فعال‌سازی آن‌ها بدون `PMCS_QA_GATEWAY_ENABLED=true`،
+target Run ID و Worker instance ID معتبر fail-closed است. در رخداد واقعی Production، اپراتور فقط
+از retry/recovery رسمی و telemetry مصوب استفاده می‌کند و process را برای ساختن crash window دستکاری
+نمی‌کند. metrics/heartbeat/queue-age/alert هنوز Gate باز این Runbook است.

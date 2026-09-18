@@ -2,12 +2,12 @@
 
 - شناسه: `PMCS-ARCH-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: `Connected implementation candidate passed | RPT1 exit gates open`
+- وضعیت: `Connected concurrency/recovery qualification passed | RPT1 exit gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `b4da1e951debf76e1ba3b398bde2ccf60fbde5de`
-- Source tree: `aa4063214ad1dea8fac19685a81818623296c24c`
-- Connected evidence: Run 102 (`35383686315`) — `success`
+- آخرین Qualification Candidate: `e1ac3263df53a245b1aefb338a015be4854d367b`
+- Source tree: `f58881f7e0a77bf89f65b872d4f988bd154a809f`
+- Connected evidence: Run 104 (`35390054888`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -295,3 +295,10 @@ Qualification Slice 03 در Run 102 بدون تغییر معماری Runtime، C
 final-state guards، tenant/auth isolation، generic Documents isolation، revocation پس از success و
 metadata tamper fail-closed/restore را متصل اثبات کرد. این Evidence با worker-time revocation، دو
 Worker/stale lease/crash window، object-byte tamper و observability/Golden/UI برابر نیست.
+
+Qualification Slice 04 در Run 104 نیز بدون تغییر API/Domain/Migration، دو Process واقعی Worker،
+`FOR UPDATE SKIP LOCKED`، rollback claim پس از `SIGKILL`، lease کهنه و crash windowهای پیش و پس از
+Storage را متصل اثبات کرد. crash-after-storage همان Generated Document پایدار را reuse کرد و برای
+هر Run فقط یک Output/Document باقی ماند. pauseهای deterministic فقط پشت QA Gateway ایزوله فعال‌اند.
+worker-time revocation، object-byte/missing-object tamper، orphan inventory، load/observability،
+Golden و UI هنوز Gate باز RPT1 هستند.

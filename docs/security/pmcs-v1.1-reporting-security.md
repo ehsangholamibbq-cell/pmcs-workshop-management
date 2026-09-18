@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-SEC-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Connected core + first extended negative gates passed؛ remaining gates open
+- وضعیت: Connected core + extended negative/recovery gates passed؛ remaining gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -126,3 +126,10 @@ Documents content، suspend شدن Membership پیش از Download، metadata ha
 و Verify سالم پس از restore. Cancel نیز با Worker خاموش در شش assertion مستقل، idempotent و بدون
 Snapshot/Output اثبات شد. هنوز revocation میان Queue/processing، object-byte/missing-object tamper،
 دو Worker/crash window و Tool privilege elevation باز هستند.
+
+Run 104 (`35390054888`) دو Worker واقعی، `SKIP LOCKED`، rollback پس از `SIGKILL`، stale lease و
+crash-before/after-storage را پاس کرد. Worker instance ID در Audit ثبت می‌شود و crash-after-storage
+همان Document با identity پایدار را reuse می‌کند؛ Duplicate Output/Document/Audit/Outbox ایجاد
+نشد. pauseهای Qualification فقط در QA Gateway ایزوله و برای Run هدف فعال‌اند و در غیر این صورت
+startup fail-closed است. revocation حین Worker، object-byte/missing/malformed tamper، orphan
+inventory و Tool privilege elevation همچنان باز هستند.

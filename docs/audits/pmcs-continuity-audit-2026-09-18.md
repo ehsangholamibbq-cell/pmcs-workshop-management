@@ -8,6 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
+- آخرین Qualification Candidate: `e1ac3263df53a245b1aefb338a015be4854d367b`
+- آخرین Connected evidence: Run 104 (`35390054888`) — `success`
 
 ## ۱. هدف و روش
 
@@ -89,7 +91,7 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 | `V1.1-DOC1` | Shared Documents، Scanner/Quarantine/Retention | بسته؛ Run 83 |
 | `V1.1-IAM1` | Login Descriptor و Member Profile | بسته؛ Run 88 |
 | `V1.1-PRJ1` | Controlled Project Bootstrap/Duplication | بسته؛ Run 92 |
-| `V1.1-RPT1` | Reporting Center Phase 1 | **فعال؛ Runtime هنوز آغاز نشده است** |
+| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–04 | **فعال؛ core/cancel/security/two-worker crash recovery متصل پاس شده و Gate خروج باز است** |
 | `V1.1-COL1` | Project Collaboration | برنامه‌ریزی‌شده |
 | `V1.1-UX2` | Full Product UI migration | برنامه‌ریزی‌شده |
 | `V1.1-INT1` | Agent Stage 1 | برنامه‌ریزی‌شده |
@@ -100,6 +102,11 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 `0539d3c7b337a1785ffd2334c7c1457f92d629c2` در Run 92 با هر هشت Job سبز بسته شد.
 Evidence commit بعدی فقط وضعیت PRJ1/RPT1 را ثبت کرد. Tree جاری
 `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b` همان محتوای Evidence متصل ثبت‌شده است.
+
+از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 04 ادامه یافته است. آخرین Candidate روی source
+commit `e1ac3263df53a245b1aefb338a015be4854d367b` و tree
+`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 هر هشت Job را پاس کرده است. Addendumهای
+۱۱ تا ۱۵ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
 
 ## ۶. Agent مدیریتی؛ تطبیق کامل هفت Stage
 
@@ -175,16 +182,17 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: ثبت Evidence نهایی PRJ1 و فعال‌سازی RPT1.
+آخرین اقدام تکمیل‌شده: Qualification متصل Slice 04 برای دو Worker، `SKIP LOCKED`، stale lease و
+crash-before/after-storage در Run 104؛ RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: ساخت Definition of Ready و سپس اولین Vertical Slice مستقل
-`V1.1-RPT1` برای «گزارش روزانه رسمی و زنجیرهٔ اصلاحات» روی Semantic Read Model
-permission-aware، بدون Query مستقیم به Persistence ماژول FieldOperations.
+نقطهٔ دقیق ادامه: worker-time permission revocation، object-byte/missing/malformed tamper و orphan
+inventory؛ سپس load/soak/fairness/budgets، observability، Golden معنایی/XLSX، PDF پس از تصمیم
+حقوقی license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
-جدول‌ها و جمع‌بندی بالا Snapshot زمان انجام ممیزی و پیش از Runtime هستند. پس از بسته‌شدن DoR،
-اولین Vertical Slice در Source Candidate
+نسخهٔ اولیهٔ این ممیزی پیش از Runtime نوشته شد؛ جدول وضعیت و جمع‌بندی جاری تا آخرین Addendum
+همگام شده‌اند و بندهای زیر زنجیرهٔ زمانی را حفظ می‌کنند. پس از بسته‌شدن DoR، اولین Vertical Slice در Source Candidate
 `43cac1b83ac7764fe6005fee108029597091a238` پیاده شد و Evidence آن در
 `docs/checkpoints/v1.1-rpt1-slice-01-candidate.md` ثبت شده است. این ادامه نتیجهٔ ممیزی را تغییر
 نمی‌دهد: تصمیمی جا نیفتاده است، RPT1 هنوز بسته نشده، Feature flag پیش‌فرض خاموش است و مرحلهٔ بعد
@@ -227,3 +235,15 @@ Cancel/replay با Worker خاموش، anonymous/cross-tenant isolation، منع
 این ادامه نه Scope را کوچک کرده و نه ترتیب Agent را تغییر داده است. Gateهای worker-time revocation،
 دو Worker/crash، object-byte tamper، load، observability، Golden PDF/XLSX و UI Reporting همچنان
 بازند و نقطهٔ ادامه RPT1 هستند.
+
+## ۱۵. Addendum — Two-worker و Crash Recovery Evidence
+
+Qualification Slice چهارم با source commit `e1ac3263df53a245b1aefb338a015be4854d367b` و tree
+`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 (`35390054888`) هر هشت Job را پاس کرد.
+دو Worker واقعی، `SKIP LOCKED`، rollback پس از توقف سخت، stale lease و crash-before/after-storage
+با Document پایدار و بدون side effect تکراری به Evidence متصل تبدیل شدند.
+
+این Addendum معماری یا ترتیب Roadmap را تغییر نمی‌دهد. RPT1 هنوز برای revocation حین Worker،
+object-byte/missing/malformed tamper، orphan inventory، load/observability، Golden، PDF قانونی و UI
+Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی مانده‌اند و مرز
+`Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.

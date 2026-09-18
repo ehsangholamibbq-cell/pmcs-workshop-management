@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.12.0`
+- نسخه سند: `1.13.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -288,6 +288,15 @@ revocation پس از success، metadata tamper fail-closed/restore و Audit/Outb
 شدند. این Slice API/معماری Runtime را تغییر نداد و revocation حین Worker، دو Worker/crash window،
 object-byte tamper، load، observability، Golden و UI Reporting را باز نگه می‌دارد.
 
+**Qualification Slice 04:** Candidate با commit
+`e1ac3263df53a245b1aefb338a015be4854d367b` و tree
+`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 (`35390054888`) هر هشت Job را پاس کرد.
+دو Worker واقعی، `SKIP LOCKED`، rollback claim پس از `SIGKILL`، stale lease و
+crash-before/after-storage با reuse سند پایدار و بدون side effect تکراری متصل اثبات شدند. pauseهای
+Qualification فقط در QA Gateway ایزوله و default-off هستند. این Slice معماری/API/Migration را
+تغییر نداد و revocation حین Worker، object tamper/orphan inventory، load/observability، Golden،
+PDF قانونی و UI Reporting را باز نگه می‌دارد.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -542,3 +551,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.10.0` | ثبت Source Candidate دوم RPT1 برای Generated Document، PDF/XLSX، Download/Verify و هارنس متصل؛ Gate خروج همچنان باز |
 | `1.11.0` | ثبت Evidence متصل Run 99 برای Build، PostgreSQL/Object Storage، Restore ۴۳ Migration و Full CI؛ Gateهای توسعه‌یافته RPT1 همچنان باز |
 | `1.12.0` | ثبت Qualification Slice سوم RPT1 برای Cancel، revocation پس از success، tenant isolation و tamper fail-closed؛ Gate خروج همچنان باز |
+| `1.13.0` | ثبت Qualification Slice چهارم RPT1 برای دو Worker، `SKIP LOCKED`، stale lease و crash-before/after-storage؛ Gate خروج همچنان باز |

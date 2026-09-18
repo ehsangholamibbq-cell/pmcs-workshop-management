@@ -76,7 +76,9 @@ test("continuity audit retains seven Agent stages and separates open visual gate
     assert.match(audit, new RegExp(gate, "u"));
   }
   assert.match(audit, /RPT1 Active/u);
-  assert.match(audit, /Runtime هنوز آغاز نشده است/u);
+  assert.match(audit, /e1ac3263df53a245b1aefb338a015be4854d367b/u);
+  assert.match(audit, /Run 104 \(`35390054888`\)/u);
+  assert.match(audit, /Gate خروج باز است/u);
 });
 
 function read(path) {

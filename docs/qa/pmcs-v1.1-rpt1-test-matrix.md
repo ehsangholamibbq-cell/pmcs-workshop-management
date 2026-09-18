@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-QA-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Connected core + cancel/security regression passed؛ RPT1 extended qualification open
+- وضعیت: Connected core + cancel/security + worker crash recovery passed؛ RPT1 extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -204,3 +204,23 @@ Candidate `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` با tree
 
 این coverage، worker-time revocation، object-byte tamper، concurrency/crash، load/soak،
 observability، Golden و UI اختصاصی Reporting را پاس‌شده اعلام نمی‌کند.
+
+## ۱۵. Coverage افزوده‌شده در Qualification Slice 04
+
+Candidate `e1ac3263df53a245b1aefb338a015be4854d367b` با tree
+`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 (`35390054888`) موارد زیر را متصل پاس کرد:
+
+- دو Worker واقعی با identity مستقل؛ Worker B در زمان lock بودن Run اول، Run دوم را با
+  `SKIP LOCKED` تکمیل کرد؛
+- rollback و recovery پس از `SIGKILL` Worker A؛
+- stale lease در `BuildingSnapshot`؛
+- crash-before-storage و crash-after-storage؛
+- reuse Document پایدار و نبود Output/Document/Audit/Outbox تکراری؛
+- attemptهای bounded برابر `1,1,2,2,2` برای پنج fixture؛
+- preparation و harness نهایی هر `5/5` و orchestration مستقل هر `15/15` assertion؛
+- حفظ `298/298` تست C#، `139/139` تست Web، پنج browser scenario، Restore ۴۳ Migration و هر هفت
+  Suite Qualification.
+
+این coverage، worker-time revocation، object-byte/missing/malformed tamper، orphan inventory،
+retry storm/load/soak/fairness/budgets، metrics/heartbeat/alert، Golden معنایی/XLSX، PDF قانونی و
+UI اختصاصی Reporting را پاس‌شده اعلام نمی‌کند.
