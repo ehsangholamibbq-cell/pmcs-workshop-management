@@ -5,6 +5,8 @@ import test from "node:test";
 const parentRuntime = "26bf222d44634562ca7f3fc0931f3f8b79ca04a1";
 const repositoryStart = "0389b52cbd3385bdcc9f0e2a94411800389ae2fc";
 const requiredFiles = [
+  "docs/api/identity-experience-v1.md",
+  "docs/checkpoints/v1.1-iam1-candidate.md",
   "docs/adr/0027-post-v1-extensibility-collaboration-reporting.md",
   "docs/adr/0028-configurable-login-member-profile-project-bootstrap.md",
   "docs/architecture/pmcs-v1.1-contract-migration-event-strategy.md",
@@ -19,6 +21,7 @@ const requiredFiles = [
   "docs/security/pmcs-v1.1-permission-catalog.md",
   "release/pmcs-v1-baseline.json",
   "release/pmcs-v1.1-development-baseline.json",
+  "release/pmcs-v1.1-iam1-candidate.json",
 ];
 
 test("V1.1 governance baseline pins exact and distinct runtime and repository commits", () => {
@@ -68,9 +71,12 @@ test("login customization and project duplication retain fail-closed boundaries"
 test("permission catalog separates sensitive duties", () => {
   const catalog = read("docs/security/pmcs-v1.1-permission-catalog.md");
   for (const permission of [
-    "branding.login.publish",
-    "branding.login.rollback",
-    "identity.profile.photo_update_self",
+    "login-experience.manage",
+    "member-profile.read-self",
+    "member-profile.update-self",
+    "member-profile.avatar.publish-self",
+    "member-profile.read-directory",
+    "member-profile.manage-directory",
     "projects.bootstrap.members_copy",
     "projects.bootstrap.activate",
     "documents.quarantine.release",
@@ -78,6 +84,34 @@ test("permission catalog separates sensitive duties", () => {
     "intelligence.tool.invoke_read",
   ]) assert.match(catalog, new RegExp(permission.replaceAll(".", "\\."), "u"));
   assert.match(catalog, /Stage 1 Agent هیچ Permission نوشتن Domain ندارد/u);
+});
+
+test("IAM1 API, permission, event and migration contracts stay aligned with implementation", () => {
+  const api = read("docs/api/identity-experience-v1.md");
+  const module = read("src/backend/Pmcs.Modules.IdentityAccess/IdentityAccessModule.cs");
+  const endpoints = read("src/backend/Pmcs.Modules.IdentityAccess/Endpoints/IdentityExperienceEndpoints.cs");
+  const migration = read("src/backend/Pmcs.Modules.IdentityAccess/Migrations/IdentityExperienceMigration.cs");
+  for (const permission of [
+    "login-experience.manage",
+    "member-profile.read-self",
+    "member-profile.update-self",
+    "member-profile.avatar.publish-self",
+    "member-profile.read-directory",
+    "member-profile.manage-directory",
+  ]) {
+    assert.match(api, new RegExp(permission.replaceAll(".", "\\."), "u"));
+    assert.match(module, new RegExp(permission.replaceAll(".", "\\."), "u"));
+  }
+  for (const route of [
+    "/api/v1/public/login-experience",
+    "/api/v1/member-profile",
+    "/api/v1/identity/login-experiences",
+  ]) assert.match(endpoints, new RegExp(route.replaceAll("/", "\\/"), "u"));
+  assert.match(api, /identity\.member-profile\.updated\.v1/u);
+  assert.match(api, /identity\.login-experience\.published\.v1/u);
+  assert.match(endpoints, /identity\.member-profile\.updated\.v1/u);
+  assert.match(endpoints, /identity\.login-experience\.published\.v1/u);
+  assert.match(migration, /20260918-002/u);
 });
 
 function read(path) {

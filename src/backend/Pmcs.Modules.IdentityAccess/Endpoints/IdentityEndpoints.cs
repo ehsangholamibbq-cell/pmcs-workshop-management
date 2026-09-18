@@ -15,13 +15,14 @@ using Pmcs.Modules.IdentityAccess.Services;
 
 namespace Pmcs.Modules.IdentityAccess.Endpoints;
 
-internal static class IdentityEndpoints
+internal static partial class IdentityEndpoints
 {
     private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
 
     public static void MapIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/api/v1/session", SessionAsync);
+        MapIdentityExperienceEndpoints(endpoints);
 
         var group = endpoints.MapGroup("/api/v1/identity")
             .WithTags("Identity administration")

@@ -16,6 +16,8 @@ internal sealed class ProjectPermissionService(
         {
             "identity.manage",
             "identity.users.manage",
+            "login-experience.manage",
+            "member-profile.manage-directory",
             "projects.create",
             "projects.activate",
             "projects.locations.manage",
@@ -670,6 +672,12 @@ internal sealed class ProjectPermissionService(
         .SelectMany(permissions => permissions)
         .Where(permission => permission != "*")
         .Concat(AdministratorOnlyPermissions)
+        .Concat([
+            "member-profile.read-self",
+            "member-profile.update-self",
+            "member-profile.avatar.publish-self",
+            "member-profile.read-directory"
+        ])
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 
@@ -688,6 +696,9 @@ internal sealed class ProjectPermissionService(
             .SingleOrDefaultAsync(cancellationToken);
 
     internal static bool GrantsTenant(TenantRole role, string permission) =>
+        string.Equals(permission, "member-profile.read-self", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(permission, "member-profile.update-self", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(permission, "member-profile.avatar.publish-self", StringComparison.OrdinalIgnoreCase) ||
         role == TenantRole.TenantAdministrator ||
         (role == TenantRole.PortfolioViewer &&
             (string.Equals(permission, "portfolio.read", StringComparison.OrdinalIgnoreCase) ||
@@ -707,9 +718,11 @@ internal sealed class ProjectPermissionService(
                 string.Equals(permission, "hse.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "governance.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "platform.modules.read", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase)));
+                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool GrantsRole(string roleCode, string permission) =>
         ProjectRolePermissions.TryGetValue(roleCode, out var permissions) &&
-        (permissions.Contains("*") || permissions.Contains(permission));
+        (permissions.Contains("*") || permissions.Contains(permission) ||
+            string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase));
 }

@@ -37,8 +37,8 @@ Route و Label و Feature flag را اعلام می‌کند؛ نمایش Naviga
 
 | دامنه | Aggregate/Contract | مسیر منطقی API |
 | --- | --- | --- |
-| Branding | `LoginExperienceDescriptor` | `/api/v1/branding/login-experiences` |
-| Identity | `MemberProfile` | `/api/v1/member-profiles` و `/api/v1/me/profile` |
+| Identity Access | `LoginExperienceDescriptor` | خواندن عمومی `/api/v1/public/login-experience` و مدیریت `/api/v1/identity/login-experiences` |
+| Identity Access | `MemberProfile` | Self-service روی `/api/v1/member-profile` و Directory روی `/api/v1/member-profiles/{userId}` |
 | Projects | `ProjectBootstrapPlan/Run` | `/api/v1/project-bootstraps` |
 | Documents | `Document/Asset/UploadSession` | `/api/v1/documents` و `/api/v1/upload-sessions` |
 | Reporting | `ReportDefinition/Run/Output` | `/api/v1/reports` |
@@ -51,7 +51,7 @@ Route و Label و Feature flag را اعلام می‌کند؛ نمایش Naviga
 
 | Event | Producer | Consumer مجاز |
 | --- | --- | --- |
-| `branding.login-experience.published.v1` | Branding | Web cache invalidation/Audit projection |
+| `identity.login-experience.published.v1` | Identity Access | Web cache invalidation/Audit projection |
 | `identity.member-profile.updated.v1` | Identity Access | Directory/Collaboration projection |
 | `projects.bootstrap.completed.v1` | Projects | Notification/Audit/Project setup orchestration |
 | `documents.asset.released.v1` | Documents | Owner Context با reference معتبر |
@@ -118,4 +118,3 @@ Stage 1 فقط Foundation و Reference read-only tool دارد. Model output ه�
 - unknown manifest/version باید fail closed شود؛
 - module disable نباید داده را حذف کند؛
 - rollback Runtime باید دادهٔ جدید را نادیده بگیرد، نه حذف کند.
-

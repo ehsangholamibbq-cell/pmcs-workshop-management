@@ -20,15 +20,12 @@
 | --- | --- | --- | --- |
 | `platform.modules.read` | Tenant | Low | مشاهده Capability/Moduleهای فعال |
 | `platform.modules.manage` | Tenant | High | فعال‌سازی Feature/Module سازگار |
-| `branding.login.read` | Tenant | Low | خواندن Login descriptor منتشرشده |
-| `branding.login.preview` | Tenant | Medium | پیش‌نمایش نسخه Draft |
-| `branding.login.publish` | Tenant | High | انتشار نسخه گرافیکی Login |
-| `branding.login.rollback` | Tenant | High | بازگشت به نسخه سالم قبلی |
-| `identity.profile.read_self` | Self | Low | مشاهده پروفایل خود |
-| `identity.profile.update_self` | Self | Medium | ویرایش فیلدهای Self-service |
-| `identity.profile.photo_update_self` | Self | Medium | بارگذاری/حذف تصویر خود |
-| `identity.profile.read_directory` | Tenant/Project | Medium | مشاهده Directory در محدوده مجاز |
-| `identity.profile.manage_directory` | Tenant | High | اصلاح فیلدهای سازمانی مجاز |
+| `login-experience.manage` | Tenant | High | ساخت Draft، پیش‌نمایش، انتشار و Rollback طرح Login بدون دسترسی به Authentication |
+| `member-profile.read-self` | Self | Low | مشاهده پروفایل خود |
+| `member-profile.update-self` | Self | Medium | ویرایش فیلدهای Self-service |
+| `member-profile.avatar.publish-self` | Self | Medium | Release تصویر پاک و policy-constrained متعلق به پروفایل خود |
+| `member-profile.read-directory` | Tenant/Project | Medium | مشاهده Directory فقط در محدوده مجاز یا پروژه مشترک |
+| `member-profile.manage-directory` | Tenant | High | اصلاح فیلدهای سازمانی مجاز |
 | `projects.bootstrap.preview` | Project/Tenant | Medium | Dry-run ساخت از پروژه موجود |
 | `projects.bootstrap.create` | Tenant | High | ایجاد مقصد Draft و اجرای Setup clone |
 | `projects.bootstrap.members_copy` | Source+Target Project | High | ایجاد Membershipهای انتخاب‌شده |
@@ -52,7 +49,8 @@
 
 ## ۳. Separation of Duties
 
-- `branding.login.publish` با صرف `branding.login.preview` اعطا نمی‌شود؛
+- `login-experience.manage` هیچ دسترسی‌ای به OIDC، Credential، Session یا تنظیمات Authentication ایجاد نمی‌کند؛
+- `member-profile.avatar.publish-self` فقط روی تصویر پاک، محدود به مالک فعلی و سیاست ثابت Profile عمل می‌کند و معادل `documents.quarantine.release` نیست؛
 - `documents.quarantine.release` از Upload و Classification جدا است؛
 - `projects.bootstrap.create` به‌تنهایی اجازه کپی اعضا یا Activation نمی‌دهد؛
 - `collaboration.record.convert` علاوه بر Permission Chat، Permission Domain مقصد را نیز لازم دارد؛

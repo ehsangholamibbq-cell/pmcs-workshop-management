@@ -165,7 +165,11 @@ function ProjectLandingContent() {
           <h1>پروژه‌های در دسترس</h1>
           <p className="muted">پروژه را آگاهانه انتخاب کنید؛ هیچ داده یا شناسهٔ نمونه‌ای به‌صورت پیش‌فرض باز نمی‌شود.</p>
         </div>
-        <SessionBadge />
+        <div className="project-landing-account">
+          <Link href="/profile">پروفایل من</Link>
+          {session.tenantRole === "TenantAdministrator" && <Link href="/admin/login-experience">ظاهر صفحه ورود</Link>}
+          <SessionBadge />
+        </div>
       </header>
 
       <section className="project-list-section" aria-labelledby="project-list-title">

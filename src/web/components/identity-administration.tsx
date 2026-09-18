@@ -99,7 +99,9 @@ function IdentityAdministrationContent() {
         <nav>
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
+          <Link className="nav-item" href="/profile">پروفایل من</Link>
           <Link className="nav-item active" href="/admin/users">کاربران و دسترسی‌ها</Link>
+          <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>
         </nav>
         <SessionBadge />
       </aside>

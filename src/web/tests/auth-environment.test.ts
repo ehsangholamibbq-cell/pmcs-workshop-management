@@ -12,6 +12,7 @@ const valid = {
   PMCS_OIDC_INTERNAL_ISSUER: "https://identity.internal.example.com/realms/pmcs",
   PMCS_WEB_OIDC_CLIENT_ID: "pmcs-web",
   PMCS_WEB_OIDC_CLIENT_SECRET: "production-client-secret-at-least-24",
+  PMCS_LOGIN_TENANT_ID: "11111111-1111-1111-1111-111111111111",
 } satisfies NodeJS.ProcessEnv;
 
 test("production authentication environment accepts explicit HTTPS boundaries", () => {
@@ -20,6 +21,14 @@ test("production authentication environment accepts explicit HTTPS boundaries", 
   assert.equal(result.secureCookies, true);
   assert.equal(result.clientId, "pmcs-web");
   assert.equal(result.publicIssuer, "https://identity.example.com/realms/pmcs");
+  assert.equal(result.loginTenantId, "11111111-1111-1111-1111-111111111111");
+});
+
+test("login presentation tenant must be an explicit UUID", () => {
+  assert.throws(
+    () => readAuthEnvironment({ ...valid, PMCS_LOGIN_TENANT_ID: "current-tenant" }),
+    /UUID/u,
+  );
 });
 
 test("insecure identity endpoints require an explicit development switch", () => {

@@ -144,6 +144,211 @@ if [[ "${unknown_module_status}" != "404" ]]; then
   exit 1
 fi
 
+current_step="checking configurable login isolation, versioning and rollback"
+login_descriptor_headers="${temporary_directory}/login-descriptor-headers.txt"
+login_fallback="$(curl --silent --fail \
+  --dump-header "${login_descriptor_headers}" \
+  "http://127.0.0.1:${port}/api/v1/public/login-experience?tenantId=${tenant_id}")"
+grep -q '"fallbackUsed":true' <<<"${login_fallback}"
+grep -qi '^Cache-Control: no-store' "${login_descriptor_headers}"
+if grep -Eq 'clientSecret|issuer|authorizationUrl|redirectUri' <<<"${login_fallback}"; then
+  echo "The public login presentation leaked an authentication configuration field." >&2
+  exit 1
+fi
+
+login_member_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+login_denied_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-login-denied' \
+  --header 'Content-Type: application/json' \
+  --data '{"clientGeneratedId":"82000000-0000-4000-8000-000000000099","compositionVariant":"BlueprintSplit","surfaceTone":"WarmStone","accentPalette":"CorporateNavyGreen","motionPolicy":"Balanced","eyebrow":"PMCS","headline":"Denied","supportingText":"Denied","logoDocumentId":null,"heroDocumentId":null}' \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences")"
+if [[ "${login_denied_status}" != "403" ]]; then
+  echo "Expected a member login-presentation mutation to return 403; received ${login_denied_status}." >&2
+  exit 1
+fi
+
+login_v1_id="82000000-0000-4000-8000-000000000001"
+login_logo_id="82000000-0000-4000-8000-000000000011"
+login_logo_file="${temporary_directory}/login-logo.png"
+login_logo_download="${temporary_directory}/login-logo-download.png"
+login_logo_headers="${temporary_directory}/login-logo-headers.txt"
+printf '\211PNG\r\n\032\n' > "${login_logo_file}"
+login_logo_size="$(wc -c < "${login_logo_file}" | tr -d '[:space:]')"
+login_logo_sha="$(sha256sum "${login_logo_file}" | cut -d ' ' -f 1)"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-logo-session' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"${login_logo_id}\",\"projectId\":null,\"ownerType\":\"LoginExperience\",\"ownerId\":\"${login_v1_id}\",\"originalFileName\":\"login-logo.png\",\"contentType\":\"image/png\",\"sizeBytes\":${login_logo_size},\"sha256\":\"${login_logo_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
+  "http://127.0.0.1:${port}/api/v1/upload-sessions" | grep -q '"status":"PendingUpload"'
+login_logo_upload="$(curl --silent --fail \
+  --request PUT \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-logo-content' \
+  --header 'Content-Type: image/png' \
+  --data-binary "@${login_logo_file}" \
+  "http://127.0.0.1:${port}/api/v1/documents/${login_logo_id}/content")"
+grep -q '"status":"Quarantined"' <<<"${login_logo_upload}"
+login_logo_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${login_logo_upload}")"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-logo-release' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${login_logo_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/documents/${login_logo_id}/release" | \
+  grep -q '"status":"Released"'
+
+login_v1_payload="{\"clientGeneratedId\":\"${login_v1_id}\",\"compositionVariant\":\"BlueprintSplit\",\"surfaceTone\":\"WarmStone\",\"accentPalette\":\"CorporateNavyGreen\",\"motionPolicy\":\"Balanced\",\"eyebrow\":\"PMCS integration\",\"headline\":\"Traceable project decisions\",\"supportingText\":\"Allowlisted presentation without authentication configuration\",\"logoDocumentId\":\"${login_logo_id}\",\"heroDocumentId\":null,\"clientSecret\":\"must-be-ignored\"}"
+login_v1="$(curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-v1-create' \
+  --header 'Content-Type: application/json' \
+  --data "${login_v1_payload}" \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences")"
+grep -q '"versionNumber":1' <<<"${login_v1}"
+grep -q '"status":"Draft"' <<<"${login_v1}"
+if grep -q 'clientSecret' <<<"${login_v1}"; then
+  echo "The login presentation response retained an unmapped authentication field." >&2
+  exit 1
+fi
+
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-v1-publish' \
+  --header 'Content-Type: application/json' \
+  --data '{"baseRevision":1}' \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences/1/publish" | \
+  grep -q '"status":"Published"'
+login_published="$(curl --silent --fail \
+  "http://127.0.0.1:${port}/api/v1/public/login-experience?tenantId=${tenant_id}")"
+grep -q '"version":1' <<<"${login_published}"
+grep -q '"fallbackUsed":false' <<<"${login_published}"
+grep -q '"logoUrl":"/api/v1/public/login-experience/assets/logo?' <<<"${login_published}"
+curl --silent --fail \
+  --dump-header "${login_logo_headers}" \
+  --output "${login_logo_download}" \
+  "http://127.0.0.1:${port}/api/v1/public/login-experience/assets/logo?tenantId=${tenant_id}&version=1"
+grep -qi '^Cache-Control: public, max-age=31536000, immutable' "${login_logo_headers}"
+if [[ "$(sha256sum "${login_logo_download}" | cut -d ' ' -f 1)" != "${login_logo_sha}" ]]; then
+  echo "Published login asset roundtrip changed the verified object content." >&2
+  exit 1
+fi
+
+login_v2_id="82000000-0000-4000-8000-000000000002"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-v2-create' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"${login_v2_id}\",\"compositionVariant\":\"WarmMinimal\",\"surfaceTone\":\"WarmIvory\",\"accentPalette\":\"GreenStone\",\"motionPolicy\":\"Calm\",\"eyebrow\":\"PMCS integration\",\"headline\":\"Warm controlled experience\",\"supportingText\":\"Second version for rollback verification\",\"logoDocumentId\":null,\"heroDocumentId\":null}" \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences" | grep -q '"versionNumber":2'
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-v2-publish' \
+  --header 'Content-Type: application/json' \
+  --data '{"baseRevision":1}' \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences/2/publish" | \
+  grep -q '"status":"Published"'
+
+login_v1_revision="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command \
+  "select revision from identity_access.login_experiences where id = '${login_v1_id}' and status = 'Superseded';")"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-v1-rollback' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${login_v1_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences/1/rollback" | \
+  grep -q '"status":"Published"'
+curl --silent --fail \
+  "http://127.0.0.1:${port}/api/v1/public/login-experience?tenantId=${tenant_id}" | \
+  grep -q '"version":1'
+
+login_governance_evidence="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command \
+  "select
+      (select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and event_type = 'identity.login-experience.published.v1' and payload->>'experienceId' in ('${login_v1_id}', '${login_v2_id}'))::text || '|' ||
+      (select count(*) from foundation.audit_events where tenant_id = '${tenant_id}' and resource_type = 'LoginExperience' and resource_id in ('${login_v1_id}', '${login_v2_id}'))::text || '|' ||
+      (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key in ('integration-login-v1-create', 'integration-login-v1-publish', 'integration-login-v2-create', 'integration-login-v2-publish', 'integration-login-v1-rollback'))::text || '|' ||
+      (select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and payload->>'experienceId' in ('${login_v1_id}', '${login_v2_id}') and (payload ? 'clientSecret' or payload ? 'issuer' or payload ? 'authorizationUrl' or payload ? 'redirectUri'))::text;")"
+if [[ "${login_governance_evidence}" != "3|5|5|0" ]]; then
+  echo "Login experience audit/outbox/idempotency evidence is incomplete or unsafe: ${login_governance_evidence}." >&2
+  exit 1
+fi
+
+current_step="verifying concurrent login draft version allocation"
+login_concurrent_a="${temporary_directory}/login-concurrent-a.json"
+login_concurrent_b="${temporary_directory}/login-concurrent-b.json"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-concurrent-a' \
+  --header 'Content-Type: application/json' \
+  --data '{"clientGeneratedId":"82000000-0000-4000-8000-000000000003","compositionVariant":"BlueprintSplit","surfaceTone":"WarmStone","accentPalette":"CorporateNavyGreen","motionPolicy":"Balanced","eyebrow":"PMCS concurrency","headline":"Concurrent presentation A","supportingText":"Serialized tenant version allocation A","logoDocumentId":null,"heroDocumentId":null}' \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences" > "${login_concurrent_a}" &
+login_concurrent_a_pid=$!
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Idempotency-Key: integration-login-concurrent-b' \
+  --header 'Content-Type: application/json' \
+  --data '{"clientGeneratedId":"82000000-0000-4000-8000-000000000004","compositionVariant":"WarmMinimal","surfaceTone":"WarmIvory","accentPalette":"GreenStone","motionPolicy":"Calm","eyebrow":"PMCS concurrency","headline":"Concurrent presentation B","supportingText":"Serialized tenant version allocation B","logoDocumentId":null,"heroDocumentId":null}' \
+  "http://127.0.0.1:${port}/api/v1/identity/login-experiences" > "${login_concurrent_b}" &
+login_concurrent_b_pid=$!
+wait "${login_concurrent_a_pid}"
+wait "${login_concurrent_b_pid}"
+login_concurrent_versions="$(sed -n 's/.*"versionNumber":\([0-9][0-9]*\).*/\1/p' "${login_concurrent_a}" "${login_concurrent_b}" | sort -n | paste -sd '|' -)"
+if [[ "${login_concurrent_versions}" != "3|4" ]]; then
+  echo "Concurrent login drafts did not receive unique sequential versions: ${login_concurrent_versions}." >&2
+  exit 1
+fi
+
+current_step="checking minimal member profile self-service and privacy scope"
+profile_response="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  "http://127.0.0.1:${port}/api/v1/member-profile")"
+profile_user_revision="$(sed -n 's/.*"userRevision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_response}")"
+profile_revision="$(sed -n 's/.*"profileRevision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_response}")"
+if [[ -z "${profile_user_revision}" || -z "${profile_revision}" ]]; then
+  echo "Member profile did not return both concurrency revisions." >&2
+  exit 1
+fi
+profile_updated="$(curl --silent --fail \
+  --request PUT \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-self-update' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseUserRevision\":${profile_user_revision},\"baseProfileRevision\":${profile_revision},\"displayName\":\"سرپرست کارگاه آزمون\",\"jobTitle\":\"سرپرست کارگاه\",\"workPhone\":\"+98 21 1000\",\"avatarDocumentId\":null,\"avatarCrop\":null}" \
+  "http://127.0.0.1:${port}/api/v1/member-profile")"
+grep -q '"jobTitle":"سرپرست کارگاه"' <<<"${profile_updated}"
+grep -q '"organizationUnit":null' <<<"${profile_updated}"
+curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  "http://127.0.0.1:${port}/api/v1/member-profiles/${user_id}" | \
+  grep -q "\"userId\":\"${user_id}\""
+
 current_step="checking project creation, idempotent replay and activation boundary"
 setup_key="integration-project-setup"
 setup_payload='{"code":"CI-AUDIT-01","name":"Integration lifecycle project","contractModel":"GeneralContracting","planningMode":"SimpleWorkList","budgetMode":"SetupRequired","qualityMode":"SetupRequired","hseMode":"NotEnabled","timeZone":"Asia/Tehran","financeMode":"SetupRequired","baseCurrencyCode":"IRR","procurementMode":"SetupRequired","projectType":"Building","executionPhase":"PreConstruction","countryCode":"IR","region":"Tehran","startDate":"2026-09-01","plannedFinishDate":"2027-09-01","shortDescription":"Controlled integration lifecycle","unitSystem":"Metric","dailyCutoffLocalTime":"18:00:00","reportingFrequency":"WorkingDays","dailyReportWorkflow":"OneStepApproval","offlinePolicyAccepted":true,"calendarMode":"WorkingWeek","workingDays":["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday"]}'
@@ -545,6 +750,87 @@ curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/documents/${document_id}/content"
 if [[ "$(sha256sum "${document_download}" | cut -d ' ' -f 1)" != "${document_sha}" ]]; then
   echo "Shared document roundtrip changed the object content." >&2
+  exit 1
+fi
+
+current_step="verifying profile image policy, self release and private rendition"
+profile_image_id="83000000-0000-4000-8000-000000000001"
+profile_image_file="${temporary_directory}/profile.png"
+profile_image_download="${temporary_directory}/profile-download.png"
+printf '\211PNG\r\n\032\n' > "${profile_image_file}"
+profile_image_size="$(wc -c < "${profile_image_file}" | tr -d '[:space:]')"
+profile_image_sha="$(sha256sum "${profile_image_file}" | cut -d ' ' -f 1)"
+profile_pdf_rejection_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-pdf-denied' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"83000000-0000-4000-8000-000000000099\",\"projectId\":null,\"ownerType\":\"MemberProfile\",\"ownerId\":\"${login_member_id}\",\"originalFileName\":\"profile.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":${document_size},\"sha256\":\"${document_sha}\",\"classification\":\"Confidential\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
+  "http://127.0.0.1:${port}/api/v1/upload-sessions")"
+if [[ "${profile_pdf_rejection_status}" != "422" ]]; then
+  echo "Expected a non-image profile asset to return 422; received ${profile_pdf_rejection_status}." >&2
+  exit 1
+fi
+
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-image-session' \
+  --header 'Content-Type: application/json' \
+  --data "{\"clientGeneratedId\":\"${profile_image_id}\",\"projectId\":null,\"ownerType\":\"MemberProfile\",\"ownerId\":\"${login_member_id}\",\"originalFileName\":\"profile.png\",\"contentType\":\"image/png\",\"sizeBytes\":${profile_image_size},\"sha256\":\"${profile_image_sha}\",\"classification\":\"Confidential\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
+  "http://127.0.0.1:${port}/api/v1/upload-sessions" | grep -q '"status":"PendingUpload"'
+profile_image_upload="$(curl --silent --fail \
+  --request PUT \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-image-content' \
+  --header 'Content-Type: image/png' \
+  --data-binary "@${profile_image_file}" \
+  "http://127.0.0.1:${port}/api/v1/documents/${profile_image_id}/content")"
+grep -q '"status":"Quarantined"' <<<"${profile_image_upload}"
+profile_image_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_image_upload}")"
+curl --silent --fail \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-image-release' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseRevision\":${profile_image_revision}}" \
+  "http://127.0.0.1:${port}/api/v1/documents/${profile_image_id}/release" | \
+  grep -q '"status":"Released"'
+
+profile_current="$(curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  "http://127.0.0.1:${port}/api/v1/member-profile")"
+profile_user_revision="$(sed -n 's/.*"userRevision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_current}")"
+profile_revision="$(sed -n 's/.*"profileRevision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_current}")"
+profile_with_avatar="$(curl --silent --fail \
+  --request PUT \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${login_member_id}" \
+  --header 'Idempotency-Key: integration-profile-avatar-associate' \
+  --header 'Content-Type: application/json' \
+  --data "{\"baseUserRevision\":${profile_user_revision},\"baseProfileRevision\":${profile_revision},\"displayName\":\"سرپرست کارگاه آزمون\",\"jobTitle\":\"سرپرست کارگاه\",\"workPhone\":\"+98 21 1000\",\"avatarDocumentId\":\"${profile_image_id}\",\"avatarCrop\":{\"x\":0,\"y\":0,\"width\":1,\"height\":1}}" \
+  "http://127.0.0.1:${port}/api/v1/member-profile")"
+grep -q "\"avatarDocumentId\":\"${profile_image_id}\"" <<<"${profile_with_avatar}"
+curl --silent --fail \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --output "${profile_image_download}" \
+  "http://127.0.0.1:${port}/api/v1/member-profiles/${login_member_id}/avatar?v=${profile_image_id}"
+if [[ "$(sha256sum "${profile_image_download}" | cut -d ' ' -f 1)" != "${profile_image_sha}" ]]; then
+  echo "Profile image rendition changed the verified object content." >&2
+  exit 1
+fi
+
+profile_event_safety="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command \
+  "select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and event_type = 'identity.member-profile.updated.v1' and payload->>'userId' = '${login_member_id}' and not (payload ? 'email') and not (payload ? 'workPhone') and not (payload ? 'displayName');")"
+if [[ "${profile_event_safety}" != "2" ]]; then
+  echo "Profile update events are missing or expose private profile fields." >&2
   exit 1
 fi
 

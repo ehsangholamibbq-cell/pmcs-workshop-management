@@ -60,6 +60,13 @@ internal static class DocumentEndpoints
 
         var tenantWide = await permissionService.HasTenantPermissionAsync(
             actor.TenantId, actor.UserId, "documents.read", cancellationToken);
+        var ownerScopedAllowed = ownerType.HasValue && ownerId.HasValue &&
+            await HasOwnerReadPermissionAsync(
+                permissionService,
+                actor,
+                ownerType.Value,
+                ownerId.Value,
+                cancellationToken);
         if (projectId.HasValue)
         {
             var projectAllowed = tenantWide || await permissionService.HasProjectPermissionAsync(
@@ -73,7 +80,7 @@ internal static class DocumentEndpoints
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             }
         }
-        else if (!tenantWide)
+        else if (!tenantWide && !ownerScopedAllowed)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
@@ -158,6 +165,12 @@ internal static class DocumentEndpoints
             return Results.UnprocessableEntity(new { code = "documents.metadata.invalid" });
         }
 
+        var ownerPolicyError = ValidateOwnerUploadPolicy(request);
+        if (ownerPolicyError is not null)
+        {
+            return Results.UnprocessableEntity(new { code = ownerPolicyError });
+        }
+
         var projectOwned = DocumentAsset.RequiresProject(request.OwnerType);
         if (projectOwned && (!request.ProjectId.HasValue || request.ProjectId.Value == Guid.Empty))
         {
@@ -181,10 +194,12 @@ internal static class DocumentEndpoints
             }
         }
 
-        if (!await HasScopePermissionAsync(
+        if (!await HasOwnerWritePermissionAsync(
                 permissionService,
                 actor,
                 request.ProjectId,
+                request.OwnerType,
+                request.OwnerId,
                 "documents.upload",
                 cancellationToken))
         {
@@ -195,7 +210,7 @@ internal static class DocumentEndpoints
             request.RetentionPolicy != DocumentRetentionPolicy.Standard ||
             request.RetainUntil.HasValue ||
             request.LegalHold;
-        if (customGovernance && !await HasScopePermissionAsync(
+        if (!IsSpecialOwnerGovernance(request) && customGovernance && !await HasScopePermissionAsync(
                 permissionService,
                 actor,
                 request.ProjectId,
@@ -332,10 +347,12 @@ internal static class DocumentEndpoints
             return Results.NotFound();
         }
 
-        if (!await HasScopePermissionAsync(
+        if (!await HasOwnerWritePermissionAsync(
                 permissionService,
                 actor,
                 asset.ProjectId,
+                asset.OwnerType,
+                asset.OwnerId,
                 "documents.upload",
                 cancellationToken))
         {
@@ -524,19 +541,38 @@ internal static class DocumentEndpoints
             return Results.Unauthorized();
         }
 
-        if (!await permissionService.HasTenantPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
-                "documents.quarantine.release",
-                cancellationToken))
-        {
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-        }
-
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
         if (asset is null)
         {
             return Results.NotFound();
+        }
+
+        var canRelease = await permissionService.HasTenantPermissionAsync(
+            actor.TenantId,
+            actor.UserId,
+            "documents.quarantine.release",
+            cancellationToken);
+        if (!canRelease && IsPolicyConstrainedProfileImage(asset, actor.UserId))
+        {
+            canRelease = await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                "member-profile.avatar.publish-self",
+                cancellationToken);
+        }
+
+        if (!canRelease && IsPolicyConstrainedLoginImage(asset))
+        {
+            canRelease = await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                "login-experience.manage",
+                cancellationToken);
+        }
+
+        if (!canRelease)
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
 
         var idempotency = await GetReplayAsync(
@@ -811,6 +847,16 @@ internal static class DocumentEndpoints
         DocumentAsset asset,
         CancellationToken cancellationToken)
     {
+        if (asset.OwnerType is DocumentOwnerType.MemberProfile or DocumentOwnerType.LoginExperience)
+        {
+            return await HasOwnerReadPermissionAsync(
+                permissionService,
+                actor,
+                asset.OwnerType,
+                asset.OwnerId,
+                cancellationToken);
+        }
+
         if (asset.Classification == DocumentClassification.Restricted || !asset.ProjectId.HasValue)
         {
             return await permissionService.HasTenantPermissionAsync(
@@ -827,6 +873,133 @@ internal static class DocumentEndpoints
             "documents.read",
             cancellationToken);
     }
+
+    private static async Task<bool> HasOwnerReadPermissionAsync(
+        IProjectPermissionService permissionService,
+        ICurrentActor actor,
+        DocumentOwnerType ownerType,
+        Guid ownerId,
+        CancellationToken cancellationToken)
+    {
+        if (ownerType == DocumentOwnerType.MemberProfile)
+        {
+            var permission = ownerId == actor.UserId
+                ? "member-profile.read-self"
+                : "member-profile.read-directory";
+            return await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                permission,
+                cancellationToken);
+        }
+
+        if (ownerType == DocumentOwnerType.LoginExperience)
+        {
+            return await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                "login-experience.manage",
+                cancellationToken);
+        }
+
+        return false;
+    }
+
+    private static async Task<bool> HasOwnerWritePermissionAsync(
+        IProjectPermissionService permissionService,
+        ICurrentActor actor,
+        Guid? projectId,
+        DocumentOwnerType ownerType,
+        Guid ownerId,
+        string fallbackPermission,
+        CancellationToken cancellationToken)
+    {
+        if (ownerType == DocumentOwnerType.MemberProfile)
+        {
+            var permission = ownerId == actor.UserId
+                ? "member-profile.update-self"
+                : "member-profile.manage-directory";
+            return await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                permission,
+                cancellationToken);
+        }
+
+        if (ownerType == DocumentOwnerType.LoginExperience)
+        {
+            return await permissionService.HasTenantPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                "login-experience.manage",
+                cancellationToken);
+        }
+
+        return await HasScopePermissionAsync(
+            permissionService,
+            actor,
+            projectId,
+            fallbackPermission,
+            cancellationToken);
+    }
+
+    private static string? ValidateOwnerUploadPolicy(CreateDocumentUploadSessionRequest request)
+    {
+        if (request.OwnerType == DocumentOwnerType.MemberProfile)
+        {
+            if (!IsImage(request.ContentType) || request.SizeBytes > 5L * 1024L * 1024L)
+            {
+                return "documents.member-profile.image.invalid";
+            }
+
+            if (request.Classification != DocumentClassification.Confidential ||
+                request.RetentionPolicy != DocumentRetentionPolicy.Standard ||
+                request.RetainUntil.HasValue || request.LegalHold)
+            {
+                return "documents.member-profile.governance.invalid";
+            }
+        }
+
+        if (request.OwnerType == DocumentOwnerType.LoginExperience)
+        {
+            if (!IsImage(request.ContentType) || request.SizeBytes > 10L * 1024L * 1024L)
+            {
+                return "documents.login-experience.image.invalid";
+            }
+
+            if (request.Classification != DocumentClassification.Internal ||
+                request.RetentionPolicy != DocumentRetentionPolicy.Standard ||
+                request.RetainUntil.HasValue || request.LegalHold)
+            {
+                return "documents.login-experience.governance.invalid";
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsPolicyConstrainedProfileImage(DocumentAsset asset, Guid actorUserId) =>
+        asset.OwnerType == DocumentOwnerType.MemberProfile &&
+        asset.OwnerId == actorUserId &&
+        IsImage(asset.ContentType) &&
+        asset.SizeBytes <= 5L * 1024L * 1024L &&
+        asset.Classification == DocumentClassification.Confidential &&
+        asset.RetentionPolicy == DocumentRetentionPolicy.Standard &&
+        !asset.LegalHold;
+
+    private static bool IsPolicyConstrainedLoginImage(DocumentAsset asset) =>
+        asset.OwnerType == DocumentOwnerType.LoginExperience &&
+        IsImage(asset.ContentType) &&
+        asset.SizeBytes <= 10L * 1024L * 1024L &&
+        asset.Classification == DocumentClassification.Internal &&
+        asset.RetentionPolicy == DocumentRetentionPolicy.Standard &&
+        !asset.LegalHold;
+
+    private static bool IsSpecialOwnerGovernance(CreateDocumentUploadSessionRequest request) =>
+        request.OwnerType is DocumentOwnerType.MemberProfile or DocumentOwnerType.LoginExperience;
+
+    private static bool IsImage(string? contentType) => contentType?.Trim().ToLowerInvariant() is
+        "image/jpeg" or "image/png" or "image/webp" or "image/heic" or "image/heif";
 
     private static Task<bool> HasScopePermissionAsync(
         IProjectPermissionService permissionService,

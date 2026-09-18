@@ -17,6 +17,85 @@ public sealed class IdentityAccessModule : IModule
 {
     public string Name => "IdentityAccess";
 
+    public ModuleDescriptor Descriptor { get; } = new(
+        ModuleManifestSchemas.VersionOne,
+        "identity-access.core",
+        "Identity Access and Member Profiles",
+        "1.1.0",
+        [
+            "identity.login-experience",
+            "identity.member-profiles",
+            "identity.project-memberships"
+        ],
+        ["platform.foundation", "documents.shared"],
+        "identity-access",
+        "1.1.0",
+        false,
+        [
+            new PermissionManifest(
+                "identity.users.manage",
+                PermissionScope.Tenant,
+                ManifestRiskClass.Critical,
+                "Manage tenant users, invitations and project memberships."),
+            new PermissionManifest(
+                "login-experience.manage",
+                PermissionScope.Tenant,
+                ManifestRiskClass.High,
+                "Create, preview, publish and roll back allowlisted login presentations."),
+            new PermissionManifest(
+                "member-profile.read-self",
+                PermissionScope.Tenant,
+                ManifestRiskClass.Low,
+                "Read the authenticated member's profile."),
+            new PermissionManifest(
+                "member-profile.update-self",
+                PermissionScope.Tenant,
+                ManifestRiskClass.Medium,
+                "Update allowlisted fields and avatar association on the authenticated member's profile."),
+            new PermissionManifest(
+                "member-profile.avatar.publish-self",
+                PermissionScope.Tenant,
+                ManifestRiskClass.Medium,
+                "Release the authenticated member's own clean and policy-constrained profile image."),
+            new PermissionManifest(
+                "member-profile.read-directory",
+                PermissionScope.Project,
+                ManifestRiskClass.Medium,
+                "Read a member profile when the requester and member share an active project scope."),
+            new PermissionManifest(
+                "member-profile.manage-directory",
+                PermissionScope.Tenant,
+                ManifestRiskClass.High,
+                "Manage organization-controlled member directory fields.")
+        ],
+        [
+            new NavigationManifest(
+                "identity.member-profile",
+                "/profile",
+                "پروفایل من",
+                "member-profile.read-self",
+                "identity.member-profiles",
+                8_100),
+            new NavigationManifest(
+                "identity.login-experience",
+                "/admin/login-experience",
+                "ظاهر صفحه ورود",
+                "login-experience.manage",
+                "identity.login-experience",
+                8_200)
+        ],
+        [],
+        [
+            new IntegrationEventManifest(
+                "identity.member-profile.updated",
+                1,
+                IntegrationEventClassification.Confidential),
+            new IntegrationEventManifest(
+                "identity.login-experience.published",
+                1,
+                IntegrationEventClassification.Internal)
+        ]);
+
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Pmcs")
@@ -43,6 +122,7 @@ public sealed class IdentityAccessModule : IModule
         services.AddSingleton<IDatabaseMigration, IdentityAdministrationMigration>();
         services.AddSingleton<IDatabaseMigration, IdentityAdministrationCleanupMigration>();
         services.AddSingleton<IDatabaseMigration, UserAccessEpochMigration>();
+        services.AddSingleton<IDatabaseMigration, IdentityExperienceMigration>();
         services.AddHostedService<DevelopmentIdentitySeeder>();
         services.AddHostedService<IdentityAdministrationWorker>();
     }

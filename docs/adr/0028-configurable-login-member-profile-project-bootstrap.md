@@ -96,9 +96,11 @@ Profile در پروژه‌های مختلف Reference می‌شود؛ اما `Pr
 
 ### ۶. Permission، Audit و اجرا
 
-- `login_experience.manage` برای Preview/Publish/Rollback طرح Login؛
-- `member_profile.read_self` و `member_profile.update_self` برای Self-service؛
-- `member_profile.manage_directory` برای مدیریت سازمانی؛
+- `login-experience.manage` برای Draft/Preview/Publish/Rollback طرح Login؛
+- `member-profile.read-self` و `member-profile.update-self` برای Self-service؛
+- `member-profile.avatar.publish-self` فقط برای Release تصویر پاک و متعلق به همان کاربر؛
+- `member-profile.read-directory` برای مشاهده در محدوده سازمانی مجاز یا پروژه مشترک؛
+- `member-profile.manage-directory` برای مدیریت سازمانی؛
 - `projects.bootstrap.create` برای ساخت پروژه از مبدأ؛
 - `projects.members.copy` برای انتقال عضویت‌ها.
 
@@ -132,4 +134,3 @@ Bootstrap فقط داخل یک Tenant مجاز است. هر Run دارای Corre
 | Clone مستقیم Database پروژه | کپی Audit/transaction/identifier و نشت داده |
 | کپی User account همراه پروژه | تضاد Credential/Identity و ایجاد حساب‌های تکراری |
 | انتقال خودکار تمام Roleها بدون Preview | privilege propagation و دسترسی ناخواسته |
-

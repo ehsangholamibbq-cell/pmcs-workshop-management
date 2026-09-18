@@ -7,6 +7,7 @@ export interface AuthEnvironment {
   readonly internalIssuer: string;
   readonly clientId: string;
   readonly clientSecret: string;
+  readonly loginTenantId: string;
   readonly secureCookies: boolean;
   readonly isBuild: boolean;
 }
@@ -84,6 +85,16 @@ export function readAuthEnvironment(
     rejectDevelopmentSecret(clientSecret, "PMCS_WEB_OIDC_CLIENT_SECRET");
   }
 
+  const loginTenantId = required(
+    environment,
+    "PMCS_LOGIN_TENANT_ID",
+    isBuild,
+    "11111111-1111-1111-1111-111111111111",
+  );
+  if (!isUuid(loginTenantId)) {
+    throw new Error("PMCS_LOGIN_TENANT_ID باید شناسه UUID معتبر سازمان باشد.");
+  }
+
   return {
     webUrl,
     authSecret,
@@ -93,9 +104,14 @@ export function readAuthEnvironment(
     internalIssuer: internalIssuer.replace(/\/$/u, ""),
     clientId: required(environment, "PMCS_WEB_OIDC_CLIENT_ID", isBuild, "pmcs-web"),
     clientSecret,
+    loginTenantId: loginTenantId.toLowerCase(),
     secureCookies: new URL(webUrl).protocol === "https:",
     isBuild,
   };
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(value);
 }
 
 function validateProductionDatabaseUrl(value: string): void {

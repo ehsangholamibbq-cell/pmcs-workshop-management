@@ -54,8 +54,13 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "39" \
+  "40" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "identity experience migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'identity-access' and version = '20260918-002';"
 
 expect_equal \
   "shared documents migration identity" \
@@ -76,6 +81,11 @@ expect_equal \
   "active deterministic QA actors" \
   "12" \
   "select count(*) from identity_access.users where tenant_id = '${tenant_id}' and status = 'Active';"
+
+expect_equal \
+  "one tenant-consistent member profile per QA actor" \
+  "12|0" \
+  "select count(*)::text || '|' || count(*) filter (where profile.tenant_id <> actor.tenant_id)::text from identity_access.users actor join identity_access.member_profiles profile on profile.user_id = actor.id where actor.tenant_id = '${tenant_id}';"
 
 expect_equal \
   "active deterministic project memberships and role coverage" \

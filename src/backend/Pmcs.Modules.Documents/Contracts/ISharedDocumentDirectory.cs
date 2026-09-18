@@ -17,10 +17,21 @@ public sealed record ReleasedDocumentReference(
     DateTimeOffset ReleasedAt,
     long Revision);
 
+public sealed record ReleasedDocumentContent(
+    ReleasedDocumentReference Document,
+    byte[] Bytes);
+
 public interface ISharedDocumentDirectory
 {
     Task<IReadOnlyList<ReleasedDocumentReference>> FindReleasedAsync(
         Guid tenantId,
         IReadOnlyCollection<Guid> documentIds,
+        CancellationToken cancellationToken = default);
+
+    Task<ReleasedDocumentContent?> ReadReleasedAsync(
+        Guid tenantId,
+        Guid documentId,
+        DocumentOwnerType expectedOwnerType,
+        Guid expectedOwnerId,
         CancellationToken cancellationToken = default);
 }

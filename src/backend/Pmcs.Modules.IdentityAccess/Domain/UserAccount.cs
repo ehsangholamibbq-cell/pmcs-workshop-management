@@ -114,6 +114,32 @@ public sealed class UserAccount : AggregateRoot
         TenantRole = tenantRole;
         AdvanceRevision();
     }
+
+    public void ChangeDisplayName(long baseRevision, string displayName)
+    {
+        if (Revision != baseRevision)
+        {
+            throw new DomainRuleException(
+                "user.revision.conflict",
+                "The user account changed after it was loaded.");
+        }
+
+        var normalized = displayName?.Trim() ?? string.Empty;
+        if (normalized.Length == 0 || normalized.Length > 200 || normalized.Any(char.IsControl))
+        {
+            throw new DomainRuleException(
+                "user.display_name.invalid",
+                "Display name must contain at most 200 plain-text characters.");
+        }
+
+        if (string.Equals(DisplayName, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        DisplayName = normalized;
+        AdvanceRevision();
+    }
 }
 
 public enum TenantRole

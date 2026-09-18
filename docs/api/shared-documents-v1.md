@@ -35,6 +35,9 @@ Supported owner types:
 - Binary content is never readable before `Released`.
 - A clean scan does not auto-release the asset.
 - `documents.quarantine.release` is a separate Tenant/Critical permission.
+- A clean, policy-constrained `MemberProfile` image may instead be released only by its owner with
+  `member-profile.avatar.publish-self`; a `LoginExperience` image may be released by
+  `login-experience.manage`. Neither exception grants release for any other owner type.
 - Restricted assets require a tenant-wide read grant even when they are project-owned.
 
 ## Endpoints
