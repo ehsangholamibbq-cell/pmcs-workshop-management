@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -83,7 +84,7 @@ internal sealed class ProjectBootstrapPreviewFactory(
             membershipSnapshotToken);
     }
 
-    public ProjectBootstrapPreviewBuild RebuildProjectState(
+    public static ProjectBootstrapPreviewBuild RebuildProjectState(
         Guid tenantId,
         Project source,
         Project target,
@@ -181,7 +182,7 @@ internal sealed class ProjectBootstrapPreviewFactory(
         return new ProjectBootstrapPreviewBuild(document, digest, membershipSnapshotToken);
     }
 
-    private static IReadOnlyCollection<ProjectBootstrapItemResponse> BuildProjectItems(
+    private static List<ProjectBootstrapItemResponse> BuildProjectItems(
         Project source,
         Project target,
         IReadOnlyCollection<ProjectLocation> sourceLocations,
@@ -219,7 +220,8 @@ internal sealed class ProjectBootstrapPreviewFactory(
                         : Item(category, ProjectMembershipBootstrapDisposition.Added,
                             "bootstrap.workflow.add", "قالب گردش گزارش روزانه",
                             "گردش گزارش و زمان قطع روزانه به‌عنوان Default جدید مقصد منتقل می‌شود.",
-                            source.DailyReportWorkflow.ToString(), source.DailyCutoffLocalTime?.ToString("HH:mm")));
+                            source.DailyReportWorkflow.ToString(),
+                            source.DailyCutoffLocalTime?.ToString("HH:mm", CultureInfo.InvariantCulture)));
                     break;
                 case ProjectBootstrapCategory.FormTemplates:
                     items.Add(NoOverride(category, "قالب فرم‌ها",
@@ -344,7 +346,7 @@ internal sealed class ProjectBootstrapPreviewFactory(
                     location.Code,
                     null));
             }
-            else if (targetByCode.ContainsKey(location.Code))
+            else if (targetByCode.TryGetValue(location.Code, out var targetLocation))
             {
                 items.Add(Item(
                     ProjectBootstrapCategory.Locations,
@@ -353,7 +355,7 @@ internal sealed class ProjectBootstrapPreviewFactory(
                     location.Name,
                     "کد مکان در مقصد از قبل وجود دارد و بازنویسی نمی‌شود.",
                     location.Code,
-                    targetByCode[location.Code].Id.ToString()));
+                    targetLocation.Id.ToString()));
             }
             else
             {

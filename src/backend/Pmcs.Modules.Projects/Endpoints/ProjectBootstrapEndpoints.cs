@@ -74,8 +74,9 @@ internal static class ProjectBootstrapEndpoints
         {
             return Results.NotFound(new { code = "project.bootstrap.source.not_found" });
         }
+        var targetCode = request.Target.Code.Trim().ToUpperInvariant();
         if (await dbContext.Projects.AsNoTracking().AnyAsync(
-                item => item.TenantId == actor.TenantId && item.Code == request.Target.Code.Trim().ToUpperInvariant(),
+                item => item.TenantId == actor.TenantId && item.Code == targetCode,
                 cancellationToken))
         {
             return Results.Conflict(new { code = "project.code.duplicate" });
@@ -291,7 +292,6 @@ internal static class ProjectBootstrapEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissions,
         ProjectsDbContext dbContext,
-        ProjectBootstrapPreviewFactory previewFactory,
         IProjectMembershipBootstrapService membershipBootstrap,
         IClock clock,
         ITransactionalSideEffectWriter sideEffects,
@@ -358,7 +358,7 @@ internal static class ProjectBootstrapEndpoints
         var storedMemberItems = storedDocument.Items
             .Where(item => item.Category == ProjectBootstrapCategory.Members)
             .ToArray();
-        var current = previewFactory.RebuildProjectState(
+        var current = ProjectBootstrapPreviewFactory.RebuildProjectState(
             actor.TenantId,
             source,
             target,
@@ -793,7 +793,7 @@ internal static class ProjectBootstrapEndpoints
         return count;
     }
 
-    private static IReadOnlyCollection<ProjectBootstrapItemResponse> ReplaceMembershipItems(
+    private static ProjectBootstrapItemResponse[] ReplaceMembershipItems(
         IReadOnlyCollection<ProjectBootstrapItemResponse> previewItems,
         ProjectMembershipBootstrapExecution execution)
     {
