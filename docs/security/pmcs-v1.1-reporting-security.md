@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-SEC-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Source controls implemented؛ connected negative gates open
+- وضعیت: Source controls implemented؛ connected core negative gates passed؛ extended gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -108,13 +108,15 @@ contract هیچ دادهٔ محرمانهٔ HSE/مالی یا فایل binary ر
 
 ## ۸. وضعیت کنترل‌های Source Candidate
 
-در commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5`، Generated Document با object key
+در commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`، Generated Document با object key
 server-generated، signature/size/SHA validation، read-after-write و exact-byte check منتشر می‌شود؛
 generic Documents برای `ReportOutput` بسته می‌ماند و Download/Verify مالک/type/version/tenant/
 project/classification/retention/manifest/hash را دوباره کنترل می‌کند. mismatch با پاسخ 502 و Audit
 مجزا fail-closed است. XLSX macro/external link/formula تولید نمی‌کند و prefixهای خطرناک را text
 می‌نویسد. تمام feature switchها default-off هستند.
 
-سناریوی Source هارنس Observer deny، replay/conflict، cross-project denial، integrity دانلود و PDF
-license fail-closed را پوشش می‌دهد؛ اجرای واقعی آن و سایر Negative Gateهای بخش ۷ هنوز به CI متصل
-PostgreSQL/Object Storage نیاز دارد و پاس‌شده اعلام نمی‌شود.
+Run 99 (`35381177208`) سناریوی هارنس را روی PostgreSQL/Object Storage واقعی اجرا و هر `13/13`
+assertion را پاس کرد: Observer deny، replay/conflict، cross-project denial، integrity دانلود و PDF
+license fail-closed. این Evidence جایگزین Gateهای باقی‌ماندهٔ بخش ۷ نیست: cross-tenant، revocation
+میان Queue/processing/download، tamper/malformed object، retry هم‌زمان/crash window، verification
+بدون Session و آزمون privilege elevation Tool هنوز باید به qualification متصل افزوده شوند.

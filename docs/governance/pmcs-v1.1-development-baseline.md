@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `1cb7e28`؛ connected candidate و هنوز Unqualified |
-| Database migration | ۴۳ Migration در Source؛ آخرین Restore Drill متصلِ اثبات‌شده همچنان ۴۱ Migration در Run 92 است |
+| Product runtime implementation | RPT1 Slice 01 و Slice 02 تا source commit `ef5d68e`؛ core connected regression passed و Gate خروج RPT1 باز |
+| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 99 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -49,14 +49,15 @@ contract، API اولیه، Snapshot worker و Agent read-only manifests/applica
 وجود دارند، اما چون Build/CI متصل، PostgreSQL/Restore و Rendererهای PDF/XLSX هنوز Evidence ندارند،
 این Commit Baseline تأییدشده یا Checkpoint بسته محسوب نمی‌شود. Feature flag پیش‌فرض خاموش است.
 
-Slice 02 با source commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` و tree
-`6c7f0714490066ac1259e05e9e6af6da1d3067af` مسیر Generated Document، Rendererهای PDF/XLSX،
+Slice 02 با source commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` و tree
+`4deccade8899a2438485fb1304cd918115af2654` مسیر Generated Document، Rendererهای PDF/XLSX،
 `Rendering → Succeeded`، Retry/Cancel، Download/Verify، Migration 43 و هارنس connected QA را در
-Source اضافه کرد. ابزارها `39/39`، Web `139/139`، Web check، Repository validator و system contract
-audit محلی پاس شدند. Connected CI Run 94 سه analyzer failure را آشکار کرد که در SHA بالا رفع شدند؛
-اما Build/Test C#، PostgreSQL/Object Storage، Restore Drill 43 Migration، PDF license/golden،
-Permission revocation، concurrency/load و CI روی SHA اصلاح‌شده هنوز پاس نشده‌اند. بنابراین RPT1
-همچنان Active است و این source commit Baseline تأییدشده یا Checkpoint بسته نیست. هر سه switch Phase
+Source اضافه کرد. ابزارها `40/40`، Web `139/139`، Web check، Repository validator و system contract
+audit محلی پاس شدند. Run 99 (`35381177208`) همان tree را با هر هشت Job سبز آزمود: `295/295` تست
+C#، `13/13` assertion Reporting روی PostgreSQL/Object Storage، پنج browser scenario موجود و
+Restore Drill ۴۳ Migration پاس شدند. این نتیجه PDF license/golden، crash/concurrency/load، coverage
+کامل Permission revocation/tamper، observability و UI اختصاصی Reporting را نمی‌بندد. بنابراین RPT1
+همچنان Active است و این source commit Baseline قفل‌شده یا Checkpoint بسته نیست. هر سه switch Phase
 1، output access و Worker به‌طور پیش‌فرض خاموش‌اند.
 
 ## ۳. قرارداد شاخه و ادغام

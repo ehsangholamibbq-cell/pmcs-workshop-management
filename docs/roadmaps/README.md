@@ -4,7 +4,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.10.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.11.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -32,5 +32,5 @@
 | V1.1 PRJ1 CI | Run 92 / `35355855215` / `success` |
 | V1.1 RPT1 DoR | `PMCS-V1.1-RPT1-DOR1` / Ready for Implementation / no runtime change |
 | V1.1 RPT1 Slice 01 | source `43cac1b83ac7764fe6005fee108029597091a238` / local structural candidate / unqualified |
-| V1.1 RPT1 Slice 02 | source `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` / generated outputs source candidate / connected qualification open |
+| V1.1 RPT1 Slice 02 | source `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` / tree `4deccade8899a2438485fb1304cd918115af2654` / Run 99 core connected regression passed / RPT1 exit gates open |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

@@ -203,3 +203,16 @@ Worker finalization، Retry/Cancel، Download/Verify، Migration 43 و هارن�
 COL1، UX2، INT1 و هفت Stage مستقل Agent در جای مصوب خود باقی مانده‌اند. نقطهٔ دقیق ادامه، اجرای
 Candidate موجود در CI متصل، رفع هر خطای Build/Integration، سپس Golden/Recovery/Observability و
 Gateهای باقیمانده RPT1 است؛ بازطراحی یا شروع دوبارهٔ Reporting مجاز نیست.
+
+## ۱۳. Addendum — Evidence متصل Candidate دوم RPT1
+
+Candidate پس از چرخهٔ diagnostic Runs 94 تا 98 به source commit
+`ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` و tree
+`4deccade8899a2438485fb1304cd918115af2654` رسید. Run 99 (`35381177208`) همان tree را روی PR merge
+commit موقت `ebbe1090f42cf6bd58928d8844a4b0f86e6abcf6` آزمود و هر هشت Job را سبز کرد. Build و
+`295/295` تست C#، `13/13` assertion Reporting متصل، Restore Drill ۴۳ Migration، پنج browser
+scenario موجود و Qualification artifact هفت-Suite‌ای با صفر failure پاس شدند.
+
+این Addendum نتیجهٔ ممیزی تداوم را تقویت می‌کند و ترتیب Roadmap را تغییر نمی‌دهد. RPT1 هنوز برای
+PDF license/golden، crash/concurrency/revocation/tamper/load، observability و UI اختصاصی Reporting
+باز است؛ COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب و مرز مصوب باقی مانده‌اند.

@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-QA-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Source coverage implemented؛ connected qualification open
+- وضعیت: Connected core regression passed؛ RPT1 extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -168,7 +168,8 @@ Assertions:
 
 ## ۱۳. Coverage موجود در Source Candidate Slice 02
 
-commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` پوشش Source زیر را اضافه کرده است:
+commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` با tree
+`4deccade8899a2438485fb1304cd918115af2654` پوشش Source زیر را اضافه کرده است:
 
 - Domain tests برای retry/cancel guard، stable identity، Jalali/Tehran و formula escaping؛
 - deterministic XLSX byte test، OpenXML namespace/RTL/no-formula و verification path؛
@@ -177,10 +178,15 @@ commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` پوشش Source زیر را ا
   cross-project denial و PDF license fail-closed + explicit retry؛
 - assertion دیتابیس برای Run/Snapshot/Output، Released Document، Retention، Audit، Outbox و
   Idempotency؛
-- رگرسیون محلی اجراشده: ابزارها `39/39`، Web `139/139`، lint، audit فارسی/تقویم و Web build؛
+- رگرسیون محلی اجراشده: ابزارها `40/40`، Web `139/139`، lint، audit فارسی/تقویم و Web build؛
   Repository validator روی ۳۳۴ فایل و system contract audit روی ۲۷۴ endpoint / ۲۰۴ mutation پاس شد.
 
-این شواهد جایگزین C# execution نیستند. `dotnet`، PostgreSQL و Object Storage در محیط محلی موجود
-نبودند؛ بنابراین Domain testهای C# و TestHarness متصل هنوز نتیجهٔ pass ندارند. PDF با license واقعی،
-Golden/pixel، malformed/tamper، revocation، concurrency دو Worker، crash windows، cancellation
-متصل، load/soak، restore 43 Migration، Browser UI و CI هشت‌Job همچنان Gate باز هستند.
+Run 99 (`35381177208`) روی PR merge commit
+`ebbe1090f42cf6bd58928d8844a4b0f86e6abcf6` با همان source tree اجرا شد. هر هشت Job سبز شدند:
+`295/295` تست C#، `139/139` تست Web، پنج browser scenario موجود، `13/13` assertion Reporting روی
+PostgreSQL/Object Storage، migration/QA verification و Restore Drill با ۴۳ Migration پاس شدند؛
+Qualification artifact `10562821142` نیز هفت Suite و صفر failure ثبت کرد.
+
+این موفقیت فقط coverage فعلی CI را اثبات می‌کند. PDF با license واقعی و Golden/pixel، Golden معنایی
+کامل، malformed/tamper و revocation گسترده، concurrency دو Worker، crash windows، cancellation
+متصل، load/soak، observability و Browser UI اختصاصی Reporting همچنان Gate باز هستند.

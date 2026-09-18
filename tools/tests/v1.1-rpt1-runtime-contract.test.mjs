@@ -148,12 +148,15 @@ test("RPT1 slice checkpoint separates source implementation from qualification",
 
 test("RPT1 generated-output checkpoint pins source evidence without closing qualification", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-02-candidate.md");
-  assert.match(checkpoint, /1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5/u);
-  assert.match(checkpoint, /6c7f0714490066ac1259e05e9e6af6da1d3067af/u);
-  assert.match(checkpoint, /39\/39 passed/u);
+  assert.match(checkpoint, /ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173/u);
+  assert.match(checkpoint, /4deccade8899a2438485fb1304cd918115af2654/u);
+  assert.match(checkpoint, /Run 99 \(`35381177208`\)/u);
+  assert.match(checkpoint, /40\/40 passed/u);
   assert.match(checkpoint, /139\/139 passed/u);
+  assert.match(checkpoint, /295\/295/u);
+  assert.match(checkpoint, /13\/13/u);
+  assert.match(checkpoint, /43` Migration/u);
   assert.match(checkpoint, /۳۳۴ فایل C# ماژولی/u);
-  assert.match(checkpoint, /dotnet[\s\S]*پاس‌شده اعلام نمی‌شوند/u);
   assert.match(checkpoint, /PdfLicense[\s\S]*Unconfigured/u);
   assert.match(checkpoint, /هفت Stage Agent/u);
   assert.match(checkpoint, /هنوز `Feature Complete`[\s\S]*نیست/u);

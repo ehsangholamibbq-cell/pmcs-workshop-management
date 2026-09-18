@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Source Candidate available؛ connected operations qualification open
+- Status: Connected core operations candidate passed؛ extended recovery/observability qualification open
 
 ## Health و Metrics
 
@@ -132,5 +132,7 @@ Generated Document، Download و Verify دنبال می‌کند و PDF با lic
 Retry محدود می‌سنجد. سپس `verify-database.sh` وضعیت Run/Snapshot/Output، Migration 43، Retention،
 Audit، Outbox و Idempotency را کنترل می‌کند.
 
-این دستور در محیط فاقد `dotnet`، PostgreSQL و Object Storage اجراشدنی نیست؛ وجود هارنس در Source
-جایگزین نتیجهٔ CI متصل نیست.
+این دستور در Run 99 (`35381177208`) روی PostgreSQL/Object Storage ایزوله اجرا شد و هر `13/13`
+assertion Reporting، QA database verification و Restore Drill ۴۳ Migration را پاس کرد. این نتیجه
+جایگزین crash/concurrency/revocation/tamper/load یا PDF Golden نیست؛ نبود آن Evidenceها نباید
+به‌عنوان Healthy/Qualified تفسیر شود.

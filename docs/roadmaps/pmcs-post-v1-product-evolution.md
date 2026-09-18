@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.10.0`
+- نسخه سند: `1.11.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -267,16 +267,18 @@ Candidate هنوز Build/CI/connected integration، Rendererهای PDF/XLSX، Do
 Restore و Full Regression ندارد؛ در نتیجه RPT1 همچنان فعال و باز است.
 
 **Implementation Slice 02:** Source Candidate با commit
-`1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` و tree
-`6c7f0714490066ac1259e05e9e6af6da1d3067af` ثبت شد. Generated Document publish/read با
+`ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` و tree
+`4deccade8899a2438485fb1304cd918115af2654` ثبت شد. Generated Document publish/read با
 read-after-write integrity، Rendererهای PDF/XLSX، RTL/Jalali/Persian formatting، stable
 output/document identity، Worker rendering/finalization، Retry/Cancel، Download/Verify، integrity
 Audit، rollback-aware output access، Migration 43 و هارنس PostgreSQL/Object Storage در Source
-پیاده شده‌اند. رگرسیون محلی ابزارها `39/39` و Web `139/139` به‌همراه Web check، architecture
-validator و system contract audit سبز است. این Candidate هنوز Build/Test C# و اجرای connected
-هارنس، Restore 43 Migration، PDF license/golden، crash/concurrency/load، revocation و CI هشت‌Job
-ندارد؛ Feature/Worker/OutputAccess پیش‌فرض خاموش‌اند و RPT1 بسته نشده است. نقطهٔ ادامه اجرای همین
-Candidate در محیط متصل و سپس تکمیل Gateهای Golden/Recovery/Observability است، نه شروع معماری جدید.
+پیاده شده‌اند. رگرسیون محلی ابزارها `40/40` و Web `139/139` به‌همراه Web check، architecture
+validator و system contract audit سبز است. Run 99 (`35381177208`) هر هشت Job، `295/295` تست C#،
+هارنس Reporting با `13/13` assertion متصل و Restore Drill ۴۳ Migration را روی همان tree پاس کرد.
+این Candidate هنوز PDF license/golden، crash/concurrency/load، revocation/tamper گسترده،
+observability و UI اختصاصی Reporting را ندارد؛ Feature/Worker/OutputAccess پیش‌فرض خاموش‌اند و
+RPT1 بسته نشده است. نقطهٔ ادامه تکمیل Gateهای Recovery/Security/Golden/Observability است، نه شروع
+معماری جدید.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -530,3 +532,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.8.0` | ثبت ممیزی تداوم و Definition of Ready مرحله RPT1؛ بدون تغییر Runtime |
 | `1.9.0` | ثبت Source Candidate اولین Slice هسته RPT1؛ بدون ادعای Qualification |
 | `1.10.0` | ثبت Source Candidate دوم RPT1 برای Generated Document، PDF/XLSX، Download/Verify و هارنس متصل؛ Gate خروج همچنان باز |
+| `1.11.0` | ثبت Evidence متصل Run 99 برای Build، PostgreSQL/Object Storage، Restore ۴۳ Migration و Full CI؛ Gateهای توسعه‌یافته RPT1 همچنان باز |

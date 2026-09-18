@@ -2,11 +2,12 @@
 
 - شناسه: `PMCS-ARCH-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: `Implementation Source Candidate | Connected Qualification Open`
+- وضعیت: `Connected implementation candidate passed | RPT1 exit gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Source Candidate: `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5`
-- Source tree: `6c7f0714490066ac1259e05e9e6af6da1d3067af`
+- آخرین Source Candidate: `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`
+- Source tree: `4deccade8899a2438485fb1304cd918115af2654`
+- Connected evidence: Run 99 (`35381177208`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -275,7 +276,7 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 
 ## ۱۶. وضعیت پیاده‌سازی Source Candidate
 
-در commit `1cb7e2856e72f8cdf51a6b08e24cc0190f9313b5` موارد زیر در Source وجود دارند:
+در commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` موارد زیر در Source وجود دارند:
 
 - Rendererهای PDF/XLSX، فرمت شمسی/RTL، stable identity و manifest/verification؛
 - انتشار Generated Document با read-after-write، signature/size/SHA check و Retention `LongTerm`؛
@@ -283,6 +284,9 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - Retry/Cancel، Download/Verify، integrity audit و output-access rollback switch؛
 - Migration 43، TestHarness متصل و assertionهای PostgreSQL/Documents/Audit/Outbox/Idempotency.
 
-این Snapshot هنوز Build/Test C#، اجرای PostgreSQL/Object Storage، PDF deterministic/golden،
-Restore Drill، concurrency/load/soak، Permission revocation و CI Qualification روی SHA بالا را
-پاس‌شده اعلام نمی‌کند. Metrics/heartbeat عملیاتی و UI تولیدی نیز در Sliceهای بعدی باز هستند.
+Run 99 همان tree را روی merge commit موقت
+`ebbe1090f42cf6bd58928d8844a4b0f86e6abcf6` آزمود: Build و `295/295` تست C#، هارنس
+PostgreSQL/Object Storage با `13/13` assertion گزارش، Restore Drill کامل ۴۳ Migration، Regression
+هفت Suite و Qualification report همگی پاس شدند. این Evidence، PDF deterministic/golden با license
+واقعی، crash/concurrency/load/soak، مجموعهٔ کامل Permission revocation/tamper، metrics/heartbeat و
+UI تولیدی Reporting را پوشش نمی‌دهد؛ این Gateها برای بستن RPT1 باز هستند.
