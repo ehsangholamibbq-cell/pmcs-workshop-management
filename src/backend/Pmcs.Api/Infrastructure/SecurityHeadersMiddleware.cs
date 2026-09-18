@@ -12,7 +12,16 @@ internal sealed class SecurityHeadersMiddleware(RequestDelegate next)
             headers["X-Frame-Options"] = "DENY";
             headers["Referrer-Policy"] = "no-referrer";
             headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
-            if (httpContext.Request.Path.StartsWithSegments("/api"))
+            var approvedImmutableAsset =
+                HttpMethods.IsGet(httpContext.Request.Method) &&
+                httpContext.Request.Path.StartsWithSegments(
+                    "/api/v1/public/login-experience/assets") &&
+                httpContext.Response.StatusCode == StatusCodes.Status200OK &&
+                string.Equals(
+                    headers.CacheControl.ToString(),
+                    "public, max-age=31536000, immutable",
+                    StringComparison.Ordinal);
+            if (httpContext.Request.Path.StartsWithSegments("/api") && !approvedImmutableAsset)
             {
                 headers["Cache-Control"] = "no-store";
             }
