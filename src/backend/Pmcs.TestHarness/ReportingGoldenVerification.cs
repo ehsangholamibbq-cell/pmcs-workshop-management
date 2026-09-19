@@ -632,6 +632,13 @@ internal static partial class Program
         }
 
         var succeeded = await WaitForFinalRunAsync(client, key, actor, reportingPath, runId);
+        var persistedCutoff = RequireInstant(
+            succeeded.Payload,
+            "asOfUtc",
+            $"Golden run '{runId}'");
+        RequireGolden(
+            Math.Abs((persistedCutoff - cutoff).Ticks) < TimeSpan.TicksPerMicrosecond,
+            $"Golden run '{runId}' changed its cutoff beyond database timestamp precision.");
         string? snapshotHash = null;
         JsonElement output = default;
         var outputId = Guid.Empty;
@@ -688,7 +695,7 @@ internal static partial class Program
             outputId,
             verificationCode!,
             snapshotHash!,
-            cutoff);
+            persistedCutoff);
         Record(
             assertions,
             $"reporting.golden.{runId:N}.openxml-contract",
@@ -724,42 +731,53 @@ internal static partial class Program
                 .ToDictionary(row => row[0], row => row[1], StringComparer.Ordinal);
             var dataOnly = dataRows.Skip(1).Select(row => row.ToArray()).ToArray();
             var expectedFilter = $"A1:R{Math.Max(1, dataRows.Count)}";
-            var contractValid =
-                names.OrderBy(name => name, StringComparer.Ordinal)
-                    .SequenceEqual(GoldenWorkbookEntries.OrderBy(name => name, StringComparer.Ordinal)) &&
-                names.All(name => !name.Contains("vbaProject", StringComparison.OrdinalIgnoreCase) &&
-                    !name.Contains("externalLinks", StringComparison.OrdinalIgnoreCase)) &&
-                sheetNames.SequenceEqual(GoldenSheetNames) &&
-                metadataRows.Count == 17 &&
-                metadataRows[0].SequenceEqual(GoldenMetadataHeaders) &&
-                dataRows.Count >= 2 &&
-                dataRows[0].SequenceEqual(GoldenDataHeaders) &&
-                HasGoldenWorksheetView(metadata, spreadsheet) &&
-                HasGoldenWorksheetView(data, spreadsheet) &&
-                !metadata.Descendants(spreadsheet + "f").Any() &&
-                !data.Descendants(spreadsheet + "f").Any() &&
-                data.Descendants(spreadsheet + "autoFilter").SingleOrDefault()?.Attribute("ref")?.Value ==
-                    expectedFilter &&
-                metadataMap.TryGetValue("Snapshot SHA-256", out var workbookSnapshotHash) &&
-                string.Equals(workbookSnapshotHash, snapshotHash, StringComparison.Ordinal) &&
-                metadataMap.TryGetValue("Source Manifest SHA-256", out var sourceManifestHash) &&
-                IsGoldenSha256(sourceManifestHash) &&
-                metadataMap.TryGetValue("Output Manifest SHA-256", out var outputManifestHash) &&
-                IsGoldenSha256(outputManifestHash) &&
-                metadataMap.TryGetValue("کد راستی‌آزمایی", out var workbookVerificationCode) &&
-                string.Equals(workbookVerificationCode, verificationCode, StringComparison.Ordinal) &&
-                metadataMap.TryGetValue("مسیر راستی‌آزمایی", out var verificationPath) &&
-                string.Equals(
-                    verificationPath,
-                    $"/api/v1/projects/{PmcsTestDataSet.ProjectId}/reports/outputs/{outputId}/verify",
-                    StringComparison.Ordinal) &&
-                metadataMap.TryGetValue("Cutoff UTC", out var cutoffText) &&
+            metadataMap.TryGetValue("Snapshot SHA-256", out var workbookSnapshotHash);
+            metadataMap.TryGetValue("Source Manifest SHA-256", out var sourceManifestHash);
+            metadataMap.TryGetValue("Output Manifest SHA-256", out var outputManifestHash);
+            metadataMap.TryGetValue("کد راستی‌آزمایی", out var workbookVerificationCode);
+            metadataMap.TryGetValue("مسیر راستی‌آزمایی", out var verificationPath);
+            var workbookCutoff = default(DateTimeOffset);
+            var hasCutoff = metadataMap.TryGetValue("Cutoff UTC", out var cutoffText) &&
                 DateTimeOffset.TryParse(
                     cutoffText,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.RoundtripKind,
-                    out var workbookCutoff) &&
-                workbookCutoff == cutoff;
+                    out workbookCutoff);
+            var contractChecks = new (string Name, bool Passed)[]
+            {
+                ("entries", names.OrderBy(name => name, StringComparer.Ordinal)
+                    .SequenceEqual(GoldenWorkbookEntries.OrderBy(name => name, StringComparer.Ordinal))),
+                ("active-content", names.All(name =>
+                    !name.Contains("vbaProject", StringComparison.OrdinalIgnoreCase) &&
+                    !name.Contains("externalLinks", StringComparison.OrdinalIgnoreCase))),
+                ("sheet-order", sheetNames.SequenceEqual(GoldenSheetNames)),
+                ("metadata-shape", metadataRows.Count == 17 &&
+                    metadataRows[0].SequenceEqual(GoldenMetadataHeaders)),
+                ("data-shape", dataRows.Count >= 2 && dataRows[0].SequenceEqual(GoldenDataHeaders)),
+                ("metadata-view", HasGoldenWorksheetView(metadata, spreadsheet)),
+                ("data-view", HasGoldenWorksheetView(data, spreadsheet)),
+                ("formulas", !metadata.Descendants(spreadsheet + "f").Any() &&
+                    !data.Descendants(spreadsheet + "f").Any()),
+                ("filter", data.Descendants(spreadsheet + "autoFilter").SingleOrDefault()
+                    ?.Attribute("ref")?.Value == expectedFilter),
+                ("snapshot-hash", string.Equals(workbookSnapshotHash, snapshotHash, StringComparison.Ordinal)),
+                ("source-manifest", sourceManifestHash is not null && IsGoldenSha256(sourceManifestHash)),
+                ("output-manifest", outputManifestHash is not null && IsGoldenSha256(outputManifestHash)),
+                ("verification-code", string.Equals(
+                    workbookVerificationCode,
+                    verificationCode,
+                    StringComparison.Ordinal)),
+                ("verification-path", string.Equals(
+                    verificationPath,
+                    $"/api/v1/projects/{PmcsTestDataSet.ProjectId}/reports/outputs/{outputId}/verify",
+                    StringComparison.Ordinal)),
+                ("cutoff", hasCutoff && workbookCutoff == cutoff)
+            };
+            var failedChecks = contractChecks
+                .Where(check => !check.Passed)
+                .Select(check => check.Name)
+                .ToArray();
+            var contractValid = failedChecks.Length == 0;
             var semanticMetadata = metadataMap
                 .Where(item => !GoldenVariableMetadataKeys.Contains(item.Key, StringComparer.Ordinal))
                 .OrderBy(item => item.Key, StringComparer.Ordinal)
@@ -770,7 +788,9 @@ internal static partial class Program
                 JsonOptions);
             return new GoldenWorkbookEvidence(
                 contractValid,
-                contractValid ? "valid deterministic OpenXML contract" : "invalid deterministic OpenXML contract",
+                contractValid
+                    ? "valid deterministic OpenXML contract"
+                    : $"invalid deterministic OpenXML contract: {string.Join(',', failedChecks)}",
                 GoldenSha256(Encoding.UTF8.GetBytes(semanticJson)),
                 dataOnly,
                 metadataMap);
