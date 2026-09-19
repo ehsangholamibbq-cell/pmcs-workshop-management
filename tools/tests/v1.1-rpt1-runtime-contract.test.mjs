@@ -16,14 +16,19 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
     `${moduleRoot}/ReportingExecutionOptions.cs`,
+    `${moduleRoot}/ReportingOrphanRemediationOptions.cs`,
+    `${moduleRoot}/Services/ReportOutputOrphanRemediationWorker.cs`,
+    `${moduleRoot}/Services/ReportRunAdvisoryLock.cs`,
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingWorkerRevocationVerification.cs",
     "tools/qa/verify-reporting-object-security.sh",
     "tools/qa/verify-reporting-capacity.sh",
     "tools/qa/verify-reporting-fairness.sh",
     "tools/qa/verify-reporting-observability.sh",
+    "tools/qa/verify-reporting-orphan-remediation.sh",
     "tools/qa/verify-reporting-observability.mjs",
     "tools/qa/reporting-alert-receiver.mjs",
     "deploy/observability/otel-collector.yaml",
@@ -131,6 +136,41 @@ test("generated outputs use the Documents owner contract and certified renderers
   );
 });
 
+test("generated report orphan remediation is dry-run first retention-safe and audited", () => {
+  const contract = read("src/backend/Pmcs.Modules.Documents/Contracts/IGeneratedDocumentOrphanRemediator.cs");
+  const remediator = read("src/backend/Pmcs.Modules.Documents/Services/GeneratedDocumentOrphanRemediator.cs");
+  const options = read(`${moduleRoot}/ReportingOrphanRemediationOptions.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportOutputOrphanRemediationWorker.cs`);
+  const lock = read(`${moduleRoot}/Services/ReportRunAdvisoryLock.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const connected = read("tools/qa/verify-reporting-orphan-remediation.sh");
+
+  assert.doesNotMatch(contract, /ObjectKey|Presign|UploadSession/u);
+  assert.match(contract, /ExpectedRevision/u);
+  assert.match(contract, /RetentionActive/u);
+  assert.match(contract, /LegalHold/u);
+  assert.match(remediator, /for update/u);
+  assert.match(remediator, /asset\.MarkDeleted/u);
+  assert.match(remediator, /GeneratedReportOrphanRemediated/u);
+  assert.doesNotMatch(remediator, /\["objectKey"\]/u);
+  assert.match(options, /ReportingOrphanRemediationMode\.Disabled/u);
+  assert.match(options, /InventoryOnly/u);
+  assert.match(options, /ApplyEligible/u);
+  assert.match(options, /OrphanRemediationMinimumAgeHours/u);
+  assert.match(worker, /run\.Status != ReportRunStatus\.Failed/u);
+  assert.match(worker, /OwnerExistsAsync/u);
+  assert.match(worker, /RetentionProtected/u);
+  assert.match(worker, /LegalHoldProtected/u);
+  assert.match(worker, /ReportRunAdvisoryLock\.AcquireAsync/u);
+  assert.match(lock, /pg_advisory_xact_lock/u);
+  assert.match(endpoints, /ReportRunAdvisoryLock\.AcquireAsync/u);
+  assert.match(connected, /start_api InventoryOnly/u);
+  assert.match(connected, /start_api ApplyEligible/u);
+  assert.match(connected, /only the expired unheld orphan is remediated/u);
+  assert.match(connected, /orphan remediation is idempotent across another sweep/u);
+  assert.match(connected, /object-key free/u);
+});
+
 test("connected RPT1 qualification covers API, worker, storage and database evidence", () => {
   const harness = read("src/backend/Pmcs.TestHarness/ReportingVerification.cs");
   const seed = read("tools/qa/seed-diagnostics.sh");
@@ -159,6 +199,7 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   const objectSecurity = read("tools/qa/verify-reporting-object-security.sh");
   const capacity = read("tools/qa/verify-reporting-capacity.sh");
   const fairness = read("tools/qa/verify-reporting-fairness.sh");
+  const orphanRemediation = read("tools/qa/verify-reporting-orphan-remediation.sh");
   const qualificationOptions = read(`${moduleRoot}/ReportingWorkerQualificationOptions.cs`);
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   assert.match(recoveryHarness, /"concurrency-locked"/u);
@@ -210,12 +251,16 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(seed, /verify-reporting-worker-revocation\.sh/u);
   assert.match(seed, /verify-reporting-capacity\.sh/u);
   assert.match(seed, /verify-reporting-observability\.sh/u);
+  assert.match(seed, /verify-reporting-orphan-remediation\.sh/u);
+  assert.match(orphanRemediation, /InventoryOnly/u);
+  assert.match(orphanRemediation, /ApplyEligible/u);
   assert.match(database, /certified output is a released governed document/u);
   assert.match(database, /certified reporting transactional outbox coverage/u);
   assert.match(database, /queued report cancellation is final and unclaimed/u);
   assert.match(database, /worker concurrency and recovery runs completed with bounded attempts/u);
   assert.match(database, /worker-time permission revocation fails before document publication/u);
   assert.match(database, /generated report orphan inventory is empty after recovery/u);
+  assert.match(database, /expired generated report orphan remediation is singular audited and object-key free/u);
   assert.match(database, /object and metadata tamper attempts are audited/u);
   assert.match(database, /capacity runs isolate poison without delaying healthy work/u);
   assert.match(database, /capacity outputs retain singular document and event ownership/u);
@@ -335,6 +380,7 @@ test("RPT1 is disabled by default until renderers and qualification are complete
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.equal(settings.ReportingCenter.OrphanRemediationMode, "Disabled");
   const options = read(`${moduleRoot}/ReportingRuntimeOptions.cs`);
   assert.match(options, /workerEnabled = phase1Enabled &&/u);
   assert.match(options, /outputAccessEnabled = phase1Enabled \|\|/u);

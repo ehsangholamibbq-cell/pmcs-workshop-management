@@ -430,14 +430,6 @@ internal static class ReportingEndpoints
             return gate;
         }
 
-        var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
-            item.Id == runId && item.TenantId == actor.TenantId && item.ProjectId == projectId,
-            cancellationToken);
-        if (run is null)
-        {
-            return Results.NotFound(new { code = "reporting.run.not_found" });
-        }
-
         var idempotency = await FindMutationReplayAsync(
             httpContext,
             actor.TenantId,
@@ -448,6 +440,16 @@ internal static class ReportingEndpoints
         if (idempotency.Replay is not null)
         {
             return idempotency.Replay;
+        }
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await ReportRunAdvisoryLock.AcquireAsync(dbContext, runId, cancellationToken);
+        var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
+            item.Id == runId && item.TenantId == actor.TenantId && item.ProjectId == projectId,
+            cancellationToken);
+        if (run is null)
+        {
+            return Results.NotFound(new { code = "reporting.run.not_found" });
         }
 
         var previousDiagnostic = run.DiagnosticCode;
@@ -465,7 +467,6 @@ internal static class ReportingEndpoints
         run.RetryFailed(now);
         var response = await LoadRunResponseAsync(run, dbContext, cancellationToken);
         var responseJson = JsonSerializer.Serialize(response, CanonicalJson.SerializerOptions);
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         await sideEffectWriter.WriteAsync(
             dbContext.Database.GetDbConnection(),

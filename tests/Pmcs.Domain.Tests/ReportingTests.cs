@@ -414,6 +414,66 @@ public sealed class ReportingTests
     }
 
     [Fact]
+    public void OrphanRemediationDefaultsToDisabledInventorySafeBoundaries()
+    {
+        var defaults = ReportingOrphanRemediationOptions.Create(new ConfigurationBuilder().Build());
+
+        Assert.Equal(ReportingOrphanRemediationMode.Disabled, defaults.Mode);
+        Assert.Equal(TimeSpan.FromHours(24), defaults.MinimumAge);
+        Assert.Equal(TimeSpan.FromHours(1), defaults.PollingInterval);
+        Assert.Equal(25, defaults.BatchSize);
+        Assert.Equal(500, defaults.MaximumCandidatesPerSweep);
+
+        var configured = ReportingOrphanRemediationOptions.Create(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ReportingCenter:OrphanRemediationMode"] = "ApplyEligible",
+                ["ReportingCenter:OrphanRemediationMinimumAgeHours"] = "48",
+                ["ReportingCenter:OrphanRemediationPollSeconds"] = "15",
+                ["ReportingCenter:OrphanRemediationBatchSize"] = "10",
+                ["ReportingCenter:OrphanRemediationMaximumCandidatesPerSweep"] = "40"
+            })
+            .Build());
+
+        Assert.Equal(ReportingOrphanRemediationMode.ApplyEligible, configured.Mode);
+        Assert.Equal(TimeSpan.FromHours(48), configured.MinimumAge);
+        Assert.Equal(TimeSpan.FromSeconds(15), configured.PollingInterval);
+        Assert.Equal(10, configured.BatchSize);
+        Assert.Equal(40, configured.MaximumCandidatesPerSweep);
+    }
+
+    [Theory]
+    [InlineData("ReportingCenter:OrphanRemediationMode", "applyeligible")]
+    [InlineData("ReportingCenter:OrphanRemediationMinimumAgeHours", "23")]
+    [InlineData("ReportingCenter:OrphanRemediationPollSeconds", "4")]
+    [InlineData("ReportingCenter:OrphanRemediationBatchSize", "101")]
+    [InlineData("ReportingCenter:OrphanRemediationMaximumCandidatesPerSweep", "0")]
+    public void OrphanRemediationRejectsUnsafeExplicitConfiguration(string key, string value)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { [key] = value })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ReportingOrphanRemediationOptions.Create(configuration));
+    }
+
+    [Fact]
+    public void OrphanRemediationRejectsASweepSmallerThanItsBatch()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ReportingCenter:OrphanRemediationBatchSize"] = "20",
+                ["ReportingCenter:OrphanRemediationMaximumCandidatesPerSweep"] = "10"
+            })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ReportingOrphanRemediationOptions.Create(configuration));
+    }
+
+    [Fact]
     public void WorkerTransientFailureInjectionIsQaOnlyAndTargetBound()
     {
         var targetRunId = Guid.NewGuid();

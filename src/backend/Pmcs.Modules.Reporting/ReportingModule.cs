@@ -103,6 +103,7 @@ public sealed class ReportingModule : IModule
 
         services.AddSingleton(ReportingRuntimeOptions.Create(configuration));
         services.AddSingleton(ReportingExecutionOptions.Create(configuration));
+        services.AddSingleton(ReportingOrphanRemediationOptions.Create(configuration));
         services.AddSingleton(ReportingWorkerQualificationOptions.Create(configuration));
         services.AddSingleton(ReportingRendererOptions.Create(configuration));
         services.AddSingleton<ReportingWorkerTelemetry>();
@@ -114,6 +115,7 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddHostedService<ReportGenerationWorker>();
+        services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(
             "reporting-worker",
             tags: ["ready"]);

@@ -75,6 +75,7 @@ public sealed class DocumentsModule : IModule
         services.AddSingleton<IContentScanner, DeterministicContentScanner>();
         services.AddScoped<ISharedDocumentDirectory, SharedDocumentDirectory>();
         services.AddScoped<IGeneratedDocumentPublisher, GeneratedDocumentPublisher>();
+        services.AddScoped<IGeneratedDocumentOrphanRemediator, GeneratedDocumentOrphanRemediator>();
         services.AddSingleton<IDatabaseMigration, DocumentsInitialMigration>();
     }
 

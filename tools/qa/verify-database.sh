@@ -25,6 +25,7 @@ reporting_crash_after_storage_run_id="71000000-0000-4000-8000-000000000007"
 reporting_stale_lease_run_id="71000000-0000-4000-8000-000000000008"
 reporting_worker_revocation_run_id="71000000-0000-4000-8000-000000000009"
 reporting_capacity_poison_run_id="72000000-0000-4000-8000-000000000001"
+reporting_remediated_orphan_document_id="73000000-0000-4000-8000-000000000201"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -282,6 +283,11 @@ expect_equal \
   "generated report orphan inventory is empty after recovery" \
   "0" \
   "select count(*) from documents.assets asset left join reporting.report_outputs output on output.id = asset.owner_id and output.tenant_id = asset.tenant_id and output.project_id = asset.project_id where asset.tenant_id = '${tenant_id}' and asset.project_id = '${project_id}' and asset.owner_type = 'ReportOutput' and output.id is null;"
+
+expect_equal \
+  "expired generated report orphan remediation is singular audited and object-key free" \
+  "1|ReportOutput|LongTerm|true" \
+  "select count(*)::text || '|' || min(data->>'ownerType') || '|' || min(data->>'retentionPolicy') || '|' || bool_and(not (data ? 'objectKey'))::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and actor_user_id = '${system_actor_id}' and event_type = 'GeneratedReportOrphanRemediated' and resource_type = 'DocumentAsset' and resource_id = '${reporting_remediated_orphan_document_id}';"
 
 expect_equal \
   "object and metadata tamper attempts are audited" \

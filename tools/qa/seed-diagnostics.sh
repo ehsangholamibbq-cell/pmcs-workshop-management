@@ -117,6 +117,7 @@ stop_api
 ./tools/qa/verify-reporting-worker-revocation.sh
 ./tools/qa/verify-reporting-capacity.sh
 ./tools/qa/verify-reporting-observability.sh
+./tools/qa/verify-reporting-orphan-remediation.sh
 
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh

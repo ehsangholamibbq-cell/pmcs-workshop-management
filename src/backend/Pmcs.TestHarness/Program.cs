@@ -65,6 +65,9 @@ internal static partial class Program
                 "prepare-reporting-worker-revocation" => await PrepareReportingWorkerRevocationAsync(),
                 "verify-reporting-worker-revocation" => await VerifyReportingWorkerRevocationAsync(),
                 "verify-reporting-object-security" => await VerifyReportingObjectSecurityAsync(),
+                "prepare-reporting-orphan-objects" => await PrepareReportingOrphanObjectsAsync(),
+                "verify-reporting-orphan-objects" => await VerifyReportingOrphanObjectsAsync(),
+                "cleanup-reporting-orphan-objects" => await CleanupReportingOrphanObjectsAsync(),
                 "prepare-reporting-capacity" => await PrepareReportingCapacityAsync(),
                 "verify-reporting-capacity" => await VerifyReportingCapacityAsync(),
                 "verify-sync" => await VerifySyncAsync(),
@@ -483,7 +486,8 @@ internal static partial class Program
             "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
             "verify-reporting-cancellation|prepare-reporting-recovery|verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
-            "verify-reporting-object-security|prepare-reporting-capacity|" +
+            "verify-reporting-object-security|prepare-reporting-orphan-objects|" +
+            "verify-reporting-orphan-objects|cleanup-reporting-orphan-objects|prepare-reporting-capacity|" +
             "verify-reporting-capacity|verify-sync|verify-exploratory>");
         return 2;
     }
