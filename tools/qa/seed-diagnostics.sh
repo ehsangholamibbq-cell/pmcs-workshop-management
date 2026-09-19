@@ -52,6 +52,7 @@ trap cleanup EXIT
 
 start_api() {
   local worker_enabled="$1"
+  local pdf_license="${2:-Unconfigured}"
   : >"${log_file}"
   ASPNETCORE_ENVIRONMENT=Development \
   ASPNETCORE_URLS="http://127.0.0.1:${port}" \
@@ -66,7 +67,12 @@ start_api() {
   ReportingCenter__OutputAccessEnabled=true \
   ReportingCenter__WorkerEnabled="${worker_enabled}" \
   ReportingCenter__PollSeconds=1 \
-  ReportingCenter__PdfLicense=Unconfigured \
+  ReportingCenter__PdfLicense="${pdf_license}" \
+  ReportingCenter__PdfRegularFontPath="${PWD}/assets/reporting/fonts/DejaVuSans.ttf" \
+  ReportingCenter__PdfBoldFontPath="${PWD}/assets/reporting/fonts/DejaVuSans-Bold.ttf" \
+  ReportingCenter__PdfRegularFontSha256=ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280 \
+  ReportingCenter__PdfBoldFontSha256=5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895 \
+  ReportingCenter__PdfRendererImageDigest=sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c \
   ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" \
   ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" \
   ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" \
@@ -96,7 +102,7 @@ start_api() {
   fi
 }
 
-start_api true
+start_api true Unconfigured
 
 qa_base_url="http://127.0.0.1:${port}"
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- probe
@@ -110,7 +116,11 @@ PMCS_QA_BASE_URL="${qa_base_url}" ./tools/qa/verify-reporting-security.sh
 PMCS_QA_BASE_URL="${qa_base_url}" ./tools/qa/verify-reporting-object-security.sh
 
 stop_api
-start_api false
+start_api true Community
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting-pdf-golden
+
+stop_api
+start_api false Unconfigured
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting-cancellation
 
 stop_api

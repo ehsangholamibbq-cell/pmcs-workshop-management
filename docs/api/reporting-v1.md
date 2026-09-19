@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ latest qualification candidate `38a03f33f4747d0b6a76696705877633acd17678` passed Run 130؛ business API unchanged and PDF/UI gates open
+- Status: Runtime implemented؛ MS06 PDF qualification implementation candidate با API تجاری بدون تغییر؛ CI pending و RPT1 فعال
 
 ## ۱. قواعد عمومی
 
@@ -244,10 +244,13 @@ GET /api/v1/projects/{projectId}/reports/outputs/{outputId}/verify
 | 502 | `reporting.output.integrity_failed` | Artifact با Manifest تطبیق ندارد |
 
 Diagnosticهای Worker مانند `reporting.permission.revoked`، `reporting.template.retired`،
-`reporting.renderer.license_unconfigured`، `reporting.renderer.font_missing` و
+`reporting.renderer.license_unconfigured`، `reporting.renderer.license_unapproved`،
+`reporting.renderer.font_missing`، `reporting.renderer.font_integrity_failed`،
+`reporting.renderer.configuration_unpinned` و
 `documents.generated.storage_unavailable` در `diagnosticCode` Run دیده می‌شوند؛ آن‌ها پاسخ HTTP
-مستقیم Create نیستند. `PdfLicense=Unconfigured` حالت fail-closed پیش‌فرض است و تا انتخاب حقوقی
-صریح Community/Professional/Enterprise تغییر نمی‌کند.
+مستقیم Create نیستند. ADR 0030 انتخاب `Community` را ثبت کرده، اما
+`PdfLicense=Unconfigured` حالت fail-closed پیش‌فرض deployment باقی می‌ماند؛ QA فقط برای Golden
+آن را صریحاً `Community` می‌کند و tier دیگر بدون ADR جدید پذیرفته نمی‌شود.
 
 ## ۹. Versioning
 

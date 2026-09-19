@@ -948,7 +948,10 @@ internal static class ReportingEndpoints
         "reporting.snapshot.transient" or
         "reporting.renderer.transient" or
         "reporting.renderer.license_unconfigured" or
+        "reporting.renderer.license_unapproved" or
         "reporting.renderer.font_missing" or
+        "reporting.renderer.font_integrity_failed" or
+        "reporting.renderer.configuration_unpinned" or
         "reporting.run.timeout" or
         "documents.generated.storage_unavailable" or
         "documents.generated.persistence_failed";

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.Extensions.Configuration;
@@ -255,6 +257,76 @@ public sealed class ReportingTests
                 document.Root!.DescendantsAndSelf(),
                 element => Assert.NotEqual(XNamespace.None, element.Name.Namespace));
         }
+    }
+
+    [Fact]
+    public void CertifiedPdfIsDeterministicVisuallyPinnedAndWithinPerformanceBudget()
+    {
+        var request = CreateRenderRequest(
+            "اجرای بتن‌ریزی قطعی در زون A",
+            ReportFormat.Pdf);
+        var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
+        var renderer = new DailyReportPdfRenderer(
+            new ReportingRendererOptions(
+                CertifiedPdfRuntimeContract.LicenseDecision,
+                Path.Combine(fonts, "DejaVuSans.ttf"),
+                Path.Combine(fonts, "DejaVuSans-Bold.ttf"),
+                CertifiedPdfRuntimeContract.RegularFontSha256,
+                CertifiedPdfRuntimeContract.BoldFontSha256,
+                CertifiedPdfRuntimeContract.RuntimeImageDigest),
+            ReportingExecutionOptions.Default);
+
+        var timer = Stopwatch.StartNew();
+        var first = renderer.Render(request);
+        timer.Stop();
+        var coldRender = timer.Elapsed;
+        timer.Restart();
+        var second = renderer.Render(request);
+        timer.Stop();
+        var warmRender = timer.Elapsed;
+        var firstImages = renderer.RenderQualificationImages(request);
+        var secondImages = renderer.RenderQualificationImages(request);
+
+        Assert.True(first.Bytes.SequenceEqual(second.Bytes));
+        Assert.Equal(first.Sha256, second.Sha256);
+        Assert.Equal("application/pdf", first.ContentType);
+        Assert.True(first.Bytes.AsSpan().StartsWith("%PDF-"u8));
+        Assert.Contains("%%EOF", Encoding.ASCII.GetString(first.Bytes[^32..]), StringComparison.Ordinal);
+        Assert.InRange(first.Bytes.Length, 1, CertifiedPdfRuntimeContract.QualificationMaximumPdfBytes);
+        Assert.True(
+            coldRender.TotalMilliseconds <= CertifiedPdfRuntimeContract.QualificationColdRenderBudgetMilliseconds,
+            $"Cold PDF render took {coldRender.TotalMilliseconds:F1} ms.");
+        Assert.True(
+            warmRender.TotalMilliseconds <= CertifiedPdfRuntimeContract.QualificationWarmRenderBudgetMilliseconds,
+            $"Warm PDF render took {warmRender.TotalMilliseconds:F1} ms.");
+
+        Assert.NotEmpty(firstImages);
+        Assert.Equal(firstImages.Count, secondImages.Count);
+        for (var index = 0; index < firstImages.Count; index++)
+        {
+            Assert.True(firstImages[index].AsSpan().StartsWith(
+                new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 0x0D, 0x0A, 0x1A, 0x0A }));
+            Assert.True(firstImages[index].SequenceEqual(secondImages[index]));
+        }
+
+        var visualDigests = firstImages
+            .Select(image => Convert.ToHexString(SHA256.HashData(image)).ToLowerInvariant())
+            .ToArray();
+        var qualificationOutput = Environment.GetEnvironmentVariable("PMCS_PDF_QUALIFICATION_OUTPUT");
+        if (!string.IsNullOrWhiteSpace(qualificationOutput))
+        {
+            Directory.CreateDirectory(qualificationOutput);
+            File.WriteAllBytes(Path.Combine(qualificationOutput, "daily-report-golden.pdf"), first.Bytes);
+            for (var index = 0; index < firstImages.Count; index++)
+            {
+                File.WriteAllBytes(
+                    Path.Combine(qualificationOutput, $"daily-report-golden-page-{index + 1}.png"),
+                    firstImages[index]);
+            }
+        }
+        Assert.Equal(
+            ["95d6e71de15d9d130041d5c295c94239b9fe9095e6572e581aa9a655ee85c9b2"],
+            visualDigests);
     }
 
     [Fact]
@@ -658,12 +730,17 @@ public sealed class ReportingTests
         "LongTerm",
         Cutoff);
 
-    private static ReportRenderRequest CreateXlsxRenderRequest(string description)
+    private static ReportRenderRequest CreateXlsxRenderRequest(string description) =>
+        CreateRenderRequest(description, ReportFormat.Xlsx);
+
+    private static ReportRenderRequest CreateRenderRequest(string description, ReportFormat format)
     {
         var runId = Guid.Parse("10000000-0000-4000-8000-000000000001");
-        var outputId = ReportArtifactIdentity.OutputId(runId, ReportFormat.Xlsx);
+        var outputId = ReportArtifactIdentity.OutputId(runId, format);
         var reportId = Guid.Parse("70000000-0000-4000-8000-000000000001");
-        var chain = Chain(reportId, description);
+        var chain = format == ReportFormat.Pdf
+            ? CreatePdfQualificationChain(reportId, description)
+            : Chain(reportId, description);
         var project = new ReportProjectRenderIdentity(
             Guid.Parse("30000000-0000-4000-8000-000000000001"),
             "PRJ-001",
@@ -692,8 +769,8 @@ public sealed class ReportingTests
             new string('c', 64),
             "daily-report-renderer/v1",
             "daily-report-layout/v1",
-            ReportFormat.Xlsx,
-            "daily-report-PRJ-001-1405-06-27-r1.xlsx",
+            format,
+            $"daily-report-PRJ-001-1405-06-27-r1.{format.ToString().ToLowerInvariant()}",
             "RPT-1111-2222-3333-4444-5555",
             new string('d', 64),
             new string('e', 64),
@@ -751,6 +828,108 @@ public sealed class ReportingTests
             4,
             [fact]);
         return new DailyReportReportingChain(reportId, reportId, Cutoff, [version]);
+    }
+
+    private static DailyReportReportingChain CreatePdfQualificationChain(
+        Guid rootReportId,
+        string description)
+    {
+        var correctedReportId = Guid.Parse("70000000-0000-4000-8000-000000000002");
+        var actorId = Guid.Parse("20000000-0000-4000-8000-000000000001");
+        var locationId = Guid.Parse("30000000-0000-4000-8000-000000000002");
+        var firstFacts = CreatePdfQualificationFacts(
+            sequenceOffset: 100,
+            description,
+            actorId,
+            locationId,
+            copiedFromOffset: null);
+        var correctedFacts = CreatePdfQualificationFacts(
+            sequenceOffset: 200,
+            description,
+            actorId,
+            locationId,
+            copiedFromOffset: 100);
+        var first = new DailyReportReportingVersion(
+            rootReportId,
+            rootReportId,
+            1,
+            null,
+            correctedReportId,
+            Cutoff.AddHours(-1),
+            new DateOnly(2026, 9, 18),
+            "زون A",
+            "نسخه رسمی اولیه با هشت نوع Fact ساختاریافته",
+            DailyReportReportingVersionState.Superseded,
+            actorId,
+            Cutoff.AddHours(-6),
+            actorId,
+            Cutoff.AddHours(-5),
+            Cutoff.AddHours(-1),
+            null,
+            null,
+            12,
+            firstFacts);
+        var corrected = new DailyReportReportingVersion(
+            correctedReportId,
+            rootReportId,
+            2,
+            rootReportId,
+            null,
+            null,
+            new DateOnly(2026, 9, 18),
+            "زون A",
+            "نسخه اصلاحی رسمی با lineage قطعی",
+            DailyReportReportingVersionState.Approved,
+            actorId,
+            Cutoff.AddHours(-2),
+            actorId,
+            Cutoff.AddHours(-1),
+            Cutoff.AddHours(-1),
+            "اصلاح شواهد رسمی",
+            actorId,
+            5,
+            correctedFacts);
+        return new DailyReportReportingChain(
+            rootReportId,
+            correctedReportId,
+            Cutoff,
+            [first, corrected]);
+    }
+
+    private static DailyReportReportingFact[] CreatePdfQualificationFacts(
+        int sequenceOffset,
+        string description,
+        Guid actorId,
+        Guid locationId,
+        int? copiedFromOffset)
+    {
+        var facts = new DailyReportReportingFact[8];
+        for (var index = 1; index <= facts.Length; index++)
+        {
+            var kind = (DailyReportReportingFactKind)index;
+            var factId = Guid.Parse($"71000000-0000-4000-8000-{sequenceOffset + index:D12}");
+            var copiedFromFactId = copiedFromOffset.HasValue
+                ? Guid.Parse($"71000000-0000-4000-8000-{copiedFromOffset.Value + index:D12}")
+                : (Guid?)null;
+            facts[index - 1] = new DailyReportReportingFact(
+                factId,
+                copiedFromFactId,
+                kind,
+                $"{description} | ردیف قطعی {index}",
+                "کنترل Golden",
+                locationId,
+                "زون A",
+                index is 1 or 4 ? 12.5m + index : null,
+                index is 1 or 4 ? "m3" : null,
+                index is 2 or 3 ? index + 3 : null,
+                index is 2 or 3 or 6 ? 2.5m + index : null,
+                index is 5 or 6 ? DailyReportReportingImpactLevel.Critical : null,
+                $"PDF-GOLD-{sequenceOffset + index}",
+                index == 1 ? Guid.Parse("72000000-0000-4000-8000-000000000001") : null,
+                actorId,
+                Cutoff.AddMinutes(-120 + index));
+        }
+        return facts;
     }
 
     private sealed record TelemetryMeasurement(

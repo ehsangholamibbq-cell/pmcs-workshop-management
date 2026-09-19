@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: MS05 semantic cutoff and deterministic XLSX Golden passed؛ PDF/UI gates open
+- Status: MS06 PDF Community/pinning/Golden implementation candidate؛ CI pending و RPT1 فعال
 
 ## Operational Observability
 
@@ -114,13 +114,19 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 
 - `ReportingCenter:PdfLicense` به‌طور پیش‌فرض `Unconfigured` است؛ در این حالت PDF با
   `reporting.renderer.license_unconfigured` fail-closed می‌شود؛
-- انتخاب `Community`، `Professional` یا `Enterprise` فقط پس از تأیید حقوقی/تجاری سازمان مجاز است؛
-- انتخاب tier در code یا image به‌صورت ضمنی ممنوع است؛
-- image فعلی `fonts-dejavu-core` را نصب می‌کند و مسیر Regular/Bold صریح است؛ نبود فایل با
-  `reporting.renderer.font_missing` متوقف می‌شود؛
-- قبل از enable کردن PDF، version/digest image و فونت باید در Golden evidence ثبت شود؛
-- qualification باید دو رندر یک Run را byte-for-byte مقایسه کند؛ تا آن زمان deterministic بودن PDF
-  اثبات‌شده نیست.
+- ADR 0030 تصمیم صریح `QuestPDF Community` را برای Qualification ثبت کرده است؛ tier دیگر با
+  `reporting.renderer.license_unapproved` fail می‌شود؛
+- eligibility Community باید پیش از Production rollout و حداقل سالانه توسط مالک تجاری/حقوقی
+  بازاعتبارسنجی شود؛ تغییر شرایط به ADR و tier جدید نیاز دارد؛
+- `QuestPDF 2026.8.0`، imageهای build/runtime با digest کامل و فونت‌های vendored DejaVu Sans 2.37
+  pin شده‌اند؛ license فونت کنار فایل‌ها قرار دارد؛
+- Renderer SHA-256 دو فونت و digest contract را پیش از render کنترل می‌کند؛ نبود فایل، اختلاف
+  bytes یا configuration به‌ترتیب با `font_missing`، `font_integrity_failed` یا
+  `configuration_unpinned` متوقف می‌شود؛
+- مسیر QA ابتدا fail-closed بودن `Unconfigured` را می‌سنجد، سپس فقط برای PDF Golden با
+  `Community` restart می‌شود و پس از آن به حالت غیرفعال برمی‌گردد؛
+- Qualification شامل PDF byte-identical، parse مستقل، text/RTL، visual digest در ۹۶ DPI، بازبینی
+  Poppler و budgetهای cold/warm برابر ۵۰۰۰/۲۵۰۰ ms است.
 
 ## Feature rollback
 

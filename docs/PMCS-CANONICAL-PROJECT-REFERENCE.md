@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0-candidate`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -24,9 +24,8 @@
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
 | آخرین Source Candidate واجد Evidence | `38a03f33f4747d0b6a76696705877633acd17678`؛ tree `eb9369c9e32eb3f523c4faa22487d6428c2d7e34` |
-| Remote branch head در Snapshot کنترل | `dabc9025bd78806b68c4d0e63c70f5fde0c8b89f`؛ parent مستقیم commit انتشار همین مرجع |
-| Local head پیش از ایجاد این سند | `e5e727ccc055fc74f62a540153334ffffea168eb` |
-| Source equivalence | Local و Remote هر دو tree `164b2e1ed8749a91d7d68026b05dc71383a8b64f`؛ تفاوت SHA فقط ناشی از commit identity است |
+| Remote branch head پیش از MS06 Candidate | `345d9d6fc2e661144a74e3001150c28d73a212c7`؛ tree `8902fde167c0ff75545d0dd0360cd25d59a7b4e5` |
+| Source equivalence | بازسازی محلی پیش از تغییرات دقیقاً tree `8902fde167c0ff75545d0dd0360cd25d59a7b4e5` را تولید کرد |
 | Migration count | `43`؛ Restore Drill متصل پاس شده است |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -54,6 +53,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
+| PDF license | تصمیم ثبت‌نشده و `Unconfigured` | ADR 0030؛ `QuestPDF Community` برای Qualification، با default همچنان `Unconfigured` و بازاعتبارسنجی eligibility پیش از Production |
 
 تصمیم‌های پابرجا: Modular Monolith؛ داده رسمی فقط از state و Fact تأییدشده؛ Audit/Outbox/Idempotency؛
 Permission و Tenant boundary؛ Offline و conflict semantics؛ Jalali/RTL در مرز UI؛ وضعیت‌های Operational،
@@ -75,55 +75,58 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - Run 130: هر ۸ Job سبز، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario، `13/13` Golden assertion و Restore کامل ۴۳ Migration.
 - Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md`.
+- Anchor انتقال Run 132 (`35459192122`) روی commit `345d9d6fc2e661144a74e3001150c28d73a212c7`
+  هر هشت Job را سبز کرد.
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point دقیق آن `PMCS-V1.1-RPT1-S06-MS05-C1` است. هیچ Runtime
-work نیمه‌کاره یا migration نیمه‌اعمال‌شده در Worktree پیدا نشد. مسیر PDF عمداً به‌علت تصمیم حقوقی
-باز است؛ `PdfLicense=Unconfigured` و `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` هستند و
-`OrphanRemediationMode=Disabled` است.
+`V1.1-RPT1` فعال است و آخرین Safe Resume Point واجد CI همچنان
+`PMCS-V1.1-RPT1-S06-MS05-C1` است. تصمیم `QuestPDF Community` در ADR 0030 ثبت و MS06 به‌صورت Candidate
+محلی پیاده شده است: package/image/font digestها pin، PDF Golden متصل QA-only، visual digest و
+performance budget اضافه شده‌اند. تا سبزشدن CI و ثبت checkpoint مستقل، این Candidate Safe Point
+جدید محسوب نمی‌شود. `PdfLicense=Unconfigured` و
+`Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
+حفظ شده‌اند.
 
 ## Remaining Work
 
-1. ثبت تصمیم حقوقی صریح درباره PDF renderer/license؛ تصمیم نباید از کد یا Conversation استنباط شود.
-2. پس از تصمیم: pin کردن نسخه/digest renderer image و فونت، سپس PDF Golden، visual/pixel و performance budget.
-3. پیش از اعلام بسته‌شدن RPT1، تعیین تکلیف رسمی اختلاف کاتالوگ: Roadmap ده خانواده گزارش استاندارد
+1. اجرای Full CI روی MS06 Candidate و ثبت Evidence checkpoint برای PDF Golden/visual/performance.
+2. پیش از اعلام بسته‌شدن RPT1، تعیین تکلیف رسمی اختلاف کاتالوگ: Roadmap ده خانواده گزارش استاندارد
    نام می‌برد، اما Runtime/Golden فعلی فقط `daily-report-certified/1.0.0` را پیاده و qualify کرده است.
-4. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
-5. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
+3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
+4. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
 
 ## Known Gaps / Issues
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
 | Scope | کاتالوگ RPT1 در Roadmap شامل ۱۰ خانواده است؛ فقط گزارش روزانه رسمی موجود است | ۹ خانواده دیگر Done نیستند؛ یا باید پیاده شوند یا Scope با Change Record نسخه‌دار اصلاح شود |
-| Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و `v1.20.0` همگام شود؛ کد/CI متأثر نیست |
+| Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
 | Workspace metadata | branch محلی upstream ندارد و `pmcs.upstreamcommit` روی SHA قدیمی است | مبنای sync باید Remote head/tree بالا باشد، نه config محلی قدیمی |
-| Intentional gate | PDF license پیکربندی نشده و feature flagها خاموش‌اند | نقص Runtime نیست؛ شرط ایمنی تا تصمیم/Qualification است |
+| Legal operations | Community انتخاب شده، اما eligibility دائمی از code استنباط نمی‌شود | پیش از Production و حداقل سالانه توسط مالک تجاری/حقوقی بازاعتبارسنجی شود |
+| Intentional gate | PDF license در defaults پیکربندی نشده و feature flagها خاموش‌اند | نقص Runtime نیست؛ ADR 0030 فقط QA qualification را مجاز کرده است |
 
 ## Current GitHub / CI State
 
 - Repository: `ehsangholamibbq-cell/pmcs-workshop-management`؛ PR #2 از `v1.1-development` به `main`.
-- PR: `open`، `draft`، `mergeable`، ادغام‌نشده؛ ۶۶ commit و ۲۲۸ فایل تغییرکرده.
-- Remote head در لحظه کنترل و parent انتشار این مرجع: `dabc9025bd78806b68c4d0e63c70f5fde0c8b89f`؛ merge-test commit:
-  `1385aa00fd621035266c209f89d2b1b7b9494aa0`.
-- آخرین CI بررسی‌شده: Run 131 (`35450076853`) — هر ۸ Job
+- PR: `open`، `draft` و ادغام‌نشده است.
+- Remote head پیش از MS06 Candidate: `345d9d6fc2e661144a74e3001150c28d73a212c7`؛ tree
+  `8902fde167c0ff75545d0dd0360cd25d59a7b4e5`.
+- آخرین CI بررسی‌شده: Run 132 (`35459192122`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
-- Run 130 (`35449387794`) Evidence اصلی MS05 روی Source Candidate است؛ Run 131 checkpoint/docs head را
+- Run 130 (`35449387794`) Evidence اصلی MS05 روی Source Candidate است؛ Run 132 Canonical anchor را
   با همان مجموعه هشت‌گانه سبز کرده است.
-- کنترل هدفمند محلی در ۲۰۲۶-۰۹-۱۹: repository validator روی ۳۴۳ فایل، system-contract audit روی
-  ۲۷۴ endpoint/۲۰۴ mutation/۵ استثنای مستند، و `21/21` تست contract RPT1 پاس شد. Full suite دوباره
-  اجرا نشد، چون CI سبز موجود معتبر بود و هدف این کنترل rerun گسترده نبود.
+- کنترل محلی MS06 در ۲۰۲۶-۰۹-۱۹: build بدون warning، `330/330` تست C#، `21/21` تست contract RPT1،
+  دو رندر PDF byte-identical، visual digest ثابت در ۹۶ DPI و بازبینی مستقل Poppler بدون defect پاس
+  شدند. Connected CI هنوز باید این Candidate را qualify کند.
 
 ## Exact Next Micro-Step
 
-**گام بعدی اکنون یک Decision checkpoint است، نه تغییر Runtime:** تصمیم حقوقی renderer/license PDF را
-به‌صورت ADR/Update صریح تصویب و ثبت کن. پس از آن، فقط یک Micro-Step محدود از `S06-MS05` بساز:
-pin نسخه و digest renderer image و فونت، فعال‌سازی صرفاً در QA، تولید PDF قطعی برای همان fixture Golden،
-و سنجش integrity/text/visual/performance. سپس با Evidence مستقل checkpoint کن؛ هیچ feature flag
-Production روشن نشود. قبل از بستن RPT1 نیز اختلاف کاتالوگ ۱۰گانه حتماً با Change Record حل شود.
+**گام بعدی فقط تکمیل همان MS06 Candidate است:** Full CI هشت‌Job را اجرا، PDF Golden متصل را بررسی و
+در صورت سبزشدن `PMCS-V1.1-RPT1-S06-MS06-C1` را ثبت کن؛ هیچ feature flag Production روشن نشود.
+پس از این checkpoint و پیش از بستن RPT1، اختلاف کاتالوگ ۱۰گانه حتماً با Change Record رسمی حل شود.
 
 ## Resume Rule
 

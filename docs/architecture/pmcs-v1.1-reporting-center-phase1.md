@@ -1,14 +1,14 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.7.0`
-- وضعیت: `MS05 complete | semantic cutoff and deterministic XLSX Golden connected qualification passed | PDF/UI gates open`
+- نسخه: `1.8.0-candidate`
+- وضعیت: `MS06 implementation candidate | Community decision and pinned PDF qualification contract | CI pending`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - آخرین Qualification Candidate: `38a03f33f4747d0b6a76696705877633acd17678`
 - Source tree: `eb9369c9e32eb3f523c4faa22487d6428c2d7e34`
 - Connected evidence: Run 130 (`35449387794`) — `success`
-- مرجع تصمیم: ADR 0029
+- مرجع تصمیم: ADR 0029 و ADR 0030
 
 ## ۱. Scope
 
@@ -185,8 +185,11 @@ Retry پس از publish ناقص از stable output identity استفاده می
 | `reporting.permission.revoked` | Permission پس از Queue لغو شده | خیر |
 | `reporting.template.retired` | Template pin‌شده دیگر قابل اجرا نیست | خیر |
 | `reporting.renderer.transient` | خطای موقت Renderer/Storage | محدود |
-| `reporting.renderer.license_unconfigured` | mode حقوقی QuestPDF عمداً انتخاب نشده است | فقط Retry صریح پس از پیکربندی |
+| `reporting.renderer.license_unconfigured` | license پیش‌فرض عمداً فعال نشده است | فقط Retry صریح پس از پیکربندی مصوب |
+| `reporting.renderer.license_unapproved` | tier با ADR 0030 و تصمیم `Community` منطبق نیست | فقط پس از تصمیم/پیکربندی مصوب |
 | `reporting.renderer.font_missing` | فونت فارسی Certified در runtime موجود نیست | فقط Retry صریح پس از اصلاح image |
+| `reporting.renderer.font_integrity_failed` | SHA-256 فونت با قرارداد Certified اختلاف دارد | فقط پس از اصلاح image/font |
+| `reporting.renderer.configuration_unpinned` | digest image یا فونت با قرارداد Certified اختلاف دارد | فقط پس از اصلاح configuration |
 | `reporting.output.integrity_failed` | hash/size/media mismatch | Fail-closed |
 | `reporting.run.timeout` | پردازش از budget عبور کرده | محدود |
 
@@ -205,8 +208,13 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - Watermark برای Draft/Archive فقط طبق state؛
 - Verification code/QR بدون public bypass؛
 - metadata ثابت و deterministic؛
-- Adapter فعلی QuestPDF است، اما `PdfLicense` تا تصمیم حقوقی صریح `Unconfigured` می‌ماند و PDF
-  در این وضعیت با code امن fail می‌شود؛ هیچ license tier به‌طور ضمنی انتخاب نمی‌شود.
+- Adapter فعلی `QuestPDF 2026.8.0` است و ADR 0030، tier برابر `Community` را برای Qualification
+  تصویب کرده است. `PdfLicense` در تنظیمات پیش‌فرض همچنان `Unconfigured` می‌ماند و PDF در این
+  وضعیت با code امن fail می‌شود؛ فقط QA ایزوله آن را صریحاً `Community` می‌کند.
+- build/runtime image و دو فایل DejaVu Sans با digest دقیق pin شده‌اند؛ Renderer پیش از ثبت فونت
+  hash را کنترل می‌کند. هر تغییر package/image/font/layout نیازمند Golden جدید است.
+- Golden بصری در ۹۶ DPI، دو رندر byte-identical، کنترل متن/ساختار و budgetهای cold/warm به‌ترتیب
+  ۵۰۰۰/۲۵۰۰ ms جزو Gate این Adapter هستند.
 
 ### XLSX
 

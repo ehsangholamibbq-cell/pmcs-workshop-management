@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
@@ -19,8 +20,10 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/ReportingOrphanRemediationOptions.cs`,
     `${moduleRoot}/Services/ReportOutputOrphanRemediationWorker.cs`,
     `${moduleRoot}/Services/ReportRunAdvisoryLock.cs`,
+    `${moduleRoot}/Rendering/CertifiedPdfRuntimeContract.cs`,
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingPdfGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -39,6 +42,10 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "tools/qa/verify-reporting-recovery.sh",
     "tools/qa/verify-reporting-security.sh",
     "tools/qa/verify-reporting-worker-revocation.sh",
+    "assets/reporting/fonts/DejaVuSans.ttf",
+    "assets/reporting/fonts/DejaVuSans-Bold.ttf",
+    "assets/reporting/fonts/LICENSE.txt",
+    "assets/reporting/fonts/manifest.json",
   ]) assert.equal(existsSync(path), true, `Missing ${path}`);
 
   const module = read(`${moduleRoot}/ReportingModule.cs`);
@@ -115,6 +122,11 @@ test("generated outputs use the Documents owner contract and certified renderers
   const pdf = read(`${moduleRoot}/Rendering/DailyReportPdfRenderer.cs`);
   const xlsx = read(`${moduleRoot}/Rendering/DailyReportXlsxRenderer.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const pdfContract = read(`${moduleRoot}/Rendering/CertifiedPdfRuntimeContract.cs`);
+  const packages = read("Directory.Packages.props");
+  const dockerfile = read("deploy/docker/api.Dockerfile");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+  const fontManifest = JSON.parse(read("assets/reporting/fonts/manifest.json"));
   assert.match(publisherContract, /PublishReportOutputAsync/u);
   assert.doesNotMatch(publisherContract, /ObjectKey|Presign|UploadSession/u);
   assert.match(publisher, /DocumentOwnerType\.ReportOutput/u);
@@ -125,7 +137,39 @@ test("generated outputs use the Documents owner contract and certified renderers
   assert.match(worker, /rendered\.Add[\s\S]*?foreach \(var item in rendered\)[\s\S]*?PublishReportOutputAsync/u);
   assert.match(worker, /reporting\.report\.completed\.v1/u);
   assert.match(pdf, /ContentFromRightToLeft/u);
-  assert.match(pdf, /File\.OpenRead[\s\S]*FontManager\.RegisterFont\(/u);
+  assert.match(pdf, /SHA256\.HashData[\s\S]*FontManager\.RegisterFont\(/u);
+  assert.match(pdf, /GenerateImages[\s\S]*QualificationRasterDpi/u);
+  assert.match(pdf, /reporting\.renderer\.configuration_unpinned/u);
+  assert.match(pdf, /reporting\.renderer\.font_integrity_failed/u);
+  assert.match(pdf, /reporting\.renderer\.license_unapproved/u);
+  assert.match(packages, /PackageVersion Include="QuestPDF" Version="2026\.8\.0"/u);
+  assert.match(packages, /PackageVersion Include="PdfPig" Version="0\.1\.16"/u);
+  assert.match(pdfContract, /LicenseDecision = "Community"/u);
+  assert.match(pdfContract, /QualificationColdRenderBudgetMilliseconds = 5_000/u);
+  assert.match(pdfContract, /QualificationWarmRenderBudgetMilliseconds = 2_500/u);
+  assert.match(
+    dockerfile,
+    /dotnet\/sdk:10\.0@sha256:2fa828c68761b1b8c23d7662dc134421b9d3b59fe1425fdbc80804e390cdb24d/u,
+  );
+  assert.match(
+    dockerfile,
+    /dotnet\/aspnet:10\.0@sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c/u,
+  );
+  assert.doesNotMatch(dockerfile, /apt-get|fonts-dejavu-core/u);
+  assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.equal(
+    settings.ReportingCenter.PdfRendererImageDigest,
+    "sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c",
+  );
+  for (const font of fontManifest.files) {
+    const digest = createHash("sha256")
+      .update(readFileSync(`assets/reporting/fonts/${font.path}`))
+      .digest("hex");
+    assert.equal(digest, font.sha256, `${font.path} digest drifted`);
+  }
   assert.match(xlsx, /rightToLeft/u);
   assert.match(xlsx, /CompressionLevel\.NoCompression/u);
   assert.doesNotMatch(xlsx, /<f>|WriteStartElement\("f"/u);
@@ -178,6 +222,7 @@ test("generated report orphan remediation is dry-run first retention-safe and au
 test("connected RPT1 qualification covers API, worker, storage and database evidence", () => {
   const harness = read("src/backend/Pmcs.TestHarness/ReportingVerification.cs");
   const golden = read("src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs");
+  const pdfGolden = read("src/backend/Pmcs.TestHarness/ReportingPdfGoldenVerification.cs");
   const seed = read("tools/qa/seed-diagnostics.sh");
   const database = read("tools/qa/verify-database.sh");
   assert.match(harness, /reporting\.xlsx\.create\.idempotent-replay/u);
@@ -190,7 +235,15 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(golden, /reporting\.golden\.after\.semantic-workbook/u);
   assert.match(golden, /reporting\.golden\.xlsx\.typed-safety-and-lineage/u);
   assert.match(golden, /GoldenDraftMarker/u);
+  assert.match(pdfGolden, /rpt1-pdf-golden-verification/u);
+  assert.match(pdfGolden, /reporting\.pdf\.golden\.stored-bytes-deterministic/u);
+  assert.match(pdfGolden, /reporting\.pdf\.golden\.structure-and-text/u);
+  assert.match(pdfGolden, /reporting\.pdf\.golden\.end-to-end-budget/u);
   assert.match(seed, /-- verify-reporting-golden/u);
+  assert.match(seed, /start_api true Community[\s\S]*?-- verify-reporting-pdf-golden/u);
+  assert.match(seed, /ReportingCenter__PdfRegularFontSha256=ae7b7855/u);
+  assert.match(seed, /ReportingCenter__PdfBoldFontSha256=5c1247ac/u);
+  assert.match(seed, /ReportingCenter__PdfRendererImageDigest=sha256:6a94333d/u);
   const cancellation = read("src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs");
   assert.match(cancellation, /reporting\.cancel\.accepted-before-rendering/u);
   assert.match(cancellation, /reporting\.cancel\.idempotent-replay/u);
@@ -253,7 +306,8 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(qualificationOptions, /qualification controls require the isolated QA gateway/u);
   assert.match(qualificationOptions, /PMCS_QA_GATEWAY_ENABLED/u);
   assert.match(qualificationOptions, /QualificationPauseSeconds must be between 1 and 60/u);
-  assert.match(seed, /ReportingCenter__PdfLicense=Unconfigured/u);
+  assert.match(seed, /ReportingCenter__PdfLicense="\$\{pdf_license\}"/u);
+  assert.match(seed, /start_api true Unconfigured/u);
   assert.match(seed, /-- verify-reporting/u);
   assert.match(seed, /start_api false[\s\S]*?-- verify-reporting-cancellation/u);
   assert.match(seed, /verify-reporting-security\.sh/u);

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using Pmcs.Modules.FieldOperations.Contracts;
 using Pmcs.Modules.Reporting.Domain;
 using QuestPDF.Drawing;
@@ -12,7 +13,6 @@ internal sealed class DailyReportPdfRenderer(
     ReportingRendererOptions options,
     ReportingExecutionOptions execution) : IReportRenderer
 {
-    private const string FontFamily = "DejaVu Sans";
     private static readonly object ConfigurationGate = new();
     private static string? configuredSignature;
 
@@ -28,52 +28,10 @@ internal sealed class DailyReportPdfRenderer(
                 "The PDF renderer received another output format.");
         }
 
-        EnsureQuestPdfConfigured();
-        var orderedVersions = request.Snapshot.Versions
-            .OrderBy(version => version.VersionNumber)
-            .ThenBy(version => version.ReportId)
-            .ToArray();
-        if (orderedVersions.Sum(version => version.Facts.Count) > execution.MaximumPdfFacts)
-        {
-            throw new ReportRenderingException(
-                "reporting.output.page_limit_exceeded",
-                transient: false,
-                "The certified PDF fact limit was exceeded.");
-        }
-
         try
         {
-            var document = Document.Create(container =>
-            {
-                container.Page(page =>
-                {
-                    page.Size(PageSizes.A4.Portrait());
-                    page.MarginHorizontal(28);
-                    page.MarginVertical(24);
-                    page.PageColor(Colors.White);
-                    page.ContentFromRightToLeft();
-                    page.DefaultTextStyle(style => style
-                        .FontFamily(FontFamily)
-                        .FontSize(8.5f)
-                        .FontColor("#172033"));
-                    page.Header().Element(header => ComposeHeader(header, request));
-                    page.Content().PaddingVertical(12).Element(content =>
-                        ComposeContent(content, request, orderedVersions));
-                    page.Footer().Element(footer => ComposeFooter(footer, request));
-                });
-            }).WithMetadata(new DocumentMetadata
-            {
-                Title = "گزارش روزانه رسمی",
-                Author = "PMCS Certified Reporting",
-                Subject = request.VerificationCode,
-                Keywords = $"PMCS,{request.DefinitionCode},{request.TemplateVersion}",
-                Creator = "PMCS Certified Reporting",
-                Producer = $"PMCS renderer {request.RendererContractVersion}",
-                Language = "fa-IR",
-                CreationDate = request.SourceCutoffUtc.UtcDateTime,
-                ModifiedDate = request.SourceCutoffUtc.UtcDateTime
-            });
-
+            var orderedVersions = Prepare(request);
+            var document = CreateDocument(request, orderedVersions);
             var bytes = document.GeneratePdf();
             return new RenderedReportArtifact(
                 Format,
@@ -98,9 +56,104 @@ internal sealed class DailyReportPdfRenderer(
         }
     }
 
+    internal IReadOnlyList<byte[]> RenderQualificationImages(ReportRenderRequest request)
+    {
+        if (request.Format != Format)
+        {
+            throw new ReportRenderingException(
+                "reporting.format.unsupported",
+                transient: false,
+                "The PDF qualification renderer received another output format.");
+        }
+
+        try
+        {
+            var orderedVersions = Prepare(request);
+            return CreateDocument(request, orderedVersions)
+                .GenerateImages(new ImageGenerationSettings
+                {
+                    ImageFormat = ImageFormat.Png,
+                    ImageCompressionQuality = ImageCompressionQuality.Best,
+                    RasterDpi = CertifiedPdfRuntimeContract.QualificationRasterDpi,
+                    UseTransparentBackground = false
+                })
+                .ToArray();
+        }
+        catch (ReportRenderingException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new ReportRenderingException(
+                "reporting.renderer.pdf_visual_failed",
+                transient: false,
+                "The certified PDF qualification image could not be rendered.",
+                exception);
+        }
+    }
+
+    private DailyReportReportingVersion[] Prepare(ReportRenderRequest request)
+    {
+        EnsureQuestPdfConfigured();
+        var orderedVersions = request.Snapshot.Versions
+            .OrderBy(version => version.VersionNumber)
+            .ThenBy(version => version.ReportId)
+            .ToArray();
+        if (orderedVersions.Sum(version => version.Facts.Count) > execution.MaximumPdfFacts)
+        {
+            throw new ReportRenderingException(
+                "reporting.output.page_limit_exceeded",
+                transient: false,
+                "The certified PDF fact limit was exceeded.");
+        }
+        return orderedVersions;
+    }
+
+    private static Document CreateDocument(
+        ReportRenderRequest request,
+        IReadOnlyCollection<DailyReportReportingVersion> orderedVersions) =>
+        Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Portrait());
+                page.MarginHorizontal(28);
+                page.MarginVertical(24);
+                page.PageColor(Colors.White);
+                page.ContentFromRightToLeft();
+                page.DefaultTextStyle(style => style
+                    .FontFamily(CertifiedPdfRuntimeContract.FontFamily)
+                    .FontSize(8.5f)
+                    .FontColor("#172033"));
+                page.Header().Element(header => ComposeHeader(header, request));
+                page.Content().PaddingVertical(12).Element(content =>
+                    ComposeContent(content, request, orderedVersions));
+                page.Footer().Element(footer => ComposeFooter(footer, request));
+            });
+        }).WithMetadata(new DocumentMetadata
+        {
+            Title = "گزارش روزانه رسمی",
+            Author = "PMCS Certified Reporting",
+            Subject = request.VerificationCode,
+            Keywords = $"PMCS,{request.DefinitionCode},{request.TemplateVersion}",
+            Creator = "PMCS Certified Reporting",
+            Producer = $"PMCS renderer {request.RendererContractVersion}",
+            Language = "fa-IR",
+            CreationDate = request.SourceCutoffUtc.UtcDateTime,
+            ModifiedDate = request.SourceCutoffUtc.UtcDateTime
+        });
+
     private void EnsureQuestPdfConfigured()
     {
-        var signature = $"{options.PdfLicense}|{options.PdfRegularFontPath}|{options.PdfBoldFontPath}";
+        var signature = string.Join(
+            '|',
+            options.PdfLicense,
+            options.PdfRegularFontPath,
+            options.PdfBoldFontPath,
+            options.PdfRegularFontSha256,
+            options.PdfBoldFontSha256,
+            options.PdfRendererImageDigest);
         lock (ConfigurationGate)
         {
             if (configuredSignature is not null)
@@ -115,34 +168,70 @@ internal sealed class DailyReportPdfRenderer(
                 return;
             }
 
-            QuestPDF.Settings.License = options.PdfLicense.ToLowerInvariant() switch
-            {
-                "community" => LicenseType.Community,
-                "professional" => LicenseType.Professional,
-                "enterprise" => LicenseType.Enterprise,
-                _ => throw new ReportRenderingException(
-                    "reporting.renderer.license_unconfigured",
-                    transient: false,
-                    "A reviewed QuestPDF license mode must be configured before PDF rendering is enabled.")
-            };
-            if (!File.Exists(options.PdfRegularFontPath) || !File.Exists(options.PdfBoldFontPath))
+            if (string.Equals(options.PdfLicense, "Unconfigured", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ReportRenderingException(
-                    "reporting.renderer.font_missing",
+                    "reporting.renderer.license_unconfigured",
                     transient: false,
-                    "The certified Persian PDF font files are not available.");
+                    "A reviewed QuestPDF license mode must be configured before PDF rendering is enabled.");
+            }
+            if (!string.Equals(
+                    options.PdfLicense,
+                    CertifiedPdfRuntimeContract.LicenseDecision,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ReportRenderingException(
+                    "reporting.renderer.license_unapproved",
+                    transient: false,
+                    "The configured QuestPDF license differs from the reviewed legal decision.");
+            }
+            QuestPDF.Settings.License = LicenseType.Community;
+            if (!string.Equals(
+                    options.PdfRendererImageDigest,
+                    CertifiedPdfRuntimeContract.RuntimeImageDigest,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    options.PdfRegularFontSha256,
+                    CertifiedPdfRuntimeContract.RegularFontSha256,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    options.PdfBoldFontSha256,
+                    CertifiedPdfRuntimeContract.BoldFontSha256,
+                    StringComparison.Ordinal))
+            {
+                throw new ReportRenderingException(
+                    "reporting.renderer.configuration_unpinned",
+                    transient: false,
+                    "The certified PDF image or font digest differs from the reviewed runtime contract.");
             }
 
-            using (var regularFont = File.OpenRead(options.PdfRegularFontPath))
-            {
-                FontManager.RegisterFont(regularFont);
-            }
-            using (var boldFont = File.OpenRead(options.PdfBoldFontPath))
-            {
-                FontManager.RegisterFont(boldFont);
-            }
+            RegisterCertifiedFont(options.PdfRegularFontPath, options.PdfRegularFontSha256);
+            RegisterCertifiedFont(options.PdfBoldFontPath, options.PdfBoldFontSha256);
             configuredSignature = signature;
         }
+    }
+
+    private static void RegisterCertifiedFont(string path, string expectedSha256)
+    {
+        if (!File.Exists(path))
+        {
+            throw new ReportRenderingException(
+                "reporting.renderer.font_missing",
+                transient: false,
+                "A certified Persian PDF font file is not available.");
+        }
+
+        using var font = File.OpenRead(path);
+        var actualSha256 = Convert.ToHexString(SHA256.HashData(font)).ToLowerInvariant();
+        if (!string.Equals(actualSha256, expectedSha256, StringComparison.Ordinal))
+        {
+            throw new ReportRenderingException(
+                "reporting.renderer.font_integrity_failed",
+                transient: false,
+                "A certified Persian PDF font failed its SHA-256 integrity check.");
+        }
+        font.Position = 0;
+        FontManager.RegisterFont(font);
     }
 
     private static void ComposeHeader(IContainer container, ReportRenderRequest request)

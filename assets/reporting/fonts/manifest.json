@@ -1,0 +1,22 @@
+{
+  "contractVersion": 1,
+  "family": "DejaVu Sans",
+  "upstreamVersion": "2.37",
+  "sourcePackage": "fonts-dejavu-core 2.37-8",
+  "source": "https://dejavu-fonts.github.io/",
+  "license": "Bitstream Vera; DejaVu changes are public domain",
+  "files": [
+    {
+      "path": "DejaVuSans.ttf",
+      "style": "Book",
+      "fontVersion": 155320,
+      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
+    },
+    {
+      "path": "DejaVuSans-Bold.ttf",
+      "style": "Bold",
+      "fontVersion": 155320,
+      "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895"
+    }
+  ]
+}
