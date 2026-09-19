@@ -8,8 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
-- آخرین Qualification Candidate: `9bb7ede9b89da2078e165cccb2927e0449116909`
-- آخرین Connected evidence: Run 120 (`35443563270`) — `success`
+- آخرین Qualification Candidate: `4ff44c96104ee1df87d267ca9a530d19b9248ba3`
+- آخرین Connected evidence: Run 123 (`35445497353`) — `success`
 
 ## ۱. هدف و روش
 
@@ -91,7 +91,7 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 | `V1.1-DOC1` | Shared Documents، Scanner/Quarantine/Retention | بسته؛ Run 83 |
 | `V1.1-IAM1` | Login Descriptor و Member Profile | بسته؛ Run 88 |
 | `V1.1-PRJ1` | Controlled Project Bootstrap/Duplication | بسته؛ Run 92 |
-| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–06/MS03 | **فعال؛ core/security/recovery/capacity/observability متصل پاس شده و Gate خروج باز است** |
+| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–06/MS04 | **فعال؛ core/security/recovery/capacity/observability/orphan remediation متصل پاس شده و Gate خروج باز است** |
 | `V1.1-COL1` | Project Collaboration | برنامه‌ریزی‌شده |
 | `V1.1-UX2` | Full Product UI migration | برنامه‌ریزی‌شده |
 | `V1.1-INT1` | Agent Stage 1 | برنامه‌ریزی‌شده |
@@ -103,10 +103,10 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 Evidence commit بعدی فقط وضعیت PRJ1/RPT1 را ثبت کرد. Tree جاری
 `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b` همان محتوای Evidence متصل ثبت‌شده است.
 
-از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 06/MS03 ادامه یافته است. آخرین Candidate روی
-source commit `9bb7ede9b89da2078e165cccb2927e0449116909` و tree
-`a960cddb5264b3de8857812906b7595db0664ba5` در Run 120 هر هشت Job را پاس کرده است. Addendumهای
-۱۱ تا ۲۰ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
+از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 06/MS04 ادامه یافته است. آخرین Candidate روی
+source commit `4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 هر هشت Job را پاس کرده است. Addendumهای
+۱۱ تا ۲۱ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
 
 ## ۶. Agent مدیریتی؛ تطبیق کامل هفت Stage
 
@@ -182,11 +182,11 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Safe Checkpoint نهایی Slice 06 Micro-Step 03 C2 برای exporter OTLP، scrape،
-سه alert rule و delivery متصل queue-age در Run 120؛ MS03 بسته و RPT1 همچنان فعال است.
+آخرین اقدام تکمیل‌شده: Safe Checkpoint Slice 06 Micro-Step 04 برای inventory/dry-run و remediation
+امن Generated Document orphan در Run 123؛ MS04 بسته و RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: `S06-MS04` شامل remediation امن orphan با inventory/dry-run، retention/legal hold،
-idempotency و Audit؛ سپس Golden معنایی/XLSX، PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
+نقطهٔ دقیق ادامه: Golden معنایی cutoff پیش/پس از correction و Golden مستقل XLSX با replay/hash
+deterministic و تطبیق Snapshot؛ سپس PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
@@ -317,3 +317,18 @@ Run 119 فقط compile diagnostic `CS9135` را روی constant pattern scheme �
 Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد. این Addendum MS03 را می‌بندد، اما
 RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز مصوب Agent را تغییر نمی‌دهد. نقطهٔ ادامه
 remediation امن orphan در `S06-MS04` است.
+
+## ۲۱. Addendum — Safe Generated Document Orphan Remediation
+
+Slice 06 Micro-Step 04 با source commit `4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 (`35445497353`) هر هشت Job را پاس کرد.
+worker داخلی با modeهای default-off `Disabled|InventoryOnly|ApplyEligible` چهار Candidate واقعی را
+روی PostgreSQL/MinIO inventory کرد. dry-run هیچ metadata، object یا Audit را تغییر نداد و apply فقط
+orphan منقضی، بدون legal hold و بدون owner را حذف کرد؛ Candidateهای retention-protected،
+legal-hold-protected و owned حفظ شدند.
+
+حذف object و metadata با recheck زیر row lock، advisory lock مشترک Retry/remediation، Audit یکتا و
+عاری از object key و sweep دوم idempotent هر `7/7` assertion متصل را پاس کردند. Run 122 فقط
+ناسازگاری compile `CS1674` در lifetime پاسخ نسخهٔ pin‌شده AWS SDK را آشکار کرد و fix به حذف همان
+`using` نامعتبر محدود ماند. MS04 بسته است، اما RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز
+مصوب Agent تغییر نکرده‌اند. نقطهٔ ادامه Golden معنایی و XLSX deterministic است.

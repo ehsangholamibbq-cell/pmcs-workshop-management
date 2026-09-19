@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.18.0`
+- نسخه سند: `1.19.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -324,6 +324,16 @@ rule queue-age/heartbeat/failure-retry را load کردند و alert queue-age �
 RPT1 برای remediation امن orphan، Golden معنایی/XLSX، PDF قانونی و UI Reporting باز می‌ماند؛
 نقطهٔ بعدی `S06-MS04` است و ترتیب RPT1، COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
 
+**Slice 06 Micro-Step 04 — Safe Checkpoint:** Candidate با commit
+`4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 (`35445497353`) هر هشت Job را پاس کرد.
+worker داخلی و default-off در `InventoryOnly` چهار Candidate را بدون side effect inventory کرد و در
+`ApplyEligible` فقط orphan منقضی، بدون legal hold و بدون owner را حذف کرد. retention و legal hold
+زیر row lock دوباره سنجیده شدند؛ Retry/remediation advisory lock مشترک، Audit یکتا و بدون object key
+و sweep دوم idempotent بودند. هیچ API تجاری یا Migration اضافه نشد. MS04 بسته است، اما RPT1 برای
+Golden معنایی/XLSX، تصمیم قانونی و Golden/Performance PDF و UI Reporting باز می‌ماند؛ ترتیب RPT1،
+COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -584,3 +594,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.16.0` | ثبت Safe Checkpoint متصل `S06-MS02` برای ۲۰ Run سالم + poison، P95 و fairness دو پروژه/دو Worker؛ Operational Observability در `MS03` باز است |
 | `1.17.0` | ثبت Safe Checkpoint میانی `S06-MS03-C1` برای قرارداد کم‌کاردینالیتی Meter و readiness متصل queue-age؛ exporter/scrape/alert delivery در `MS03-C2` باز است |
 | `1.18.0` | ثبت Safe Checkpoint نهایی `S06-MS03-C2` برای OTLP، scrape، سه alert rule و delivery متصل queue-age؛ MS03 بسته و remediation orphan/Golden/PDF/UI باز است |
+| `1.19.0` | ثبت Safe Checkpoint `S06-MS04` برای inventory/dry-run و remediation امن orphan با retention، legal hold، Audit و idempotency؛ MS04 بسته و Golden/PDF/UI باز است |

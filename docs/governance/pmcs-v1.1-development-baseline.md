@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS03-C2 تا source commit `9bb7ede` با OTLP/scrape/rules/alert delivery پاس؛ remediation orphan و Golden/PDF/UI باز |
-| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 120 پاس شده است |
+| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS04 تا source commit `4ff44c9` با inventory/dry-run و remediation امن orphan پاس؛ Golden/PDF/UI باز |
+| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 123 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -117,6 +117,16 @@ Slice 06 Micro-Step 03 Checkpoint C2 با source commit
 Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد. alert queue-age واقعاً firing و به
 webhook ایزوله تحویل شد و payload metric/alert هیچ Tenant/Project/User/Run ID نداشت. MS03 بسته است؛
 remediation orphan، Golden معنایی/XLSX، PDF قانونی و UI Reporting بازند و RPT1 Active می‌ماند.
+
+Slice 06 Micro-Step 04 با source commit
+`4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` worker داخلی و default-off remediation را بدون endpoint
+تجاری یا Migration جدید اضافه کرد. Run 123 (`35445497353`) هر هشت Job، `328/328` تست C#،
+`50/50` تست قراردادی، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد.
+dry-run هر چهار fixture را حفظ کرد و apply فقط orphan منقضی و بدون hold را حذف کرد؛ retention،
+legal hold و owner موجود محفوظ ماندند، object واقعی MinIO بررسی شد، Audit یکتا و بدون object key بود
+و sweep دوم idempotent ماند. MS04 بسته است؛ Golden معنایی/XLSX، PDF قانونی و UI Reporting بازند و
+RPT1 Active می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

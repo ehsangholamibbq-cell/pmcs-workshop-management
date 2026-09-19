@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: MS03 OTLP/scrape/rules/connected queue-age alert delivery passed؛ extended RPT1 gates open
+- Status: MS04 safe orphan inventory/dry-run/remediation passed؛ extended RPT1 gates open
 
 ## Operational Observability
 
@@ -52,10 +52,23 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 - claim منقضی فقط پس از lease/timeout رسمی آزاد می‌شود؛
 - Worker جدید همان stable output identity را استفاده می‌کند؛
 - اگر Document منتشر ولی transaction نهایی نشده، retry با stable identity همان Document و bytes را
-  دوباره verify می‌کند و Document دوم نمی‌سازد؛ automated orphan sweeper هنوز در این Candidate
-  پیاده نشده و تا Slice recovery باید inventory آن به‌صورت عملیاتی ثبت شود؛
+  دوباره verify می‌کند و Document دوم نمی‌سازد؛
+- remediation orphan فقط با mode صریح و پس از grace انجام می‌شود و با Retry روی همان advisory
+  transaction lock سریال است؛
 - اگر database commit شده ولی response قطع شده، Idempotency replay همان Run را برمی‌گرداند؛
 - Snapshot/hash موجود پیش از render مجدد verify می‌شود.
+
+## Generated Document orphan remediation
+
+- مقدار پیش‌فرض `ReportingCenter:OrphanRemediationMode=Disabled` است؛
+- `InventoryOnly` فقط Candidateها را می‌شمارد و هیچ metadata، object یا Audit را تغییر نمی‌دهد؛
+- `ApplyEligible` فقط برای `ReportOutput` بدون owner، Run نهایی failed، lineage یکتا، grace سپری‌شده،
+  retention شناخته‌شده و منقضی و legal hold خاموش مجاز است؛
+- Documents باید state، revision، retention و legal hold را زیر `FOR UPDATE` دوباره بررسی کند؛
+- حذف metadata و `GeneratedReportOrphanRemediated` Audit اتمیک‌اند و Audit نباید object key داشته باشد؛
+- اجرای دوم باید idempotent باشد؛ Candidate owned، recoverable، ambiguous یا protected حذف نمی‌شود؛
+- تغییر به `ApplyEligible` در Production فقط با Change Record، backup/restore معتبر، dry-run بازبینی‌شده
+  و approval عملیاتی مجاز است؛ worker جای retention scheduler عمومی یا lifecycle storage نیست.
 
 ## Object Storage failure
 
@@ -125,7 +138,7 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 - integrity mismatch؛
 - permission-denial spike؛
 - object storage unavailable؛
-- orphan Generated Document؛
+- orphan Generated Document؛ inventory/dry-run/apply متصل در Run 123 پاس و rollout تولیدی مستقل است؛
 - migration/catalog digest mismatch؛
 - output size/page/row limit breach.
 
@@ -205,3 +218,11 @@ Run 120 (`35443563270`) ادامهٔ مستقیم C2 را پاس کرد. OpenTel
 هارنس هر `5/5` assertion target/metric/privacy/firing/delivery، fairness هر `10/10` و capacity هر
 `11/11` assertion را پاس کرد. payloadهای metric و alert برای نبود Tenant/Project/User/Run ID کنترل
 شدند. این نتیجه MS03 را می‌بندد؛ remediation orphan، Golden/PDF و UI هنوز Gate باز RPT1 هستند.
+
+Run 123 (`35445497353`) مسیر `tools/qa/verify-reporting-orphan-remediation.sh` را نیز پاس کرد.
+dry-run چهار Candidate واقعی را بدون تغییر inventory کرد و apply فقط orphan eligible منقضی و بدون
+hold را از PostgreSQL/MinIO حذف کرد؛ retention-protected، legal-hold-protected و owned باقی ماندند.
+TestHarness وضعیت چهار object را `4/4`، orchestration remediation را `7/7` و sweep دوم را بدون Audit
+یا حذف تکراری تأیید کرد. Audit شامل lineage/revision بود و object key نداشت. این نتیجه MS04 را
+می‌بندد، اما مجوز rollout Production یا پاک‌سازی orphan مبهم نیست؛ Golden معنایی/XLSX، PDF قانونی
+و UI Reporting همچنان Gate باز RPT1 هستند.

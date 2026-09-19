@@ -7,10 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint نهایی Slice 06 Micro-Step 03 در Run 120، exporter اختیاری OTLP، scrape واقعی، سه
-alert rule و تحویل متصل alert صف aged را روی سناریوی واقعی دو Worker پاس کرده است. MS03 بسته است؛
-remediation امن orphan و Golden/PDF/UI هنوز Gate باز RPT1 هستند و همهٔ feature flagها پیش‌فرض
-خاموش‌اند.
+Safe Checkpoint Slice 06 Micro-Step 04 در Run 123، inventory/dry-run و remediation امن Generated
+Document orphan را با retention، legal hold، idempotency و Audit روی PostgreSQL/MinIO واقعی پاس
+کرده است. MS04 بسته است؛ Golden معنایی/XLSX، تصمیم قانونی و Golden/Performance PDF و UI هنوز
+Gate باز RPT1 هستند و همهٔ feature flagها و remediation پیش‌فرض خاموش‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -239,5 +239,6 @@ npm run check
 - Connected Capacity/Fairness Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md)
 - Operational Signal Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md)
 - Operational Observability Delivery Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md)
+- Safe Orphan Remediation Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

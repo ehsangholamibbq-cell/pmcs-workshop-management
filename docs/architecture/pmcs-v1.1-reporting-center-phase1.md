@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.5.0`
-- وضعیت: `MS03 complete | OTLP exporter, Prometheus scrape/rules and connected alert delivery passed | extended RPT1 gates open`
+- نسخه: `1.6.0`
+- وضعیت: `MS04 complete | safe orphan inventory/remediation connected qualification passed | extended RPT1 gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `9bb7ede9b89da2078e165cccb2927e0449116909`
-- Source tree: `a960cddb5264b3de8857812906b7595db0664ba5`
-- Connected evidence: Run 120 (`35443563270`) — `success`
+- آخرین Qualification Candidate: `4ff44c96104ee1df87d267ca9a530d19b9248ba3`
+- Source tree: `d4c320e7917121f64a70dea1251169bef4b516ce`
+- Connected evidence: Run 123 (`35445497353`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -237,6 +237,21 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - Retire/Archive metadata خروجی و Snapshot را بازنویسی نمی‌کند؛
 - Source حذف یا اصلاح نمی‌تواند Output تاریخی را بی‌صدا تغییر دهد.
 
+### ۱۲.۱ Generated Document orphan remediation
+
+- remediation فقط برای `ReportOutput` آزادشده و قدیمی‌تر از grace صریح انجام می‌شود؛
+- نبود owner در `reporting.report_outputs`، lineage یکتای release Audit، Run نهایی
+  `Failed/Failed` و `output_count=0` پیش‌شرط‌اند؛ حالت مبهم یا recoverable حذف نمی‌شود؛
+- retry و remediation روی همان Run از PostgreSQL transaction advisory lock مشترک استفاده می‌کنند؛
+- `InventoryOnly` هیچ metadata یا object را تغییر نمی‌دهد و `ApplyEligible` فقط با retention
+  شناخته‌شده و منقضی و بدون legal hold مجاز است؛ مقدار پیش‌فرض `Disabled` است؛
+- Documents زیر `FOR UPDATE` هویت، revision، state، retention و legal hold را دوباره می‌سنجد،
+  سپس domain deletion، حذف object و حذف metadata را انجام می‌دهد؛
+- حذف metadata و Audit `GeneratedReportOrphanRemediated` در transaction مالک Documents اتمیک‌اند؛
+  Audit شامل owner/run/retention/revision است و object key را ثبت نمی‌کند؛
+- pagination، batch و سقف هر sweep bounded هستند و اجرای دوباره Audit یا حذف تکراری نمی‌سازد؛
+- این worker endpoint حذف عمومی، bypass retention یا مجوز پاک‌سازی orphanهای مبهم ایجاد نمی‌کند.
+
 ## ۱۳. Observability و SLO اولیه
 
 - queue depth، oldest queued age، processing duration و success/failure/retry count؛
@@ -337,3 +352,11 @@ Slice 06 Micro-Step 03 Checkpoint C2 در Run 120 exporter اختیاری OTLP �
 queue-age از Prometheus به Alertmanager و webhook ایزوله تحویل شد. qualification هر `5/5` assertion
 target/metric/privacy/firing/delivery را پاس کرد و MS03 بسته شد. remediation امن orphan، Golden،
 PDF قانونی و UI اختصاصی Reporting همچنان Gate باز RPT1 هستند.
+
+Slice 06 Micro-Step 04 در Run 123، worker داخلی orphan remediation را با سه mode
+`Disabled|InventoryOnly|ApplyEligible` و مرز باریک Documents متصل qualify کرد. dry-run چهار Candidate
+را بدون تغییر inventory کرد؛ apply فقط orphan منقضی و بدون hold را حذف کرد و Candidateهای دارای
+retention، legal hold یا owner را حفظ کرد. حذف object واقعی MinIO، Audit یکتا و عاری از object key،
+و idempotency sweep دوم هر `7/7` assertion را پاس کردند. هیچ API تجاری یا Migration اضافه نشد و
+Restore Drill همان ۴۳ Migration را نگه داشت. MS04 بسته است؛ Golden معنایی/XLSX، PDF قانونی و UI
+اختصاصی Reporting همچنان Gate باز RPT1 هستند.

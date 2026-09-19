@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.4.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + operational observability passed؛ extended RPT1 qualification open
+- نسخه: `1.5.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + operational observability + safe orphan remediation passed؛ extended RPT1 qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -309,3 +309,26 @@ Run 119 فقط compile diagnostic `CS9135` را در scheme pattern آشکار �
 Ordinal محدود بود. MS03 با Run 120 بسته است. delivery مستقل heartbeat/failure-retry، remediation
 تولیدی orphan، Golden معنایی/XLSX، PDF قانونی/Golden/performance و UI اختصاصی Reporting هنوز
 Gate باز هستند.
+
+## ۲۰. Coverage افزوده‌شده در Slice 06 Micro-Step 04
+
+Candidate `4ff44c96104ee1df87d267ca9a530d19b9248ba3` با tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 (`35445497353`) موارد زیر را پاس کرد:
+
+- modeهای fail-closed و case-sensitive `Disabled|InventoryOnly|ApplyEligible` با default خاموش؛
+- حداقل grace بیست‌وچهارساعته، polling، batch و سقف bounded sweep و رد config ناامن؛
+- inventory چهار Generated Document روی PostgreSQL/MinIO واقعی و تشخیص سه orphan/یک owned؛
+- dry-run بدون تغییر metadata، object یا Audit؛
+- apply فقط برای Run نهایی failed، lineage یکتا، owner غایب، retention منقضی و legal hold خاموش؛
+- حفظ جداگانهٔ Candidate دارای retention فعال، legal hold و owner موجود؛
+- advisory transaction lock مشترک retry/remediation و recheck Documents زیر `FOR UPDATE`؛
+- حذف object eligible و حفظ سه object دیگر با `4/4` assertion TestHarness؛
+- Audit یکتای `GeneratedReportOrphanRemediated` با lineage/revision و بدون object key؛
+- sweep دوم idempotent و کل orchestration remediation هر `7/7` assertion؛
+- `328/328` تست C#، `50/50` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، Restore
+  ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+Run 122 فقط compile diagnostic `CS1674` را روی lifetime پاسخ metadata نسخهٔ pin‌شده AWS SDK آشکار
+کرد؛ fix نهایی به حذف `using` نامعتبر از هارنس محدود بود. MS04 با Run 123 بسته است. این coverage
+پاک‌سازی گسترده، bypass retention/legal hold یا rollout Production را مجاز نمی‌کند. Golden معنایی
+و XLSX مستقل، PDF قانونی/Golden/performance و UI اختصاصی Reporting هنوز Gate باز هستند.

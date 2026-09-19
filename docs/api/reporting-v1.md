@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ latest qualification candidate `9bb7ede9b89da2078e165cccb2927e0449116909` passed Run 120؛ business API unchanged and extended RPT1 gates open
+- Status: Runtime implemented؛ latest qualification candidate `4ff44c96104ee1df87d267ca9a530d19b9248ba3` passed Run 123؛ business API unchanged and extended RPT1 gates open
 
 ## ۱. قواعد عمومی
 
@@ -24,6 +24,13 @@
 وضعیت `Degraded` می‌دهد؛ این payload جای exporter یا alerting را نمی‌گیرد. مسیر مستقل deployment
 در MS03-C2 از OTLP به Collector، scrape پرومتئوس و Alertmanager متصل شده و endpoint تجاری تازه‌ای
 زیر `/api/v1` اضافه نکرده است.
+
+### ۱.۲ سطح عملیاتی remediation
+
+MS04 هیچ endpoint تجاری یا عمومی تازه‌ای اضافه نمی‌کند. worker داخلی orphan remediation فقط با
+`ReportingCenter:OrphanRemediationMode=InventoryOnly|ApplyEligible` فعال می‌شود و مقدار پیش‌فرض
+`Disabled` است. قرارداد بین Reporting و Documents هیچ object key برنمی‌گرداند؛ APIهای
+Create/Retry/Download/Verify و Permissionهای آن‌ها بدون تغییر مانده‌اند.
 
 ## ۲. Catalog
 

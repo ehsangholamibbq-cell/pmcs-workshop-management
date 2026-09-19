@@ -526,12 +526,34 @@ test("RPT1 operational observability delivery records the final MS03 safe checkp
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS04/u);
   assert.match(checkpoint, /MS03 بسته/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.18\.0`/u);
   assert.match(roadmap, /\| `1\.18\.0` \| ثبت Safe Checkpoint نهایی `S06-MS03-C2`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.18\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS03-C2[\s\S]*9bb7ede9b89da2078e165cccb2927e0449116909/u);
   assert.match(runbook, /## Operational Observability/u);
   assert.match(runbook, /PmcsReportingQueueAgeBudgetExceeded/u);
+});
+
+test("RPT1 safe orphan remediation records the MS04 checkpoint without closing the stage", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const runbook = read("docs/runbooks/reporting-center.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS04-C1/u);
+  assert.match(checkpoint, /4ff44c96104ee1df87d267ca9a530d19b9248ba3/u);
+  assert.match(checkpoint, /d4c320e7917121f64a70dea1251169bef4b516ce/u);
+  assert.match(checkpoint, /Run 123 \(`35445497353`\)/u);
+  assert.match(checkpoint, /`328\/328` تست C#/u);
+  assert.match(checkpoint, /`50\/50` تست قراردادی Node/u);
+  assert.match(checkpoint, /remediation regression هر `7\/7`/u);
+  assert.match(checkpoint, /sha256:6314e5f38f452879610ca9d723fc22736e7d577d5f1dc3123573844ff1b7fb3d/u);
+  assert.match(checkpoint, /OrphanRemediationMode=Disabled/u);
+  assert.match(checkpoint, /RPT1 بسته نیست/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+  assert.match(roadmap, /نسخه سند: `1\.19\.0`/u);
+  assert.match(roadmap, /\| `1\.19\.0` \| ثبت Safe Checkpoint `S06-MS04`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.19\.0/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS04[\s\S]*4ff44c96104ee1df87d267ca9a530d19b9248ba3/u);
+  assert.match(runbook, /## Generated Document orphan remediation/u);
+  assert.match(runbook, /Run 123 \(`35445497353`\)/u);
 });
 
 function read(path) {
