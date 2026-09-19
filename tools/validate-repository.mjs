@@ -71,6 +71,8 @@ const requiredFiles = [
   "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
   "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
   "src/backend/Pmcs.TestHarness/ReportingWorkerRevocationVerification.cs",
+  "tools/qa/verify-reporting-capacity.sh",
+  "tools/qa/verify-reporting-fairness.sh",
   "src/web/app/page.tsx",
   "src/web/components/project-landing.tsx",
   "src/web/components/project-location-settings.tsx",

@@ -21,6 +21,8 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingWorkerRevocationVerification.cs",
     "tools/qa/verify-reporting-object-security.sh",
+    "tools/qa/verify-reporting-capacity.sh",
+    "tools/qa/verify-reporting-fairness.sh",
     "tools/qa/verify-reporting-recovery.sh",
     "tools/qa/verify-reporting-security.sh",
     "tools/qa/verify-reporting-worker-revocation.sh",
@@ -148,6 +150,8 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   const revocation = read("tools/qa/verify-reporting-worker-revocation.sh");
   const objectSecurityHarness = read("src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs");
   const objectSecurity = read("tools/qa/verify-reporting-object-security.sh");
+  const capacity = read("tools/qa/verify-reporting-capacity.sh");
+  const fairness = read("tools/qa/verify-reporting-fairness.sh");
   const qualificationOptions = read(`${moduleRoot}/ReportingWorkerQualificationOptions.cs`);
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   assert.match(recoveryHarness, /"concurrency-locked"/u);
@@ -173,6 +177,17 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(objectSecurityHarness, /malformed\.verify-fails-closed/u);
   assert.match(objectSecurityHarness, /finally[\s\S]*?PutObjectAsync/u);
   assert.match(objectSecurity, /exactly four integrity-failure audits/u);
+  assert.match(capacity, /prepare-reporting-capacity/u);
+  assert.match(capacity, /verify-reporting-capacity/u);
+  assert.match(capacity, /twenty healthy runs and one poison run/u);
+  assert.match(capacity, /poison audit lineage has two requeues and one terminal failure/u);
+  assert.match(capacity, /healthy capacity p95 is below thirty seconds/u);
+  assert.match(capacity, /reporting-worker.*Healthy/u);
+  assert.match(fairness, /three project-A runs and one project-B run/u);
+  assert.match(fairness, /AfterSnapshotRowLock/u);
+  assert.match(fairness, /second worker serves project B before project A's second and third runs/u);
+  assert.match(fairness, /idle in transaction/u);
+  assert.match(fairness, /kill -KILL/u);
   assert.match(qualificationOptions, /qualification controls require the isolated QA gateway/u);
   assert.match(qualificationOptions, /PMCS_QA_GATEWAY_ENABLED/u);
   assert.match(qualificationOptions, /QualificationPauseSeconds must be between 1 and 60/u);
@@ -183,6 +198,8 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(seed, /verify-reporting-object-security\.sh/u);
   assert.match(seed, /verify-reporting-recovery\.sh/u);
   assert.match(seed, /verify-reporting-worker-revocation\.sh/u);
+  assert.match(seed, /verify-reporting-capacity\.sh/u);
+  assert.match(seed, /verify-reporting-fairness\.sh/u);
   assert.match(database, /certified output is a released governed document/u);
   assert.match(database, /certified reporting transactional outbox coverage/u);
   assert.match(database, /queued report cancellation is final and unclaimed/u);
@@ -190,6 +207,8 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(database, /worker-time permission revocation fails before document publication/u);
   assert.match(database, /generated report orphan inventory is empty after recovery/u);
   assert.match(database, /object and metadata tamper attempts are audited/u);
+  assert.match(database, /capacity runs isolate poison without delaying healthy work/u);
+  assert.match(database, /capacity outputs retain singular document and event ownership/u);
 });
 
 test("RPT1 worker capacity core is bounded observable and project-fair", () => {

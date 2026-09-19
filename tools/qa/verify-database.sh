@@ -24,6 +24,7 @@ reporting_crash_before_storage_run_id="71000000-0000-4000-8000-000000000006"
 reporting_crash_after_storage_run_id="71000000-0000-4000-8000-000000000007"
 reporting_stale_lease_run_id="71000000-0000-4000-8000-000000000008"
 reporting_worker_revocation_run_id="71000000-0000-4000-8000-000000000009"
+reporting_capacity_poison_run_id="72000000-0000-4000-8000-000000000001"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -261,6 +262,21 @@ expect_equal \
   "worker-time revocation audit and idempotency are singular" \
   "1|1" \
   "select (select count(*) from foundation.audit_events where event_type = 'CertifiedReportRunFailed' and resource_type = 'ReportRun' and resource_id = '${reporting_worker_revocation_run_id}' and data->>'workerInstanceId' = 'qa-rpt1-worker-revocation' and data->>'diagnosticCode' = 'reporting.permission.revoked')::text || '|' || (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key = 'qa-rpt1-worker-revocation')::text;"
+
+expect_equal \
+  "capacity runs isolate poison without delaying healthy work" \
+  "20|20|20|Failed|Failed|3|0|reporting.qa.transient_injected|t" \
+  "with healthy_ids as (select ('72000000-0000-4000-8000-' || lpad(value::text, 12, '0'))::uuid id from generate_series(101, 120) value) select (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id)::text || '|' || (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id where run.status = 'Succeeded' and run.pipeline_stage = 'Complete' and run.attempt_count = 1 and run.output_count = 1)::text || '|' || (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id where run.completed_at is not null)::text || '|' || poison.status || '|' || poison.pipeline_stage || '|' || poison.attempt_count::text || '|' || poison.output_count::text || '|' || coalesce(poison.diagnostic_code, '<none>') || '|' || ((select percentile_disc(0.95) within group (order by extract(epoch from run.completed_at - run.created_at)) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id) < 30)::text from reporting.report_runs poison where poison.id = '${reporting_capacity_poison_run_id}';"
+
+expect_equal \
+  "capacity poison retry and terminal audit lineage is bounded" \
+  "2|1|1|2|0|0" \
+  "select count(*) filter (where event_type = 'CertifiedReportRunRequeued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunFailed')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRenderingStarted')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRenderingResumed')::text || '|' || (select count(*) from reporting.report_outputs where run_id = '${reporting_capacity_poison_run_id}')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'reporting.report.completed.v1' and payload->>'runId' = '${reporting_capacity_poison_run_id}')::text from foundation.audit_events where resource_type = 'ReportRun' and resource_id = '${reporting_capacity_poison_run_id}' and data->>'workerInstanceId' = 'qa-rpt1-capacity-worker';"
+
+expect_equal \
+  "capacity outputs retain singular document and event ownership" \
+  "20|20|20|0|20|20|21" \
+  "with healthy_ids as (select ('72000000-0000-4000-8000-' || lpad(value::text, 12, '0'))::uuid id from generate_series(101, 120) value), ownership as (select count(distinct run.id) runs, count(distinct output.id) outputs, count(distinct asset.id) assets, count(*) filter (where asset.status <> 'Released' or asset.owner_type <> 'ReportOutput' or asset.owner_id <> output.id or asset.sha256 <> output.sha256) invalid from healthy_ids join reporting.report_runs run on run.id = healthy_ids.id join reporting.report_outputs output on output.run_id = run.id join documents.assets asset on asset.id = output.generated_document_id) select ownership.runs::text || '|' || ownership.outputs::text || '|' || ownership.assets::text || '|' || ownership.invalid::text || '|' || (select count(*) from foundation.audit_events event join healthy_ids on healthy_ids.id::text = event.resource_id where event.resource_type = 'ReportRun' and event.event_type = 'CertifiedReportRunCompleted' and event.data->>'workerInstanceId' = 'qa-rpt1-capacity-worker')::text || '|' || (select count(*) from foundation.outbox_messages event join healthy_ids on healthy_ids.id::text = event.payload->>'runId' where event.event_type = 'reporting.report.completed.v1')::text || '|' || (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key like 'qa-rpt1-capacity-%')::text from ownership;"
 
 expect_equal \
   "generated report orphan inventory is empty after recovery" \

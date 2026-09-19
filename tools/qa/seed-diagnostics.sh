@@ -114,6 +114,8 @@ PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet 
 stop_api
 ./tools/qa/verify-reporting-recovery.sh
 ./tools/qa/verify-reporting-worker-revocation.sh
+./tools/qa/verify-reporting-capacity.sh
+./tools/qa/verify-reporting-fairness.sh
 
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
