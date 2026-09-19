@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS03-C1 تا source commit `83f13cf` با signal/connected queue-age health پاس و exporter/scrape/alert delivery در MS03-C2 باز |
-| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 108 پاس شده است |
+| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS03-C2 تا source commit `9bb7ede` با OTLP/scrape/rules/alert delivery پاس؛ remediation orphan و Golden/PDF/UI باز |
+| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 120 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -108,6 +108,15 @@ Slice 06 Micro-Step 03 Checkpoint C1 با source commit
 browser scenario و Restore ۴۳ Migration را پاس کرد. fairness اکنون `10/10` assertion دارد و
 `Degraded` صف aged و عدم نشت Tenant/Project/User/Run ID را متصل اثبات می‌کند. exporter/scrape و
 alert delivery هنوز در C2 همین MS03 بازند؛ RPT1 Active باقی می‌ماند.
+
+Slice 06 Micro-Step 03 Checkpoint C2 با source commit
+`9bb7ede9b89da2078e165cccb2927e0449116909` و tree
+`a960cddb5264b3de8857812906b7595db0664ba5` exporter اختیاری OTLP را فقط در composition، Collector
+و Prometheus/Alertmanager نسخه‌پین‌شده و سه rule عملیاتی را بدون تغییر API تجاری یا Migration اضافه
+کرد. Run 120 (`35443563270`) هر هشت Job، `321/321` تست C#، `48/48` تست قراردادی، `139/139` تست
+Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد. alert queue-age واقعاً firing و به
+webhook ایزوله تحویل شد و payload metric/alert هیچ Tenant/Project/User/Run ID نداشت. MS03 بسته است؛
+remediation orphan، Golden معنایی/XLSX، PDF قانونی و UI Reporting بازند و RPT1 Active می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

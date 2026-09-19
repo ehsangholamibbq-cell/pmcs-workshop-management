@@ -459,8 +459,33 @@ test("RPT1 operational signal contract records a resumable intermediate checkpoi
   assert.match(checkpoint, /Tenant\/Project\/User\/Run ID/u);
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03-C2/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.17\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.17\.0/u);
+  assert.match(roadmap, /\| `1\.17\.0` \| ثبت Safe Checkpoint میانی `S06-MS03-C1`/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS03-C1[\s\S]*83f13cf43679b23a6a169cc0912985b391b1c017/u);
+});
+
+test("RPT1 operational observability delivery records the final MS03 safe checkpoint", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const runbook = read("docs/runbooks/reporting-center.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03-C2/u);
+  assert.match(checkpoint, /9bb7ede9b89da2078e165cccb2927e0449116909/u);
+  assert.match(checkpoint, /a960cddb5264b3de8857812906b7595db0664ba5/u);
+  assert.match(checkpoint, /Run 120 \(`35443563270`\)/u);
+  assert.match(checkpoint, /`321\/321` تست C#/u);
+  assert.match(checkpoint, /`48\/48` تست قراردادی Node/u);
+  assert.match(checkpoint, /qualification observability هر `5\/5`/u);
+  assert.match(checkpoint, /PmcsReportingQueueAgeBudgetExceeded/u);
+  assert.match(checkpoint, /sha256:08c497ddb804a197950b0fb3a40f056e1768b35e8fadc71b05ed755ae15c1290/u);
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS04/u);
+  assert.match(checkpoint, /MS03 بسته/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+  assert.match(roadmap, /نسخه سند: `1\.18\.0`/u);
+  assert.match(roadmap, /\| `1\.18\.0` \| ثبت Safe Checkpoint نهایی `S06-MS03-C2`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.18\.0/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS03-C2[\s\S]*9bb7ede9b89da2078e165cccb2927e0449116909/u);
+  assert.match(runbook, /## Operational Observability/u);
+  assert.match(runbook, /PmcsReportingQueueAgeBudgetExceeded/u);
 });
 
 function read(path) {

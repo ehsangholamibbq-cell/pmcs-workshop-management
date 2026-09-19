@@ -4,7 +4,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.17.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.18.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -39,4 +39,5 @@
 | V1.1 RPT1 Slice 06 MS01 | source `d085c44f9ed8b3c085af62de6009fa1dafc9ed8e` / tree `9f8afd35b54fe7eacd38f202128538cc571c651f` / Run 110 worker-capacity Core full CI passed / connected load-poison-fairness qualification pending |
 | V1.1 RPT1 Slice 06 MS02 | source `346fbb778aa5c4475fd48df3241b700341e96d83` / tree `98b25e2dcd109356bdea08de138995f271260cfc` / Run 113 connected capacity-poison-fairness passed / RPT1 exit gates open |
 | V1.1 RPT1 Slice 06 MS03-C1 | source `83f13cf43679b23a6a169cc0912985b391b1c017` / tree `1705d184bd494e80e50d8a85b723f0bc63e20abc` / Run 117 bounded signal and connected queue-age health passed / MS03-C2 open |
+| V1.1 RPT1 Slice 06 MS03-C2 | source `9bb7ede9b89da2078e165cccb2927e0449116909` / tree `a960cddb5264b3de8857812906b7595db0664ba5` / Run 120 OTLP scrape/rules and connected queue-age alert delivery passed / MS03 closed, RPT1 active |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

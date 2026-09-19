@@ -2,9 +2,9 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Bounded signal and connected queue-age health passed؛ exporter/scrape/alert qualification open
+- Status: MS03 OTLP/scrape/rules/connected queue-age alert delivery passed؛ extended RPT1 gates open
 
-## Health و Metrics
+## Operational Observability
 
 اپراتور باید این وضعیت‌ها را ببیند:
 
@@ -22,8 +22,15 @@ Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی�
 شده‌اند. health check در stale/missing heartbeat یا عبور سن صف از budget وضعیت `Degraded` می‌دهد و
 readiness فقط `activeRuns`، `heartbeatAgeSeconds`، `oldestQueueAgeSeconds` و `queuedRuns` عددی را
 برای `reporting-worker` نشان می‌دهد. این endpoint نباید برای دریافت identity، Snapshot، object key
-یا diagnostic detail استفاده شود. نبود exporter/scrape و alert delivery تولیدی همچنان به‌معنی
-ناتمام‌بودن Observability است.
+یا diagnostic detail استفاده شود. در MS03-C2، composition API فقط با endpoint صریح OTLP را فعال
+می‌کند. Collector نسخه‌پین‌شده روی `4317` دریافت و روی `9464` برای Prometheus scrape می‌کند؛
+Prometheus سه rule queue-age/heartbeat/failure-retry را ارزیابی و Alertmanager آن‌ها را به receiver
+محیط تحویل می‌دهد. endpoint خالی exporter را خاموش نگه می‌دارد و URI دارای credential/query/fragment
+در startup رد می‌شود.
+
+configهای `deploy/observability` در QA فقط روی loopback هستند. در Production باید TLS، authentication،
+network policy، retention و receiver URL محیط به‌صورت deployment-owned فراهم شوند؛ config QA یا
+webhook HTTP آن مجوز rollout تولیدی نیست.
 
 Budgetهای پیش‌فرض: `MaximumAttempts=3`، `RetryBaseDelaySeconds=30`،
 `MaximumPdfFacts=2000`، `MaximumXlsxRows=5000`، `MaximumOutputBytes=26214400`،
@@ -112,9 +119,9 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 
 ## Alertهای لازم
 
-- queue age بیش از budget؛
-- failure rate یا retry rate غیرعادی؛
-- worker heartbeat missing؛
+- queue age بیش از budget؛ rule و delivery متصل در Run 120 پاس؛
+- failure rate یا retry rate غیرعادی؛ rule load شده، delivery incident مستقل باز؛
+- worker heartbeat missing؛ rule load شده، delivery incident مستقل باز؛
 - integrity mismatch؛
 - permission-denial spike؛
 - object storage unavailable؛
@@ -190,3 +197,11 @@ queue-age و فقط چهار مقدار عددی allowlist‌شده برگردا
 Project، User و Run ID کنترل کرد. MeterListener نیز نام نه instrument و allowlist چهار tag را Unit
 qualify کرد. این Evidence برای عیب‌یابی داخلی معتبر است، اما تا زمان C2 هیچ scrape target، exporter
 یا alert delivery را Production-ready اعلام نمی‌کند.
+
+Run 120 (`35443563270`) ادامهٔ مستقیم C2 را پاس کرد. OpenTelemetry exporter فقط با
+`Observability__OtlpEndpoint` فعال شد؛ target واقعی Collector/Prometheus بالا آمد، metric
+`pmcs_reporting_worker_queue_oldest_age_seconds` از صف aged خوانده شد، alert
+`PmcsReportingQueueAgeBudgetExceeded` firing شد و Alertmanager آن را به receiver ایزوله تحویل داد.
+هارنس هر `5/5` assertion target/metric/privacy/firing/delivery، fairness هر `10/10` و capacity هر
+`11/11` assertion را پاس کرد. payloadهای metric و alert برای نبود Tenant/Project/User/Run ID کنترل
+شدند. این نتیجه MS03 را می‌بندد؛ remediation orphan، Golden/PDF و UI هنوز Gate باز RPT1 هستند.

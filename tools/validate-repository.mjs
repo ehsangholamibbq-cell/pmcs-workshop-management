@@ -154,6 +154,7 @@ const requiredFiles = [
   "docs/checkpoints/v1.1-rpt1-slice-05-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md",
+  "docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md",
   "docs/security/pmcs-v1.1-reporting-security.md",
   "docs/qa/pmcs-v1.1-rpt1-test-matrix.md",
   "docs/runbooks/reporting-center.md",

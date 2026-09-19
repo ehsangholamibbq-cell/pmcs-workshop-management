@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.3.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + bounded signal/health passed؛ MS03 export/alert and extended qualification open
+- نسخه: `1.4.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + operational observability passed؛ extended RPT1 qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -287,3 +287,25 @@ shell هارنس متوقف شدند. Fixها به expectation تست و فهر�
 وجود exporter، scrape pipeline، alert rule یا delivery را ادعا نمی‌کند؛ آن‌ها Gate باز
 `PMCS-V1.1-RPT1-S06-MS03-C2` هستند. remediation orphan، Golden معنایی/XLSX، PDF
 قانونی/Golden/performance و UI اختصاصی Reporting نیز باز می‌مانند.
+
+## ۱۹. Coverage افزوده‌شده در Slice 06 Micro-Step 03 Checkpoint C2
+
+Candidate `9bb7ede9b89da2078e165cccb2927e0449116909` با tree
+`a960cddb5264b3de8857812906b7595db0664ba5` در Run 120 (`35443563270`) موارد زیر را پاس کرد:
+
+- exporter اختیاری OpenTelemetry در composition API، default-off و URI validation fail-closed؛
+- subscription محدود به `Pmcs.Api` و `Pmcs.Reporting`، بدون dependency SDK در ماژول Reporting؛
+- Collector OTLP/gRPC و scrape Prometheus واقعی با translation نام صریح و scope label خاموش؛
+- سه rule queue-age، heartbeat missing/stale و failure/retry در Prometheus نسخه‌پین‌شده؛
+- scrape target سالم و مشاهدهٔ `pmcs_reporting_worker_queue_oldest_age_seconds` بالاتر از budget؛
+- firing و webhook delivery واقعی `PmcsReportingQueueAgeBudgetExceeded` از Alertmanager؛
+- نبود Tenant/Project/User/Run ID و labelهای identity در metric و alert payload؛
+- observability delivery هر `5/5`، fairness هر `10/10` و capacity هر `11/11` assertion؛
+- ۲۰ Run سالم، poison سه-attemptی و P95 برابر `5.685905s`؛
+- `321/321` تست C#، `48/48` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، Restore
+  ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+Run 119 فقط compile diagnostic `CS9135` را در scheme pattern آشکار کرد؛ fix نهایی به مقایسهٔ صریح
+Ordinal محدود بود. MS03 با Run 120 بسته است. delivery مستقل heartbeat/failure-retry، remediation
+تولیدی orphan، Golden معنایی/XLSX، PDF قانونی/Golden/performance و UI اختصاصی Reporting هنوز
+Gate باز هستند.

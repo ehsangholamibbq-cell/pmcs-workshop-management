@@ -8,8 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
-- آخرین Qualification Candidate: `83f13cf43679b23a6a169cc0912985b391b1c017`
-- آخرین Connected evidence: Run 117 (`35441980440`) — `success`
+- آخرین Qualification Candidate: `9bb7ede9b89da2078e165cccb2927e0449116909`
+- آخرین Connected evidence: Run 120 (`35443563270`) — `success`
 
 ## ۱. هدف و روش
 
@@ -91,7 +91,7 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 | `V1.1-DOC1` | Shared Documents، Scanner/Quarantine/Retention | بسته؛ Run 83 |
 | `V1.1-IAM1` | Login Descriptor و Member Profile | بسته؛ Run 88 |
 | `V1.1-PRJ1` | Controlled Project Bootstrap/Duplication | بسته؛ Run 92 |
-| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–05 | **فعال؛ core/cancel/security/recovery/revocation/object integrity متصل پاس شده و Gate خروج باز است** |
+| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–06/MS03 | **فعال؛ core/security/recovery/capacity/observability متصل پاس شده و Gate خروج باز است** |
 | `V1.1-COL1` | Project Collaboration | برنامه‌ریزی‌شده |
 | `V1.1-UX2` | Full Product UI migration | برنامه‌ریزی‌شده |
 | `V1.1-INT1` | Agent Stage 1 | برنامه‌ریزی‌شده |
@@ -103,10 +103,10 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 Evidence commit بعدی فقط وضعیت PRJ1/RPT1 را ثبت کرد. Tree جاری
 `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b` همان محتوای Evidence متصل ثبت‌شده است.
 
-از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 05 ادامه یافته است. آخرین Candidate روی source
-commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
-`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 هر هشت Job را پاس کرده است. Addendumهای
-۱۱ تا ۱۶ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
+از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 06/MS03 ادامه یافته است. آخرین Candidate روی
+source commit `9bb7ede9b89da2078e165cccb2927e0449116909` و tree
+`a960cddb5264b3de8857812906b7595db0664ba5` در Run 120 هر هشت Job را پاس کرده است. Addendumهای
+۱۱ تا ۲۰ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
 
 ## ۶. Agent مدیریتی؛ تطبیق کامل هفت Stage
 
@@ -182,11 +182,11 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Safe Checkpoint میانی Slice 06 Micro-Step 03 C1 برای قرارداد کم‌کاردینالیتی
-Meter و readiness متصل queue-age در Run 117؛ RPT1 و خود MS03 همچنان فعال‌اند.
+آخرین اقدام تکمیل‌شده: Safe Checkpoint نهایی Slice 06 Micro-Step 03 C2 برای exporter OTLP، scrape،
+سه alert rule و delivery متصل queue-age در Run 120؛ MS03 بسته و RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: MS03-C2 شامل exporter/scrape/alert rule و delivery برای signalهای اثبات‌شده؛
-سپس remediation امن orphan، Golden معنایی/XLSX، PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
+نقطهٔ دقیق ادامه: `S06-MS04` شامل remediation امن orphan با inventory/dry-run، retention/legal hold،
+idempotency و Audit؛ سپس Golden معنایی/XLSX، PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
@@ -301,3 +301,19 @@ Runهای diagnostic 115 و 116 به‌ترتیب analyzer تست و binding م�
 exporter/scrape/alert delivery در C2 باز است. RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز
 `Agent → Permission-aware Tool → Application Service → Business Rules → Database` بدون تغییر
 باقی مانده‌اند.
+
+## ۲۰. Addendum — Operational Export, Scrape و Alert Delivery
+
+Slice 06 Micro-Step 03 Checkpoint C2 با source commit
+`9bb7ede9b89da2078e165cccb2927e0449116909` و tree
+`a960cddb5264b3de8857812906b7595db0664ba5` در Run 120 (`35443563270`) هر هشت Job را پاس کرد.
+exporter اختیاری OTLP فقط در composition API ثبت شد و ماژول Reporting بدون dependency SDK ماند.
+Collector/Prometheus/Alertmanager نسخه‌پین‌شده سه rule queue-age/heartbeat/failure-retry را load
+کردند. در سناریوی واقعی دو Worker، scrape target بالا آمد، alert queue-age firing شد و webhook
+delivery همراه کنترل عدم نشت Tenant/Project/User/Run ID هر `5/5` assertion را پاس کرد.
+
+Run 119 فقط compile diagnostic `CS9135` را روی constant pattern scheme آشکار کرد و fix نهایی به
+مقایسهٔ Ordinal محدود ماند. Run 120 همچنین `321/321` تست C#، `48/48` تست قراردادی، `139/139` تست
+Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد. این Addendum MS03 را می‌بندد، اما
+RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز مصوب Agent را تغییر نمی‌دهد. نقطهٔ ادامه
+remediation امن orphan در `S06-MS04` است.

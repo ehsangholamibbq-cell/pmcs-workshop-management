@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.4.0`
-- وضعیت: `MS03 signal contract and connected queue-age health passed | exporter/scrape/alert delivery pending`
+- نسخه: `1.5.0`
+- وضعیت: `MS03 complete | OTLP exporter, Prometheus scrape/rules and connected alert delivery passed | extended RPT1 gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `83f13cf43679b23a6a169cc0912985b391b1c017`
-- Source tree: `1705d184bd494e80e50d8a85b723f0bc63e20abc`
-- Connected evidence: Run 117 (`35441980440`) — `success`
+- آخرین Qualification Candidate: `9bb7ede9b89da2078e165cccb2927e0449116909`
+- Source tree: `a960cddb5264b3de8857812906b7595db0664ba5`
+- Connected evidence: Run 120 (`35443563270`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -244,6 +244,9 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - download integrity failure و permission denial؛
 - health state برای Worker و storage adapter؛
 - Correlation از API تا Run، Snapshot، Document، Audit و Outbox؛
+- exporter OTLP فقط در composition و فقط با endpoint صریح؛ پیش‌فرض خاموش؛
+- Collector/Prometheus/Alertmanager مسئول محیط استقرار، با ruleهای queue age، heartbeat و
+  failure/retry و بدون identityهای Tenant/Project/User/Run؛
 - budget اولیه: P95 ساخت گزارش روزانه دوفرمتی زیر ۳۰ ثانیه در dataset مرجع؛
 - maximum صفحات/ردیف/حجم با fail-closed policy و تست load تعیین می‌شود.
 
@@ -327,3 +330,10 @@ Slice 06 Micro-Step 03 Checkpoint C1 در Run 117 قرارداد نه instrument
 عددی allowlist‌شده منتشر می‌کند. سناریوی fairness متصل، صف aged را زیر دو row lock نگه داشت و
 `Degraded` ناشی از queue age، payload محدود و عدم نشت Tenant/Project/User/Run ID را در assertion
 دهم اثبات کرد. این C1 خود MS03 را نمی‌بندد؛ exporter، scrape و alert rule/delivery در C2 بازند.
+
+Slice 06 Micro-Step 03 Checkpoint C2 در Run 120 exporter اختیاری OTLP را فقط در composition API
+ثبت کرد و ماژول Reporting را از SDK مستقل نگه داشت. Collector نسخه‌پین‌شده metricها را با translation
+صریح برای Prometheus منتشر کرد؛ سه rule queue-age/heartbeat/failure-retry load شدند و alert واقعی
+queue-age از Prometheus به Alertmanager و webhook ایزوله تحویل شد. qualification هر `5/5` assertion
+target/metric/privacy/firing/delivery را پاس کرد و MS03 بسته شد. remediation امن orphan، Golden،
+PDF قانونی و UI اختصاصی Reporting همچنان Gate باز RPT1 هستند.
