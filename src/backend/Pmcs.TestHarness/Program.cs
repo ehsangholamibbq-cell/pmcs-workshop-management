@@ -59,6 +59,7 @@ internal static partial class Program
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
                 "verify-reporting" => await VerifyReportingAsync(),
+                "verify-reporting-golden" => await VerifyReportingGoldenAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
@@ -484,7 +485,8 @@ internal static partial class Program
     {
         Console.Error.WriteLine(
             "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
-            "verify-reporting-cancellation|prepare-reporting-recovery|verify-reporting-recovery|" +
+            "verify-reporting-golden|verify-reporting-cancellation|prepare-reporting-recovery|" +
+            "verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
             "verify-reporting-object-security|prepare-reporting-orphan-objects|" +
             "verify-reporting-orphan-objects|cleanup-reporting-orphan-objects|prepare-reporting-capacity|" +

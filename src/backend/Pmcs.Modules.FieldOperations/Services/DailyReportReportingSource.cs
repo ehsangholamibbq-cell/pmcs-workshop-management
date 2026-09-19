@@ -46,7 +46,7 @@ internal sealed class DailyReportReportingSource(FieldOperationsDbContext dbCont
             .ThenBy(report => report.Id)
             .ToListAsync(cancellationToken);
 
-        var versions = reports.Select(Map).ToArray();
+        var versions = reports.Select(report => MapForCutoff(report, normalizedAsOf)).ToArray();
         var current = versions
             .Where(version => DailyReportReportingRules.IsOfficialAt(
                 version.ApprovedAt,
@@ -63,34 +63,55 @@ internal sealed class DailyReportReportingSource(FieldOperationsDbContext dbCont
             versions);
     }
 
-    private static DailyReportReportingVersion Map(DailyReport report) => new(
-        report.Id,
-        report.RootReportId,
-        report.VersionNumber,
-        report.SupersedesReportId,
-        report.SupersededByReportId,
-        report.SupersededAt,
-        report.ReportDate,
-        report.LocationName,
-        report.Narrative,
-        report.Status switch
-        {
-            DailyReportStatus.Approved => DailyReportReportingVersionState.Approved,
-            DailyReportStatus.Superseded => DailyReportReportingVersionState.Superseded,
-            _ => throw new InvalidOperationException("Only official report versions may enter reporting.")
-        },
-        report.CreatedBy,
-        report.CreatedAt,
-        report.ReviewedBy,
-        report.ReviewedAt ?? throw new InvalidOperationException("An official report requires approval time."),
-        report.LastModifiedAt,
-        report.CorrectionReason,
-        report.CorrectionInitiatedBy,
-        report.Revision,
-        report.Facts
-            .OrderBy(fact => fact.Id)
-            .Select(Map)
-            .ToArray());
+    internal static DailyReportReportingVersion MapForCutoff(
+        DailyReport report,
+        DateTimeOffset asOfUtc)
+    {
+        var approvedAt = report.ReviewedAt
+            ?? throw new InvalidOperationException("An official report requires approval time.");
+        var normalizedAsOf = asOfUtc.ToUniversalTime();
+        var actualSupersededAt = report.SupersededAt;
+        var supersededAt = actualSupersededAt is { } supersessionTime &&
+            supersessionTime <= normalizedAsOf
+                ? supersessionTime
+                : (DateTimeOffset?)null;
+        var isSupersededAtCutoff = supersededAt.HasValue;
+        var hasFutureSupersession = actualSupersededAt.HasValue && !isSupersededAtCutoff;
+        var lastModifiedAt = report.LastModifiedAt <= normalizedAsOf
+            ? report.LastModifiedAt
+            : approvedAt;
+        var revision = hasFutureSupersession
+            ? checked(report.Revision - 1)
+            : report.Revision;
+
+        return new DailyReportReportingVersion(
+            report.Id,
+            report.RootReportId,
+            report.VersionNumber,
+            report.SupersedesReportId,
+            isSupersededAtCutoff ? report.SupersededByReportId : null,
+            supersededAt,
+            report.ReportDate,
+            report.LocationName,
+            report.Narrative,
+            isSupersededAtCutoff
+                ? DailyReportReportingVersionState.Superseded
+                : DailyReportReportingVersionState.Approved,
+            report.CreatedBy,
+            report.CreatedAt,
+            report.ReviewedBy,
+            approvedAt,
+            lastModifiedAt,
+            report.SupersedesReportId.HasValue || isSupersededAtCutoff
+                ? report.CorrectionReason
+                : null,
+            report.CorrectionInitiatedBy,
+            revision,
+            report.Facts
+                .OrderBy(fact => fact.Id)
+                .Select(Map)
+                .ToArray());
+    }
 
     private static DailyReportReportingFact Map(DailyReportFact fact) => new(
         fact.Id,

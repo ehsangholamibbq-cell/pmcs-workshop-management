@@ -74,6 +74,7 @@ const requiredFiles = [
   "src/backend/Pmcs.TestHarness/FileVerification.cs",
   "src/backend/Pmcs.TestHarness/SyncVerification.cs",
   "src/backend/Pmcs.TestHarness/ExploratoryVerification.cs",
+  "src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs",
   "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
   "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
   "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",

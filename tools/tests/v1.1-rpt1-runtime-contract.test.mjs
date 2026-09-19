@@ -20,6 +20,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Services/ReportOutputOrphanRemediationWorker.cs`,
     `${moduleRoot}/Services/ReportRunAdvisoryLock.cs`,
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -91,6 +92,9 @@ test("reporting reads daily report lineage only through its application contract
   assert.match(contract, /IsOfficialAt/u);
   assert.match(source, /DailyReportStatus\.Approved/u);
   assert.match(source, /DailyReportStatus\.Superseded/u);
+  assert.match(source, /MapForCutoff/u);
+  assert.match(source, /hasFutureSupersession/u);
+  assert.match(source, /checked\(report\.Revision - 1\)/u);
   assert.match(worker, /IDailyReportReportingSource/u);
   assert.doesNotMatch(worker, /FieldOperations\.Persistence|field_operations\./u);
   assert.match(worker, /for update(?: of candidate)? skip locked/u);
@@ -173,6 +177,7 @@ test("generated report orphan remediation is dry-run first retention-safe and au
 
 test("connected RPT1 qualification covers API, worker, storage and database evidence", () => {
   const harness = read("src/backend/Pmcs.TestHarness/ReportingVerification.cs");
+  const golden = read("src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs");
   const seed = read("tools/qa/seed-diagnostics.sh");
   const database = read("tools/qa/verify-database.sh");
   assert.match(harness, /reporting\.xlsx\.create\.idempotent-replay/u);
@@ -180,6 +185,12 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(harness, /reporting\.xlsx\.verify\.valid/u);
   assert.match(harness, /reporting\.pdf\.license\.fail-closed/u);
   assert.match(harness, /reporting\.pdf\.retry\.bounded/u);
+  assert.match(golden, /reporting\.golden\.snapshot\.cutoff-hashes/u);
+  assert.match(golden, /reporting\.golden\.before\.semantic-workbook/u);
+  assert.match(golden, /reporting\.golden\.after\.semantic-workbook/u);
+  assert.match(golden, /reporting\.golden\.xlsx\.typed-safety-and-lineage/u);
+  assert.match(golden, /GoldenDraftMarker/u);
+  assert.match(seed, /-- verify-reporting-golden/u);
   const cancellation = read("src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs");
   assert.match(cancellation, /reporting\.cancel\.accepted-before-rendering/u);
   assert.match(cancellation, /reporting\.cancel\.idempotent-replay/u);

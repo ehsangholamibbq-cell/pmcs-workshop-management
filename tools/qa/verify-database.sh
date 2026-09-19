@@ -26,6 +26,17 @@ reporting_stale_lease_run_id="71000000-0000-4000-8000-000000000008"
 reporting_worker_revocation_run_id="71000000-0000-4000-8000-000000000009"
 reporting_capacity_poison_run_id="72000000-0000-4000-8000-000000000001"
 reporting_remediated_orphan_document_id="73000000-0000-4000-8000-000000000201"
+reporting_golden_measurement_item_id="74000000-0000-4000-8000-000000000001"
+reporting_golden_v1_report_id="74000000-0000-4000-8000-000000000010"
+reporting_golden_v2_report_id="74000000-0000-4000-8000-000000000020"
+reporting_golden_v3_report_id="74000000-0000-4000-8000-000000000030"
+reporting_golden_material_fact_id="74000000-0000-4000-8000-000000000104"
+reporting_golden_replacement_fact_id="74000000-0000-4000-8000-000000000201"
+reporting_golden_draft_fact_id="74000000-0000-4000-8000-000000000301"
+reporting_golden_before_run_id="75000000-0000-4000-8000-000000000001"
+reporting_golden_before_twin_run_id="75000000-0000-4000-8000-000000000002"
+reporting_golden_after_run_id="75000000-0000-4000-8000-000000000003"
+reporting_golden_after_twin_run_id="75000000-0000-4000-8000-000000000004"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -148,6 +159,46 @@ expect_equal \
   "workflow fact and project location lineage" \
   "Note|${root_location_id}|${site_supervisor_id}" \
   "select kind || '|' || location_id::text || '|' || created_by::text from field_operations.daily_report_facts where id = '${workflow_fact_id}' and daily_report_id = '${workflow_report_id}';"
+
+expect_equal \
+  "reporting Golden measurement lineage is deterministic" \
+  "Active|m3|100.000000" \
+  "select status || '|' || unit || '|' || target_quantity::text from planning.measurement_items where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_golden_measurement_item_id}';"
+
+expect_equal \
+  "reporting Golden correction chain retains official and draft lineage" \
+  "Superseded|${reporting_golden_v2_report_id}|Approved|${reporting_golden_v1_report_id}|Draft|${reporting_golden_v2_report_id}|1,2,3" \
+  "select v1.status || '|' || v1.superseded_by_report_id::text || '|' || v2.status || '|' || v2.supersedes_report_id::text || '|' || v3.status || '|' || v3.supersedes_report_id::text || '|' || (select string_agg(version_number::text, ',' order by version_number) from field_operations.daily_reports where root_report_id = '${reporting_golden_v1_report_id}') from field_operations.daily_reports v1 cross join field_operations.daily_reports v2 cross join field_operations.daily_reports v3 where v1.id = '${reporting_golden_v1_report_id}' and v2.id = '${reporting_golden_v2_report_id}' and v3.id = '${reporting_golden_v3_report_id}';"
+
+expect_equal \
+  "reporting Golden facts preserve copy remove replace and draft semantics" \
+  "8|8|9|7|0|1" \
+  "select (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v1_report_id}')::text || '|' || (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v2_report_id}')::text || '|' || (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v3_report_id}')::text || '|' || (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v2_report_id}' and copied_from_fact_id is not null)::text || '|' || (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v2_report_id}' and copied_from_fact_id = '${reporting_golden_material_fact_id}')::text || '|' || (select count(*) from field_operations.daily_report_facts where daily_report_id = '${reporting_golden_v2_report_id}' and id = '${reporting_golden_replacement_fact_id}' and copied_from_fact_id is null)::text;"
+
+expect_equal \
+  "reporting Golden runs publish two stable cutoff snapshots" \
+  "4|4|4|4|2|2" \
+  "select count(distinct run.id)::text || '|' || count(distinct run.id) filter (where run.status = 'Succeeded' and run.pipeline_stage = 'Complete')::text || '|' || count(distinct snapshot.id)::text || '|' || count(distinct output.id)::text || '|' || count(distinct snapshot.sha256)::text || '|' || count(distinct snapshot.source_manifest_sha256)::text from reporting.report_runs run left join reporting.report_snapshots snapshot on snapshot.run_id = run.id left join reporting.report_outputs output on output.run_id = run.id where run.id in ('${reporting_golden_before_run_id}', '${reporting_golden_before_twin_run_id}', '${reporting_golden_after_run_id}', '${reporting_golden_after_twin_run_id}');"
+
+expect_equal \
+  "reporting Golden twins share hashes while official correction changes hashes" \
+  "1|1|true|1|1|true" \
+  "with before_snapshots as (select snapshot.sha256, snapshot.source_manifest_sha256 from reporting.report_snapshots snapshot where snapshot.run_id in ('${reporting_golden_before_run_id}', '${reporting_golden_before_twin_run_id}')), after_snapshots as (select snapshot.sha256, snapshot.source_manifest_sha256 from reporting.report_snapshots snapshot where snapshot.run_id in ('${reporting_golden_after_run_id}', '${reporting_golden_after_twin_run_id}')) select (select count(distinct sha256) from before_snapshots)::text || '|' || (select count(distinct sha256) from after_snapshots)::text || '|' || ((select min(sha256) from before_snapshots) <> (select min(sha256) from after_snapshots))::text || '|' || (select count(distinct source_manifest_sha256) from before_snapshots)::text || '|' || (select count(distinct source_manifest_sha256) from after_snapshots)::text || '|' || ((select min(source_manifest_sha256) from before_snapshots) <> (select min(source_manifest_sha256) from after_snapshots))::text;"
+
+expect_equal \
+  "reporting Golden historical cutoff hides future supersession state" \
+  "2" \
+  "select count(*) from reporting.report_snapshots snapshot where snapshot.run_id in ('${reporting_golden_before_run_id}', '${reporting_golden_before_twin_run_id}') and snapshot.payload_json->>'currentOfficialReportId' = '${reporting_golden_v1_report_id}' and jsonb_array_length(snapshot.payload_json->'versions') = 1 and snapshot.payload_json#>>'{versions,0,reportId}' = '${reporting_golden_v1_report_id}' and snapshot.payload_json#>>'{versions,0,state}' = 'Approved' and snapshot.payload_json#>>'{versions,0,revision}' = '11' and snapshot.payload_json#>>'{versions,0,supersededByReportId}' is null and snapshot.payload_json#>>'{versions,0,supersededAt}' is null and snapshot.payload_json#>>'{versions,0,correctionReason}' is null and snapshot.payload_json#>>'{versions,0,approvedAt}' = snapshot.payload_json#>>'{versions,0,lastModifiedAt}' and jsonb_array_length(snapshot.payload_json#>'{versions,0,facts}') = 8 and snapshot.source_manifest_json#>>'{versions,0,revision}' = '11';"
+
+expect_equal \
+  "reporting Golden corrected cutoff contains only the two official versions" \
+  "2" \
+  "select count(*) from reporting.report_snapshots snapshot where snapshot.run_id in ('${reporting_golden_after_run_id}', '${reporting_golden_after_twin_run_id}') and snapshot.payload_json->>'currentOfficialReportId' = '${reporting_golden_v2_report_id}' and jsonb_array_length(snapshot.payload_json->'versions') = 2 and snapshot.payload_json#>>'{versions,0,reportId}' = '${reporting_golden_v1_report_id}' and snapshot.payload_json#>>'{versions,0,state}' = 'Superseded' and snapshot.payload_json#>>'{versions,0,revision}' = '12' and snapshot.payload_json#>>'{versions,0,supersededByReportId}' = '${reporting_golden_v2_report_id}' and snapshot.payload_json#>>'{versions,0,correctionReason}' = 'Replace the material evidence with the corrected official fact.' and jsonb_array_length(snapshot.payload_json#>'{versions,0,facts}') = 8 and snapshot.payload_json#>>'{versions,1,reportId}' = '${reporting_golden_v2_report_id}' and snapshot.payload_json#>>'{versions,1,state}' = 'Approved' and snapshot.payload_json#>>'{versions,1,revision}' = '5' and snapshot.payload_json#>>'{versions,1,supersedesReportId}' = '${reporting_golden_v1_report_id}' and jsonb_array_length(snapshot.payload_json#>'{versions,1,facts}') = 8 and snapshot.source_manifest_json#>>'{versions,0,revision}' = '12' and snapshot.source_manifest_json#>>'{versions,1,revision}' = '5';"
+
+expect_equal \
+  "reporting Golden snapshots exclude the draft correction and marker" \
+  "0" \
+  "select count(*) from reporting.report_snapshots snapshot where snapshot.run_id in ('${reporting_golden_before_run_id}', '${reporting_golden_before_twin_run_id}', '${reporting_golden_after_run_id}', '${reporting_golden_after_twin_run_id}') and (snapshot.payload_json::text like '%${reporting_golden_v3_report_id}%' or snapshot.payload_json::text like '%${reporting_golden_draft_fact_id}%' or snapshot.payload_json::text like '%GOLDEN-DRAFT-V3-MUST-NOT-APPEAR%');"
 
 expect_at_least \
   "permission matrix audit coverage" \

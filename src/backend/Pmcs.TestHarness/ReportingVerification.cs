@@ -257,10 +257,12 @@ internal static partial class Program
     private static ReportingRunRequest CreateReportingRequest(
         Guid clientGeneratedId,
         string[] formats,
-        bool includeRevisionChain) => new(
+        bool includeRevisionChain,
+        DateTimeOffset? asOfUtc = null) => new(
         clientGeneratedId,
         "daily-report-certified",
         "1.0.0",
+        asOfUtc,
         formats,
         new ReportingParameters(WorkflowReportId, includeRevisionChain));
 
@@ -401,6 +403,7 @@ internal static partial class Program
         Guid ClientGeneratedId,
         string DefinitionCode,
         string TemplateVersion,
+        DateTimeOffset? AsOfUtc,
         string[] Formats,
         ReportingParameters Parameters);
 
