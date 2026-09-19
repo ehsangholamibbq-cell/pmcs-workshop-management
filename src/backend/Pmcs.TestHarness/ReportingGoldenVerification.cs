@@ -11,7 +11,7 @@ namespace Pmcs.TestHarness;
 
 internal static partial class Program
 {
-    private const string GoldenReportDateIso = "2099-12-30";
+    private const string GoldenReportDateIso = "2099-12-27";
     private const string GoldenFormulaProbe = "=SUM(A1:A2) must remain text";
     private const string GoldenDraftMarker = "GOLDEN-DRAFT-V3-MUST-NOT-APPEAR";
     private const string GoldenCorrectionReason = "Replace the material evidence with the corrected official fact.";
