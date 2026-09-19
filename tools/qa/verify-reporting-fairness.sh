@@ -191,6 +191,7 @@ expect_equal \
   "fairness source run is a completed deterministic QA fixture" \
   "Succeeded|Complete|1" \
   "select status || '|' || pipeline_stage || '|' || output_count::text from reporting.report_runs where id = '${source_run_id}';"
+source_forbidden_identities="$(scalar "select tenant_id::text || '|' || requested_by::text from reporting.report_runs where id = '${source_run_id}';")"
 expect_equal \
   "fairness fixture identities are unused" \
   "0" \
@@ -287,7 +288,7 @@ expect_equal \
 
 health_payload="$(curl --silent --fail "http://127.0.0.1:${second_port}/health/ready")"
 PMCS_REPORTING_HEALTH_PAYLOAD="${health_payload}" \
-PMCS_REPORTING_HEALTH_FORBIDDEN="${tenant_id}|${project_a_id}|${project_b_id}" \
+PMCS_REPORTING_HEALTH_FORBIDDEN="${source_forbidden_identities}|${project_a_id}|${project_b_id}|${project_a_head_run_id}|${project_a_second_run_id}|${project_a_third_run_id}|${project_b_head_run_id}" \
 node <<'NODE'
 const payload = JSON.parse(process.env.PMCS_REPORTING_HEALTH_PAYLOAD);
 const reporting = payload.checks?.["reporting-worker"];
@@ -305,7 +306,7 @@ if (data?.queuedRuns !== 4 || data?.activeRuns !== 0 ||
 }
 const serialized = JSON.stringify(payload);
 if (forbidden.some(value => value && serialized.includes(value))) {
-  throw new Error("Reporting health exposed a tenant or project identifier.");
+  throw new Error("Reporting health exposed a tenant, project, user or run identifier.");
 }
 for (const key of Object.keys(data ?? {})) {
   if (!["activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns"].includes(key)) {
