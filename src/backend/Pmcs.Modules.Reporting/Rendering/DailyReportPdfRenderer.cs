@@ -8,9 +8,10 @@ using QuestPDF.Infrastructure;
 
 namespace Pmcs.Modules.Reporting.Rendering;
 
-internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) : IReportRenderer
+internal sealed class DailyReportPdfRenderer(
+    ReportingRendererOptions options,
+    ReportingExecutionOptions execution) : IReportRenderer
 {
-    private const int MaximumFacts = 2_000;
     private const string FontFamily = "DejaVu Sans";
     private static readonly object ConfigurationGate = new();
     private static string? configuredSignature;
@@ -32,7 +33,7 @@ internal sealed class DailyReportPdfRenderer(ReportingRendererOptions options) :
             .OrderBy(version => version.VersionNumber)
             .ThenBy(version => version.ReportId)
             .ToArray();
-        if (orderedVersions.Sum(version => version.Facts.Count) > MaximumFacts)
+        if (orderedVersions.Sum(version => version.Facts.Count) > execution.MaximumPdfFacts)
         {
             throw new ReportRenderingException(
                 "reporting.output.page_limit_exceeded",

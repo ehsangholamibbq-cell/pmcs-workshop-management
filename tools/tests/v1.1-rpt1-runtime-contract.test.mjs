@@ -13,6 +13,9 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Endpoints/ReportingEndpoints.cs`,
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
+    `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
+    `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
+    `${moduleRoot}/ReportingExecutionOptions.cs`,
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -76,7 +79,7 @@ test("reporting reads daily report lineage only through its application contract
   assert.match(source, /DailyReportStatus\.Superseded/u);
   assert.match(worker, /IDailyReportReportingSource/u);
   assert.doesNotMatch(worker, /FieldOperations\.Persistence|field_operations\./u);
-  assert.match(worker, /for update skip locked/u);
+  assert.match(worker, /for update(?: of candidate)? skip locked/u);
   assert.match(worker, /PreviewProjectPermissionsAsync/u);
 });
 
@@ -170,7 +173,7 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(objectSecurityHarness, /malformed\.verify-fails-closed/u);
   assert.match(objectSecurityHarness, /finally[\s\S]*?PutObjectAsync/u);
   assert.match(objectSecurity, /exactly four integrity-failure audits/u);
-  assert.match(qualificationOptions, /qualification pauses require the isolated QA gateway/u);
+  assert.match(qualificationOptions, /qualification controls require the isolated QA gateway/u);
   assert.match(qualificationOptions, /PMCS_QA_GATEWAY_ENABLED/u);
   assert.match(qualificationOptions, /QualificationPauseSeconds must be between 1 and 60/u);
   assert.match(seed, /ReportingCenter__PdfLicense=Unconfigured/u);
@@ -187,6 +190,52 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(database, /worker-time permission revocation fails before document publication/u);
   assert.match(database, /generated report orphan inventory is empty after recovery/u);
   assert.match(database, /object and metadata tamper attempts are audited/u);
+});
+
+test("RPT1 worker capacity core is bounded observable and project-fair", () => {
+  const options = read(`${moduleRoot}/ReportingExecutionOptions.cs`);
+  const qualification = read(`${moduleRoot}/ReportingWorkerQualificationOptions.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const telemetry = read(`${moduleRoot}/Services/ReportingWorkerTelemetry.cs`);
+  const health = read(`${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`);
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const pdf = read(`${moduleRoot}/Rendering/DailyReportPdfRenderer.cs`);
+  const xlsx = read(`${moduleRoot}/Rendering/DailyReportXlsxRenderer.cs`);
+  const harness = read("src/backend/Pmcs.TestHarness/ReportingCapacityVerification.cs");
+
+  for (const key of [
+    "MaximumAttempts",
+    "MaximumPdfFacts",
+    "MaximumXlsxRows",
+    "MaximumOutputBytes",
+    "RetryBaseDelaySeconds",
+    "ProcessingTimeoutSeconds",
+    "QueueAgeWarningSeconds",
+  ]) assert.match(options, new RegExp(key, "u"));
+  assert.match(worker, /CancelAfter\(execution\.ProcessingTimeout\)/u);
+  assert.match(worker, /reporting\.run\.timeout/u);
+  assert.match(worker, /reporting\.retry\.exhausted/u);
+  assert.match(worker, /CertifiedReportRunFailed/u);
+  assert.match(worker, /peer\.project_id = candidate\.project_id/u);
+  assert.match(worker, /max\(history\.claimed_at\)/u);
+  assert.match(worker, /for update of candidate skip locked/u);
+  assert.match(worker, /execution\.RetryBaseDelay/u);
+  assert.match(worker, /BeforeStorageTransientFailure/u);
+  assert.match(qualification, /PMCS_QA_GATEWAY_ENABLED/u);
+  assert.match(qualification, /QualificationFailurePoint/u);
+  assert.match(telemetry, /Pmcs\.Reporting/u);
+  assert.match(telemetry, /pmcs\.reporting\.worker\.heartbeat\.age/u);
+  assert.match(telemetry, /pmcs\.reporting\.worker\.queue\.oldest_age/u);
+  assert.match(health, /HealthCheckResult\.Degraded/u);
+  assert.match(health, /QueueAgeWarning/u);
+  assert.match(module, /AddCheck<ReportingWorkerHealthCheck>/u);
+  assert.match(endpoints, /execution\.MaximumAttempts/u);
+  assert.match(pdf, /execution\.MaximumPdfFacts/u);
+  assert.match(xlsx, /execution\.MaximumXlsxRows/u);
+  assert.match(harness, /Enumerable\.Range\(101, 20\)/u);
+  assert.match(harness, /healthy-p95-under-30-seconds/u);
+  assert.match(harness, /reporting\.qa\.transient_injected/u);
 });
 
 test("RPT1 is disabled by default until renderers and qualification are complete", () => {

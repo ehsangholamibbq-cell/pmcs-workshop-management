@@ -218,7 +218,7 @@ public sealed class ReportingTests
     public void CertifiedXlsxIsDeterministicRtlNamespaceCorrectAndFormulaFree()
     {
         var request = CreateXlsxRenderRequest("=HYPERLINK(\"https://invalid.example\",\"x\")");
-        var renderer = new DailyReportXlsxRenderer();
+        var renderer = new DailyReportXlsxRenderer(ReportingExecutionOptions.Default);
 
         var first = renderer.Render(request);
         var second = renderer.Render(request);
@@ -264,6 +264,7 @@ public sealed class ReportingTests
 
         Assert.StartsWith("worker-", options.WorkerInstanceId, StringComparison.Ordinal);
         Assert.Equal(ReportingWorkerQualificationPausePoint.None, options.PausePoint);
+        Assert.Equal(ReportingWorkerQualificationFailurePoint.None, options.FailurePoint);
         Assert.Null(options.TargetRunId);
         Assert.Null(options.PauseDuration);
     }
@@ -356,6 +357,96 @@ public sealed class ReportingTests
             ReportingWorkerQualificationOptions.Create(configuration));
 
         Assert.Contains("between 1 and 60", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ExecutionBudgetsAreBoundedAndDefaultFailClosed()
+    {
+        var defaults = ReportingExecutionOptions.Create(new ConfigurationBuilder().Build());
+
+        Assert.Equal(3, defaults.MaximumAttempts);
+        Assert.Equal(2_000, defaults.MaximumPdfFacts);
+        Assert.Equal(5_000, defaults.MaximumXlsxRows);
+        Assert.Equal(25L * 1024L * 1024L, defaults.MaximumOutputBytes);
+        Assert.Equal(TimeSpan.FromSeconds(30), defaults.RetryBaseDelay);
+        Assert.Equal(TimeSpan.FromSeconds(120), defaults.ProcessingTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(120), defaults.QueueAgeWarning);
+
+        var configured = ReportingExecutionOptions.Create(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ReportingCenter:MaximumAttempts"] = "4",
+                ["ReportingCenter:MaximumPdfFacts"] = "1800",
+                ["ReportingCenter:MaximumXlsxRows"] = "4500",
+                ["ReportingCenter:MaximumOutputBytes"] = "10485760",
+                ["ReportingCenter:RetryBaseDelaySeconds"] = "10",
+                ["ReportingCenter:ProcessingTimeoutSeconds"] = "90",
+                ["ReportingCenter:QueueAgeWarningSeconds"] = "60"
+            })
+            .Build());
+
+        Assert.Equal(4, configured.MaximumAttempts);
+        Assert.Equal(1_800, configured.MaximumPdfFacts);
+        Assert.Equal(4_500, configured.MaximumXlsxRows);
+        Assert.Equal(10L * 1024L * 1024L, configured.MaximumOutputBytes);
+        Assert.Equal(TimeSpan.FromSeconds(10), configured.RetryBaseDelay);
+        Assert.Equal(TimeSpan.FromSeconds(90), configured.ProcessingTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(60), configured.QueueAgeWarning);
+    }
+
+    [Theory]
+    [InlineData("ReportingCenter:MaximumAttempts", "0")]
+    [InlineData("ReportingCenter:MaximumPdfFacts", "20001")]
+    [InlineData("ReportingCenter:MaximumXlsxRows", "invalid")]
+    [InlineData("ReportingCenter:MaximumOutputBytes", "1023")]
+    [InlineData("ReportingCenter:RetryBaseDelaySeconds", "301")]
+    [InlineData("ReportingCenter:ProcessingTimeoutSeconds", "901")]
+    [InlineData("ReportingCenter:QueueAgeWarningSeconds", "4")]
+    public void ExecutionBudgetsRejectInvalidExplicitConfiguration(string key, string value)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { [key] = value })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ReportingExecutionOptions.Create(configuration));
+    }
+
+    [Fact]
+    public void WorkerTransientFailureInjectionIsQaOnlyAndTargetBound()
+    {
+        var targetRunId = Guid.NewGuid();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PMCS_QA_GATEWAY_ENABLED"] = "true",
+                ["ReportingCenter:WorkerInstanceId"] = "qa-worker-poison",
+                ["ReportingCenter:QualificationFailurePoint"] = "BeforeStorageTransientFailure",
+                ["ReportingCenter:QualificationTargetRunId"] = targetRunId.ToString()
+            })
+            .Build();
+
+        var options = ReportingWorkerQualificationOptions.Create(configuration);
+
+        Assert.Equal(
+            ReportingWorkerQualificationFailurePoint.BeforeStorageTransientFailure,
+            options.FailurePoint);
+        Assert.True(options.ShouldFail(
+            ReportingWorkerQualificationFailurePoint.BeforeStorageTransientFailure,
+            targetRunId));
+        Assert.False(options.ShouldFail(
+            ReportingWorkerQualificationFailurePoint.BeforeStorageTransientFailure,
+            Guid.NewGuid()));
+
+        var unsafeConfiguration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ReportingCenter:QualificationFailurePoint"] = "BeforeStorageTransientFailure",
+                ["ReportingCenter:QualificationTargetRunId"] = targetRunId.ToString()
+            })
+            .Build();
+        Assert.Throws<InvalidOperationException>(() =>
+            ReportingWorkerQualificationOptions.Create(unsafeConfiguration));
     }
 
     private static ReportRun CreateRun()

@@ -102,8 +102,10 @@ public sealed class ReportingModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
 
         services.AddSingleton(ReportingRuntimeOptions.Create(configuration));
+        services.AddSingleton(ReportingExecutionOptions.Create(configuration));
         services.AddSingleton(ReportingWorkerQualificationOptions.Create(configuration));
         services.AddSingleton(ReportingRendererOptions.Create(configuration));
+        services.AddSingleton<ReportingWorkerTelemetry>();
         services.AddDbContext<ReportingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IReportingReadService, ReportingReadService>();
         services.AddSingleton<IReportRenderer, DailyReportPdfRenderer>();
@@ -112,6 +114,9 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddHostedService<ReportGenerationWorker>();
+        services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(
+            "reporting-worker",
+            tags: ["ready"]);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapReportingEndpoints();

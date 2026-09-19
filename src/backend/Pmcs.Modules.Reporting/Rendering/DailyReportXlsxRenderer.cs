@@ -7,9 +7,8 @@ using Pmcs.Modules.Reporting.Domain;
 
 namespace Pmcs.Modules.Reporting.Rendering;
 
-internal sealed class DailyReportXlsxRenderer : IReportRenderer
+internal sealed class DailyReportXlsxRenderer(ReportingExecutionOptions execution) : IReportRenderer
 {
-    private const int MaximumFacts = 5_000;
     private const string SpreadsheetNamespace =
         "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
     private const string ContentTypesNamespace =
@@ -37,7 +36,7 @@ internal sealed class DailyReportXlsxRenderer : IReportRenderer
             .ThenBy(version => version.ReportId)
             .ToArray();
         var factCount = orderedVersions.Sum(version => version.Facts.Count);
-        if (factCount > MaximumFacts)
+        if (factCount > execution.MaximumXlsxRows)
         {
             throw new ReportRenderingException(
                 "reporting.output.row_limit_exceeded",

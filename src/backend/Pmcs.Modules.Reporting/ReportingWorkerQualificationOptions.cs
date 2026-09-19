@@ -5,6 +5,7 @@ namespace Pmcs.Modules.Reporting;
 internal sealed record ReportingWorkerQualificationOptions(
     string WorkerInstanceId,
     ReportingWorkerQualificationPausePoint PausePoint,
+    ReportingWorkerQualificationFailurePoint FailurePoint,
     Guid? TargetRunId,
     TimeSpan? PauseDuration)
 {
@@ -35,10 +36,22 @@ internal sealed record ReportingWorkerQualificationOptions(
                     : throw new InvalidOperationException(
                         "ReportingCenter:QualificationPausePoint is invalid.");
 
+        var configuredFailurePoint = configuration["ReportingCenter:QualificationFailurePoint"]?.Trim();
+        var failurePoint = string.IsNullOrWhiteSpace(configuredFailurePoint)
+            ? ReportingWorkerQualificationFailurePoint.None
+            : Enum.TryParse<ReportingWorkerQualificationFailurePoint>(
+                configuredFailurePoint,
+                ignoreCase: false,
+                out var parsedFailurePoint) && Enum.IsDefined(parsedFailurePoint)
+                    ? parsedFailurePoint
+                    : throw new InvalidOperationException(
+                        "ReportingCenter:QualificationFailurePoint is invalid.");
+
         Guid? targetRunId = null;
         TimeSpan? pauseDuration = null;
         var configuredPauseSeconds = configuration["ReportingCenter:QualificationPauseSeconds"]?.Trim();
-        if (pausePoint != ReportingWorkerQualificationPausePoint.None)
+        if (pausePoint != ReportingWorkerQualificationPausePoint.None ||
+            failurePoint != ReportingWorkerQualificationFailurePoint.None)
         {
             var qaGatewayEnabled = bool.TryParse(
                 configuration[QaGatewayConfigurationKey],
@@ -46,7 +59,7 @@ internal sealed record ReportingWorkerQualificationOptions(
             if (!qaGatewayEnabled)
             {
                 throw new InvalidOperationException(
-                    "Reporting worker qualification pauses require the isolated QA gateway.");
+                    "Reporting worker qualification controls require the isolated QA gateway.");
             }
 
             if (!Guid.TryParse(
@@ -54,11 +67,12 @@ internal sealed record ReportingWorkerQualificationOptions(
                     out var parsedTargetRunId) || parsedTargetRunId == Guid.Empty)
             {
                 throw new InvalidOperationException(
-                    "ReportingCenter:QualificationTargetRunId is required for a qualification pause.");
+                    "ReportingCenter:QualificationTargetRunId is required for a qualification control.");
             }
             targetRunId = parsedTargetRunId;
 
-            if (!string.IsNullOrWhiteSpace(configuredPauseSeconds))
+            if (pausePoint != ReportingWorkerQualificationPausePoint.None &&
+                !string.IsNullOrWhiteSpace(configuredPauseSeconds))
             {
                 if (!int.TryParse(configuredPauseSeconds, out var parsedPauseSeconds) ||
                     parsedPauseSeconds is < 1 or > 60)
@@ -67,6 +81,12 @@ internal sealed record ReportingWorkerQualificationOptions(
                         "ReportingCenter:QualificationPauseSeconds must be between 1 and 60.");
                 }
                 pauseDuration = TimeSpan.FromSeconds(parsedPauseSeconds);
+            }
+            else if (pausePoint == ReportingWorkerQualificationPausePoint.None &&
+                !string.IsNullOrWhiteSpace(configuredPauseSeconds))
+            {
+                throw new InvalidOperationException(
+                    "ReportingCenter:QualificationPauseSeconds requires a qualification pause point.");
             }
         }
         else if (!string.IsNullOrWhiteSpace(configuredPauseSeconds))
@@ -78,12 +98,22 @@ internal sealed record ReportingWorkerQualificationOptions(
         return new ReportingWorkerQualificationOptions(
             workerInstanceId,
             pausePoint,
+            failurePoint,
             targetRunId,
             pauseDuration);
     }
 
     public bool ShouldPause(ReportingWorkerQualificationPausePoint point, Guid runId) =>
         PausePoint == point && TargetRunId == runId;
+
+    public bool ShouldFail(ReportingWorkerQualificationFailurePoint point, Guid runId) =>
+        FailurePoint == point && TargetRunId == runId;
+}
+
+internal enum ReportingWorkerQualificationFailurePoint
+{
+    None = 0,
+    BeforeStorageTransientFailure = 1
 }
 
 internal enum ReportingWorkerQualificationPausePoint

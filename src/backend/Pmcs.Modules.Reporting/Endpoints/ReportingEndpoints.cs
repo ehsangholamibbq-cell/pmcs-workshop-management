@@ -407,6 +407,7 @@ internal static class ReportingEndpoints
         Guid runId,
         HttpContext httpContext,
         ReportingRuntimeOptions runtime,
+        ReportingExecutionOptions execution,
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         IProjectDirectory projectDirectory,
@@ -451,7 +452,7 @@ internal static class ReportingEndpoints
 
         var previousDiagnostic = run.DiagnosticCode;
         if (run.Status != ReportRunStatus.Failed || run.OutputCount > 0 ||
-            run.AttemptCount >= ReportGenerationWorker.MaximumAttempts ||
+            run.AttemptCount >= execution.MaximumAttempts ||
             !IsExplicitlyRetryable(previousDiagnostic))
         {
             return Problem(

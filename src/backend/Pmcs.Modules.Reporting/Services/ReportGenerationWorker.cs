@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,14 +23,15 @@ namespace Pmcs.Modules.Reporting.Services;
 internal sealed partial class ReportGenerationWorker(
     IServiceScopeFactory scopeFactory,
     ReportingRuntimeOptions runtime,
+    ReportingExecutionOptions execution,
     ReportingWorkerQualificationOptions qualification,
+    ReportingWorkerTelemetry telemetry,
     ILogger<ReportGenerationWorker> logger) : BackgroundService
 {
-    internal const int MaximumAttempts = 3;
-    private const long MaximumOutputBytes = 25L * 1024L * 1024L;
     private static readonly Guid SystemActorId =
         Guid.Parse("00000000-0000-0000-0000-000000000001");
-    private static readonly TimeSpan ProcessingLease = TimeSpan.FromMinutes(10);
+
+    private TimeSpan ProcessingLease => execution.ProcessingTimeout + TimeSpan.FromSeconds(30);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -43,9 +45,11 @@ internal sealed partial class ReportGenerationWorker(
         {
             try
             {
+                telemetry.Heartbeat(DateTimeOffset.UtcNow);
                 while (await ProcessNextAsync(stoppingToken))
                 {
                     // Drain all currently eligible runs before waiting for the next poll.
+                    telemetry.Heartbeat(DateTimeOffset.UtcNow);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -68,8 +72,18 @@ internal sealed partial class ReportGenerationWorker(
         {
             var dbContext = claimScope.ServiceProvider.GetRequiredService<ReportingDbContext>();
             var clock = claimScope.ServiceProvider.GetRequiredService<IClock>();
-            claimed = await ClaimNextSnapshotAsync(dbContext, clock.UtcNow, cancellationToken)
-                ?? await ClaimNextRenderingAsync(dbContext, clock.UtcNow, cancellationToken);
+            var now = clock.UtcNow;
+            telemetry.Heartbeat(now);
+            if (await FinalizeExhaustedAsync(
+                    dbContext,
+                    claimScope.ServiceProvider.GetRequiredService<ITransactionalSideEffectWriter>(),
+                    now,
+                    cancellationToken))
+            {
+                return true;
+            }
+            claimed = await ClaimNextSnapshotAsync(dbContext, now, cancellationToken)
+                ?? await ClaimNextRenderingAsync(dbContext, now, cancellationToken);
         }
 
         if (claimed is null)
@@ -77,58 +91,108 @@ internal sealed partial class ReportGenerationWorker(
             return false;
         }
 
+        var workKind = claimed.WorkKind == ReportWorkKind.Snapshot ? "snapshot" : "rendering";
+        var startedAt = Stopwatch.GetTimestamp();
+        telemetry.RecordClaim(
+            workKind,
+            claimed.AttemptCount > 1,
+            DateTimeOffset.UtcNow - claimed.CreatedAt);
+        using var processingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        processingCancellation.CancelAfter(execution.ProcessingTimeout);
+        var processingToken = processingCancellation.Token;
         var snapshotBuilt = claimed.WorkKind == ReportWorkKind.Rendering;
         try
         {
             if (claimed.WorkKind == ReportWorkKind.Snapshot)
             {
-                await BuildSnapshotAsync(claimed, cancellationToken);
+                await BuildSnapshotAsync(claimed, processingToken);
                 snapshotBuilt = true;
                 LogSnapshotBuilt(logger, claimed.Id, claimed.ProjectId);
             }
 
-            await RenderOutputsAsync(claimed, cancellationToken);
+            var outputSizeBytes = await RenderOutputsAsync(claimed, processingToken);
+            telemetry.RecordCompletion(
+                workKind,
+                Stopwatch.GetElapsedTime(startedAt),
+                outputSizeBytes);
             LogRunCompleted(logger, claimed.Id, claimed.ProjectId);
         }
         catch (ReportProcessingException exception)
         {
-            await RecordFailureAsync(
+            var willRetry = await RecordFailureAsync(
                 claimed,
                 exception.Code,
                 exception.Transient,
                 exception.PermissionSnapshotJson,
                 cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                exception.Code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
             LogRunFailed(logger, claimed.Id, exception.Code);
         }
         catch (GeneratedDocumentPublishException exception)
         {
-            await RecordFailureAsync(
+            var willRetry = await RecordFailureAsync(
                 claimed,
                 exception.Code,
                 exception.Transient,
                 permissionSnapshotJson: null,
                 cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                exception.Code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
             LogRunFailed(logger, claimed.Id, exception.Code);
         }
         catch (ReportRenderingException exception)
         {
-            await RecordFailureAsync(
+            var willRetry = await RecordFailureAsync(
                 claimed,
                 exception.Code,
                 exception.Transient,
                 permissionSnapshotJson: null,
                 cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                exception.Code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
             LogRunFailed(logger, claimed.Id, exception.Code);
         }
         catch (DomainRuleException exception)
         {
-            await RecordFailureAsync(
+            var willRetry = await RecordFailureAsync(
                 claimed,
                 exception.Code,
                 transient: false,
                 permissionSnapshotJson: null,
                 cancellationToken: cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                exception.Code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
             LogRunFailed(logger, claimed.Id, exception.Code);
+        }
+        catch (OperationCanceledException) when (
+            !cancellationToken.IsCancellationRequested && processingCancellation.IsCancellationRequested)
+        {
+            const string code = "reporting.run.timeout";
+            var willRetry = await RecordFailureAsync(
+                claimed,
+                code,
+                transient: true,
+                permissionSnapshotJson: null,
+                cancellationToken: cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
+            LogRunFailed(logger, claimed.Id, code);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -136,14 +200,20 @@ internal sealed partial class ReportGenerationWorker(
         }
         catch (Exception exception)
         {
-            await RecordFailureAsync(
+            var code = snapshotBuilt
+                ? "reporting.renderer.transient"
+                : "reporting.snapshot.transient";
+            var willRetry = await RecordFailureAsync(
                 claimed,
-                snapshotBuilt
-                    ? "reporting.renderer.transient"
-                    : "reporting.snapshot.transient",
+                code,
                 transient: true,
                 permissionSnapshotJson: null,
                 cancellationToken: cancellationToken);
+            telemetry.RecordFailure(
+                workKind,
+                code,
+                willRetry,
+                Stopwatch.GetElapsedTime(startedAt));
             LogUnexpectedRunFailure(logger, exception, claimed.Id);
         }
 
@@ -242,7 +312,7 @@ internal sealed partial class ReportGenerationWorker(
         await transaction.CommitAsync(cancellationToken);
     }
 
-    private async Task RenderOutputsAsync(ClaimedRun claimed, CancellationToken cancellationToken)
+    private async Task<long> RenderOutputsAsync(ClaimedRun claimed, CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
         var services = scope.ServiceProvider;
@@ -341,6 +411,15 @@ internal sealed partial class ReportGenerationWorker(
             ReportingWorkerQualificationPausePoint.BeforeStorage,
             run.Id,
             cancellationToken);
+        if (qualification.ShouldFail(
+                ReportingWorkerQualificationFailurePoint.BeforeStorageTransientFailure,
+                run.Id))
+        {
+            throw new ReportProcessingException(
+                "reporting.qa.transient_injected",
+                transient: true,
+                permissionSnapshotJson: permissionSnapshotJson);
+        }
 
         var formats = DeserializeFormats(run.RequestedFormatsJson);
         var rendered = new List<PreparedArtifact>(formats.Length);
@@ -502,6 +581,93 @@ internal sealed partial class ReportGenerationWorker(
                     run.CorrelationId)),
             cancellationToken);
         await completionTransaction.CommitAsync(cancellationToken);
+        return rendered.Sum(item => item.Artifact.Bytes.LongLength);
+    }
+
+    private async Task<bool> FinalizeExhaustedAsync(
+        ReportingDbContext dbContext,
+        ITransactionalSideEffectWriter sideEffectWriter,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var connection = (NpgsqlConnection)dbContext.Database.GetDbConnection();
+        var postgresTransaction = (NpgsqlTransaction)transaction.GetDbTransaction();
+        await using var select = new NpgsqlCommand(
+            """
+            select candidate.id
+            from reporting.report_runs candidate
+            where candidate.attempt_count >= @maximum_attempts
+              and candidate.output_count = 0
+              and (
+                  (candidate.status = 'Queued' and
+                      (candidate.next_attempt_at is null or candidate.next_attempt_at <= @now))
+                  or
+                  (candidate.status = 'Processing' and
+                      candidate.pipeline_stage = 'SnapshotReady' and
+                      candidate.diagnostic_code is not null and
+                      (candidate.next_attempt_at is null or candidate.next_attempt_at <= @now))
+                  or
+                  (candidate.status = 'Processing' and
+                      candidate.pipeline_stage in ('BuildingSnapshot', 'Rendering') and
+                      candidate.claimed_at < @lease_cutoff)
+              )
+            order by candidate.created_at, candidate.id
+            for update of candidate skip locked
+            limit 1;
+            """,
+            connection,
+            postgresTransaction);
+        select.Parameters.AddWithValue("maximum_attempts", execution.MaximumAttempts);
+        select.Parameters.AddWithValue("now", now);
+        select.Parameters.AddWithValue("lease_cutoff", now.Subtract(ProcessingLease));
+        var selected = await select.ExecuteScalarAsync(cancellationToken);
+        if (selected is not Guid runId)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return false;
+        }
+
+        var run = await dbContext.Runs.SingleAsync(item => item.Id == runId, cancellationToken);
+        var previousDiagnosticCode = run.DiagnosticCode;
+        var previousStage = run.PipelineStage;
+        var workKind = run.SnapshotId.HasValue ? "rendering" : "snapshot";
+        const string diagnosticCode = "reporting.retry.exhausted";
+        run.Fail(diagnosticCode, diagnosticDetail: null, failedAt: now);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await sideEffectWriter.WriteAuditAsync(
+            dbContext.Database.GetDbConnection(),
+            transaction.GetDbTransaction(),
+            new AuditEntry(
+                run.TenantId,
+                run.ProjectId,
+                SystemActorId,
+                "CertifiedReportRunFailed",
+                "ReportRun",
+                run.Id.ToString(),
+                now,
+                new Dictionary<string, object?>
+                {
+                    ["executor"] = "SystemWorker",
+                    ["workerInstanceId"] = qualification.WorkerInstanceId,
+                    ["requestedBy"] = run.RequestedBy,
+                    ["diagnosticCode"] = diagnosticCode,
+                    ["previousDiagnosticCode"] = previousDiagnosticCode,
+                    ["attempt"] = run.AttemptCount,
+                    ["willRetry"] = false,
+                    ["stage"] = previousStage.ToString()
+                },
+                run.CorrelationId),
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        telemetry.RecordFailure(
+            workKind,
+            diagnosticCode,
+            willRetry: false,
+            duration: TimeSpan.Zero,
+            activeClaim: false);
+        LogRunFailed(logger, run.Id, diagnosticCode);
+        return true;
     }
 
     private async Task<ClaimedRun?> ClaimNextSnapshotAsync(
@@ -514,24 +680,49 @@ internal sealed partial class ReportGenerationWorker(
         var postgresTransaction = (NpgsqlTransaction)transaction.GetDbTransaction();
         await using var select = new NpgsqlCommand(
             """
-            select id, tenant_id, project_id, requested_by, parameters_json::text,
-                   as_of_utc, attempt_count, correlation_id
-            from reporting.report_runs
-            where snapshot_id is null
-              and attempt_count < @maximum_attempts
+            select candidate.id, candidate.tenant_id, candidate.project_id,
+                   candidate.requested_by, candidate.parameters_json::text,
+                   candidate.as_of_utc, candidate.attempt_count,
+                   candidate.correlation_id, candidate.created_at
+            from reporting.report_runs candidate
+            where candidate.snapshot_id is null
+              and candidate.attempt_count < @maximum_attempts
               and (
-                  (status = 'Queued' and (next_attempt_at is null or next_attempt_at <= @now))
+                  (candidate.status = 'Queued' and
+                      (candidate.next_attempt_at is null or candidate.next_attempt_at <= @now))
                   or
-                  (status = 'Processing' and pipeline_stage = 'BuildingSnapshot'
-                      and claimed_at < @lease_cutoff)
+                  (candidate.status = 'Processing' and
+                      candidate.pipeline_stage = 'BuildingSnapshot' and
+                      candidate.claimed_at < @lease_cutoff)
               )
-            order by created_at, id
-            for update skip locked
+            order by (
+                select count(*)
+                from reporting.report_runs peer
+                where peer.tenant_id = candidate.tenant_id
+                  and peer.project_id = candidate.project_id
+                  and peer.snapshot_id is null
+                  and peer.attempt_count < @maximum_attempts
+                  and (
+                      (peer.status = 'Queued' and
+                          (peer.next_attempt_at is null or peer.next_attempt_at <= @now))
+                      or
+                      (peer.status = 'Processing' and
+                          peer.pipeline_stage = 'BuildingSnapshot' and
+                          peer.claimed_at < @lease_cutoff)
+                  )
+                  and (peer.created_at, peer.id) < (candidate.created_at, candidate.id)
+            ), coalesce((
+                select max(history.claimed_at)
+                from reporting.report_runs history
+                where history.tenant_id = candidate.tenant_id
+                  and history.project_id = candidate.project_id
+            ), '-infinity'::timestamptz), candidate.created_at, candidate.id
+            for update of candidate skip locked
             limit 1;
             """,
             connection,
             postgresTransaction);
-        select.Parameters.AddWithValue("maximum_attempts", MaximumAttempts);
+        select.Parameters.AddWithValue("maximum_attempts", execution.MaximumAttempts);
         select.Parameters.AddWithValue("now", now);
         select.Parameters.AddWithValue("lease_cutoff", now.Subtract(ProcessingLease));
 
@@ -586,7 +777,7 @@ internal sealed partial class ReportGenerationWorker(
             cancellationToken);
     }
 
-    private static async Task<ClaimedRun?> ClaimNextRenderingAsync(
+    private async Task<ClaimedRun?> ClaimNextRenderingAsync(
         ReportingDbContext dbContext,
         DateTimeOffset now,
         CancellationToken cancellationToken)
@@ -596,29 +787,57 @@ internal sealed partial class ReportGenerationWorker(
         var postgresTransaction = (NpgsqlTransaction)transaction.GetDbTransaction();
         await using var select = new NpgsqlCommand(
             """
-            select id, tenant_id, project_id, requested_by, parameters_json::text,
-                   as_of_utc, attempt_count, correlation_id,
-                   (pipeline_stage = 'Rendering' or diagnostic_code is not null) as retry_attempt
-            from reporting.report_runs
-            where status = 'Processing'
-              and snapshot_id is not null
-              and output_count = 0
+            select candidate.id, candidate.tenant_id, candidate.project_id,
+                   candidate.requested_by, candidate.parameters_json::text,
+                   candidate.as_of_utc, candidate.attempt_count,
+                   candidate.correlation_id, candidate.created_at,
+                   (candidate.pipeline_stage = 'Rendering' or
+                       candidate.diagnostic_code is not null) as retry_attempt
+            from reporting.report_runs candidate
+            where candidate.status = 'Processing'
+              and candidate.snapshot_id is not null
+              and candidate.output_count = 0
               and (
-                  (pipeline_stage = 'SnapshotReady'
-                      and (next_attempt_at is null or next_attempt_at <= @now)
-                      and (diagnostic_code is null or attempt_count < @maximum_attempts))
+                  (candidate.pipeline_stage = 'SnapshotReady'
+                      and (candidate.next_attempt_at is null or candidate.next_attempt_at <= @now)
+                      and (candidate.diagnostic_code is null or
+                          candidate.attempt_count < @maximum_attempts))
                   or
-                  (pipeline_stage = 'Rendering'
-                      and claimed_at < @lease_cutoff
-                      and attempt_count < @maximum_attempts)
+                  (candidate.pipeline_stage = 'Rendering'
+                      and candidate.claimed_at < @lease_cutoff
+                      and candidate.attempt_count < @maximum_attempts)
               )
-            order by created_at, id
-            for update skip locked
+            order by (
+                select count(*)
+                from reporting.report_runs peer
+                where peer.tenant_id = candidate.tenant_id
+                  and peer.project_id = candidate.project_id
+                  and peer.status = 'Processing'
+                  and peer.snapshot_id is not null
+                  and peer.output_count = 0
+                  and (
+                      (peer.pipeline_stage = 'SnapshotReady'
+                          and (peer.next_attempt_at is null or peer.next_attempt_at <= @now)
+                          and (peer.diagnostic_code is null or
+                              peer.attempt_count < @maximum_attempts))
+                      or
+                      (peer.pipeline_stage = 'Rendering'
+                          and peer.claimed_at < @lease_cutoff
+                          and peer.attempt_count < @maximum_attempts)
+                  )
+                  and (peer.created_at, peer.id) < (candidate.created_at, candidate.id)
+            ), coalesce((
+                select max(history.claimed_at)
+                from reporting.report_runs history
+                where history.tenant_id = candidate.tenant_id
+                  and history.project_id = candidate.project_id
+            ), '-infinity'::timestamptz), candidate.created_at, candidate.id
+            for update of candidate skip locked
             limit 1;
             """,
             connection,
             postgresTransaction);
-        select.Parameters.AddWithValue("maximum_attempts", MaximumAttempts);
+        select.Parameters.AddWithValue("maximum_attempts", execution.MaximumAttempts);
         select.Parameters.AddWithValue("now", now);
         select.Parameters.AddWithValue("lease_cutoff", now.Subtract(ProcessingLease));
 
@@ -628,7 +847,7 @@ internal sealed partial class ReportGenerationWorker(
         {
             if (await reader.ReadAsync(cancellationToken))
             {
-                retryAttempt = reader.GetBoolean(8);
+                retryAttempt = reader.GetBoolean(9);
                 claimed = CreateClaim(reader, ReportWorkKind.Rendering, retryAttempt);
             }
         }
@@ -660,7 +879,7 @@ internal sealed partial class ReportGenerationWorker(
         return claimed;
     }
 
-    private async Task RecordFailureAsync(
+    private async Task<bool> RecordFailureAsync(
         ClaimedRun claimed,
         string code,
         bool transient,
@@ -676,13 +895,13 @@ internal sealed partial class ReportGenerationWorker(
             cancellationToken);
         if (run is null || run.Status is ReportRunStatus.Succeeded or ReportRunStatus.Cancelled or ReportRunStatus.Failed)
         {
-            return;
+            return false;
         }
 
         var now = clock.UtcNow;
-        if (transient && run.AttemptCount < MaximumAttempts)
+        if (transient && run.AttemptCount < execution.MaximumAttempts)
         {
-            var retryAt = now.AddSeconds(30 * Math.Max(1, run.AttemptCount));
+            var retryAt = now.Add(execution.RetryBaseDelay * Math.Max(1, run.AttemptCount));
             if (run.SnapshotId.HasValue)
             {
                 run.RequeueRendering(code, retryAt);
@@ -729,6 +948,7 @@ internal sealed partial class ReportGenerationWorker(
                 claimed.CorrelationId),
             cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        return run.Status is ReportRunStatus.Queued or ReportRunStatus.Processing;
     }
 
     private static async Task<string> RequireProcessingPermissionsAsync(
@@ -809,14 +1029,14 @@ internal sealed partial class ReportGenerationWorker(
         }
     }
 
-    private static void VerifyRenderedArtifact(
+    private void VerifyRenderedArtifact(
         RenderedReportArtifact artifact,
         ReportArtifactManifest manifest,
         string expectedFileName,
         ReportFormat expectedFormat)
     {
         if (artifact.Format != expectedFormat || artifact.Bytes.Length == 0 ||
-            artifact.Bytes.LongLength > MaximumOutputBytes ||
+            artifact.Bytes.LongLength > execution.MaximumOutputBytes ||
             !string.Equals(artifact.FileName, expectedFileName, StringComparison.Ordinal) ||
             !string.Equals(artifact.ContentType, manifest.ContentType, StringComparison.Ordinal) ||
             !string.Equals(artifact.ManifestSha256, manifest.Sha256, StringComparison.Ordinal) ||
@@ -881,6 +1101,7 @@ internal sealed partial class ReportGenerationWorker(
         reader.GetFieldValue<DateTimeOffset>(5),
         reader.GetInt32(6) + (incrementAttempt ? 1 : 0),
         reader.GetString(7),
+        reader.GetFieldValue<DateTimeOffset>(8),
         kind);
 
     private sealed record ClaimedRun(
@@ -892,6 +1113,7 @@ internal sealed partial class ReportGenerationWorker(
         DateTimeOffset AsOfUtc,
         int AttemptCount,
         string CorrelationId,
+        DateTimeOffset CreatedAt,
         ReportWorkKind WorkKind);
 
     private sealed record PreparedArtifact(
