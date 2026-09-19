@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented in `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`؛ latest qualification candidate `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` passed Run 102؛ extended RPT1 gates open
+- Status: Runtime implemented؛ latest qualification candidate `167133fc1985c5b57c3dac90535f7a962dfd03b7` passed Run 108؛ external API unchanged and extended RPT1 gates open
 
 ## ۱. قواعد عمومی
 

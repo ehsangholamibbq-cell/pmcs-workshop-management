@@ -2,12 +2,12 @@
 
 - شناسه: `PMCS-ARCH-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: `Connected concurrency/recovery qualification passed | RPT1 exit gates open`
+- وضعیت: `Connected revocation/object-integrity qualification passed | RPT1 exit gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `e1ac3263df53a245b1aefb338a015be4854d367b`
-- Source tree: `f58881f7e0a77bf89f65b872d4f988bd154a809f`
-- Connected evidence: Run 104 (`35390054888`) — `success`
+- آخرین Qualification Candidate: `167133fc1985c5b57c3dac90535f7a962dfd03b7`
+- Source tree: `34fb70aee9a62a434a8446444d7c6d5c6c9819bd`
+- Connected evidence: Run 108 (`35393509764`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -302,3 +302,11 @@ Storage را متصل اثبات کرد. crash-after-storage همان Generated 
 هر Run فقط یک Output/Document باقی ماند. pauseهای deterministic فقط پشت QA Gateway ایزوله فعال‌اند.
 worker-time revocation، object-byte/missing-object tamper، orphan inventory، load/observability،
 Golden و UI هنوز Gate باز RPT1 هستند.
+
+Qualification Slice 05 در Run 108 پنجرهٔ worker-time revocation را با recheck مجوزهای Reporting و
+Source بلافاصله پیش از انتشار Storage بست و snapshot ردشده را روی Run ثبت کرد. در محیط متصل، تعلیق
+Membership میان Rendering و publish با `reporting.permission.revoked` و بدون Document/Output شکست
+خورد. byte-tamper، missing و malformed object نیز برای Verify و Download fail-closed و سپس با
+بازگردانی byteهای اصلی recover شدند. inventory یک orphan موقت crash-after-storage و صفرشدن آن پس
+از reuse سند پایدار را اثبات کرد؛ sweeper/remediation تولیدی، load/observability، Golden/PDF و UI
+هنوز Gate باز RPT1 هستند.

@@ -8,8 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
-- آخرین Qualification Candidate: `e1ac3263df53a245b1aefb338a015be4854d367b`
-- آخرین Connected evidence: Run 104 (`35390054888`) — `success`
+- آخرین Qualification Candidate: `167133fc1985c5b57c3dac90535f7a962dfd03b7`
+- آخرین Connected evidence: Run 108 (`35393509764`) — `success`
 
 ## ۱. هدف و روش
 
@@ -91,7 +91,7 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 | `V1.1-DOC1` | Shared Documents، Scanner/Quarantine/Retention | بسته؛ Run 83 |
 | `V1.1-IAM1` | Login Descriptor و Member Profile | بسته؛ Run 88 |
 | `V1.1-PRJ1` | Controlled Project Bootstrap/Duplication | بسته؛ Run 92 |
-| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–04 | **فعال؛ core/cancel/security/two-worker crash recovery متصل پاس شده و Gate خروج باز است** |
+| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–05 | **فعال؛ core/cancel/security/recovery/revocation/object integrity متصل پاس شده و Gate خروج باز است** |
 | `V1.1-COL1` | Project Collaboration | برنامه‌ریزی‌شده |
 | `V1.1-UX2` | Full Product UI migration | برنامه‌ریزی‌شده |
 | `V1.1-INT1` | Agent Stage 1 | برنامه‌ریزی‌شده |
@@ -103,10 +103,10 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 Evidence commit بعدی فقط وضعیت PRJ1/RPT1 را ثبت کرد. Tree جاری
 `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b` همان محتوای Evidence متصل ثبت‌شده است.
 
-از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 04 ادامه یافته است. آخرین Candidate روی source
-commit `e1ac3263df53a245b1aefb338a015be4854d367b` و tree
-`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 هر هشت Job را پاس کرده است. Addendumهای
-۱۱ تا ۱۵ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
+از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 05 ادامه یافته است. آخرین Candidate روی source
+commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 هر هشت Job را پاس کرده است. Addendumهای
+۱۱ تا ۱۶ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
 
 ## ۶. Agent مدیریتی؛ تطبیق کامل هفت Stage
 
@@ -182,12 +182,12 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Qualification متصل Slice 04 برای دو Worker، `SKIP LOCKED`، stale lease و
-crash-before/after-storage در Run 104؛ RPT1 همچنان فعال است.
+آخرین اقدام تکمیل‌شده: Qualification متصل Slice 05 برای revocation حین Worker،
+object-byte/missing/malformed integrity و orphan inventory در Run 108؛ RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: worker-time permission revocation، object-byte/missing/malformed tamper و orphan
-inventory؛ سپس load/soak/fairness/budgets، observability، Golden معنایی/XLSX، PDF پس از تصمیم
-حقوقی license و UI گزارش در UX2.
+نقطهٔ دقیق ادامه: retry storm/poison isolation و load/soak/fairness/budgets؛ سپس observability،
+heartbeat/queue-age/alert، remediation امن orphan، Golden معنایی/XLSX، PDF پس از تصمیم حقوقی
+license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
@@ -246,4 +246,19 @@ Qualification Slice چهارم با source commit `e1ac3263df53a245b1aefb338a015
 این Addendum معماری یا ترتیب Roadmap را تغییر نمی‌دهد. RPT1 هنوز برای revocation حین Worker،
 object-byte/missing/malformed tamper، orphan inventory، load/observability، Golden، PDF قانونی و UI
 Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی مانده‌اند و مرز
+`Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.
+
+## ۱۶. Addendum — Worker Revocation، Object Integrity و Orphan Inventory
+
+Qualification Slice پنجم با source commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 (`35393509764`) هر هشت Job را پاس کرد.
+مجوزهای Reporting/Source بلافاصله پیش از Storage دوباره ارزیابی شدند و تعلیق Membership حین
+Rendering بدون Document/Output fail-closed شد. byte-tamper، missing و malformed object روی MinIO
+واقعی، restore قطعی و Auditهای integrity پاس شدند. inventory نیز یک orphan در crash window و صفر
+orphan پس از recovery پایدار را اثبات کرد.
+
+این Addendum معماری، Scope یا ترتیب Roadmap را تغییر نمی‌دهد و inventory را به‌اشتباه sweeper
+Production اعلام نمی‌کند. RPT1 برای retry/load/budgets، observability، remediation orphan، Golden،
+PDF قانونی و UI Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی
+مانده‌اند و مرز
 `Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.

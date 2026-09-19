@@ -255,6 +255,22 @@ test("RPT1 worker recovery checkpoint pins two-worker evidence without closing t
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
 });
 
+test("RPT1 revocation and object-integrity checkpoint pins connected evidence without closing the stage", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-05-candidate.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S05-C1/u);
+  assert.match(checkpoint, /167133fc1985c5b57c3dac90535f7a962dfd03b7/u);
+  assert.match(checkpoint, /34fb70aee9a62a434a8446444d7c6d5c6c9819bd/u);
+  assert.match(checkpoint, /Run 108 \(`35393509764`\)/u);
+  assert.match(checkpoint, /302\/302/u);
+  assert.match(checkpoint, /worker revocation[\s\S]*`8\/8`/u);
+  assert.match(checkpoint, /object security[\s\S]*`8\/8`/u);
+  assert.match(checkpoint, /`17\/17` assertion/u);
+  assert.match(checkpoint, /BeforeStoragePermissionRecheck/u);
+  assert.match(checkpoint, /sweeper[\s\S]*Gate باز/u);
+  assert.match(checkpoint, /هر هفت Stage Agent/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+});
+
 function read(path) {
   return readFileSync(path, "utf8");
 }

@@ -153,3 +153,15 @@ harness نهایی هر `5/5` و orchestration هر `15/15` assertion را پا�
 target Run ID و Worker instance ID معتبر fail-closed است. در رخداد واقعی Production، اپراتور فقط
 از retry/recovery رسمی و telemetry مصوب استفاده می‌کند و process را برای ساختن crash window دستکاری
 نمی‌کند. metrics/heartbeat/queue-age/alert هنوز Gate باز این Runbook است.
+
+Run 108 (`35393509764`) دو مسیر دیگر را پاس کرد. در
+`tools/qa/verify-reporting-worker-revocation.sh`، Worker در pause محدود
+`BeforeStoragePermissionRecheck` نگه داشته شد، Membership تعلیق و Run پیش از هر انتشار Storage با
+`reporting.permission.revoked` متوقف شد. در `tools/qa/verify-reporting-object-security.sh`، byteهای
+شیء MinIO دستکاری، حذف و با payload malformed جایگزین شدند؛ Verify/Download در هر حالت fail-closed
+و سپس byte اصلی در `finally` restore شد. recovery regression نیز orphan پنجرهٔ after-storage را یک
+و پس از recovery صفر شمرد و اکنون `17/17` assertion دارد.
+
+این فرمان‌ها فقط Qualification ایزوله‌اند. در Production تغییر مستقیم Membership/Database/Object
+برای شبیه‌سازی Incident مجاز نیست. orphan inventory فعلی Evidence تشخیصی است، نه sweeper یا مجوز
+حذف؛ remediation آینده باید dry-run، retention، legal-hold، idempotency و Audit مستقل داشته باشد.

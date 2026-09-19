@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-QA-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Connected core + cancel/security + worker crash recovery passed؛ RPT1 extended qualification open
+- وضعیت: Connected core + cancel/security + worker recovery/revocation/object integrity passed؛ RPT1 extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -224,3 +224,25 @@ Candidate `e1ac3263df53a245b1aefb338a015be4854d367b` با tree
 این coverage، worker-time revocation، object-byte/missing/malformed tamper، orphan inventory،
 retry storm/load/soak/fairness/budgets، metrics/heartbeat/alert، Golden معنایی/XLSX، PDF قانونی و
 UI اختصاصی Reporting را پاس‌شده اعلام نمی‌کند.
+
+## ۱۶. Coverage افزوده‌شده در Qualification Slice 05
+
+Candidate `167133fc1985c5b57c3dac90535f7a962dfd03b7` با tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 (`35393509764`) موارد زیر را متصل پاس کرد:
+
+- recheck مجوزهای `reporting.run.create` و `field.daily-reports.read` بلافاصله پیش از Storage؛
+- تعلیق Membership حین Rendering، شکست با `reporting.permission.revoked`، attempt برابر یک و نبود
+  Output، Generated Document، release Audit و Outbox؛
+- processing permission snapshot با هر دو تصمیم ردشده و Audit دارای Worker lineage؛
+- byte-tamper واقعی MinIO و شکست fail-closed هر دو Verify و Download؛
+- missing object و malformed object با پاسخ fail-closed، چهار Audit جدید و restore قطعی byte اصلی؛
+- هارنس object security با `6/6` و orchestration آن با `8/8` assertion؛
+- preparation/final worker revocation هر `1/1` و orchestration آن با `8/8` assertion؛
+- inventory یک orphan در crash-after-storage و صفر orphan پس از recovery؛ در نتیجه recovery
+  orchestration به `17/17` assertion رسید؛
+- حفظ `302/302` تست C#، `139/139` تست Web، پنج browser scenario، Restore ۴۳ Migration و هر هفت
+  Suite Qualification با صفر failure.
+
+این coverage وجود sweeper/remediation تولیدی orphan را ادعا نمی‌کند. retry storm، poison
+isolation، load/soak/fairness/budgets، metrics/heartbeat/queue-age/alert، Golden معنایی/XLSX، PDF
+قانونی/Golden/performance و UI اختصاصی Reporting همچنان Gate باز هستند.

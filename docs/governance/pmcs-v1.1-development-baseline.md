@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–04 تا source commit `e1ac326`؛ core + cancel/security + worker crash recovery connected regression passed و Gate خروج RPT1 باز |
-| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 104 پاس شده است |
+| Product runtime implementation | RPT1 Slice 01–05 تا source commit `167133f`؛ core + cancel/security + crash recovery + revocation/object integrity connected regression passed و Gate خروج RPT1 باز |
+| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 108 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -75,6 +75,14 @@ stale lease و crash-before/after-storage اضافه کرد. Run 104 (`353900548
 `298/298` تست C#، recovery preparation/final هر `5/5`، orchestration هر `15/15`، Restore ۴۳
 Migration، پنج browser scenario و `139/139` تست Web را پاس کرد. revocation حین Worker، object
 tamper/orphan inventory، load/observability، Golden/PDF و UI بازند؛ RPT1 Active می‌ماند.
+
+Qualification Slice 05 با source commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` recheck مجوز بلافاصله پیش از Storage، processing
+permission snapshot ردشده، object-byte/missing/malformed integrity و inventory orphan را اضافه کرد؛
+API خارجی و Migration تغییر نکرد. Run 108 (`35393509764`) هر هشت Job، `302/302` تست C#، object
+security و worker revocation هر `8/8`، recovery با `17/17` assertion، Restore ۴۳ Migration، پنج
+browser scenario و `139/139` تست Web را پاس کرد. sweeper تولیدی، retry/load/budgets، observability،
+Golden/PDF و UI بازند؛ RPT1 Active می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

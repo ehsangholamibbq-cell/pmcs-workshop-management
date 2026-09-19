@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-SEC-RPT1-001`
 - نسخه: `1.1.0`
-- وضعیت: Connected core + extended negative/recovery gates passed؛ remaining gates open
+- وضعیت: Connected core + extended negative/recovery/revocation/object-integrity gates passed؛ remaining gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -133,3 +133,11 @@ crash-before/after-storage را پاس کرد. Worker instance ID در Audit ث�
 نشد. pauseهای Qualification فقط در QA Gateway ایزوله و برای Run هدف فعال‌اند و در غیر این صورت
 startup fail-closed است. revocation حین Worker، object-byte/missing/malformed tamper، orphan
 inventory و Tool privilege elevation همچنان باز هستند.
+
+Run 108 (`35393509764`) revocation حین Worker و object integrity را روی PostgreSQL/MinIO واقعی
+پاس کرد. Worker پس از Rendering و بلافاصله پیش از Storage هر دو Permission را دوباره ارزیابی کرد؛
+تعلیق Membership، Run را با snapshot ردشده و `reporting.permission.revoked` بدون انتشار
+Document/Output fail-closed کرد. byte-tamper، missing و malformed object نیز Verify/Download را با
+502 و Audit مستقل متوقف کردند و fixture در `finally` به byte اصلی بازگشت. orphan موقت
+crash-after-storage inventory و پس از recovery صفر شد. sweeper/remediation Production و Agent Tool
+privilege-elevation qualification همچنان باز هستند.

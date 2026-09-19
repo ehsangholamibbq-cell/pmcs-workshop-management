@@ -1,9 +1,9 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.13.0`
+- نسخه سند: `1.14.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
-- تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
+- تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -297,6 +297,15 @@ Qualification فقط در QA Gateway ایزوله و default-off هستند. ا�
 تغییر نداد و revocation حین Worker، object tamper/orphan inventory، load/observability، Golden،
 PDF قانونی و UI Reporting را باز نگه می‌دارد.
 
+**Qualification Slice 05:** Candidate با commit
+`167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 (`35393509764`) هر هشت Job را پاس کرد.
+Permissionهای Reporting/Source بلافاصله پیش از Storage دوباره ارزیابی و revocation حین Rendering
+بدون انتشار Document/Output fail-closed شد. byte-tamper، missing و malformed object روی MinIO واقعی
+برای Verify/Download fail-closed و سپس restore شد؛ inventory نیز orphan پنجرهٔ crash-after-storage و
+صفرشدن آن پس از recovery را اثبات کرد. این Slice API خارجی/Migration/معماری را تغییر نداد و sweeper
+تولیدی، retry/load/budget، observability، Golden، PDF قانونی و UI Reporting را باز نگه می‌دارد.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -552,3 +561,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.11.0` | ثبت Evidence متصل Run 99 برای Build، PostgreSQL/Object Storage، Restore ۴۳ Migration و Full CI؛ Gateهای توسعه‌یافته RPT1 همچنان باز |
 | `1.12.0` | ثبت Qualification Slice سوم RPT1 برای Cancel، revocation پس از success، tenant isolation و tamper fail-closed؛ Gate خروج همچنان باز |
 | `1.13.0` | ثبت Qualification Slice چهارم RPT1 برای دو Worker، `SKIP LOCKED`، stale lease و crash-before/after-storage؛ Gate خروج همچنان باز |
+| `1.14.0` | ثبت Qualification Slice پنجم RPT1 برای worker-time revocation، object-byte/missing/malformed integrity و orphan inventory؛ Gate خروج همچنان باز |
