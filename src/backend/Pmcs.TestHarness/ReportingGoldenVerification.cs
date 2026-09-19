@@ -938,8 +938,8 @@ internal static partial class Program
             ? parsed
             : null;
 
-    private static bool RowsEqual(IReadOnlyList<string[]> actual, IReadOnlyList<string[]> expected) =>
-        actual.Count == expected.Count &&
+    private static bool RowsEqual(IReadOnlyList<string[]> actual, string[][] expected) =>
+        actual.Count == expected.Length &&
         actual.Zip(expected).All(pair => pair.First.SequenceEqual(pair.Second));
 
     private static string GoldenPersianDate(string isoDate)
