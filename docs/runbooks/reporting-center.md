@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: MS06 PDF Community/pinning/Golden implementation candidate؛ CI pending و RPT1 فعال
+- Status: MS06 Community/pinned PDF Golden/visual/performance passed in Run 133؛ catalog/UI gates open و RPT1 فعال
 
 ## Operational Observability
 
@@ -174,10 +174,11 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 ## Qualification command فعلی
 
 `tools/qa/seed-diagnostics.sh` در محیط ایزوله، Phase 1 و Worker را فقط برای QA روشن می‌کند و
-`verify-reporting` را اجرا می‌کند. سناریوی فعلی XLSX را از Catalog تا Queue، Snapshot، Worker،
+`verify-reporting` را اجرا می‌کند. سناریو ابتدا XLSX را از Catalog تا Queue، Snapshot، Worker،
 Generated Document، Download و Verify دنبال می‌کند و PDF با license تنظیم‌نشده را fail-closed و
-Retry محدود می‌سنجد. سپس `verify-database.sh` وضعیت Run/Snapshot/Output، Migration 43، Retention،
-Audit، Outbox و Idempotency را کنترل می‌کند.
+Retry محدود می‌سنجد. سپس API فقط برای `verify-reporting-pdf-golden` با `Community` و pinهای مصوب
+restart و پس از آن دوباره با Worker خاموش و `Unconfigured` اجرا می‌شود. `verify-database.sh` نیز
+وضعیت Run/Snapshot/Output، Migration 43، Retention، Audit، Outbox و Idempotency را کنترل می‌کند.
 
 این دستور در Run 99 (`35381177208`) روی PostgreSQL/Object Storage ایزوله اجرا شد و هر `13/13`
 assertion Reporting، QA database verification و Restore Drill ۴۳ Migration را پاس کرد. این نتیجه
@@ -252,3 +253,13 @@ Run twin، Snapshot/manifest hashهای cutoff، دانلود byte-identical، �
 بدون metadata supersession آینده و projection اصلاح‌شده v1/v2 را با revisionهای `12/5` ثبت کرد؛
 v3 Draft در هیچ خروجی نبود. این نتیجه MS05 را می‌بندد، اما license قانونی و PDF
 Golden/visual/performance یا UI Reporting را پاس‌شده اعلام نمی‌کند.
+
+Run 133 (`35463350892`) مسیر `verify-reporting-pdf-golden` را نیز پاس کرد. همان fixture معنایی MS05
+یک PDF واقعی یک‌صفحه‌ای با `42489` byte و SHA-256 برابر
+`cc188c842ddcced9a24acd5e18f92c4a6511252c40104055c8c38627cdfac863` ساخت؛ هر `8/8` assertion
+create/replay، worker success، download integrity، stored bytes deterministic، parse متن/ساختار،
+Draft exclusion و budget پاس شد و create-to-success برابر `3079.1417 ms` بود. Unit qualification
+دو رندر مستقل و PNGهای ۹۶ DPI را یکسان یافت؛ visual digest برابر
+`95d6e71de15d9d130041d5c295c94239b9fe9095e6572e581aa9a655ee85c9b2` است. بازبینی Poppler
+clipping، overlap یا glyph شکسته نشان نداد. این نتیجه MS06 را می‌بندد، اما Production enablement،
+اختلاف کاتالوگ ده‌گانه و UI Reporting را بسته اعلام نمی‌کند.

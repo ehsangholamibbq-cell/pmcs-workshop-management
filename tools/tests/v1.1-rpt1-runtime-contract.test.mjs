@@ -636,12 +636,40 @@ test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing 
   assert.match(checkpoint, /revision `12`/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.20\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.21\.0`/u);
   assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.20\.0/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.21\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
   assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
   assert.match(runbook, /Run 130 \(`35449387794`\)/u);
+});
+
+test("RPT1 certified PDF qualification records the MS06 checkpoint without closing the stage", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const decision = read("docs/adr/0030-questpdf-community-and-certified-runtime.md");
+  const runbook = read("docs/runbooks/reporting-center.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS06-C1/u);
+  assert.match(checkpoint, /b8f21492a4f44c7c412e5b7eda0b164e7f256758/u);
+  assert.match(checkpoint, /e94b6ba3753e67b42ea0ec99e998761fdad0bcc3/u);
+  assert.match(checkpoint, /Run 133 \(`35463350892`\)/u);
+  assert.match(checkpoint, /`330\/330` تست C#/u);
+  assert.match(checkpoint, /`52\/52` تست قراردادی Node/u);
+  assert.match(checkpoint, /PDF Golden متصل هر `8\/8` assertion/u);
+  assert.match(checkpoint, /cc188c842ddcced9a24acd5e18f92c4a6511252c40104055c8c38627cdfac863/u);
+  assert.match(checkpoint, /95d6e71de15d9d130041d5c295c94239b9fe9095e6572e581aa9a655ee85c9b2/u);
+  assert.match(checkpoint, /RPT1 فعال است/u);
+  assert.match(checkpoint, /۹ خانوادهٔ دیگر کاتالوگ Done نیستند/u);
+  assert.match(roadmap, /\| `1\.21\.0` \| ثبت Safe Checkpoint `S06-MS06`/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS06[\s\S]*b8f21492a4f44c7c412e5b7eda0b164e7f256758/u);
+  assert.match(canonical, /Safe Resume Point دقیق آن `PMCS-V1\.1-RPT1-S06-MS06-C1`/u);
+  assert.match(canonical, /گام بعدی یک Decision\/Change Record محدود است/u);
+  assert.match(decision, /QuestPDF Community/u);
+  assert.match(decision, /حداقل در بازبینی سالانه/u);
+  assert.match(runbook, /Run 133 \(`35463350892`\)/u);
+  assert.match(runbook, /ReportingCenter:PdfLicense.*Unconfigured/u);
 });
 
 function read(path) {

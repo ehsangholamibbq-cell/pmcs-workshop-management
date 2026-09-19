@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ MS06 PDF qualification implementation candidate با API تجاری بدون تغییر؛ CI pending و RPT1 فعال
+- Status: Runtime implemented؛ MS06 pinned PDF qualification passed in Run 133؛ business API unchanged، catalog decision open و RPT1 active
 
 ## ۱. قواعد عمومی
 

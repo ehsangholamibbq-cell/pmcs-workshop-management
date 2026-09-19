@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.8.0-candidate`
-- وضعیت: `MS06 implementation candidate | Community decision and pinned PDF qualification contract | CI pending`
+- نسخه: `1.8.0`
+- وضعیت: `MS06 complete | Community decision and pinned PDF Golden/visual/performance passed | catalog/UI gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `38a03f33f4747d0b6a76696705877633acd17678`
-- Source tree: `eb9369c9e32eb3f523c4faa22487d6428c2d7e34`
-- Connected evidence: Run 130 (`35449387794`) — `success`
+- آخرین Qualification Candidate: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`
+- Source tree: `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`
+- Connected evidence: Run 133 (`35463350892`) — `success`
 - مرجع تصمیم: ADR 0029 و ADR 0030
 
 ## ۱. Scope
@@ -390,3 +390,11 @@ OpenXML امن و deterministic، ۸/۱۶ ردیف semantic، هر هشت نوع
 supersession آینده را بست. هیچ API تجاری یا Migration اضافه نشد و Restore Drill همان ۴۳ Migration
 را نگه داشت. MS05 بسته است؛ تصمیم قانونی و Golden/Performance PDF و UI اختصاصی Reporting هنوز
 Gate باز RPT1 هستند.
+
+Slice 06 Micro-Step 06 در Run 133 تصمیم `QuestPDF Community` را با ADR 0030 ثبت و Adapter را روی
+QuestPDF `2026.8.0`، imageهای build/runtime با digest کامل و دو فونت vendored DejaVu Sans pin کرد.
+دو رندر مستقل byte-identical، visual digest ثابت در ۹۶ DPI، budgetهای cold/warm و PDF Golden متصل
+روی fixture MS05 هر `8/8` assertion را پاس کردند. PDF متصل یک صفحه و `42489` byte بود؛ parse مستقل
+متن/ساختار، replay/download integrity و حذف Draft پاس شدند. defaultهای Production خاموش و license
+پیش‌فرض `Unconfigured` ماندند. MS06 بسته است؛ اختلاف کاتالوگ ده‌گانه و UI اختصاصی UX2 Gateهای باز
+باقی‌مانده‌اند و RPT1 Active است.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.20.0`
+- نسخه سند: `1.21.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -343,6 +343,16 @@ byte-identical، parser مستقل OpenXML و SQL مستقل را هر `13/13` a
 یا Migration اضافه نشد. MS05 بسته است، اما RPT1 برای تصمیم قانونی و Golden/Performance PDF و UI
 Reporting باز می‌ماند؛ ترتیب RPT1، COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
 
+**Slice 06 Micro-Step 06 — Safe Checkpoint:** Candidate با commit
+`b8f21492a4f44c7c412e5b7eda0b164e7f256758` و tree
+`e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` در Run 133 (`35463350892`) هر هشت Job را پاس کرد.
+ADR 0030 تصمیم `QuestPDF Community` را ثبت کرد؛ package، build/runtime image و دو فونت DejaVu Sans
+با digest دقیق pin شدند. PDF Golden متصل `8/8` assertion، رندر byte-identical، visual digest ثابت،
+parse متن/RTL و performance budget را پاس کرد. defaultهای Production خاموش و license پیش‌فرض
+`Unconfigured` ماندند. MS06 بسته است، اما RPT1 تا تعیین تکلیف رسمی اختلاف کاتالوگ ده‌گانه با Runtime
+تک‌گزارش فعال می‌ماند؛ UI اختصاصی Reporting طبق برنامه در UX2 است و ترتیب RPT1، COL1، UX2، INT1 یا
+هفت Stage Agent تغییر نکرده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -605,3 +615,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.18.0` | ثبت Safe Checkpoint نهایی `S06-MS03-C2` برای OTLP، scrape، سه alert rule و delivery متصل queue-age؛ MS03 بسته و remediation orphan/Golden/PDF/UI باز است |
 | `1.19.0` | ثبت Safe Checkpoint `S06-MS04` برای inventory/dry-run و remediation امن orphan با retention، legal hold، Audit و idempotency؛ MS04 بسته و Golden/PDF/UI باز است |
 | `1.20.0` | ثبت Safe Checkpoint `S06-MS05` برای Golden معنایی cutoff و XLSX deterministic با replay، OpenXML و SQL مستقل؛ MS05 بسته و PDF/UI باز است |
+| `1.21.0` | ثبت Safe Checkpoint `S06-MS06` برای تصمیم Community، pin image/font و PDF Golden/visual/performance؛ MS06 بسته و اختلاف کاتالوگ پیش از بستن RPT1 باز است |

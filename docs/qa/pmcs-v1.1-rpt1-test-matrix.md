@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.6.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX Golden passed؛ PDF/UI qualification open
+- نسخه: `1.7.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX + pinned PDF qualification passed؛ catalog decision/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -357,3 +357,26 @@ Runهای 125 تا 129 به‌ترتیب برخورد نام helper، analyzer t
 تداخل تاریخ fixture Sync را آشکار کردند؛ هیچ‌یک به تضعیف assertion یا تغییر Production منجر نشد.
 MS05 با Run 130 بسته است. این coverage تصمیم قانونی license یا PDF Golden/visual/performance را
 جایگزین نمی‌کند و UI اختصاصی Reporting نیز هنوز Gate باز است.
+
+## ۲۲. Coverage افزوده‌شده در Slice 06 Micro-Step 06
+
+Candidate `b8f21492a4f44c7c412e5b7eda0b164e7f256758` با tree
+`e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` در Run 133 (`35463350892`) موارد زیر را پاس کرد:
+
+- ADR 0030 و پذیرش فقط `Community`، همراه با fail-closed ماندن default `Unconfigured`؛
+- pin دقیق `QuestPDF 2026.8.0`، imageهای SDK/ASP.NET و SHA-256 دو فونت DejaVu Sans؛
+- integrity check فونت و diagnosticهای `license_unapproved`، `font_integrity_failed` و
+  `configuration_unpinned`؛
+- دو PDF مستقل byte-identical، PNGهای مستقل pixel-identical و visual digest ثابت در ۹۶ DPI؛
+- budgetهای cold/warm `5000/2500 ms` و سقف fixture برابر `5 MiB`؛
+- PDF Golden متصل روی fixture MS05 با `8/8` assertion create/replay، success، integrity، stored
+  bytes deterministic، text/structure، Draft exclusion و end-to-end budget؛
+- PDF متصل یک صفحه، `42489` byte، SHA-256 برابر
+  `cc188c842ddcced9a24acd5e18f92c4a6511252c40104055c8c38627cdfac863` و زمان
+  create-to-success برابر `3079.1417 ms`؛
+- `330/330` تست C#، `52/52` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، Restore
+  ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+بازبینی مستقل Poppler clipping، overlap یا glyph شکسته نشان نداد. MS06 با Run 133 بسته است؛ این
+coverage Production enablement، eligibility دائمی Community، ۹ خانوادهٔ پیاده‌نشدهٔ Catalog یا UI
+اختصاصی Reporting را جایگزین نمی‌کند و RPT1 Active باقی می‌ماند.

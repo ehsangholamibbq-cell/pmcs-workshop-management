@@ -241,5 +241,6 @@ npm run check
 - Operational Observability Delivery Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md)
 - Safe Orphan Remediation Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md)
 - Semantic/XLSX Golden Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md)
+- Certified PDF Qualification Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

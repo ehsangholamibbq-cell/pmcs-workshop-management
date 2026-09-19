@@ -137,6 +137,15 @@ Slice 06 Micro-Step 05 با source commit
 OpenXML امن، ۸/۱۶ ردیف semantic و حذف Draft هر `13/13` assertion را پاس کردند. MS05 بسته است؛
 تصمیم قانونی و Golden/Performance PDF و UI Reporting بازند و RPT1 Active می‌ماند.
 
+Slice 06 Micro-Step 06 با source commit
+`b8f21492a4f44c7c412e5b7eda0b164e7f256758` و tree
+`e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` تصمیم Community و قرارداد pin‌شدهٔ PDF را بدون endpoint
+تجاری یا Migration جدید اضافه کرد. Run 133 (`35463350892`) هر هشت Job، `330/330` تست C#،
+`52/52` تست قراردادی، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد.
+PDF Golden متصل `8/8` assertion، رندر byte-identical، visual digest و performance budget را پاس کرد.
+MS06 بسته است؛ اختلاف کاتالوگ ده‌گانه و UI Reporting بازند و RPT1 Active می‌ماند. هیچ default
+Production یا Baseline قفل‌شدهٔ V1 تغییر نکرد.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛

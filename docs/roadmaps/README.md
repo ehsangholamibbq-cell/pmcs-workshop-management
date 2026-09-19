@@ -6,7 +6,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.20.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.21.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -44,4 +44,5 @@
 | V1.1 RPT1 Slice 06 MS03-C2 | source `9bb7ede9b89da2078e165cccb2927e0449116909` / tree `a960cddb5264b3de8857812906b7595db0664ba5` / Run 120 OTLP scrape/rules and connected queue-age alert delivery passed / MS03 closed, RPT1 active |
 | V1.1 RPT1 Slice 06 MS04 | source `4ff44c96104ee1df87d267ca9a530d19b9248ba3` / tree `d4c320e7917121f64a70dea1251169bef4b516ce` / Run 123 safe orphan inventory/dry-run/remediation passed / MS04 closed, RPT1 active |
 | V1.1 RPT1 Slice 06 MS05 | source `38a03f33f4747d0b6a76696705877633acd17678` / tree `eb9369c9e32eb3f523c4faa22487d6428c2d7e34` / Run 130 semantic cutoff and deterministic XLSX Golden passed / MS05 closed, RPT1 active |
+| V1.1 RPT1 Slice 06 MS06 | source `b8f21492a4f44c7c412e5b7eda0b164e7f256758` / tree `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` / Run 133 Community decision and pinned PDF Golden/visual/performance passed / MS06 closed, catalog decision open, RPT1 active |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

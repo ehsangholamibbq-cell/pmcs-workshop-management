@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.1.0-candidate`
+- نسخه: `1.1.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -23,9 +23,9 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `38a03f33f4747d0b6a76696705877633acd17678`؛ tree `eb9369c9e32eb3f523c4faa22487d6428c2d7e34` |
-| Remote branch head پیش از MS06 Candidate | `345d9d6fc2e661144a74e3001150c28d73a212c7`؛ tree `8902fde167c0ff75545d0dd0360cd25d59a7b4e5` |
-| Source equivalence | بازسازی محلی پیش از تغییرات دقیقاً tree `8902fde167c0ff75545d0dd0360cd25d59a7b4e5` را تولید کرد |
+| آخرین Source Candidate واجد Evidence | `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` |
+| Remote source head پیش از انتشار Checkpoint | `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ parent مستقیم Anchor انتقال |
+| Source lineage | MS06 Candidate فرزند مستقیم Anchor `345d9d6fc2e661144a74e3001150c28d73a212c7` است؛ هیچ rebase یا baseline reset انجام نشد |
 | Migration count | `43`؛ Restore Drill متصل پاس شده است |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.20.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.21.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,8 +48,8 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.14.0` | Superseded؛ `v1.20.0` مرجع است |
-| انتهای Development 04 | توقف در RPT1/MS02 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S06-MS05` را اثبات می‌کند |
+| Roadmap Post-V1 | نسخه‌های تا `v1.20.0` | Superseded؛ `v1.21.0` مرجع است |
+| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S06-MS06` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
@@ -72,29 +72,27 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - Metrics/queue-age و OTLP/scrape/alert delivery: MS03-C1/C2، Runهای 117 و 120.
 - Inventory/dry-run/remediation امن orphan با retention/legal hold/audit/idempotency: MS04، Run 123.
 - Semantic cutoff و XLSX Golden قطعی برای `daily-report-certified/1.0.0`: MS05، Run 130.
+- تصمیم Community، pin image/font و PDF Golden/visual/performance: MS06، Run 133.
 - Run 130: هر ۸ Job سبز، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario، `13/13` Golden assertion و Restore کامل ۴۳ Migration.
-- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md`.
+- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md`.
 - Anchor انتقال Run 132 (`35459192122`) روی commit `345d9d6fc2e661144a74e3001150c28d73a212c7`
   هر هشت Job را سبز کرد.
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و آخرین Safe Resume Point واجد CI همچنان
-`PMCS-V1.1-RPT1-S06-MS05-C1` است. تصمیم `QuestPDF Community` در ADR 0030 ثبت و MS06 به‌صورت Candidate
-محلی پیاده شده است: package/image/font digestها pin، PDF Golden متصل QA-only، visual digest و
-performance budget اضافه شده‌اند. تا سبزشدن CI و ثبت checkpoint مستقل، این Candidate Safe Point
-جدید محسوب نمی‌شود. `PdfLicense=Unconfigured` و
+`V1.1-RPT1` فعال است و Safe Resume Point دقیق آن `PMCS-V1.1-RPT1-S06-MS06-C1` است. تصمیم
+`QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
+digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
-حفظ شده‌اند.
+حفظ شده‌اند. هیچ Runtime work یا Migration نیمه‌اعمال‌شده باقی نمانده است.
 
 ## Remaining Work
 
-1. اجرای Full CI روی MS06 Candidate و ثبت Evidence checkpoint برای PDF Golden/visual/performance.
-2. پیش از اعلام بسته‌شدن RPT1، تعیین تکلیف رسمی اختلاف کاتالوگ: Roadmap ده خانواده گزارش استاندارد
+1. پیش از اعلام بسته‌شدن RPT1، تعیین تکلیف رسمی اختلاف کاتالوگ: Roadmap ده خانواده گزارش استاندارد
    نام می‌برد، اما Runtime/Golden فعلی فقط `daily-report-certified/1.0.0` را پیاده و qualify کرده است.
-3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
-4. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
+2. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
+3. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
 
 ## Known Gaps / Issues
 
@@ -112,21 +110,24 @@ performance budget اضافه شده‌اند. تا سبزشدن CI و ثبت ch
 
 - Repository: `ehsangholamibbq-cell/pmcs-workshop-management`؛ PR #2 از `v1.1-development` به `main`.
 - PR: `open`، `draft` و ادغام‌نشده است.
-- Remote head پیش از MS06 Candidate: `345d9d6fc2e661144a74e3001150c28d73a212c7`؛ tree
-  `8902fde167c0ff75545d0dd0360cd25d59a7b4e5`.
-- آخرین CI بررسی‌شده: Run 132 (`35459192122`) — هر ۸ Job
+- Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
+  `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
+- آخرین Source CI بررسی‌شده: Run 133 (`35463350892`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
-- Run 130 (`35449387794`) Evidence اصلی MS05 روی Source Candidate است؛ Run 132 Canonical anchor را
-  با همان مجموعه هشت‌گانه سبز کرده است.
-- کنترل محلی MS06 در ۲۰۲۶-۰۹-۱۹: build بدون warning، `330/330` تست C#، `21/21` تست contract RPT1،
-  دو رندر PDF byte-identical، visual digest ثابت در ۹۶ DPI و بازبینی مستقل Poppler بدون defect پاس
-  شدند. Connected CI هنوز باید این Candidate را qualify کند.
+- Run 133: build بدون warning، `330/330` تست C#، `52/52` تست قراردادی Node، `139/139` تست Web، پنج
+  browser scenario و PDF Golden متصل `8/8` پاس شدند؛ PDF برابر `42489` byte و
+  SHA-256 `cc188c842ddcced9a24acd5e18f92c4a6511252c40104055c8c38627cdfac863` بود.
+- visual digest در ۹۶ DPI برابر
+  `95d6e71de15d9d130041d5c295c94239b9fe9095e6572e581aa9a655ee85c9b2` و بازبینی مستقل Poppler
+  بدون defect بود. Qualification artifact `10590681541` با digest
+  `sha256:00f630ce572f49041af75d5687f0e79dafccb3a8359bc2ddb741c9e7b3c8d9e7` ثبت شد.
 
 ## Exact Next Micro-Step
 
-**گام بعدی فقط تکمیل همان MS06 Candidate است:** Full CI هشت‌Job را اجرا، PDF Golden متصل را بررسی و
-در صورت سبزشدن `PMCS-V1.1-RPT1-S06-MS06-C1` را ثبت کن؛ هیچ feature flag Production روشن نشود.
-پس از این checkpoint و پیش از بستن RPT1، اختلاف کاتالوگ ۱۰گانه حتماً با Change Record رسمی حل شود.
+**گام بعدی یک Decision/Change Record محدود است:** پیش از بستن RPT1، اختلاف کاتالوگ ده‌گانه با
+Runtime تک‌گزارش را رسماً تعیین تکلیف کن؛ یا ۹ خانوادهٔ باقی‌مانده با Sliceهای مستقل پیاده شوند، یا
+Scope با Change Record نسخه‌دار اصلاح شود. هیچ گزینه‌ای از code استنباط و هیچ feature flag Production
+روشن نشود.
 
 ## Resume Rule
 
