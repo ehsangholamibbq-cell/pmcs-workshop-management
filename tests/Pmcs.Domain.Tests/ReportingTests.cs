@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
@@ -449,6 +450,91 @@ public sealed class ReportingTests
             ReportingWorkerQualificationOptions.Create(unsafeConfiguration));
     }
 
+    [Fact]
+    public void WorkerTelemetryPublishesBoundedLowCardinalityOperationalSignals()
+    {
+        var measurements = new List<TelemetryMeasurement>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, currentListener) =>
+            {
+                if (instrument.Meter.Name == ReportingWorkerTelemetry.MeterName)
+                {
+                    currentListener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
+            measurements.Add(new TelemetryMeasurement(
+                instrument.Name,
+                value,
+                tags.ToArray())));
+        listener.SetMeasurementEventCallback<int>((instrument, value, tags, _) =>
+            measurements.Add(new TelemetryMeasurement(
+                instrument.Name,
+                value,
+                tags.ToArray())));
+        listener.SetMeasurementEventCallback<double>((instrument, value, tags, _) =>
+            measurements.Add(new TelemetryMeasurement(
+                instrument.Name,
+                value,
+                tags.ToArray())));
+        listener.Start();
+
+        var telemetry = new ReportingWorkerTelemetry();
+        telemetry.Heartbeat(DateTimeOffset.UtcNow);
+        telemetry.ObserveQueue(3, TimeSpan.FromSeconds(17));
+        telemetry.RecordClaim("snapshot", retry: false, TimeSpan.FromSeconds(9));
+        telemetry.RecordFailure(
+            "snapshot",
+            "reporting.run.timeout",
+            willRetry: true,
+            TimeSpan.FromMilliseconds(25));
+        telemetry.RecordClaim("rendering", retry: true, TimeSpan.FromSeconds(7));
+        telemetry.RecordCompletion("rendering", TimeSpan.FromMilliseconds(40), 4_096);
+        listener.RecordObservableInstruments();
+
+        var names = measurements.Select(item => item.Name).ToHashSet(StringComparer.Ordinal);
+        foreach (var expected in new[]
+        {
+            "pmcs.reporting.worker.claims",
+            "pmcs.reporting.worker.outcomes",
+            "pmcs.reporting.worker.duration",
+            "pmcs.reporting.worker.output.size",
+            "pmcs.reporting.worker.claim.queue_age",
+            "pmcs.reporting.worker.heartbeat.age",
+            "pmcs.reporting.worker.active",
+            "pmcs.reporting.worker.queue.depth",
+            "pmcs.reporting.worker.queue.oldest_age"
+        })
+        {
+            Assert.Contains(expected, names);
+        }
+
+        var allowedTagKeys = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "reporting.diagnostic_code",
+            "reporting.outcome",
+            "reporting.retry",
+            "reporting.work_kind"
+        };
+        Assert.All(
+            measurements.SelectMany(item => item.Tags),
+            tag => Assert.Contains(tag.Key, allowedTagKeys));
+        Assert.DoesNotContain(
+            measurements.SelectMany(item => item.Tags),
+            tag => tag.Key.Contains("tenant", StringComparison.OrdinalIgnoreCase) ||
+                tag.Key.Contains("project", StringComparison.OrdinalIgnoreCase) ||
+                tag.Key.Contains("user", StringComparison.OrdinalIgnoreCase) ||
+                tag.Key.Contains("run_id", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(measurements, item =>
+            item.Name == "pmcs.reporting.worker.queue.depth" && item.Value == 3);
+        Assert.Contains(measurements, item =>
+            item.Name == "pmcs.reporting.worker.queue.oldest_age" && item.Value == 17);
+        Assert.Contains(measurements, item =>
+            item.Name == "pmcs.reporting.worker.active" && item.Value == 0);
+    }
+
     private static ReportRun CreateRun()
     {
         var parametersJson = CanonicalJson.Serialize(new DailyReportReportParameters(Guid.NewGuid(), true));
@@ -606,4 +692,9 @@ public sealed class ReportingTests
             [fact]);
         return new DailyReportReportingChain(reportId, reportId, Cutoff, [version]);
     }
+
+    private sealed record TelemetryMeasurement(
+        string Name,
+        double Value,
+        KeyValuePair<string, object?>[] Tags);
 }

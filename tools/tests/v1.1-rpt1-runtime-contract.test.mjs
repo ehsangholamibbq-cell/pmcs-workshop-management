@@ -188,6 +188,9 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(fairness, /second worker serves project B before project A's second and third runs/u);
   assert.match(fairness, /idle in transaction/u);
   assert.match(fairness, /kill -KILL/u);
+  assert.match(fairness, /Reporting health must be Degraded while the aged fair queue is locked/u);
+  assert.match(fairness, /oldestQueueAgeSeconds/u);
+  assert.match(fairness, /health":"degraded-queue-age/u);
   assert.match(qualificationOptions, /qualification controls require the isolated QA gateway/u);
   assert.match(qualificationOptions, /PMCS_QA_GATEWAY_ENABLED/u);
   assert.match(qualificationOptions, /QualificationPauseSeconds must be between 1 and 60/u);
@@ -249,6 +252,10 @@ test("RPT1 worker capacity core is bounded observable and project-fair", () => {
   assert.match(health, /HealthCheckResult\.Degraded/u);
   assert.match(health, /QueueAgeWarning/u);
   assert.match(module, /AddCheck<ReportingWorkerHealthCheck>/u);
+  const healthWriter = read("src/backend/Pmcs.Api/Infrastructure/HealthResponseWriter.cs");
+  assert.match(healthWriter, /PublicNumericDataKeys/u);
+  assert.match(healthWriter, /SelectPublicData/u);
+  assert.doesNotMatch(healthWriter, /tenantId|projectId|userId|runId/u);
   assert.match(endpoints, /execution\.MaximumAttempts/u);
   assert.match(pdf, /execution\.MaximumPdfFacts/u);
   assert.match(xlsx, /execution\.MaximumXlsxRows/u);

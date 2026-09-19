@@ -11,6 +11,7 @@ set -euo pipefail
 
 command -v curl >/dev/null
 command -v dotnet >/dev/null
+command -v node >/dev/null
 command -v psql >/dev/null
 
 repository_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -100,8 +101,8 @@ start_worker() {
   ReportingCenter__QualificationPausePoint=AfterSnapshotRowLock \
   ReportingCenter__QualificationTargetRunId="${target_run_id}" \
   ReportingCenter__MaximumAttempts=3 \
-  ReportingCenter__QueueAgeWarningSeconds=120 \
-  ReportingCenter__PollSeconds=1 \
+  ReportingCenter__QueueAgeWarningSeconds=5 \
+  ReportingCenter__PollSeconds=300 \
   ReportingCenter__PdfLicense=Unconfigured \
   ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" \
   ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" \
@@ -237,10 +238,10 @@ execute "
          1
   from reporting.report_runs source
   cross join (values
-      ('${project_a_head_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a1', 4),
-      ('${project_a_second_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a2', 3),
-      ('${project_a_third_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a3', 2),
-      ('${project_b_head_run_id}'::uuid, '${project_b_id}'::uuid, 'qa-rpt1-fairness-b1', 1)
+      ('${project_a_head_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a1', 40),
+      ('${project_a_second_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a2', 30),
+      ('${project_a_third_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a3', 20),
+      ('${project_b_head_run_id}'::uuid, '${project_b_id}'::uuid, 'qa-rpt1-fairness-b1', 10)
   ) fixture(run_id, project_id, correlation_id, queue_age_seconds)
   where source.id = '${source_run_id}';"
 fixtures_inserted=true
@@ -284,6 +285,35 @@ expect_equal \
   "2" \
   "select count(*) from pg_stat_activity where datname = current_database() and application_name in ('qa-rpt1-fairness-worker-a', 'qa-rpt1-fairness-worker-b') and state = 'idle in transaction';"
 
+health_payload="$(curl --silent --fail "http://127.0.0.1:${second_port}/health/ready")"
+PMCS_REPORTING_HEALTH_PAYLOAD="${health_payload}" \
+PMCS_REPORTING_HEALTH_FORBIDDEN="${tenant_id}|${project_a_id}|${project_b_id}" \
+node <<'NODE'
+const payload = JSON.parse(process.env.PMCS_REPORTING_HEALTH_PAYLOAD);
+const reporting = payload.checks?.["reporting-worker"];
+const data = reporting?.data;
+const forbidden = (process.env.PMCS_REPORTING_HEALTH_FORBIDDEN ?? "").split("|");
+if (payload.status !== "Degraded" || reporting?.status !== "Degraded") {
+  throw new Error("Reporting health must be Degraded while the aged fair queue is locked.");
+}
+if (!String(reporting.description).includes("queue age")) {
+  throw new Error("Reporting health must identify the queue-age budget without payload detail.");
+}
+if (data?.queuedRuns !== 4 || data?.activeRuns !== 0 ||
+    !(data?.oldestQueueAgeSeconds >= 40) || !(data?.heartbeatAgeSeconds >= 0)) {
+  throw new Error(`Unexpected bounded reporting health data: ${JSON.stringify(data)}`);
+}
+const serialized = JSON.stringify(payload);
+if (forbidden.some(value => value && serialized.includes(value))) {
+  throw new Error("Reporting health exposed a tenant or project identifier.");
+}
+for (const key of Object.keys(data ?? {})) {
+  if (!["activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns"].includes(key)) {
+    throw new Error(`Reporting health exposed unexpected data key '${key}'.`);
+  }
+}
+NODE
+
 crash_process "${worker_a_pid}"
 crash_process "${worker_b_pid}"
 expect_equal \
@@ -297,4 +327,4 @@ expect_equal \
   "0|0|0" \
   "select (select count(*) from reporting.report_runs where id in ('${project_a_head_run_id}', '${project_a_second_run_id}', '${project_a_third_run_id}', '${project_b_head_run_id}'))::text || '|' || (select count(*) from foundation.audit_events where correlation_id like 'qa-rpt1-fairness-%')::text || '|' || (select count(*) from foundation.outbox_messages where correlation_id like 'qa-rpt1-fairness-%')::text;"
 
-printf '{"status":"passed","stage":"reporting-worker-project-fairness-regression","assertions":9,"projects":2,"workers":2}\n'
+printf '{"status":"passed","stage":"reporting-worker-project-fairness-regression","assertions":10,"projects":2,"workers":2,"health":"degraded-queue-age"}\n'

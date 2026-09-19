@@ -29,6 +29,32 @@ public sealed class InfrastructureBoundaryTests
     }
 
     [Fact]
+    public void PublicHealthDataAllowsOnlyBoundedOperationalNumbers()
+    {
+        var source = new Dictionary<string, object>
+        {
+            ["queuedRuns"] = 4L,
+            ["oldestQueueAgeSeconds"] = 42.5d,
+            ["heartbeatAgeSeconds"] = 1.25d,
+            ["activeRuns"] = 0,
+            ["tenantId"] = Guid.NewGuid().ToString(),
+            ["projectId"] = Guid.NewGuid(),
+            ["diagnostic"] = "reporting.run.timeout",
+            ["queuedRunsUnsafe"] = "4"
+        };
+        var selected = HealthResponseWriter.SelectPublicData("reporting-worker", source);
+
+        Assert.Equal(
+            new[] { "activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns" },
+            selected.Keys.ToArray());
+        Assert.DoesNotContain("tenantId", selected.Keys);
+        Assert.DoesNotContain("projectId", selected.Keys);
+        Assert.DoesNotContain("diagnostic", selected.Keys);
+        Assert.IsType<long>(selected["queuedRuns"]);
+        Assert.Empty(HealthResponseWriter.SelectPublicData("database", source));
+    }
+
+    [Fact]
     public void ProductionConfigurationAcceptsExplicitSecureBoundary()
     {
         ProductionConfigurationValidator.Validate(
