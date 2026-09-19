@@ -125,7 +125,7 @@ internal static partial class Program
     {
         try
         {
-            using var response = await storage.GetObjectMetadataAsync(new GetObjectMetadataRequest
+            var response = await storage.GetObjectMetadataAsync(new GetObjectMetadataRequest
             {
                 BucketName = bucket,
                 Key = objectKey
