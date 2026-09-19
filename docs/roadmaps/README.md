@@ -4,7 +4,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.14.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.15.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -36,4 +36,5 @@
 | V1.1 RPT1 Slice 03 | source `b4da1e951debf76e1ba3b398bde2ccf60fbde5de` / tree `aa4063214ad1dea8fac19685a81818623296c24c` / Run 102 cancel-security connected regression passed / RPT1 exit gates open |
 | V1.1 RPT1 Slice 04 | source `e1ac3263df53a245b1aefb338a015be4854d367b` / tree `f58881f7e0a77bf89f65b872d4f988bd154a809f` / Run 104 two-worker/crash recovery connected regression passed / RPT1 exit gates open |
 | V1.1 RPT1 Slice 05 | source `167133fc1985c5b57c3dac90535f7a962dfd03b7` / tree `34fb70aee9a62a434a8446444d7c6d5c6c9819bd` / Run 108 worker-revocation/object-integrity connected regression passed / RPT1 exit gates open |
+| V1.1 RPT1 Slice 06 MS01 | source `d085c44f9ed8b3c085af62de6009fa1dafc9ed8e` / tree `9f8afd35b54fe7eacd38f202128538cc571c651f` / Run 110 worker-capacity Core full CI passed / connected load-poison-fairness qualification pending |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

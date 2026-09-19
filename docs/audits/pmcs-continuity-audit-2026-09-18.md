@@ -248,6 +248,17 @@ object-byte/missing/malformed tamper، orphan inventory، load/observability، G
 Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی مانده‌اند و مرز
 `Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.
 
+## ۱۷. Addendum — Worker Capacity Core Safe Checkpoint
+
+Slice 06 Micro-Step 01 با source commit `d085c44f9ed8b3c085af62de6009fa1dafc9ed8e` و tree
+`9f8afd35b54fe7eacd38f202128538cc571c651f` در Run 110 (`35436466233`) هر هشت Job را پاس کرد.
+بودجه‌های اجرایی، timeout، terminalization attempt نهایی، fairness پروژه‌محور، telemetry و
+heartbeat/queue health بدون تغییر API خارجی یا Migration وارد Core شدند.
+
+این Addendum به‌صراحت Full CI Core را از Connected Capacity Qualification جدا می‌کند. سناریوی
+۲۰ Run سالم + poison، P95 و fairness واقعی در `S06-MS02` باقی می‌مانند؛ بنابراین RPT1 هنوز فعال است
+و Scope، ترتیب COL1/UX2/INT1، هفت Stage Agent و مرز مصوب Agent تغییر نکرده‌اند.
+
 ## ۱۶. Addendum — Worker Revocation، Object Integrity و Orphan Inventory
 
 Qualification Slice پنجم با source commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree

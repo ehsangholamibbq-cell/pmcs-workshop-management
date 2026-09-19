@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Connected core + cancel/security candidate passed؛ extended recovery/observability qualification open
+- Status: Worker-capacity Core passed full CI؛ connected load/poison/fairness and production alert qualification open
 
 ## Health و Metrics
 
@@ -18,9 +18,14 @@
 
 Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی‌شود.
 
-این فهرست target عملیاتی RPT1 است. در Source Candidate Slice 02، Audit/diagnostic/correlation
-پیاده شده‌اند اما metrics exporter و Worker heartbeat هنوز Evidence اجرایی ندارند؛ نبود آن‌ها نباید
-به‌عنوان Healthy تفسیر شود.
+در Slice 06 MS01، meterهای Worker، heartbeat و health check سن صف در Source و composition فعال
+شده‌اند. وضعیت stale/missing heartbeat یا عبور سن صف از budget به‌صورت `Degraded` گزارش می‌شود؛
+نبود exporter/scrape و alert delivery تولیدی نباید به‌عنوان Observability کامل تفسیر شود.
+
+Budgetهای پیش‌فرض: `MaximumAttempts=3`، `RetryBaseDelaySeconds=30`،
+`MaximumPdfFacts=2000`، `MaximumXlsxRows=5000`، `MaximumOutputBytes=26214400`،
+`ProcessingTimeoutSeconds=120` و `QueueAgeWarningSeconds=120`. مقدار صریح خارج از بازهٔ مجاز در
+startup fail-closed است. تغییر Production فقط با load evidence و Change Record مجاز است.
 
 ## تشخیص Run گیرکرده
 

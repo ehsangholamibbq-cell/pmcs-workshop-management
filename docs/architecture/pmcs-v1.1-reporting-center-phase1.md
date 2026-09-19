@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.1.0`
-- وضعیت: `Connected revocation/object-integrity qualification passed | RPT1 exit gates open`
+- نسخه: `1.2.0`
+- وضعیت: `Worker-capacity Core full CI passed | connected load/poison/fairness qualification pending`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - آخرین Qualification Candidate: `167133fc1985c5b57c3dac90535f7a962dfd03b7`
@@ -310,3 +310,8 @@ Membership میان Rendering و publish با `reporting.permission.revoked` و 
 بازگردانی byteهای اصلی recover شدند. inventory یک orphan موقت crash-after-storage و صفرشدن آن پس
 از reuse سند پایدار را اثبات کرد؛ sweeper/remediation تولیدی، load/observability، Golden/PDF و UI
 هنوز Gate باز RPT1 هستند.
+
+Slice 06 Micro-Step 01 در Run 110 Core بودجه‌های attempt/retry/row/page/byte/time، timeout،
+terminalization وضعیت exhausted، fairness پروژه‌محور، meterهای کم‌کاردینالیتی و health مربوط به
+heartbeat/queue age را در Full CI تأیید کرد. failure injection فقط پشت QA Gateway قرار دارد. این
+Evidence جای orchestration اختصاصی load/poison/fairness در `S06-MS02` را نمی‌گیرد.
