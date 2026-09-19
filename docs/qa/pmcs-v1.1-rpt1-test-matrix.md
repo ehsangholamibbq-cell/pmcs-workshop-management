@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.5.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + operational observability + safe orphan remediation passed؛ extended RPT1 qualification open
+- نسخه: `1.6.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX Golden passed؛ PDF/UI qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -332,3 +332,28 @@ Run 122 فقط compile diagnostic `CS1674` را روی lifetime پاسخ metadat
 کرد؛ fix نهایی به حذف `using` نامعتبر از هارنس محدود بود. MS04 با Run 123 بسته است. این coverage
 پاک‌سازی گسترده، bypass retention/legal hold یا rollout Production را مجاز نمی‌کند. Golden معنایی
 و XLSX مستقل، PDF قانونی/Golden/performance و UI اختصاصی Reporting هنوز Gate باز هستند.
+
+## ۲۱. Coverage افزوده‌شده در Slice 06 Micro-Step 05
+
+Candidate `38a03f33f4747d0b6a76696705877633acd17678` با tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` در Run 130 (`35449387794`) موارد زیر را پاس کرد:
+
+- fixture قطعی v1 Approved، v2 corrected/Approved و v3 Draft روی تاریخ مستقل `2099-12-27`؛
+- هر هشت نوع Fact، measurement quantity/unit، Critical impact و formula-like text امن؛
+- copy هفت Fact، حذف material کپی‌شده، replacement بدون lineage کپی و حفظ Draft marker فقط در v3؛
+- دو twin پیش و دو twin پس از correction با hash یکسان در هر cutoff و hash متفاوت میان cutoffها؛
+- projection تاریخی v1 با state/revision `Approved/11` و بدون metadata supersession آینده؛
+- projection پس از correction با v1 `Superseded/12` و v2 `Approved/5` و حذف کامل v3؛
+- replay idempotent و دانلود دوبارهٔ همان Output با bytes/SHA-256 یکسان؛
+- parser مستقل هر چهار XLSX برای ۹ ZIP entry، sheet order، RTL، freeze pane، filter، metadata،
+  نبود formula/macro/external link و تطبیق ۱۸ ستون؛
+- ۸ ردیف پیش و ۱۶ ردیف پس، semantic digest برابر میان twinها و متفاوت میان cutoffها؛
+- assertionهای مستقیم PostgreSQL برای measurement، chain، Fact lineage، چهار Run/Snapshot/Output،
+  دو hash و draft exclusion؛
+- Golden متصل `13/13`، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
+  browser scenario، Restore ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+Runهای 125 تا 129 به‌ترتیب برخورد نام helper، analyzer type، nullable JSON، دقت cutoff ذخیره‌شده و
+تداخل تاریخ fixture Sync را آشکار کردند؛ هیچ‌یک به تضعیف assertion یا تغییر Production منجر نشد.
+MS05 با Run 130 بسته است. این coverage تصمیم قانونی license یا PDF Golden/visual/performance را
+جایگزین نمی‌کند و UI اختصاصی Reporting نیز هنوز Gate باز است.

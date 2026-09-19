@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ latest qualification candidate `4ff44c96104ee1df87d267ca9a530d19b9248ba3` passed Run 123؛ business API unchanged and extended RPT1 gates open
+- Status: Runtime implemented؛ latest qualification candidate `38a03f33f4747d0b6a76696705877633acd17678` passed Run 130؛ business API unchanged and PDF/UI gates open
 
 ## ۱. قواعد عمومی
 
@@ -31,6 +31,14 @@ MS04 هیچ endpoint تجاری یا عمومی تازه‌ای اضافه نم�
 `ReportingCenter:OrphanRemediationMode=InventoryOnly|ApplyEligible` فعال می‌شود و مقدار پیش‌فرض
 `Disabled` است. قرارداد بین Reporting و Documents هیچ object key برنمی‌گرداند؛ APIهای
 Create/Retry/Download/Verify و Permissionهای آن‌ها بدون تغییر مانده‌اند.
+
+### ۱.۳ سطح Qualification معنایی و XLSX
+
+MS05 endpoint تازه‌ای اضافه نمی‌کند. همان `asOfUtc` موجود با دو cutoff پیش/پس از correction، دو
+twin در هر cutoff و parser مستقل ZIP/OpenXML qualify شده است. projection تاریخی state/revision و
+metadata supersession آینده را نشت نمی‌دهد؛ v3 Draft نیز وارد Snapshot یا XLSX نمی‌شود. replay همان
+Output باید bytes و SHA-256 یکسان برگرداند و workbook فقط metadata خروجی‌ویژه را از semantic digest
+حذف می‌کند.
 
 ## ۲. Catalog
 

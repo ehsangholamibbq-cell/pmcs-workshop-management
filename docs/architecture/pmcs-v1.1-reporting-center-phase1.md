@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.6.0`
-- وضعیت: `MS04 complete | safe orphan inventory/remediation connected qualification passed | extended RPT1 gates open`
+- نسخه: `1.7.0`
+- وضعیت: `MS05 complete | semantic cutoff and deterministic XLSX Golden connected qualification passed | PDF/UI gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `4ff44c96104ee1df87d267ca9a530d19b9248ba3`
-- Source tree: `d4c320e7917121f64a70dea1251169bef4b516ce`
-- Connected evidence: Run 123 (`35445497353`) — `success`
+- آخرین Qualification Candidate: `38a03f33f4747d0b6a76696705877633acd17678`
+- Source tree: `eb9369c9e32eb3f523c4faa22487d6428c2d7e34`
+- Connected evidence: Run 130 (`35449387794`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -252,6 +252,20 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - pagination، batch و سقف هر sweep bounded هستند و اجرای دوباره Audit یا حذف تکراری نمی‌سازد؛
 - این worker endpoint حذف عمومی، bypass retention یا مجوز پاک‌سازی orphanهای مبهم ایجاد نمی‌کند.
 
+### ۱۲.۲ Semantic cutoff و XLSX Golden
+
+- projection هر نسخه با cutoff محاسبه می‌شود؛ supersession آینده نباید state، link، timestamp،
+  correction reason، revision یا `LastModifiedAt` تاریخی را تغییر دهد؛
+- Golden سه نسخه دارد: v1 و v2 رسمی و v3 Draft؛ فقط نسخه‌های رسمی مؤثر در cutoff وارد Snapshot و
+  workbook می‌شوند؛
+- twinهای یک cutoff باید Snapshot و Source Manifest hash یکسان داشته باشند و correction رسمی باید
+  هر دو hash را تغییر دهد؛
+- replay همان Output باید bytes/SHA-256 یکسان برگرداند؛ تفاوت identity خروجی twinها فقط در metadata
+  خروجی‌ویژه مجاز است و semantic digest را تغییر نمی‌دهد؛
+- parser مستقل باید ZIP/OpenXML allowlist، ترتیب sheet، RTL، freeze pane، filter، metadata و تمام
+  ۱۸ ستون را بررسی کند و formula، macro و external link را رد کند؛
+- SQL مستقل chain، revisionهای تاریخی، lineage Fact، چهار Run/Output و حذف Draft را تأیید می‌کند.
+
 ## ۱۳. Observability و SLO اولیه
 
 - queue depth، oldest queued age، processing duration و success/failure/retry count؛
@@ -360,3 +374,11 @@ retention، legal hold یا owner را حفظ کرد. حذف object واقعی M
 و idempotency sweep دوم هر `7/7` assertion را پاس کردند. هیچ API تجاری یا Migration اضافه نشد و
 Restore Drill همان ۴۳ Migration را نگه داشت. MS04 بسته است؛ Golden معنایی/XLSX، PDF قانونی و UI
 اختصاصی Reporting همچنان Gate باز RPT1 هستند.
+
+Slice 06 Micro-Step 05 در Run 130، زنجیرهٔ سه‌نسخه‌ای v1/v2/v3 را با چهار Run twin پیش/پس از
+correction qualify کرد. Golden متصل `13/13` assertion را برای hashهای cutoff، replay byte-identical،
+OpenXML امن و deterministic، ۸/۱۶ ردیف semantic، هر هشت نوع Fact، measurement و correction lineage
+پاس کرد. SQL مستقل revisionهای `11/12/5` و حذف v3 Draft را تأیید کرد و Unit test نشت metadata
+supersession آینده را بست. هیچ API تجاری یا Migration اضافه نشد و Restore Drill همان ۴۳ Migration
+را نگه داشت. MS05 بسته است؛ تصمیم قانونی و Golden/Performance PDF و UI اختصاصی Reporting هنوز
+Gate باز RPT1 هستند.

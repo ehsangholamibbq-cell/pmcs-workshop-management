@@ -8,8 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
-- آخرین Qualification Candidate: `4ff44c96104ee1df87d267ca9a530d19b9248ba3`
-- آخرین Connected evidence: Run 123 (`35445497353`) — `success`
+- آخرین Qualification Candidate: `38a03f33f4747d0b6a76696705877633acd17678`
+- آخرین Connected evidence: Run 130 (`35449387794`) — `success`
 
 ## ۱. هدف و روش
 
@@ -91,7 +91,7 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 | `V1.1-DOC1` | Shared Documents، Scanner/Quarantine/Retention | بسته؛ Run 83 |
 | `V1.1-IAM1` | Login Descriptor و Member Profile | بسته؛ Run 88 |
 | `V1.1-PRJ1` | Controlled Project Bootstrap/Duplication | بسته؛ Run 92 |
-| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–06/MS04 | **فعال؛ core/security/recovery/capacity/observability/orphan remediation متصل پاس شده و Gate خروج باز است** |
+| `V1.1-RPT1` | Reporting Center Phase 1؛ Slice 01–06/MS05 | **فعال؛ core/security/recovery/capacity/observability/orphan remediation/semantic-XLSX Golden متصل پاس شده و Gate خروج باز است** |
 | `V1.1-COL1` | Project Collaboration | برنامه‌ریزی‌شده |
 | `V1.1-UX2` | Full Product UI migration | برنامه‌ریزی‌شده |
 | `V1.1-INT1` | Agent Stage 1 | برنامه‌ریزی‌شده |
@@ -103,10 +103,10 @@ Integration واقعی PostgreSQL/MinIO، چهار سناریوی مرورگر،
 Evidence commit بعدی فقط وضعیت PRJ1/RPT1 را ثبت کرد. Tree جاری
 `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b` همان محتوای Evidence متصل ثبت‌شده است.
 
-از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 06/MS04 ادامه یافته است. آخرین Candidate روی
-source commit `4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
-`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 هر هشت Job را پاس کرده است. Addendumهای
-۱۱ تا ۲۱ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
+از زمان Snapshot اولیهٔ این ممیزی، RPT1 تا Slice 06/MS05 ادامه یافته است. آخرین Candidate روی
+source commit `38a03f33f4747d0b6a76696705877633acd17678` و tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` در Run 130 هر هشت Job را پاس کرده است. Addendumهای
+۱۱ تا ۲۲ زنجیرهٔ کامل این ادامه را بدون بازنویسی Evidence تاریخی ثبت می‌کنند.
 
 ## ۶. Agent مدیریتی؛ تطبیق کامل هفت Stage
 
@@ -182,11 +182,11 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Safe Checkpoint Slice 06 Micro-Step 04 برای inventory/dry-run و remediation
-امن Generated Document orphan در Run 123؛ MS04 بسته و RPT1 همچنان فعال است.
+آخرین اقدام تکمیل‌شده: Safe Checkpoint Slice 06 Micro-Step 05 برای Golden معنایی cutoff و XLSX
+deterministic در Run 130؛ MS05 بسته و RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: Golden معنایی cutoff پیش/پس از correction و Golden مستقل XLSX با replay/hash
-deterministic و تطبیق Snapshot؛ سپس PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
+نقطهٔ دقیق ادامه: تصمیم حقوقی صریح license، سپس PDF Golden/visual/performance با renderer image و
+فونت pin‌شده؛ UI گزارش نیز طبق Roadmap در UX2 باقی می‌ماند.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
@@ -332,3 +332,18 @@ legal-hold-protected و owned حفظ شدند.
 ناسازگاری compile `CS1674` در lifetime پاسخ نسخهٔ pin‌شده AWS SDK را آشکار کرد و fix به حذف همان
 `using` نامعتبر محدود ماند. MS04 بسته است، اما RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز
 مصوب Agent تغییر نکرده‌اند. نقطهٔ ادامه Golden معنایی و XLSX deterministic است.
+
+## ۲۲. Addendum — Semantic Cutoff و XLSX Golden
+
+Slice 06 Micro-Step 05 با source commit `38a03f33f4747d0b6a76696705877633acd17678` و tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` در Run 130 (`35449387794`) هر هشت Job را پاس کرد.
+fixture سه‌نسخه‌ای هشت نوع Fact، measurement، correction copy/remove/replace و Draft exclusion را
+ساخت. چهار Run twin پیش/پس از correction، دو Snapshot/Source Manifest hash مستقل، replay همان
+Output با bytes ثابت و workbookهای ۸/۱۶ ردیفی را qualify کردند.
+
+parser مستقل هر چهار XLSX را از نظر ۹ entry allowlist، دو sheet مرتب، RTL/freeze/filter، metadata،
+نبود formula/macro/external link و ۱۸ ستون بررسی کرد؛ SQL نیز revisionهای تاریخی و نبود v3 Draft را
+مستقل سنجید. Runهای 125 تا 129 فقط compile/analyzer و fixture diagnostics را آشکار کردند و fixها به
+نام helper، type دقیق، nullable JSON، cutoff persist‌شده و تاریخ مستقل fixture محدود ماندند. MS05
+بسته است، اما RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز مصوب Agent تغییر نکرده‌اند.
+نقطهٔ ادامه تصمیم حقوقی PDF و سپس Golden/visual/performance آن است.

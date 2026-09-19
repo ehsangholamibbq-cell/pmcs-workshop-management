@@ -7,10 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint Slice 06 Micro-Step 04 در Run 123، inventory/dry-run و remediation امن Generated
-Document orphan را با retention، legal hold، idempotency و Audit روی PostgreSQL/MinIO واقعی پاس
-کرده است. MS04 بسته است؛ Golden معنایی/XLSX، تصمیم قانونی و Golden/Performance PDF و UI هنوز
-Gate باز RPT1 هستند و همهٔ feature flagها و remediation پیش‌فرض خاموش‌اند.
+Safe Checkpoint Slice 06 Micro-Step 05 در Run 130، Golden معنایی cutoff پیش/پس از correction و
+XLSX مستقل را با Snapshot/manifest hash، replay، OpenXML و PostgreSQL/MinIO واقعی پاس کرده است.
+MS05 بسته است؛ تصمیم قانونی و Golden/Performance PDF و UI هنوز Gate باز RPT1 هستند و همهٔ feature
+flagها و remediation پیش‌فرض خاموش‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -240,5 +240,6 @@ npm run check
 - Operational Signal Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md)
 - Operational Observability Delivery Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md)
 - Safe Orphan Remediation Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md)
+- Semantic/XLSX Golden Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

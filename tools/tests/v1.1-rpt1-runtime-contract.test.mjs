@@ -559,12 +559,35 @@ test("RPT1 safe orphan remediation records the MS04 checkpoint without closing t
   assert.match(checkpoint, /OrphanRemediationMode=Disabled/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.19\.0`/u);
   assert.match(roadmap, /\| `1\.19\.0` \| ثبت Safe Checkpoint `S06-MS04`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.19\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS04[\s\S]*4ff44c96104ee1df87d267ca9a530d19b9248ba3/u);
   assert.match(runbook, /## Generated Document orphan remediation/u);
   assert.match(runbook, /Run 123 \(`35445497353`\)/u);
+});
+
+test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing the stage", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const runbook = read("docs/runbooks/reporting-center.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS05-C1/u);
+  assert.match(checkpoint, /38a03f33f4747d0b6a76696705877633acd17678/u);
+  assert.match(checkpoint, /eb9369c9e32eb3f523c4faa22487d6428c2d7e34/u);
+  assert.match(checkpoint, /Run 130 \(`35449387794`\)/u);
+  assert.match(checkpoint, /`329\/329` تست C#/u);
+  assert.match(checkpoint, /`51\/51` تست قراردادی Node/u);
+  assert.match(checkpoint, /Golden متصل هر `13\/13` assertion/u);
+  assert.match(checkpoint, /sha256:c7bbe07dc3e052772665fdffaedce99e85e7c340058eb6bbd3b8590dc0128666/u);
+  assert.match(checkpoint, /revision `11`/u);
+  assert.match(checkpoint, /revision `12`/u);
+  assert.match(checkpoint, /RPT1 بسته نیست/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+  assert.match(roadmap, /نسخه سند: `1\.20\.0`/u);
+  assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.20\.0/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
+  assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
+  assert.match(runbook, /Run 130 \(`35449387794`\)/u);
 });
 
 function read(path) {

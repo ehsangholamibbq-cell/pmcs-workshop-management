@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS04 تا source commit `4ff44c9` با inventory/dry-run و remediation امن orphan پاس؛ Golden/PDF/UI باز |
-| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 123 پاس شده است |
+| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS05 تا source commit `38a03f3` با semantic cutoff و XLSX Golden پاس؛ PDF/UI باز |
+| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 130 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -127,6 +127,15 @@ dry-run هر چهار fixture را حفظ کرد و apply فقط orphan منقض
 legal hold و owner موجود محفوظ ماندند، object واقعی MinIO بررسی شد، Audit یکتا و بدون object key بود
 و sweep دوم idempotent ماند. MS04 بسته است؛ Golden معنایی/XLSX، PDF قانونی و UI Reporting بازند و
 RPT1 Active می‌ماند.
+
+Slice 06 Micro-Step 05 با source commit
+`38a03f33f4747d0b6a76696705877633acd17678` و tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` semantic projection تاریخی و Golden مستقل XLSX را
+بدون endpoint تجاری یا Migration جدید اضافه کرد. Run 130 (`35449387794`) هر هشت Job، `329/329`
+تست C#، `51/51` تست قراردادی، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را
+پاس کرد. چهار Run twin، cutoff پیش/پس از correction، Snapshot/manifest hash، replay byte-identical،
+OpenXML امن، ۸/۱۶ ردیف semantic و حذف Draft هر `13/13` assertion را پاس کردند. MS05 بسته است؛
+تصمیم قانونی و Golden/Performance PDF و UI Reporting بازند و RPT1 Active می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

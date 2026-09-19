@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: MS04 safe orphan inventory/dry-run/remediation passed؛ extended RPT1 gates open
+- Status: MS05 semantic cutoff and deterministic XLSX Golden passed؛ PDF/UI gates open
 
 ## Operational Observability
 
@@ -69,6 +69,19 @@ startup fail-closed است. تغییر Production فقط با load evidence و C
 - اجرای دوم باید idempotent باشد؛ Candidate owned، recoverable، ambiguous یا protected حذف نمی‌شود؛
 - تغییر به `ApplyEligible` در Production فقط با Change Record، backup/restore معتبر، dry-run بازبینی‌شده
   و approval عملیاتی مجاز است؛ worker جای retention scheduler عمومی یا lifecycle storage نیست.
+
+## Semantic/XLSX Golden verification
+
+- fixture Golden باید تاریخ و شناسه‌های رزروشدهٔ مستقل از workflow و Sync داشته باشد؛
+- پیش از correction فقط v1 رسمی با revision تاریخی دیده می‌شود و هیچ state/link/time/reason آینده
+  نباید در Snapshot یا Source Manifest نشت کند؛
+- پس از correction فقط v1 Superseded و v2 Approved دیده می‌شوند؛ v3 Draft و marker آن حذف می‌مانند؛
+- دو twin هر cutoff باید Snapshot/Source Manifest و semantic workbook digest یکسان داشته باشند؛
+- replay همان Run/Output باید idempotent و دانلود تکراری باید byte-identical باشد؛
+- XLSX بدون اتکا به renderer با ZIP/OpenXML parse می‌شود: ۹ entry allowlist، Metadata/Data، RTL،
+  freeze pane، auto-filter، نبود formula/macro/external link و تطبیق ۱۸ ستون؛
+- مقدارهای formula-like باید با apostrophe متن امن بمانند و quantity/resource/hour عددی parse شوند؛
+- خطای Golden باید نام predicate OpenXML شکست‌خورده را بدون انتشار payload یا دادهٔ حساس گزارش کند.
 
 ## Object Storage failure
 
@@ -226,3 +239,10 @@ TestHarness وضعیت چهار object را `4/4`، orchestration remediation ر
 یا حذف تکراری تأیید کرد. Audit شامل lineage/revision بود و object key نداشت. این نتیجه MS04 را
 می‌بندد، اما مجوز rollout Production یا پاک‌سازی orphan مبهم نیست؛ Golden معنایی/XLSX، PDF قانونی
 و UI Reporting همچنان Gate باز RPT1 هستند.
+
+Run 130 (`35449387794`) مسیر `verify-reporting-golden` و assertionهای SQL متناظر را پاس کرد. چهار
+Run twin، Snapshot/manifest hashهای cutoff، دانلود byte-identical، چهار workbook معتبر OpenXML و
+۸/۱۶ ردیف semantic را هر `13/13` assertion تأیید کردند. projection تاریخی v1 revision `11` را
+بدون metadata supersession آینده و projection اصلاح‌شده v1/v2 را با revisionهای `12/5` ثبت کرد؛
+v3 Draft در هیچ خروجی نبود. این نتیجه MS05 را می‌بندد، اما license قانونی و PDF
+Golden/visual/performance یا UI Reporting را پاس‌شده اعلام نمی‌کند.

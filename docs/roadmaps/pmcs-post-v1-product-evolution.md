@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.19.0`
+- نسخه سند: `1.20.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -334,6 +334,15 @@ worker داخلی و default-off در `InventoryOnly` چهار Candidate را ب
 Golden معنایی/XLSX، تصمیم قانونی و Golden/Performance PDF و UI Reporting باز می‌ماند؛ ترتیب RPT1،
 COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
 
+**Slice 06 Micro-Step 05 — Safe Checkpoint:** Candidate با commit
+`38a03f33f4747d0b6a76696705877633acd17678` و tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` در Run 130 (`35449387794`) هر هشت Job را پاس کرد.
+چهار Run twin روی زنجیرهٔ سه‌نسخه‌ای، cutoff پیش/پس از correction، Snapshot/manifest hash، replay
+byte-identical، parser مستقل OpenXML و SQL مستقل را هر `13/13` assertion پاس کردند. projection
+تاریخی metadata supersession آینده را پنهان کرد و Draft از Snapshot/XLSX حذف ماند. هیچ API تجاری
+یا Migration اضافه نشد. MS05 بسته است، اما RPT1 برای تصمیم قانونی و Golden/Performance PDF و UI
+Reporting باز می‌ماند؛ ترتیب RPT1، COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -595,3 +604,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.17.0` | ثبت Safe Checkpoint میانی `S06-MS03-C1` برای قرارداد کم‌کاردینالیتی Meter و readiness متصل queue-age؛ exporter/scrape/alert delivery در `MS03-C2` باز است |
 | `1.18.0` | ثبت Safe Checkpoint نهایی `S06-MS03-C2` برای OTLP، scrape، سه alert rule و delivery متصل queue-age؛ MS03 بسته و remediation orphan/Golden/PDF/UI باز است |
 | `1.19.0` | ثبت Safe Checkpoint `S06-MS04` برای inventory/dry-run و remediation امن orphan با retention، legal hold، Audit و idempotency؛ MS04 بسته و Golden/PDF/UI باز است |
+| `1.20.0` | ثبت Safe Checkpoint `S06-MS05` برای Golden معنایی cutoff و XLSX deterministic با replay، OpenXML و SQL مستقل؛ MS05 بسته و PDF/UI باز است |
