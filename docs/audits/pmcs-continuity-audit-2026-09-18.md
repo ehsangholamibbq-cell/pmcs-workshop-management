@@ -182,12 +182,11 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Qualification متصل Slice 05 برای revocation حین Worker،
-object-byte/missing/malformed integrity و orphan inventory در Run 108؛ RPT1 همچنان فعال است.
+آخرین اقدام تکمیل‌شده: Qualification متصل Slice 06 Micro-Step 02 برای ۲۰ Run سالم + poison، P95
+و fairness دو پروژه/دو Worker در Run 113؛ RPT1 همچنان فعال است.
 
-نقطهٔ دقیق ادامه: retry storm/poison isolation و load/soak/fairness/budgets؛ سپس observability،
-heartbeat/queue-age/alert، remediation امن orphan، Golden معنایی/XLSX، PDF پس از تصمیم حقوقی
-license و UI گزارش در UX2.
+نقطهٔ دقیق ادامه: Operational Observability شامل heartbeat/queue-age/metrics/export/scrape/alert؛
+سپس remediation امن orphan، Golden معنایی/XLSX، PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
 
@@ -248,17 +247,6 @@ object-byte/missing/malformed tamper، orphan inventory، load/observability، G
 Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی مانده‌اند و مرز
 `Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.
 
-## ۱۷. Addendum — Worker Capacity Core Safe Checkpoint
-
-Slice 06 Micro-Step 01 با source commit `d085c44f9ed8b3c085af62de6009fa1dafc9ed8e` و tree
-`9f8afd35b54fe7eacd38f202128538cc571c651f` در Run 110 (`35436466233`) هر هشت Job را پاس کرد.
-بودجه‌های اجرایی، timeout، terminalization attempt نهایی، fairness پروژه‌محور، telemetry و
-heartbeat/queue health بدون تغییر API خارجی یا Migration وارد Core شدند.
-
-این Addendum به‌صراحت Full CI Core را از Connected Capacity Qualification جدا می‌کند. سناریوی
-۲۰ Run سالم + poison، P95 و fairness واقعی در `S06-MS02` باقی می‌مانند؛ بنابراین RPT1 هنوز فعال است
-و Scope، ترتیب COL1/UX2/INT1، هفت Stage Agent و مرز مصوب Agent تغییر نکرده‌اند.
-
 ## ۱۶. Addendum — Worker Revocation، Object Integrity و Orphan Inventory
 
 Qualification Slice پنجم با source commit `167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
@@ -273,3 +261,28 @@ Production اعلام نمی‌کند. RPT1 برای retry/load/budgets، observ
 PDF قانونی و UI Reporting باز است. COL1، UX2، INT1 و هر هفت Stage Agent در ترتیب مصوب باقی
 مانده‌اند و مرز
 `Agent → Permission-aware Tool → Application Service → Business Rules → Database` حفظ شده است.
+
+## ۱۷. Addendum — Worker Capacity Core Safe Checkpoint
+
+Slice 06 Micro-Step 01 با source commit `d085c44f9ed8b3c085af62de6009fa1dafc9ed8e` و tree
+`9f8afd35b54fe7eacd38f202128538cc571c651f` در Run 110 (`35436466233`) هر هشت Job را پاس کرد.
+بودجه‌های اجرایی، timeout، terminalization attempt نهایی، fairness پروژه‌محور، telemetry و
+heartbeat/queue health بدون تغییر API خارجی یا Migration وارد Core شدند.
+
+این Addendum به‌صراحت Full CI Core را از Connected Capacity Qualification جدا می‌کند. سناریوی
+۲۰ Run سالم + poison، P95 و fairness واقعی در `S06-MS02` باقی می‌مانند؛ بنابراین RPT1 هنوز فعال است
+و Scope، ترتیب COL1/UX2/INT1، هفت Stage Agent و مرز مصوب Agent تغییر نکرده‌اند.
+
+## ۱۸. Addendum — Connected Capacity، Poison Isolation و Fairness
+
+Slice 06 Micro-Step 02 با source commit `346fbb778aa5c4475fd48df3241b700341e96d83` و tree
+`98b25e2dcd109356bdea08de138995f271260cfc` در Run 113 (`35437832281`) هر هشت Job را پاس کرد.
+۲۰ Run سالم یک‌بار کامل شدند، poison پس از دو requeue در attempt سوم بدون side effect شکست خورد،
+P95 برابر `5.529s` بود و fairness دو پروژه/دو Worker با row lock واقعی و rollback پس از `SIGKILL`
+هر `9/9` assertion را پاس کرد.
+
+Run 112 نشان داد خود دو سناریوی جدید سبز بودند و شکست فقط از expectation نمایشی boolean
+PostgreSQL (`t` در برابر `true`) بود؛ fix محدود در Candidate نهایی و Full CI بعدی دوباره همهٔ
+Regressionها را پاس کرد. RPT1 هنوز برای Operational Observability، remediation orphan، Golden،
+PDF قانونی و UI Reporting باز است و Scope، ترتیب COL1/UX2/INT1، هفت Stage Agent و مرز مصوب Agent
+تغییر نکرده‌اند.

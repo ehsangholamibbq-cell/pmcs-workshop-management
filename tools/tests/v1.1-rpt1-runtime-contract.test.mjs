@@ -342,7 +342,6 @@ test("RPT1 revocation and object-integrity checkpoint pins connected evidence wi
 test("RPT1 capacity Core micro-step records a resumable safe checkpoint", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms01-candidate.md");
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
-  const registry = read("docs/roadmaps/README.md");
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS01-C1/u);
   assert.match(checkpoint, /d085c44f9ed8b3c085af62de6009fa1dafc9ed8e/u);
   assert.match(checkpoint, /9f8afd35b54fe7eacd38f202128538cc571c651f/u);
@@ -351,8 +350,26 @@ test("RPT1 capacity Core micro-step records a resumable safe checkpoint", () => 
   assert.match(checkpoint, /connected capacity\/fairness qualification pending/iu);
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS02/u);
   assert.match(checkpoint, /هنوز `Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.15\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.15\.0/u);
+  assert.match(roadmap, /\| `1\.15\.0` \| ثبت Safe Checkpoint `S06-MS01`/u);
+});
+
+test("RPT1 connected capacity and fairness micro-step records a resumable safe checkpoint", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS02-C1/u);
+  assert.match(checkpoint, /346fbb778aa5c4475fd48df3241b700341e96d83/u);
+  assert.match(checkpoint, /98b25e2dcd109356bdea08de138995f271260cfc/u);
+  assert.match(checkpoint, /Run 113 \(`35437832281`\)/u);
+  assert.match(checkpoint, /P95 نهایی `5\.529s`/u);
+  assert.match(checkpoint, /Capacity fixture preparation هر `21\/21`/u);
+  assert.match(checkpoint, /Fairness regression هر `9\/9`/u);
+  assert.match(checkpoint, /`311\/311` تست C#/u);
+  assert.match(checkpoint, /`45\/45` تست قراردادی Node/u);
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+  assert.match(roadmap, /نسخه سند: `1\.16\.0`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.16\.0/u);
 });
 
 function read(path) {

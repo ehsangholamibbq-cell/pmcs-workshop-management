@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS01 تا source commit `d085c44` با Core ظرفیت/timeout/fairness/telemetry در Full CI پاس و Qualification اختصاصی MS02 باز |
+| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS02 تا source commit `346fbb7` با load/poison/fairness متصل پاس و Operational Observability در MS03 باز |
 | Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 108 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -91,6 +91,14 @@ QA را اضافه کرد؛ API خارجی و Migration تغییر نکرد. Run
 `311/311` تست C#، Restore ۴۳ Migration، پنج browser scenario و `139/139` تست Web را پاس کرد.
 این Evidence هنوز orchestration اختصاصی ۲۰ Run سالم + poison و fairness متصل را اجرا نکرده است؛
 آن Gate دقیقاً در `PMCS-V1.1-RPT1-S06-MS02` باز می‌ماند و RPT1 Active است.
+
+Slice 06 Micro-Step 02 با source commit `346fbb778aa5c4475fd48df3241b700341e96d83` و tree
+`98b25e2dcd109356bdea08de138995f271260cfc` orchestration اختصاصی Capacity و Fairness را بدون
+تغییر API خارجی یا Migration اضافه کرد. Run 113 (`35437832281`) هر هشت Job، `311/311` تست C#،
+`45/45` تست قراردادی، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کرد.
+۲۰ Run سالم یک‌بار کامل شدند، poison در attempt سوم بدون side effect نهایی شد، P95 برابر `5.529s`
+بود و fairness دو پروژه/دو Worker هر `9/9` assertion را پاس کرد. RPT1 برای Observability عملیاتی،
+remediation orphan، Golden، PDF قانونی و UI Reporting همچنان Active است.
 
 ## ۳. قرارداد شاخه و ادغام
 

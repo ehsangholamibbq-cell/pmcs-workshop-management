@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.1.0`
-- وضعیت: Connected core + cancel/security + worker recovery/revocation/object integrity passed؛ RPT1 extended qualification open
+- نسخه: `1.2.0`
+- وضعیت: Connected core + security/recovery + capacity/poison/fairness passed؛ RPT1 extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -246,3 +246,23 @@ Candidate `167133fc1985c5b57c3dac90535f7a962dfd03b7` با tree
 این coverage وجود sweeper/remediation تولیدی orphan را ادعا نمی‌کند. retry storm، poison
 isolation، load/soak/fairness/budgets، metrics/heartbeat/queue-age/alert، Golden معنایی/XLSX، PDF
 قانونی/Golden/performance و UI اختصاصی Reporting همچنان Gate باز هستند.
+
+## ۱۷. Coverage افزوده‌شده در Slice 06 Micro-Step 02
+
+Candidate `346fbb778aa5c4475fd48df3241b700341e96d83` با tree
+`98b25e2dcd109356bdea08de138995f271260cfc` در Run 113 (`35437832281`) موارد زیر را متصل پاس کرد:
+
+- preparation هر `21/21` fixture و verification harness هر `22/22` assertion؛
+- ۲۰ Run سالم با attempt برابر یک، ۲۰ Output، ۲۰ Generated Document و lineage یکتای Audit/Outbox؛
+- poison isolation با دو requeue، failure نهایی در attempt سوم و صفر Output/Document/completion؛
+- P95 برابر `5.529s` در برابر budget سی‌ثانیه‌ای؛
+- orchestration ظرفیت `11/11` و fairness `9/9` با دو پروژه و دو Worker؛
+- دو row lock مستقل، انتخاب پروژه B پیش از backlog بعدی پروژه A، rollback و cleanup کامل پس از
+  `SIGKILL`؛
+- حفظ `311/311` تست C#، `45/45` تست قراردادی، `139/139` تست Web، پنج browser scenario، Restore
+  ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+Run 112 پیش از Candidate نهایی هر دو سناریوی جدید را پاس کرده بود و فقط به‌دلیل تفاوت format
+boolean بین `t` و `true` در assertion دیتابیس شکست خورد. Fix نهایی صرفاً expectation را هم‌تراز کرد
+و Run 113 کل زنجیره را دوباره پاس کرد. exporter/scrape و alert delivery، remediation orphan،
+Golden معنایی/XLSX، PDF قانونی/Golden/performance و UI اختصاصی Reporting همچنان Gate باز هستند.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.15.0`
+- نسخه سند: `1.16.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -563,3 +563,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.13.0` | ثبت Qualification Slice چهارم RPT1 برای دو Worker، `SKIP LOCKED`، stale lease و crash-before/after-storage؛ Gate خروج همچنان باز |
 | `1.14.0` | ثبت Qualification Slice پنجم RPT1 برای worker-time revocation، object-byte/missing/malformed integrity و orphan inventory؛ Gate خروج همچنان باز |
 | `1.15.0` | ثبت Safe Checkpoint `S06-MS01` برای Core ظرفیت، timeout، retry exhaustion، fairness، telemetry و health؛ Qualification متصل load/poison/fairness در `MS02` باز است |
+| `1.16.0` | ثبت Safe Checkpoint متصل `S06-MS02` برای ۲۰ Run سالم + poison، P95 و fairness دو پروژه/دو Worker؛ Operational Observability در `MS03` باز است |

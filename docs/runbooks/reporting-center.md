@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Worker-capacity Core passed full CI؛ connected load/poison/fairness and production alert qualification open
+- Status: Connected load/poison/fairness passed؛ operational scrape/alert qualification open
 
 ## Health و Metrics
 
@@ -170,3 +170,13 @@ Run 108 (`35393509764`) دو مسیر دیگر را پاس کرد. در
 این فرمان‌ها فقط Qualification ایزوله‌اند. در Production تغییر مستقیم Membership/Database/Object
 برای شبیه‌سازی Incident مجاز نیست. orphan inventory فعلی Evidence تشخیصی است، نه sweeper یا مجوز
 حذف؛ remediation آینده باید dry-run، retention، legal-hold، idempotency و Audit مستقل داشته باشد.
+
+Run 113 (`35437832281`) مسیرهای `verify-reporting-capacity.sh` و
+`verify-reporting-fairness.sh` را نیز پاس کرد. ۲۰ Run سالم با attempt برابر یک و P95 برابر
+`5.529s` تکمیل شدند؛ poison پس از دو requeue در attempt سوم بدون Output/Document نهایی شد. سناریوی
+fairness با دو Worker و دو row lock مستقل، پروژه B را پیش از Run دوم و سوم پروژه A انتخاب کرد و پس
+از `SIGKILL` هر دو transaction بدون residue rollback شدند. Capacity هر `11/11` و fairness هر
+`9/9` assertion را پاس کرد.
+
+این نتیجه health signal موجود را اثبات می‌کند، اما exporter/scrape، alert rule و delivery تولیدی
+هنوز در `S06-MS03` Gate باز هستند. feature flagها همچنان پیش‌فرض خاموش‌اند.

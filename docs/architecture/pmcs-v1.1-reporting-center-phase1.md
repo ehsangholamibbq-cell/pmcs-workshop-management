@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.2.0`
-- وضعیت: `Worker-capacity Core full CI passed | connected load/poison/fairness qualification pending`
+- نسخه: `1.3.0`
+- وضعیت: `Connected load/poison/fairness qualification passed | operational observability/alerts pending`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `167133fc1985c5b57c3dac90535f7a962dfd03b7`
-- Source tree: `34fb70aee9a62a434a8446444d7c6d5c6c9819bd`
-- Connected evidence: Run 108 (`35393509764`) — `success`
+- آخرین Qualification Candidate: `346fbb778aa5c4475fd48df3241b700341e96d83`
+- Source tree: `98b25e2dcd109356bdea08de138995f271260cfc`
+- Connected evidence: Run 113 (`35437832281`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -315,3 +315,9 @@ Slice 06 Micro-Step 01 در Run 110 Core بودجه‌های attempt/retry/row/p
 terminalization وضعیت exhausted، fairness پروژه‌محور، meterهای کم‌کاردینالیتی و health مربوط به
 heartbeat/queue age را در Full CI تأیید کرد. failure injection فقط پشت QA Gateway قرار دارد. این
 Evidence جای orchestration اختصاصی load/poison/fairness در `S06-MS02` را نمی‌گیرد.
+
+Slice 06 Micro-Step 02 در Run 113 orchestration متصل ۲۰ Run سالم + یک poison را با P95 برابر
+`5.529s`، retry محدود سه-attemptی و ownership یکتای Output/Document/Audit/Outbox پاس کرد. سناریوی
+fairness نیز با دو پروژه، دو Worker، دو row lock مستقل و rollback پس از `SIGKILL` هر `9/9`
+assertion را پاس کرد. این Evidence load/poison/fairness را می‌بندد، اما exporter/scrape و alert
+تولیدی، remediation امن orphan، Golden، PDF قانونی و UI اختصاصی Reporting همچنان Gate باز هستند.
