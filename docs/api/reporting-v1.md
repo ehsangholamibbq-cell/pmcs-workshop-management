@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ MS06 pinned PDF qualification passed in Run 133؛ business API unchanged، catalog decision open و RPT1 active
+- Status: F01 Runtime qualified؛ F02 semantic contract candidate only؛ business API unchanged و RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -39,6 +39,14 @@ twin در هر cutoff و parser مستقل ZIP/OpenXML qualify شده است. pr
 metadata supersession آینده را نشت نمی‌دهد؛ v3 Draft نیز وارد Snapshot یا XLSX نمی‌شود. replay همان
 Output باید bytes و SHA-256 یکسان برگرداند و workbook فقط metadata خروجی‌ویژه را از semantic digest
 حذف می‌کند.
+
+### ۱.۴ قرارداد آینده F02 بدون تغییر API
+
+Micro-Step `RPT1-F02` فعلی endpoint، Definition code، Template Version یا payload تازه‌ای منتشر
+نمی‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.0.0` فقط معنای پارامترهای آینده
+`periodKind=Weekly|Monthly` و `periodStartLocalDate` را تثبیت می‌کند. `projectId` همچنان از route و
+`asOfUtc` از Run pin می‌شود؛ end date، Time Zone، Source ID، Query یا filter دلخواه از Client پذیرفته
+نخواهد شد. نمونه JSON تا زمان Runtime identity و schema واقعی عمداً به این API اضافه نمی‌شود.
 
 ## ۲. Catalog
 

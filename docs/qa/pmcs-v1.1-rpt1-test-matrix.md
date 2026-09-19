@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.8.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX + pinned PDF + ten-family catalog decision passed؛ F02-F10/UI open
+- نسخه: `1.9.0`
+- وضعیت: F02 semantic/Golden contract candidate؛ F02 Runtime/Renderer و F03-F10/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -399,3 +399,23 @@ Candidate `d81ecc00762145210e1c688f8f5843f46d62fc04` با tree
 
 این coverage فقط تصمیم Scope را qualify می‌کند. F02 تا F10 پیاده نشده‌اند، RPT1 Active است و
 Micro-Step بعدی ابتدا DoR/semantic contract خانواده F02 خواهد بود.
+
+## ۲۴. قرارداد Qualification خانواده F02 در Slice 07 Micro-Step 02
+
+قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.0.0` پیش از Runtime این Gateها را قطعی می‌کند:
+
+- Weekly نیمه‌باز از شنبه تا شنبه بعد و Monthly از روز اول تا روز اول ماه شمسی بعد در Time Zone
+  pin‌شده پروژه؛
+- پارامترهای بسته `periodKind` و `periodStartLocalDate` و منع end date/Time Zone/Query دلخواه؛
+- انتخاب current official Daily Report هر تاریخ با `approvedAt <= asOfUtc` و حذف Draft و correction
+  آینده؛
+- precedence دقیق `NotConfigured → NoData → InsufficientData → Available` بدون صفر ساختگی؛
+- aggregation فقط در bucketهای هم‌Kind/هم‌unit و منع درصد پیشرفت، conversion و unique-count inference؛
+- permission کامل F02، propagation Classification و منع redaction خاموش؛
+- Golden matrix چهارده‌سناریویی `F02-W01..D01` برای week/month boundary، leap Esfand، open period،
+  missing coverage، correction cutoff، unit split، revocation، isolation، classification و determinism.
+
+این Micro-Step فقط contract/readiness را تست می‌کند. هیچ Runtime Definition، Template/schema ID،
+Source implementation، Catalog seed، Migration، PDF/XLSX یا feature flag اضافه نمی‌شود و F02
+`Required / Not Implemented` باقی می‌ماند. Evidence CI و Safe Checkpoint پس از سبزشدن Candidate
+جداگانه ثبت می‌شوند.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.1.0`
-- وضعیت: Connected core + extended negative/recovery/revocation/object-integrity gates passed؛ remaining gates open
+- نسخه: `1.2.0`
+- وضعیت: F01 connected gates passed؛ F02 permission/classification contract ready، runtime gate open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -49,6 +49,19 @@ Role mapping به‌تنهایی کافی نیست؛ Project membership فعال
 
 گزارش روزانه اولیه فقط داده‌ای را وارد می‌کند که `field.daily-reports.read` اجازه می‌دهد و Source
 contract هیچ دادهٔ محرمانهٔ HSE/مالی یا فایل binary را ضمنی join نمی‌کند.
+
+### ۳.۱ سیاست ثابت F02
+
+گزارش هفتگی/ماهانه F02 نیز فقط Source رسمی Daily Report را با `field.daily-reports.read` مصرف
+می‌کند. نبود این Permission کل Definition/Run/Output را unavailable یا denied می‌کند؛ حذف خاموش یک
+روز یا Fact برای ساخت گزارش ظاهراً کامل مجاز نیست. Create/Retry به `reporting.run.create` و
+Download/Verify به `reporting.output.download` نیز نیاز دارد و هر سه نقطه request، processing و
+download دوباره ارزیابی می‌شوند.
+
+Classification F02 بیشترین مقدار میان Definition، configuration و Sourceهای واردشده است. Source
+بالاتر از `Internal` یا همان Classification را به Snapshot/Output propagate می‌کند یا در نبود مجوز
+fail-closed می‌شود؛ Caller، Template و Renderer اجازه downgrade ندارند. F02 هیچ داده مالی، HSE
+محرمانه یا Source خانواده‌های دیگر را ضمنی join نمی‌کند.
 
 ## ۴. Threat model
 

@@ -9,9 +9,9 @@
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS01-C1` در Run 135 تصمیم نسخه‌دار ADR 0031 برای حفظ هر ده
 خانوادهٔ کاتالوگ RPT1 را پاس کرده است. فقط F01 گزارش روزانه qualify شده و F02 تا F10 باید با
-Micro-Slice مستقل تکمیل شوند؛ Micro-Step بعدی DoR و قرارداد معنایی گزارش هفتگی/ماهانه F02 است.
-RPT1 فعال و همهٔ feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی
-مانده‌اند.
+Micro-Slice مستقل تکمیل شوند. Candidate فعلی DoR و قرارداد معنایی گزارش هفتگی/ماهانه F02 را بدون
+Runtime/Renderer تثبیت می‌کند و پس از CI سبز Checkpoint می‌گیرد. RPT1 فعال و همهٔ feature flagها،
+license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.

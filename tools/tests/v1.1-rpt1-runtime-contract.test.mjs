@@ -636,9 +636,9 @@ test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing 
   assert.match(checkpoint, /revision `12`/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.23\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
   assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.23\.0/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.24\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
   assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
   assert.match(runbook, /Run 130 \(`35449387794`\)/u);
@@ -666,7 +666,7 @@ test("RPT1 certified PDF qualification records the MS06 checkpoint without closi
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS06[\s\S]*b8f21492a4f44c7c412e5b7eda0b164e7f256758/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S06-MS06-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی[\s\S]*Decision\/Change Record رسمی/u);
-  assert.match(canonical, /ADR 0031[\s\S]*`RPT1-F02`/u);
+  assert.match(canonical, /ADR 0031[\s\S]*F02/u);
   assert.match(decision, /QuestPDF Community/u);
   assert.match(decision, /حداقل در بازبینی سالانه/u);
   assert.match(runbook, /Run 133 \(`35463350892`\)/u);
@@ -690,8 +690,8 @@ test("RPT1 preserves the approved ten-family catalog through an explicit owner d
   assert.match(decision, /هر ده خانواده[\s\S]*Gate خروج `V1\.1-RPT1`/u);
   assert.match(decision, /هیچ API، Migration، Renderer، feature flag یا Production setting/u);
   assert.match(roadmap, /`D-PV1-16`[\s\S]*ده خانوادهٔ استاندارد/u);
-  assert.match(roadmap, /نسخه سند: `1\.23\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.23\.0/u);
+  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.24\.0/u);
   assert.match(canonical, /ADR 0031[\s\S]*RPT1-F02/u);
 });
 
@@ -715,10 +715,46 @@ test("RPT1 ten-family decision records the S07-MS01 safe checkpoint without clai
   assert.match(checkpoint, /Micro-Step بعدی `RPT1-F02`/u);
   assert.match(roadmap, /\| `1\.23\.0` \| ثبت Safe Checkpoint `S07-MS01`/u);
   assert.match(registry, /V1\.1 RPT1 Slice 07 MS01[\s\S]*d81ecc00762145210e1c688f8f5843f46d62fc04/u);
-  assert.match(canonical, /Safe Resume Point قطعی آن `PMCS-V1\.1-RPT1-S07-MS01-C1`/u);
+  assert.match(canonical, /Safe Resume Point قطعی آن\s*`PMCS-V1\.1-RPT1-S07-MS01-C1`/u);
   assert.match(baseline, /Slice 07 Micro-Step 01[\s\S]*Run 135/u);
   assert.match(matrix, /## ۲۳\.[\s\S]*Run 135/u);
-  assert.match(matrix, /نسخه: `1\.8\.0`/u);
+  assert.match(matrix, /نسخه: `1\.9\.0`/u);
+});
+
+test("RPT1-F02 fixes the weekly/monthly semantic contract before Runtime implementation", () => {
+  const contract = read("docs/architecture/pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md");
+  const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
+  const api = read("docs/api/reporting-v1.md");
+  const security = read("docs/security/pmcs-v1.1-reporting-security.md");
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+
+  assert.match(contract, /PMCS-RPT1-F02-SEMANTIC-001/u);
+  assert.match(contract, /نسخه: `1\.0\.0`/u);
+  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
+  assert.match(contract, /`periodKind`[\s\S]*`Weekly` یا `Monthly`/u);
+  assert.match(contract, /`periodStartLocalDate`[\s\S]*برای Weekly باید شنبه[\s\S]*برای Monthly باید روز اول ماه شمسی/u);
+  assert.match(contract, /بازه نیمه‌باز `[\s\S]*periodEndLocalDateExclusive/u);
+  assert.match(contract, /period-read در FieldOperations[\s\S]*FieldOperationsDbContext[\s\S]*ممنوع/u);
+  assert.match(contract, /`approvedAt <= asOfUtc`/u);
+  assert.match(contract, /correction که بعد از cutoff تأیید می‌شود خروجی تاریخی را تغییر نمی‌دهد/u);
+  assert.match(contract, /`NotConfigured`[\s\S]*`NoData`[\s\S]*`InsufficientData`[\s\S]*`Available`/u);
+  assert.match(contract, /`ReportingCadenceMissing`[\s\S]*`OfficialReportEmpty`/u);
+  assert.match(contract, /`reporting\.run\.create`/u);
+  assert.match(contract, /`field\.daily-reports\.read`/u);
+  assert.match(contract, /Caller نمی‌تواند آن را پایین بیاورد/u);
+  assert.match(contract, /هیچ درصد کل[\s\S]*S-Curve/u);
+  assert.equal((contract.match(/\| `F02-[A-Z]\d{2}` \|/gu) ?? []).length, 14);
+  assert.match(contract, /هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag/u);
+  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.0\.0/u);
+  assert.match(api, /قرارداد آینده F02 بدون تغییر API/u);
+  assert.match(security, /سیاست ثابت F02/u);
+  assert.match(matrix, /## ۲۴\.[\s\S]*Golden matrix چهارده‌سناریویی/u);
+  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
+  assert.match(registry, /Slice 07 MS02[\s\S]*Runtime not implemented/u);
+  assert.match(canonical, /ابتدا همین Candidate قرارداد F02 را با Full CI qualify و Checkpoint کن/u);
 });
 
 function read(path) {
