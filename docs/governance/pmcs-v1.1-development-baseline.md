@@ -163,6 +163,13 @@ permission/classification و Golden matrix گزارش هفتگی/ماهانه ث
 Restore ۴۳ Migration را پاس کرد. هیچ Runtime، API، Migration، Renderer یا default Production تغییر
 نکرد؛ F02 اکنون Contract Ready ولی Runtime Not Implemented و RPT1 Active است.
 
+Slice 07 Micro-Step 03 Candidate، Runtime Core محدود F02 را روی همان Checkpoint آغاز می‌کند:
+Definition/schema identity نسخه‌دار، Project configuration pin، period-read Application Contract در
+FieldOperations، resolver مرز هفتگی/ماه شمسی و semantic Snapshot builder. پوشش محلی `346/346` تست
+C# و `27/27` contract test مرتبط سبز است. این Candidate هیچ API، Migration، Catalog/Template seed،
+Worker dispatch، Renderer، UI یا default Production را تغییر نمی‌دهد؛ Evidence نهایی و Safe
+Checkpoint فقط پس از CI کامل همان commit ثبت می‌شود.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛

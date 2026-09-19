@@ -9,8 +9,9 @@
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS02-C1` در Run 137، DoR و قرارداد معنایی گزارش
 هفتگی/ماهانه F02 را پاس کرده است. فقط F01 گزارش روزانه Runtime/Renderer واجد Qualification دارد؛
-F02 اکنون `Contract Ready / Runtime Not Implemented` و F03 تا F10 باز هستند. RPT1 فعال و همهٔ
-feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+F02 اکنون Runtime Core Candidate شامل identity، period source/resolver و semantic Snapshot builder
+دارد، اما هنوز از API/Worker قابل اجرا یا با Renderer قابل دانلود نیست؛ F03 تا F10 باز هستند. RPT1
+فعال و همهٔ feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -138,6 +139,8 @@ feature flagها، license و remediation در defaults خاموش یا `Unconfi
 - Location/LBS سلسله‌مراتبی با ROOT، بازنشستگی کنترل‌شده و شناسه پایدار تا Fact و Project State
 - گیت سراسری قرارداد ۲۱۲ Endpoint و ۱۶۹ Mutation در CI
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
+- Runtime Core محدود F02 برای گزارش هفتگی/ماهانه: Source رسمی دوره‌ای correction-safe، مرز شمسی و
+  شنبه‌محور، coverage سه cadence، Snapshot/hash قطعی و propagation طبقه‌بندی؛ بدون API/Renderer/seed
 
 ## تصمیم‌های بنیادین
 

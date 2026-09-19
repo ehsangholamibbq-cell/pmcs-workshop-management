@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.10.1`
-- وضعیت: `S07-MS02 complete in Run 137 | F02 Contract Ready / Runtime not implemented | F03-F10/UI open`
+- نسخه: `1.11.0`
+- وضعیت: `S07-MS03 Runtime Core Candidate | F02 API/Renderer not implemented | F03-F10/UI open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - آخرین Qualification Candidate: `b4a59fa966320a1da4b53759814224e21893c01e`
@@ -29,10 +29,12 @@ ADR 0031 تصریح می‌کند که «نخستین Vertical Slice» به‌م
 معنایی، Renderer/Golden و Checkpoint مستقل تکمیل شوند. Foundation مشترک یا Catalog placeholder
 جایگزین Qualification خانواده‌ای نیست.
 
-قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.0.0` در
+قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.1.0` در
 `pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md` مرز گزارش هفتگی/ماهانه را به roll-up
 نسخه‌های رسمی Daily Report محدود می‌کند و period/cutoff، source lineage، status،
-permission/classification و Golden matrix آن را پیش از Runtime تثبیت می‌کند.
+permission/classification و Golden matrix آن را تثبیت می‌کند. Runtime Core محدود آن اکنون identity
+و schemaهای نسخه‌دار، period-read contract، resolver و semantic Snapshot builder را بدون API،
+Catalog seed، Worker dispatch یا Renderer پیاده می‌کند.
 
 ## ۲. Non-Scope
 
@@ -422,5 +424,14 @@ Slice 07 Micro-Step 02 قرارداد معنایی F02 را مستند و در R
 `NotConfigured/NoData/InsufficientData/Available` precedence نسخه‌دار دارد. Candidate
 `b4a59fa966320a1da4b53759814224e21893c01e` با tree
 `6b5b486dace3c07b0b4e0385413bf1add5aee7a3` هر هشت Job Run 137 (`35474388839`) را پاس کرد. F02
-اکنون `Contract Ready / Runtime Not Implemented` است؛ Runtime Definition، Source contract،
-Migration، Renderer یا Template هنوز ایجاد نشده‌اند.
+در این Checkpoint `Contract Ready / Runtime Not Implemented` بود.
+
+Slice 07 Micro-Step 03 Candidate، Definition identity داخلی `project-periodic-certified/1.0.0`،
+parameter/snapshot schema، Project configuration pin، Contract خواندنی
+`pmcs.field-operations.daily-report-period/v1`، resolver شنبه/ماه شمسی و Snapshot builder قطعی را
+اضافه می‌کند. Builder فقط از Application Contract استفاده می‌کند، Draft و metadata correction آینده
+را وارد نمی‌کند، coverage سه cadence و چهار data status را می‌سازد، unitها را ordinal و جدا نگه
+می‌دارد و Classification بالاتر Source را propagate می‌کند. `346/346` تست C# محلی و contract test
+محدود سبز است؛ CI Candidate هنوز Gate انتشار این Micro-Step است. هیچ API، Migration، Catalog/
+Template seed، Worker dispatch، PDF/XLSX، UI یا Production flag تغییر نکرده و F02 هنوز End-to-End
+قابل اجرا/دانلود نیست.

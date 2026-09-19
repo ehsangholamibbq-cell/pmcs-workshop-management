@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0`
 - خانواده: `RPT1-F02`
-- وضعیت: `Contract Ready | Runtime Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS01-C1`
-- Runtime change: None
+- وضعیت: `Runtime Core Candidate | API/Worker/Catalog/Renderer Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS02-C1`
+- Runtime change: bounded semantic Core only
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -48,9 +48,11 @@ Server فیلدهای زیر را قطعی و در Snapshot ثبت می‌کند
 تبدیل مرز محلی باید با Time Zone pin‌شده و بدون fallback به UTC انجام شود. Time Zone ناشناخته یا
 مرز محلی ناموجود/مبهم باید fail-closed شود و Server حق انتخاب offset حدسی ندارد.
 
-شناسه Runtime Definition، Template Version، parameter schema identifier و snapshot schema
-identifier در این Micro-Step تخصیص داده نمی‌شوند؛ آن‌ها باید همراه کد و migration/seed واقعی در
-Slice محدود بعدی قطعی شوند.
+Runtime Core شناسه‌های `project-periodic-certified/1.0.0`،
+`pmcs.reporting.project-periodic.parameters/v1` و
+`pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Template Version و شناسه رکوردهای
+Catalog تا زمان وجود Renderer و seed واقعی تخصیص داده نمی‌شوند؛ Runtime Core به‌تنهایی Definition
+قابل اجرا یا Output قابل دانلود منتشر نمی‌کند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -188,7 +190,29 @@ Classification خروجی بیشترین مقدار میان Definition، Projec
 Qualification آینده باید boundaryها را مستقل از implementation محاسبه، Snapshot را parse و
 Source manifest را با query مستقل بررسی کند. Golden متن/PDF/XLSX جای Golden معنایی را نمی‌گیرد.
 
-## ۹. Definition of Ready و Slice مجاز بعدی
+## ۹. نگاشت Runtime Core
+
+Candidate محدود این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
+
+- `ProjectControlProfile` اکنون Project revision، Configuration version/change time، cadence،
+  workflow، cutoff روزانه، Calendar و Time Zone pin‌شده را یکجا حمل می‌کند؛
+- `IDailyReportPeriodReportingSource` با contract version
+  `pmcs.field-operations.daily-report-period/v1` فقط rootها و نسخه‌های رسمی تا cutoff را در بازه
+  نیمه‌باز می‌خواند؛ Draft/Submitted/Returned/Rejected و correction آینده وارد response نمی‌شوند؛
+- Source روی duplicate root/date و بیش از یک current official fail-closed است و داخل Reporting هیچ
+  `FieldOperationsDbContext` یا SQL بین‌ماژولی وجود ندارد؛
+- `ProjectPeriodicReportPeriodResolver` مرز شنبه و ماه شمسی ۲۹/۳۰/۳۱روزه، UTC boundary، cutoff
+  آینده/پیش از شروع و local time ناموجود/مبهم را قطعی می‌کند؛
+- `ProjectPeriodicReportSnapshotBuilder` ordering، coverage سه cadence، چهار data status، reason
+  allowlist، classification propagation، lineage manifest، semantic hash و aggregateهای بدون
+  conversion/zero fabrication را می‌سازد؛
+- ۱۶ case جدید C# مرزهای هفتگی/ماهانه، leap Esfand، Daily/WorkingDays/Weekly coverage، وضعیت‌ها،
+  unit ordinal، classification، correction cutoff، hash twin و duplicate invariant را پوشش می‌دهد.
+
+این Core هنوز توسط endpoint/worker فراخوانی نمی‌شود و Definition/Template seed، Migration،
+PDF/XLSX، Golden binary، UI و feature flag جدید ندارد.
+
+## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
 | Gate | وضعیت |
 | --- | --- |
@@ -198,17 +222,19 @@ Source manifest را با query مستقل بررسی کند. Golden متن/PDF/
 | Data status و coverage | بسته |
 | Permission/classification | بسته |
 | Golden matrix | بسته |
-| Runtime Definition/Template/schema IDs | عمداً باز برای Slice پیاده‌سازی |
-| Source contract/Builder/Catalog seed | Not Implemented |
+| Runtime Definition/parameter/snapshot IDs | Candidate implemented |
+| Period source contract/resolver/Snapshot builder | Candidate implemented |
+| Unit/contract tests | `346/346` C# محلی و contract test سبز |
+| Catalog/Template seed و Worker/API wiring | Not Implemented |
 | PDF/XLSX/visual/performance | Not Implemented |
 
-Micro-Step بعدی فقط می‌تواند Runtime identity نسخه‌دار، Contract خواندنی period، resolver مرز
-هفتگی/ماهانه، semantic Snapshot builder و Unit/contract tests را پیاده کند. Renderer، Catalog
-فعال Production، UI و Golden binary باید در Sliceهای بعدی و پس از Snapshot قطعی وارد شوند.
+Micro-Step بعدی فقط پس از CI سبز این Candidate می‌تواند Renderer contract و Golden قطعی F02 را روی
+همین Snapshot اضافه کند. Catalog/API/Worker wiring، UI و فعال‌سازی Production باید در Sliceهای
+مستقل بعدی باقی بمانند.
 
-## ۱۰. Gate statement
+## ۱۱. Gate statement
 
-این قرارداد F02 را `Ready for bounded Runtime implementation` می‌کند، نه `Implemented` یا
-`Qualified`. هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag یا Production
-setting در این Micro-Step تغییر نکرده است. F02 تا پایان Runtime، Golden، Renderer و CI متصل
-`Required / Not Implemented` باقی می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.
+این نسخه F02 را به `Runtime Core Candidate` می‌رساند، نه `End-to-End Implemented` یا `Qualified`.
+هیچ API، Migration، Catalog/Template seed، Worker dispatch، Renderer، feature flag یا Production
+setting در این Micro-Step تغییر نکرده است. F02 تا پایان Renderer، Golden و integration متصل باز
+می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.

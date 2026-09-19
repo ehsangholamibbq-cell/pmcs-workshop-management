@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.5.0`
+- نسخه: `1.6.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -24,8 +24,8 @@
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
 | آخرین Source Candidate واجد Evidence | `b4a59fa966320a1da4b53759814224e21893c01e`؛ tree `6b5b486dace3c07b0b4e0385413bf1add5aee7a3` |
-| Remote source head پیش از انتشار Checkpoint | `b4a59fa966320a1da4b53759814224e21893c01e`؛ فرزند مستقیم Checkpoint MS01 |
-| Source lineage | S07-MS02 Candidate فرزند مستقیم `a5d80de29f945c504ffaa9562b4e0993a2a44aea` است؛ هیچ rebase یا baseline reset انجام نشد |
+| Current remote Safe Checkpoint | `42e607ee98e2bbdedafaec892c8af47b9f947aa1`؛ tree `aa2aa2af814f64b0806a15e59c4def0a151eaf5e`؛ Run 138 سبز |
+| Source lineage | Checkpoint S07-MS02 فرزند مستقیم Source Candidate `b4a59fa966320a1da4b53759814224e21893c01e` است؛ هیچ rebase یا baseline reset انجام نشد |
 | Migration count | `43`؛ Restore Drill متصل پاس شده است |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.25.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.26.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,7 +48,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.24.0` | Superseded؛ `v1.25.0` مرجع است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.25.0` | Superseded؛ `v1.26.0` مرجع Candidate جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS02` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -76,6 +76,8 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - تصمیم Community، pin image/font و PDF Golden/visual/performance: MS06، Run 133.
 - تصمیم صریح حفظ Scope ده‌گانه و الزام Micro-Slice مستقل F02 تا F10: S07-MS01، ADR 0031، Run 135.
 - DoR و قرارداد معنایی گزارش هفتگی/ماهانه F02: S07-MS02، Run 137؛ Runtime/Renderer هنوز باز است.
+- Checkpoint اسنادی S07-MS02: commit `42e607ee98e2bbdedafaec892c8af47b9f947aa1`، Run 138 هر هشت
+  Job را سبز کرد.
 - Run 130: هر ۸ Job سبز، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario، `13/13` Golden assertion و Restore کامل ۴۳ Migration.
 - Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-07-ms02-candidate.md`.
@@ -89,26 +91,27 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است: فقط
-`RPT1-F01` qualify شده، F02 `Contract Ready / Runtime Not Implemented` و F03 تا F10
-`Required / Not Implemented` هستند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.0.0`،
-period/cutoff، source lineage، coverage/status، permission/classification و Golden matrix F02 را
-تثبیت کرده و Run 137 هر هشت Job را سبز کرده است؛ هیچ Runtime، Migration، Renderer یا feature flag
-تغییر نکرد.
+`RPT1-F01` qualify شده و F03 تا F10 `Required / Not Implemented` هستند. قرارداد
+`PMCS-RPT1-F02-SEMANTIC-001 v1.1.0` اکنون یک Runtime Core Candidate محدود دارد: identity/schema
+نسخه‌دار، Project configuration pin، period source/resolver و semantic Snapshot builder با
+`346/346` تست C# محلی. این Core هنوز API، Catalog/Template seed، Worker dispatch، Migration،
+Renderer یا feature flag ندارد و تا CI/Checkpoint همان Candidate مرجع قطعی نمی‌شود.
 
 ## Remaining Work
 
-1. Runtime identity، period source contract/resolver و semantic Snapshot builder F02 در Micro-Step
-   محدود مستقل. F02 تا Renderer/Golden نهایی Done نیست.
-2. تکمیل `RPT1-F03` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛ Scope ده‌گانه طبق ADR 0031
+1. انتشار، CI کامل و Checkpoint مستقل Runtime Core Candidate خانواده F02.
+2. Renderer contract و Golden قطعی F02 روی Snapshot نسخه‌دار؛ سپس Catalog/API/Worker wiring متصل
+   در Slice مستقل. F02 تا پایان این Gateها Done نیست.
+3. تکمیل `RPT1-F03` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛ Scope ده‌گانه طبق ADR 0031
    حفظ شده و فقط `daily-report-certified/1.0.0` در F01 فعلاً qualify است.
-3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
-4. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
+4. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
+5. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
 
 ## Known Gaps / Issues
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | فقط F01 Runtime/Renderer واجد Qualification دارد؛ F02 فقط Contract Ready است | Runtime/Renderer F02 و تمام F03 تا F10 باید جداگانه پیاده و qualify شوند |
+| Implementation | فقط F01 Runtime/Renderer واجد Qualification دارد؛ F02 Runtime Core فقط Candidate و بدون wiring/Renderer است | CI/Checkpoint Core، سپس Renderer/Golden و integration متصل F02 لازم است؛ F03 تا F10 نیز مستقل‌اند |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -126,12 +129,14 @@ period/cutoff، source lineage، coverage/status، permission/classification و 
   `6b5b486dace3c07b0b4e0385413bf1add5aee7a3`؛ Run 137 (`35474388839`) هر هشت Job موفق،
   `330/330` تست C#، `56/56` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore
   کامل ۴۳ Migration.
+- F02 semantic Checkpoint: `42e607ee98e2bbdedafaec892c8af47b9f947aa1`؛ tree
+  `aa2aa2af814f64b0806a15e59c4def0a151eaf5e`؛ Run 138 (`35474992254`) هر هشت Job موفق.
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین Source CI بررسی‌شده: Run 137 (`35474388839`) — هر ۸ Job
+- آخرین CI بررسی‌شده: Run 138 (`35474992254`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
 - Qualification artifact Run 137 برابر `10593113029` با digest
   `sha256:fa9054d784ffa5139e7d2de466d93c9992777930373af115c037a7a520c6bcbc` است.
@@ -146,9 +151,9 @@ period/cutoff، source lineage، coverage/status، permission/classification و 
 ## Exact Next Micro-Step
 
 **Micro-Step بعدی فقط Runtime identity نسخه‌دار F02، period-read contract در FieldOperations،
-resolver مرز هفتگی/ماهانه و semantic Snapshot builder با Unit/contract test است.** Renderer،
-Catalog Production، UI و Golden binary به Sliceهای بعد موکول شوند؛ F03 تا F10 Done اعلام نشوند و
-هیچ feature flag Production روشن نشود.
+resolver مرز هفتگی/ماهانه و semantic Snapshot builder با Unit/contract test را تا CI و Checkpoint
+مستقل می‌بندد.** سپس فقط Renderer contract/Golden قطعی F02 آغاز شود؛ Catalog/API/Worker wiring، UI
+و Production enablement همچنان جدا و خاموش بمانند و F03 تا F10 Done اعلام نشوند.
 
 ## Resume Rule
 

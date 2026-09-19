@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.25.0`
+- نسخه سند: `1.26.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -378,6 +378,16 @@ fail-closed و Golden matrix چهارده‌سناریویی تثبیت شده�
 یا feature flag ایجاد نشد؛ F02 اکنون `Contract Ready / Runtime Not Implemented` است و RPT1 فعال
 می‌ماند.
 
+**F02 Runtime Core Candidate — Slice 07 Micro-Step 03:** قرارداد معنایی
+`PMCS-RPT1-F02-SEMANTIC-001 v1.1.0` به identity داخلی `project-periodic-certified/1.0.0`،
+schemaهای parameter/snapshot، Project configuration pin، period-read contract نسخه‌دار در
+FieldOperations، resolver شنبه/ماه شمسی و semantic Snapshot builder نگاشت شد. Core، سه cadence،
+چهار data status، reason allowlist، lineage/hash قطعی، aggregation بدون conversion و classification
+propagation را با ۱۶ case جدید پوشش می‌دهد. `346/346` تست C# و `27/27` contract test مرتبط محلی
+سبز است؛ CI منبع هنوز Gate Candidate است. API، Migration، Catalog/Template seed، Worker dispatch،
+Renderer، UI و Production defaults دست‌نخورده‌اند؛ بنابراین F02 هنوز End-to-End Done نیست و RPT1
+فعال می‌ماند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -645,3 +655,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.23.0` | ثبت Safe Checkpoint `S07-MS01` و Evidence سبز Run 135 برای تصمیم حفظ کاتالوگ ده‌گانه؛ F02 تا F10 همچنان بازند |
 | `1.24.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F02 برای گزارش هفتگی و ماهانه؛ Runtime/Renderer هنوز پیاده نشده‌اند |
 | `1.25.0` | ثبت Safe Checkpoint `S07-MS02` و Evidence سبز Run 137 برای قرارداد معنایی F02؛ Runtime/Renderer باز است |
+| `1.26.0` | ثبت Candidate محدود Runtime Core F02 برای identity/source/resolver/Snapshot و Unit/contract؛ API/Renderer و Qualification متصل باز است |

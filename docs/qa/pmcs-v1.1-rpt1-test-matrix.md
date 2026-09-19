@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.10.0`
-- وضعیت: F02 semantic/Golden contract passed in Run 137؛ F02 Runtime/Renderer و F03-F10/UI open
+- نسخه: `1.11.0`
+- وضعیت: F02 Runtime Core Candidate با Unit/contract محلی سبز؛ CI/Renderer و F03-F10/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -424,3 +424,26 @@ Candidate `b4a59fa966320a1da4b53759814224e21893c01e` با tree
 این Micro-Step فقط contract/readiness را qualify می‌کند. هیچ Runtime Definition، Template/schema
 ID، Source implementation، Catalog seed، Migration، PDF/XLSX یا feature flag اضافه نشده و F02
 `Contract Ready / Runtime Not Implemented` است.
+
+## ۲۵. Runtime Core خانواده F02 در Slice 07 Micro-Step 03
+
+Candidate باید بدون ادعای API یا Renderer این Gateها را پاس کند:
+
+- pin شدن Definition identity و parameter/snapshot/source contract versionها؛
+- خواندن period فقط در FieldOperations و منع `FieldOperationsDbContext`/SQL در Reporting؛
+- حذف rootهای صرفاً Draft/Submitted/Returned/Rejected و metadata correction بعد از cutoff؛
+- fail-closed روی Tenant/Project/window mismatch، duplicate root/date، duplicate current official،
+  Fact/Version نامعتبر و Time Zone/boundary مبهم؛
+- مرز هفتگی شنبه، ماه شمسی ۲۹/۳۰/۳۱ روزه و رد cutoff آینده یا قبل از شروع؛
+- coverage قطعی برای `Daily`، `WorkingDays` و `Weekly` با cutoff محلی pin‌شده؛
+- precedence چهار data status و reason codeهای allowlist بدون صفر، درصد یا conversion ساختگی؛
+- bucket ordinal `(kind, sourceUnit)` شامل `UnitMissing`، جمع resource observation هم‌Kind و انتخاب
+  فقط Issue/Stoppage با impact صریح High/Critical؛
+- canonical ordering و hash یکسان در تغییر query order/Run ID/build time؛ تفاوت hash پس از correction
+  رسمی و propagation بالاترین Classification Source؛
+- اثبات عدم تغییر Migration count، endpoint، Catalog/Template seed، Worker dispatch، Renderer، UI و
+  Production flags.
+
+پوشش محلی Candidate: `346/346` تست C# بدون warning؛ ۱۶ case جدید F02 در
+`ProjectPeriodicReportingTests` و `27/27` contract test مرتبط سبز است. CI کامل هشت‌Job و Checkpoint
+فقط پس از انتشار commit منبع ثبت می‌شود؛ تا آن زمان این وضعیت `Candidate` است، نه Qualified.

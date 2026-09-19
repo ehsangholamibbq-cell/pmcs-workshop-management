@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.2.1`
-- وضعیت: F01 connected gates passed؛ F02 permission/classification contract qualified in Run 137، runtime gate open
+- نسخه: `1.3.0`
+- وضعیت: F01 connected gates passed؛ F02 Runtime Core classification/isolation Candidate، API gates open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -62,6 +62,12 @@ Classification F02 بیشترین مقدار میان Definition، configuration
 بالاتر از `Internal` یا همان Classification را به Snapshot/Output propagate می‌کند یا در نبود مجوز
 fail-closed می‌شود؛ Caller، Template و Renderer اجازه downgrade ندارند. F02 هیچ داده مالی، HSE
 محرمانه یا Source خانواده‌های دیگر را ضمنی join نمی‌کند.
+
+Runtime Core Candidate این مرز را با predicate صریح Tenant/Project/range/cutoff در Source، تطبیق
+دوباره Scope و window در Builder، حذف stateهای غیررسمی و propagation `Internal/Confidential/Restricted`
+پیاده می‌کند. Root/date یا current official تکراری، Source contract/version ناسازگار و Fact/lineage
+نامعتبر failure پردازشی‌اند؛ به `NoData` یا redaction خاموش تبدیل نمی‌شوند. این Slice هنوز endpoint،
+Permission gate زمان request/worker/download یا Output ندارد؛ آن gateها در wiring متصل بعدی الزامی‌اند.
 
 ## ۴. Threat model
 

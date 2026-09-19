@@ -24,6 +24,7 @@ public sealed class FieldOperationsModule : IModule
         services.AddDbContext<FieldOperationsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IApprovedDailyFactSource, ApprovedDailyFactSource>();
         services.AddScoped<IDailyReportReportingSource, DailyReportReportingSource>();
+        services.AddScoped<IDailyReportPeriodReportingSource, DailyReportPeriodReportingSource>();
         services.AddScoped<IDailyFactDirectory, DailyFactDirectory>();
         services.AddScoped<IProgressFactSource, ProgressFactSource>();
         services.AddScoped<IDailyReportWorkSource, DailyReportWorkSource>();
