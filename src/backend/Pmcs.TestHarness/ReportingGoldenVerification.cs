@@ -655,7 +655,7 @@ internal static partial class Program
             key,
             actor,
             $"{reportingPath}/outputs/{outputId}/content");
-        var actualSha256 = Sha256(download.Bytes);
+        var actualSha256 = GoldenSha256(download.Bytes);
         RequireGolden(
             download.StatusCode == HttpStatusCode.OK &&
             string.Equals(
@@ -679,7 +679,7 @@ internal static partial class Program
                 $"reporting.golden.{runId:N}.stored-bytes-deterministic",
                 repeated.StatusCode == HttpStatusCode.OK &&
                 download.Bytes.SequenceEqual(repeated.Bytes) &&
-                string.Equals(actualSha256, Sha256(repeated.Bytes), StringComparison.Ordinal),
+                string.Equals(actualSha256, GoldenSha256(repeated.Bytes), StringComparison.Ordinal),
                 $"sha256={actualSha256};bytes={download.Bytes.Length}");
         }
 
@@ -771,7 +771,7 @@ internal static partial class Program
             return new GoldenWorkbookEvidence(
                 contractValid,
                 contractValid ? "valid deterministic OpenXML contract" : "invalid deterministic OpenXML contract",
-                Sha256(Encoding.UTF8.GetBytes(semanticJson)),
+                GoldenSha256(Encoding.UTF8.GetBytes(semanticJson)),
                 dataOnly,
                 metadataMap);
         }
@@ -1000,7 +1000,7 @@ internal static partial class Program
         _ => throw new InvalidOperationException($"Unsupported Golden impact '{impact}'.")
     };
 
-    private static string Sha256(byte[] bytes) =>
+    private static string GoldenSha256(byte[] bytes) =>
         Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     private static bool IsGoldenSha256(string value) =>
