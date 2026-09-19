@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.1.0`
+- نسخه: `1.2.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.21.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.22.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,12 +48,13 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.20.0` | Superseded؛ `v1.21.0` مرجع است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.21.0` | Superseded؛ `v1.22.0` مرجع است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S06-MS06` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
 | PDF license | تصمیم ثبت‌نشده و `Unconfigured` | ADR 0030؛ `QuestPDF Community` برای Qualification، با default همچنان `Unconfigured` و بازاعتبارسنجی eligibility پیش از Production |
+| کاتالوگ RPT1 | ابهام میان تکمیل ۹ خانواده یا کاهش Scope | ADR 0031؛ Scope هر ۱۰ خانواده حفظ شد، F02 تا F10 با Micro-Slice مستقل الزامی‌اند و RPT1 پیش از تکمیل آن‌ها بسته نمی‌شود |
 
 تصمیم‌های پابرجا: Modular Monolith؛ داده رسمی فقط از state و Fact تأییدشده؛ Audit/Outbox/Idempotency؛
 Permission و Tenant boundary؛ Offline و conflict semantics؛ Jalali/RTL در مرز UI؛ وضعیت‌های Operational،
@@ -81,16 +82,19 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point دقیق آن `PMCS-V1.1-RPT1-S06-MS06-C1` است. تصمیم
+`V1.1-RPT1` فعال است. تا ثبت Evidence همین Decision Candidate، Safe Resume Point قطعی قبلی
+`PMCS-V1.1-RPT1-S06-MS06-C1` باقی می‌ماند. تصمیم
 `QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
-حفظ شده‌اند. هیچ Runtime work یا Migration نیمه‌اعمال‌شده باقی نمانده است.
+حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است: فقط
+`RPT1-F01` qualify شده و F02 تا F10 Required/Not Implemented هستند. این Decision Candidate هیچ
+Runtime، Migration یا feature flag را تغییر نمی‌دهد و پس از CI سبز Checkpoint مستقل می‌گیرد.
 
 ## Remaining Work
 
-1. پیش از اعلام بسته‌شدن RPT1، تعیین تکلیف رسمی اختلاف کاتالوگ: Roadmap ده خانواده گزارش استاندارد
-   نام می‌برد، اما Runtime/Golden فعلی فقط `daily-report-certified/1.0.0` را پیاده و qualify کرده است.
+1. تکمیل `RPT1-F02` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛ Scope ده‌گانه طبق ADR 0031
+   حفظ شده و فقط `daily-report-certified/1.0.0` در F01 فعلاً qualify است.
 2. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
 3. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
 
@@ -98,7 +102,7 @@ digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=U
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Scope | کاتالوگ RPT1 در Roadmap شامل ۱۰ خانواده است؛ فقط گزارش روزانه رسمی موجود است | ۹ خانواده دیگر Done نیستند؛ یا باید پیاده شوند یا Scope با Change Record نسخه‌دار اصلاح شود |
+| Implementation | کاتالوگ ده‌گانه طبق ADR 0031 حفظ شده، اما فقط F01 موجود است | F02 تا F10 باید جداگانه پیاده و qualify شوند؛ هیچ‌کدام Done محسوب نمی‌شوند |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -110,6 +114,8 @@ digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=U
 
 - Repository: `ehsangholamibbq-cell/pmcs-workshop-management`؛ PR #2 از `v1.1-development` به `main`.
 - PR: `open`، `draft` و ادغام‌نشده است.
+- Checkpoint head پیش از Decision Candidate: `640fc7e4e8c75907f24883168be7317fae1f5548`؛ Run 134
+  (`35464073235`) هر هشت Job را سبز کرد.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
 - آخرین Source CI بررسی‌شده: Run 133 (`35463350892`) — هر ۸ Job
@@ -124,10 +130,10 @@ digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=U
 
 ## Exact Next Micro-Step
 
-**گام بعدی یک Decision/Change Record محدود است:** پیش از بستن RPT1، اختلاف کاتالوگ ده‌گانه با
-Runtime تک‌گزارش را رسماً تعیین تکلیف کن؛ یا ۹ خانوادهٔ باقی‌مانده با Sliceهای مستقل پیاده شوند، یا
-Scope با Change Record نسخه‌دار اصلاح شود. هیچ گزینه‌ای از code استنباط و هیچ feature flag Production
-روشن نشود.
+**گام بعدی پس از Qualification و Checkpoint همین Decision Candidate، `RPT1-F02` است:** ابتدا DoR و
+قرارداد معنایی گزارش هفتگی/ماهانه پروژه را به‌صورت یک Micro-Step مستقل تثبیت کن؛ سپس Runtime و
+Golden آن فقط در Sliceهای محدود بعدی پیاده شوند. F03 تا F10 زودتر Done اعلام نشوند و هیچ feature flag
+Production روشن نشود.
 
 ## Resume Rule
 

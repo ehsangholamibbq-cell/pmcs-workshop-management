@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.21.0`
-- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
+- نسخه سند: `1.22.0`
+- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -54,6 +54,7 @@ Commit شروع Repository برای شاخهٔ V1.1 باید هنگام ایجا
 | `D-PV1-13` | طرح گرافیکی Login از جریان Authentication جدا و با Descriptor/Asset نسخه‌دار، امن و قابل Rollback تغییرپذیر است؛ HTML/CSS/JS دلخواه قابل بارگذاری نیست. | مصوب |
 | `D-PV1-14` | هر عضو سامانه یک پروفایل شخصی حداقلی و یکپارچه دارد و می‌تواند تصویر خود را مدیریت کند؛ عضویت و نقش پروژه جدا از پروفایل شخصی باقی می‌ماند. | مصوب |
 | `D-PV1-15` | ایجاد پروژه از روی پروژهٔ موجود با Preview و انتخاب اقلام Setup/Member مجاز است؛ دادهٔ عملیاتی، مالی، پیام، فایل، Audit و سابقه هرگز ضمنی کپی نمی‌شود. | مصوب |
+| `D-PV1-16` | هر ده خانوادهٔ استاندارد کاتالوگ RPT1 در Scope باقی می‌مانند؛ خانواده‌های ۲ تا ۱۰ باید با Micro-Slice و Qualification مستقل تکمیل شوند و RPT1 پیش از آن بسته نمی‌شود. | مصوب؛ ADR 0031 |
 
 ## ۴. نقشهٔ نسخه‌های محصول
 
@@ -353,6 +354,13 @@ parse متن/RTL و performance budget را پاس کرد. defaultهای Product
 تک‌گزارش فعال می‌ماند؛ UI اختصاصی Reporting طبق برنامه در UX2 است و ترتیب RPT1، COL1، UX2، INT1 یا
 هفت Stage Agent تغییر نکرده است.
 
+**Catalog Completion Decision — Slice 07 Micro-Step 01:** مالک محصول در ADR 0031 گزینهٔ «حفظ هر
+۱۰ خانواده» را صریحاً انتخاب کرد. کاتالوگ اولیه RPT1 کاهش نیافت؛ `RPT1-F01` همان گزارش روزانه
+qualifyشده است و `RPT1-F02` تا `RPT1-F10` به‌عنوان Required/Not Implemented با Micro-Sliceهای مستقل
+باقی می‌مانند. زیرساخت مشترک یا placeholder هیچ خانواده‌ای را Done نمی‌کند. این Decision Record هیچ
+API، Migration، Runtime، feature flag، Baseline یا ترتیب کلان Roadmap را تغییر نمی‌دهد. نخستین Slice
+اجرایی بعدی DoR و قرارداد معنایی گزارش هفتگی/ماهانه `RPT1-F02` است و RPT1 فعال می‌ماند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -616,3 +624,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.19.0` | ثبت Safe Checkpoint `S06-MS04` برای inventory/dry-run و remediation امن orphan با retention، legal hold، Audit و idempotency؛ MS04 بسته و Golden/PDF/UI باز است |
 | `1.20.0` | ثبت Safe Checkpoint `S06-MS05` برای Golden معنایی cutoff و XLSX deterministic با replay، OpenXML و SQL مستقل؛ MS05 بسته و PDF/UI باز است |
 | `1.21.0` | ثبت Safe Checkpoint `S06-MS06` برای تصمیم Community، pin image/font و PDF Golden/visual/performance؛ MS06 بسته و اختلاف کاتالوگ پیش از بستن RPT1 باز است |
+| `1.22.0` | ثبت ADR 0031 و تصمیم صریح حفظ Scope ده‌گانه RPT1؛ F02 تا F10 با Micro-Slice مستقل الزامی‌اند و RPT1 فعال می‌ماند |

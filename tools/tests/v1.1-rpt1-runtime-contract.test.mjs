@@ -636,9 +636,9 @@ test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing 
   assert.match(checkpoint, /revision `12`/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.21\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.22\.0`/u);
   assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.21\.0/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.22\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
   assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
   assert.match(runbook, /Run 130 \(`35449387794`\)/u);
@@ -664,12 +664,35 @@ test("RPT1 certified PDF qualification records the MS06 checkpoint without closi
   assert.match(checkpoint, /۹ خانوادهٔ دیگر کاتالوگ Done نیستند/u);
   assert.match(roadmap, /\| `1\.21\.0` \| ثبت Safe Checkpoint `S06-MS06`/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS06[\s\S]*b8f21492a4f44c7c412e5b7eda0b164e7f256758/u);
-  assert.match(canonical, /Safe Resume Point دقیق آن `PMCS-V1\.1-RPT1-S06-MS06-C1`/u);
-  assert.match(canonical, /گام بعدی یک Decision\/Change Record محدود است/u);
+  assert.match(canonical, /Safe Resume Point قطعی قبلی[\s\S]*`PMCS-V1\.1-RPT1-S06-MS06-C1`/u);
+  assert.match(checkpoint, /Micro-Step بعدی[\s\S]*Decision\/Change Record رسمی/u);
+  assert.match(canonical, /ADR 0031[\s\S]*`RPT1-F02`/u);
   assert.match(decision, /QuestPDF Community/u);
   assert.match(decision, /حداقل در بازبینی سالانه/u);
   assert.match(runbook, /Run 133 \(`35463350892`\)/u);
   assert.match(runbook, /ReportingCenter:PdfLicense.*Unconfigured/u);
+});
+
+test("RPT1 preserves the approved ten-family catalog through an explicit owner decision", () => {
+  const decision = read("docs/adr/0031-rpt1-ten-family-catalog-completion.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+
+  assert.match(decision, /PMCS-RPT1-CATALOG-DECISION-001/u);
+  assert.match(decision, /انتخاب صریح «حفظ هر ۱۰ خانواده»/u);
+  assert.equal((decision.match(/\| `RPT1-F\d{2}` \|/gu) ?? []).length, 10);
+  assert.match(decision, /RPT1-F01[\s\S]*Qualified/u);
+  for (const family of ["02", "03", "04", "05", "06", "07", "08", "09", "10"]) {
+    assert.match(decision, new RegExp(`RPT1-F${family}[^\\n]*Required؛ Not Implemented`, "u"));
+  }
+  assert.match(decision, /Micro-Slice بعدی `RPT1-F02`/u);
+  assert.match(decision, /هر ده خانواده[\s\S]*Gate خروج `V1\.1-RPT1`/u);
+  assert.match(decision, /هیچ API، Migration، Renderer، feature flag یا Production setting/u);
+  assert.match(roadmap, /`D-PV1-16`[\s\S]*ده خانوادهٔ استاندارد/u);
+  assert.match(roadmap, /نسخه سند: `1\.22\.0`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.22\.0/u);
+  assert.match(canonical, /ADR 0031[\s\S]*RPT1-F02/u);
 });
 
 function read(path) {

@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.8.0`
-- وضعیت: `MS06 complete | Community decision and pinned PDF Golden/visual/performance passed | catalog/UI gates open`
+- نسخه: `1.9.0`
+- وضعیت: `MS06 complete | ten-family catalog scope preserved by ADR 0031 | F02-F10/UI gates open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - آخرین Qualification Candidate: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`
@@ -23,6 +23,11 @@ RPT1 یک Bounded Context مستقل برای گزارش‌های استاندا
 - Header/Footer، Revision، شماره صفحه، Watermark و Verification code؛
 - `NoData/NotConfigured/InsufficientData` بدون صفر ساختگی؛
 - نخستین Vertical Slice: گزارش روزانه رسمی و زنجیره اصلاحات.
+
+ADR 0031 تصریح می‌کند که «نخستین Vertical Slice» به‌معنی محدودشدن Scope نیست. هر ده خانوادهٔ
+کاتالوگ اولیه داخل RPT1 باقی می‌مانند؛ گزارش روزانه `RPT1-F01` است و F02 تا F10 باید با قرارداد
+معنایی، Renderer/Golden و Checkpoint مستقل تکمیل شوند. Foundation مشترک یا Catalog placeholder
+جایگزین Qualification خانواده‌ای نیست.
 
 ## ۲. Non-Scope
 
@@ -398,3 +403,7 @@ QuestPDF `2026.8.0`، imageهای build/runtime با digest کامل و دو ف�
 متن/ساختار، replay/download integrity و حذف Draft پاس شدند. defaultهای Production خاموش و license
 پیش‌فرض `Unconfigured` ماندند. MS06 بسته است؛ اختلاف کاتالوگ ده‌گانه و UI اختصاصی UX2 Gateهای باز
 باقی‌مانده‌اند و RPT1 Active است.
+
+ADR 0031 اختلاف کاتالوگ را از نظر تصمیم Scope بست: هر ده خانواده حفظ شدند و کاهش یا انتقال ضمنی
+نه خانواده رد شد. این تصمیم به‌معنی تکمیل Runtime نیست؛ F02 تا F10 همچنان Required/Not Implemented
+هستند، RPT1 Active می‌ماند و Micro-Slice بعدی DoR/semantic contract گزارش هفتگی و ماهانه F02 است.
