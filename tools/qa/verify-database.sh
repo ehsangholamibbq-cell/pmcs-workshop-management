@@ -265,7 +265,7 @@ expect_equal \
 
 expect_equal \
   "capacity runs isolate poison without delaying healthy work" \
-  "20|20|20|Failed|Failed|3|0|reporting.qa.transient_injected|t" \
+  "20|20|20|Failed|Failed|3|0|reporting.qa.transient_injected|true" \
   "with healthy_ids as (select ('72000000-0000-4000-8000-' || lpad(value::text, 12, '0'))::uuid id from generate_series(101, 120) value) select (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id)::text || '|' || (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id where run.status = 'Succeeded' and run.pipeline_stage = 'Complete' and run.attempt_count = 1 and run.output_count = 1)::text || '|' || (select count(*) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id where run.completed_at is not null)::text || '|' || poison.status || '|' || poison.pipeline_stage || '|' || poison.attempt_count::text || '|' || poison.output_count::text || '|' || coalesce(poison.diagnostic_code, '<none>') || '|' || ((select percentile_disc(0.95) within group (order by extract(epoch from run.completed_at - run.created_at)) from reporting.report_runs run join healthy_ids on healthy_ids.id = run.id) < 30)::text from reporting.report_runs poison where poison.id = '${reporting_capacity_poison_run_id}';"
 
 expect_equal \
