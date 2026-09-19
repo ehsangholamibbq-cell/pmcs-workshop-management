@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.24.0`
+- نسخه سند: `1.25.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -365,15 +365,18 @@ parse متن/RTL و performance budget را پاس کرد. defaultهای Product
 یا ترتیب کلان Roadmap تغییر نکرد. نخستین Slice اجرایی بعدی DoR و قرارداد معنایی گزارش
 هفتگی/ماهانه `RPT1-F02` است و RPT1 فعال می‌ماند.
 
-**F02 Weekly/Monthly Semantic Contract — Slice 07 Micro-Step 02 Candidate:** قرارداد
+**F02 Weekly/Monthly Semantic Contract — Slice 07 Micro-Step 02 Safe Checkpoint:** قرارداد
 `PMCS-RPT1-F02-SEMANTIC-001 v1.0.0`، F02 را به roll-up دوره‌ای گزارش‌های روزانه رسمی همان پروژه
 محدود می‌کند. Weekly بازهٔ شنبه تا شنبه بعد و Monthly بازهٔ روز اول تا روز اول ماه شمسی بعد را در
 Time Zone pin‌شده پروژه دارد. پارامتر بسته، source lineage، cutoff correction-safe، coverage،
 precedence وضعیت‌های `NotConfigured/NoData/InsufficientData/Available`، permission/classification
-fail-closed و Golden matrix چهارده‌سناریویی تثبیت شده‌اند. این Candidate هیچ Runtime Definition،
-Template/schema ID، API، Migration، Source implementation، Renderer یا feature flag ایجاد نمی‌کند؛
-F02 همچنان Required/Not Implemented و Safe Resume Point قطعی قبلی `S07-MS01` است تا Full CI همین
-Candidate سبز و Checkpoint مستقل ثبت شود.
+fail-closed و Golden matrix چهارده‌سناریویی تثبیت شده‌اند. Candidate
+`b4a59fa966320a1da4b53759814224e21893c01e` با tree
+`6b5b486dace3c07b0b4e0385413bf1add5aee7a3` در Run 137 (`35474388839`) هر هشت Job،
+`330/330` C#، `56/56` contract، `139/139` Web، پنج browser scenario و Restore ۴۳ Migration را پاس
+کرد. هیچ Runtime Definition، Template/schema ID، API، Migration، Source implementation، Renderer
+یا feature flag ایجاد نشد؛ F02 اکنون `Contract Ready / Runtime Not Implemented` است و RPT1 فعال
+می‌ماند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -641,3 +644,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.22.0` | ثبت ADR 0031 و تصمیم صریح حفظ Scope ده‌گانه RPT1؛ F02 تا F10 با Micro-Slice مستقل الزامی‌اند و RPT1 فعال می‌ماند |
 | `1.23.0` | ثبت Safe Checkpoint `S07-MS01` و Evidence سبز Run 135 برای تصمیم حفظ کاتالوگ ده‌گانه؛ F02 تا F10 همچنان بازند |
 | `1.24.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F02 برای گزارش هفتگی و ماهانه؛ Runtime/Renderer هنوز پیاده نشده‌اند |
+| `1.25.0` | ثبت Safe Checkpoint `S07-MS02` و Evidence سبز Run 137 برای قرارداد معنایی F02؛ Runtime/Renderer باز است |

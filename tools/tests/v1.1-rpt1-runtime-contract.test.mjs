@@ -636,9 +636,9 @@ test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing 
   assert.match(checkpoint, /revision `12`/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.25\.0`/u);
   assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.24\.0/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.25\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
   assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
   assert.match(runbook, /Run 130 \(`35449387794`\)/u);
@@ -690,8 +690,8 @@ test("RPT1 preserves the approved ten-family catalog through an explicit owner d
   assert.match(decision, /هر ده خانواده[\s\S]*Gate خروج `V1\.1-RPT1`/u);
   assert.match(decision, /هیچ API، Migration، Renderer، feature flag یا Production setting/u);
   assert.match(roadmap, /`D-PV1-16`[\s\S]*ده خانوادهٔ استاندارد/u);
-  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.24\.0/u);
+  assert.match(roadmap, /نسخه سند: `1\.25\.0`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.25\.0/u);
   assert.match(canonical, /ADR 0031[\s\S]*RPT1-F02/u);
 });
 
@@ -715,10 +715,10 @@ test("RPT1 ten-family decision records the S07-MS01 safe checkpoint without clai
   assert.match(checkpoint, /Micro-Step بعدی `RPT1-F02`/u);
   assert.match(roadmap, /\| `1\.23\.0` \| ثبت Safe Checkpoint `S07-MS01`/u);
   assert.match(registry, /V1\.1 RPT1 Slice 07 MS01[\s\S]*d81ecc00762145210e1c688f8f5843f46d62fc04/u);
-  assert.match(canonical, /Safe Resume Point قطعی آن\s*`PMCS-V1\.1-RPT1-S07-MS01-C1`/u);
+  assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS01-C1`/u);
   assert.match(baseline, /Slice 07 Micro-Step 01[\s\S]*Run 135/u);
   assert.match(matrix, /## ۲۳\.[\s\S]*Run 135/u);
-  assert.match(matrix, /نسخه: `1\.9\.0`/u);
+  assert.match(matrix, /نسخه: `1\.10\.0`/u);
 });
 
 test("RPT1-F02 fixes the weekly/monthly semantic contract before Runtime implementation", () => {
@@ -752,9 +752,45 @@ test("RPT1-F02 fixes the weekly/monthly semantic contract before Runtime impleme
   assert.match(api, /قرارداد آینده F02 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F02/u);
   assert.match(matrix, /## ۲۴\.[\s\S]*Golden matrix چهارده‌سناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.24\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.25\.0`/u);
   assert.match(registry, /Slice 07 MS02[\s\S]*Runtime not implemented/u);
-  assert.match(canonical, /ابتدا همین Candidate قرارداد F02 را با Full CI qualify و Checkpoint کن/u);
+  assert.match(canonical, /Micro-Step بعدی فقط Runtime identity نسخه‌دار F02/u);
+});
+
+test("RPT1-F02 semantic contract records the S07-MS02 safe checkpoint without claiming Runtime", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms02-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const baseline = read("docs/governance/pmcs-v1.1-development-baseline.md");
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS02-C1/u);
+  assert.match(checkpoint, /b4a59fa966320a1da4b53759814224e21893c01e/u);
+  assert.match(checkpoint, /6b5b486dace3c07b0b4e0385413bf1add5aee7a3/u);
+  assert.match(checkpoint, /Run 137 \(`35474388839`\)/u);
+  assert.match(checkpoint, /`330\/330` تست C#/u);
+  assert.match(checkpoint, /`56\/56` تست قراردادی Node/u);
+  assert.match(checkpoint, /`139\/139` تست Web/u);
+  assert.match(checkpoint, /`344` فایل C#/u);
+  assert.match(checkpoint, /`274` endpoint، `204` mutation و `5`/u);
+  assert.match(checkpoint, /Restore Drill کامل `43` Migration/u);
+  assert.match(checkpoint, /`7\/7` Suite/u);
+  assert.match(checkpoint, /Qualification artifact: `10593113029`/u);
+  assert.match(checkpoint, /sha256:fa9054d784ffa5139e7d2de466d93c9992777930373af115c037a7a520c6bcbc/u);
+  assert.match(checkpoint, /Integration artifact: `10593968226`/u);
+  assert.match(checkpoint, /sha256:89b1986b252258093172ad2973b0ece4a9cb7f56320f81fc00a0918b6ae26cb4/u);
+  assert.match(checkpoint, /UI-E2E artifact: `10594217426`/u);
+  assert.match(checkpoint, /sha256:51b125bc7c442ae9a76890ad2ce69c63b7505cb284d6e36f81e3110dd28a7a85/u);
+  assert.match(checkpoint, /هیچ Runtime Definition[\s\S]*Migration[\s\S]*Renderer/u);
+  assert.match(checkpoint, /هیچ گزارش هفتگی\/ماهانه‌ای هنوز از API قابل اجرا یا دانلود نیست/u);
+  assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS02-C1`/u);
+  assert.match(roadmap, /\| `1\.25\.0` \| ثبت Safe Checkpoint `S07-MS02`/u);
+  assert.match(registry, /Slice 07 MS02[\s\S]*b4a59fa966320a1da4b53759814224e21893c01e/u);
+  assert.match(canonical, /Safe Resume Point قطعی آن `PMCS-V1\.1-RPT1-S07-MS02-C1`/u);
+  assert.match(baseline, /Slice 07 Micro-Step 02[\s\S]*Run 137/u);
+  assert.match(matrix, /## ۲۴\.[\s\S]*Run 137/u);
+  assert.match(matrix, /نسخه: `1\.10\.0`/u);
 });
 
 function read(path) {

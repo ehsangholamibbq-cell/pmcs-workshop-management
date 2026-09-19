@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.9.0`
-- وضعیت: F02 semantic/Golden contract candidate؛ F02 Runtime/Renderer و F03-F10/UI open
+- نسخه: `1.10.0`
+- وضعیت: F02 semantic/Golden contract passed in Run 137؛ F02 Runtime/Renderer و F03-F10/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -415,7 +415,12 @@ Micro-Step بعدی ابتدا DoR/semantic contract خانواده F02 خواه
 - Golden matrix چهارده‌سناریویی `F02-W01..D01` برای week/month boundary، leap Esfand، open period،
   missing coverage، correction cutoff، unit split، revocation، isolation، classification و determinism.
 
-این Micro-Step فقط contract/readiness را تست می‌کند. هیچ Runtime Definition، Template/schema ID،
-Source implementation، Catalog seed، Migration، PDF/XLSX یا feature flag اضافه نمی‌شود و F02
-`Required / Not Implemented` باقی می‌ماند. Evidence CI و Safe Checkpoint پس از سبزشدن Candidate
-جداگانه ثبت می‌شوند.
+Candidate `b4a59fa966320a1da4b53759814224e21893c01e` با tree
+`6b5b486dace3c07b0b4e0385413bf1add5aee7a3` در Run 137 (`35474388839`) هر هشت Job را پاس کرد:
+`330/330` تست C#، `56/56` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator
+`344` فایل و audit ثابت `274/204/5`. Restore Drill همان ۴۳ Migration و Qualification report هر
+`7/7` Suite را با صفر failure حفظ کرد.
+
+این Micro-Step فقط contract/readiness را qualify می‌کند. هیچ Runtime Definition، Template/schema
+ID، Source implementation، Catalog seed، Migration، PDF/XLSX یا feature flag اضافه نشده و F02
+`Contract Ready / Runtime Not Implemented` است.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.2.0`
-- وضعیت: F01 connected gates passed؛ F02 permission/classification contract ready، runtime gate open
+- نسخه: `1.2.1`
+- وضعیت: F01 connected gates passed؛ F02 permission/classification contract qualified in Run 137، runtime gate open
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی

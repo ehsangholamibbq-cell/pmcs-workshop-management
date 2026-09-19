@@ -154,6 +154,15 @@ Run 135 (`35466775368`) هر هشت Job، `330/330` تست C#، `54/54` تست �
 و پنج browser scenario را پاس کرد. این Decision Record هیچ API، Migration، Runtime یا default
 Production را تغییر نداد؛ F02 تا F10 همچنان Not Implemented و RPT1 Active هستند.
 
+Slice 07 Micro-Step 02 با source commit
+`b4a59fa966320a1da4b53759814224e21893c01e` و tree
+`6b5b486dace3c07b0b4e0385413bf1add5aee7a3` قرارداد
+`PMCS-RPT1-F02-SEMANTIC-001 v1.0.0` را برای period/cutoff، source lineage، status،
+permission/classification و Golden matrix گزارش هفتگی/ماهانه ثبت کرد. Run 137 (`35474388839`) هر
+هشت Job، `330/330` تست C#، `56/56` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و
+Restore ۴۳ Migration را پاس کرد. هیچ Runtime، API، Migration، Renderer یا default Production تغییر
+نکرد؛ F02 اکنون Contract Ready ولی Runtime Not Implemented و RPT1 Active است.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛

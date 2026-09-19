@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.10.0`
-- وضعیت: `F02 semantic contract candidate | Runtime not implemented | F03-F10/UI gates open`
+- نسخه: `1.10.1`
+- وضعیت: `S07-MS02 complete in Run 137 | F02 Contract Ready / Runtime not implemented | F03-F10/UI open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`
-- Source tree: `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`
-- Connected evidence: Run 133 (`35463350892`) — `success`
+- آخرین Qualification Candidate: `b4a59fa966320a1da4b53759814224e21893c01e`
+- Source tree: `6b5b486dace3c07b0b4e0385413bf1add5aee7a3`
+- Connected evidence: Run 137 (`35474388839`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -416,9 +416,11 @@ Candidate تصمیم در commit `d81ecc00762145210e1c688f8f5843f46d62fc04` و t
 `5f40383ad506d94520c741eb69fcd00086283734` با هر هشت Job سبز Run 135 (`35466775368`) qualify شد؛
 هیچ API، Migration یا Runtime contract تغییر نکرد.
 
-Slice 07 Micro-Step 02 قرارداد معنایی F02 را به‌عنوان Candidate مستند کرده است. Weekly از شنبه تا
+Slice 07 Micro-Step 02 قرارداد معنایی F02 را مستند و در Run 137 qualify کرده است. Weekly از شنبه تا
 شنبهٔ بعد و Monthly از روز اول تا روز اول ماه شمسی بعد در Time Zone pin‌شده پروژه تعریف می‌شود؛
 فقط current official Daily Report هر تاریخ در `asOfUtc` وارد می‌شود و
-`NotConfigured/NoData/InsufficientData/Available` precedence نسخه‌دار دارد. این Candidate هنوز
-Runtime Definition، Source contract، Migration، Renderer یا Template ایجاد نکرده و F02 همچنان
-`Required / Not Implemented` است.
+`NotConfigured/NoData/InsufficientData/Available` precedence نسخه‌دار دارد. Candidate
+`b4a59fa966320a1da4b53759814224e21893c01e` با tree
+`6b5b486dace3c07b0b4e0385413bf1add5aee7a3` هر هشت Job Run 137 (`35474388839`) را پاس کرد. F02
+اکنون `Contract Ready / Runtime Not Implemented` است؛ Runtime Definition، Source contract،
+Migration، Renderer یا Template هنوز ایجاد نشده‌اند.

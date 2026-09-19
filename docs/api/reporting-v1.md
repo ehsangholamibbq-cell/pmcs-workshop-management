@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01 Runtime qualified؛ F02 semantic contract candidate only؛ business API unchanged و RPT1 active
+- Status: F01 Runtime qualified؛ F02 semantic contract qualified in Run 137، Runtime/API not implemented؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
