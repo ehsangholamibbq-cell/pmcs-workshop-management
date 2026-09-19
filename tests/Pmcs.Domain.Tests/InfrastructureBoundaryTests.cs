@@ -12,6 +12,9 @@ namespace Pmcs.Domain.Tests;
 
 public sealed class InfrastructureBoundaryTests
 {
+    private static readonly string[] PublicHealthDataKeys =
+        ["activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns"];
+
     [Theory]
     [InlineData("abc-123_DEF.xyz", true)]
     [InlineData("contains a space", false)]
@@ -44,9 +47,7 @@ public sealed class InfrastructureBoundaryTests
         };
         var selected = HealthResponseWriter.SelectPublicData("reporting-worker", source);
 
-        Assert.Equal(
-            new[] { "activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns" },
-            selected.Keys.ToArray());
+        Assert.Equal(PublicHealthDataKeys, selected.Keys.ToArray());
         Assert.DoesNotContain("tenantId", selected.Keys);
         Assert.DoesNotContain("projectId", selected.Keys);
         Assert.DoesNotContain("diagnostic", selected.Keys);
