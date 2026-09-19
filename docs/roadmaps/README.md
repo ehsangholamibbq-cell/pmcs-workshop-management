@@ -2,6 +2,8 @@
 
 این فهرست مرجع تشخیص Roadmap فعال است. عبارت «Roadmap فعلی» بدون اشاره به شناسه و نسخهٔ سند مجاز نیست.
 
+مرجع واحد وضعیت و Resume پروژه: [`../PMCS-CANONICAL-PROJECT-REFERENCE.md`](../PMCS-CANONICAL-PROJECT-REFERENCE.md).
+
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
 | Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.20.0` | V1.1، V1.2 و V2.x |
