@@ -11,6 +11,7 @@ const required = [
   "docs/qa/pmcs-v1.1-rpt1-test-matrix.md",
   "docs/runbooks/reporting-center.md",
   "docs/checkpoints/v1.1-rpt1-readiness.md",
+  "docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md",
 ];
 
 test("RPT1 readiness pack is complete without claiming runtime completion", () => {
@@ -76,8 +77,8 @@ test("continuity audit retains seven Agent stages and separates open visual gate
     assert.match(audit, new RegExp(gate, "u"));
   }
   assert.match(audit, /RPT1 Active/u);
-  assert.match(audit, /346fbb778aa5c4475fd48df3241b700341e96d83/u);
-  assert.match(audit, /Run 113 \(`35437832281`\)/u);
+  assert.match(audit, /83f13cf43679b23a6a169cc0912985b391b1c017/u);
+  assert.match(audit, /Run 117 \(`35441980440`\)/u);
   assert.match(audit, /Gate خروج باز است/u);
 });
 

@@ -2,7 +2,7 @@
 
 - Checkpoint: `V1.1-RPT1`
 - Contract version: `pmcs.reporting/v1`
-- Status: Connected load/poison/fairness passed؛ operational scrape/alert qualification open
+- Status: Bounded signal and connected queue-age health passed؛ exporter/scrape/alert qualification open
 
 ## Health و Metrics
 
@@ -18,9 +18,12 @@
 
 Label شامل Tenant/Project/User/filename یا محتوای گزارش نمی‌شود.
 
-در Slice 06 MS01، meterهای Worker، heartbeat و health check سن صف در Source و composition فعال
-شده‌اند. وضعیت stale/missing heartbeat یا عبور سن صف از budget به‌صورت `Degraded` گزارش می‌شود؛
-نبود exporter/scrape و alert delivery تولیدی نباید به‌عنوان Observability کامل تفسیر شود.
+در Slice 06 MS03-C1، نه instrument Worker و چهار tag کم‌کاردینالیتی به قرارداد تست‌شده تبدیل
+شده‌اند. health check در stale/missing heartbeat یا عبور سن صف از budget وضعیت `Degraded` می‌دهد و
+readiness فقط `activeRuns`، `heartbeatAgeSeconds`، `oldestQueueAgeSeconds` و `queuedRuns` عددی را
+برای `reporting-worker` نشان می‌دهد. این endpoint نباید برای دریافت identity، Snapshot، object key
+یا diagnostic detail استفاده شود. نبود exporter/scrape و alert delivery تولیدی همچنان به‌معنی
+ناتمام‌بودن Observability است.
 
 Budgetهای پیش‌فرض: `MaximumAttempts=3`، `RetryBaseDelaySeconds=30`،
 `MaximumPdfFacts=2000`، `MaximumXlsxRows=5000`، `MaximumOutputBytes=26214400`،
@@ -157,7 +160,7 @@ harness نهایی هر `5/5` و orchestration هر `15/15` assertion را پا�
 این pauseها ابزار عملیاتی Production نیستند. فعال‌سازی آن‌ها بدون `PMCS_QA_GATEWAY_ENABLED=true`،
 target Run ID و Worker instance ID معتبر fail-closed است. در رخداد واقعی Production، اپراتور فقط
 از retry/recovery رسمی و telemetry مصوب استفاده می‌کند و process را برای ساختن crash window دستکاری
-نمی‌کند. metrics/heartbeat/queue-age/alert هنوز Gate باز این Runbook است.
+نمی‌کند. exporter/scrape و alert delivery هنوز Gate باز این Runbook است.
 
 Run 108 (`35393509764`) دو مسیر دیگر را پاس کرد. در
 `tools/qa/verify-reporting-worker-revocation.sh`، Worker در pause محدود
@@ -180,3 +183,10 @@ fairness با دو Worker و دو row lock مستقل، پروژه B را پیش
 
 این نتیجه health signal موجود را اثبات می‌کند، اما exporter/scrape، alert rule و delivery تولیدی
 هنوز در `S06-MS03` Gate باز هستند. feature flagها همچنان پیش‌فرض خاموش‌اند.
+
+Run 117 (`35441980440`) Checkpoint میانی `S06-MS03-C1` را پاس کرد. fairness اکنون `10/10`
+assertion دارد و در زمان نگه‌داشتن صف aged زیر دو row lock، readiness وضعیت `Degraded` با شرح
+queue-age و فقط چهار مقدار عددی allowlist‌شده برگرداند. هارنس کل payload را برای نبود Tenant،
+Project، User و Run ID کنترل کرد. MeterListener نیز نام نه instrument و allowlist چهار tag را Unit
+qualify کرد. این Evidence برای عیب‌یابی داخلی معتبر است، اما تا زمان C2 هیچ scrape target، exporter
+یا alert delivery را Production-ready اعلام نمی‌کند.

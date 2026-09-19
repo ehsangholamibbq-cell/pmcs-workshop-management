@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.2.0`
-- وضعیت: Connected core + security/recovery + capacity/poison/fairness passed؛ RPT1 extended qualification open
+- نسخه: `1.3.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + bounded signal/health passed؛ MS03 export/alert and extended qualification open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -266,3 +266,24 @@ Run 112 پیش از Candidate نهایی هر دو سناریوی جدید را 
 boolean بین `t` و `true` در assertion دیتابیس شکست خورد. Fix نهایی صرفاً expectation را هم‌تراز کرد
 و Run 113 کل زنجیره را دوباره پاس کرد. exporter/scrape و alert delivery، remediation orphan،
 Golden معنایی/XLSX، PDF قانونی/Golden/performance و UI اختصاصی Reporting همچنان Gate باز هستند.
+
+## ۱۸. Coverage افزوده‌شده در Slice 06 Micro-Step 03 Checkpoint C1
+
+Candidate `83f13cf43679b23a6a169cc0912985b391b1c017` با tree
+`1705d184bd494e80e50d8a85b723f0bc63e20abc` در Run 117 (`35441980440`) موارد زیر را پاس کرد:
+
+- Unit qualification نه instrument Meter `Pmcs.Reporting` و allowlist چهار tag کم‌کاردینالیتی؛
+- فیلتر fail-closed پاسخ health برای check دقیق `reporting-worker`، چهار مقدار عددی مجاز و حذف
+  data سایر checkها؛
+- fairness متصل `10/10` با صف aged، دو Worker/دو Project، وضعیت `Degraded`، شرح queue-age و marker
+  `health=degraded-queue-age`؛
+- negative assertion برای نبود Tenant، Project، User و Run ID در کل readiness payload؛
+- حفظ capacity هر `11/11` با ۲۰ Run سالم، poison سه-attemptی و P95 برابر `5.871168s`؛
+- `313/313` تست C#، `46/46` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، Restore
+  ۴۳ Migration و هر هفت Suite Qualification با صفر failure.
+
+Run 115 فقط روی analyzer `CA1861` و Run 116 فقط پس از اثبات Build/health صحیح روی binding متغیر
+shell هارنس متوقف شدند. Fixها به expectation تست و فهرست forbidden identity محدود ماندند. این C1
+وجود exporter، scrape pipeline، alert rule یا delivery را ادعا نمی‌کند؛ آن‌ها Gate باز
+`PMCS-V1.1-RPT1-S06-MS03-C2` هستند. remediation orphan، Golden معنایی/XLSX، PDF
+قانونی/Golden/performance و UI اختصاصی Reporting نیز باز می‌مانند.

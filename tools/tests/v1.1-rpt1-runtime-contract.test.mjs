@@ -375,8 +375,26 @@ test("RPT1 connected capacity and fairness micro-step records a resumable safe c
   assert.match(checkpoint, /`45\/45` تست قراردادی Node/u);
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.16\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.16\.0/u);
+  assert.match(roadmap, /\| `1\.16\.0` \| ثبت Safe Checkpoint متصل `S06-MS02`/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 06 MS02[\s\S]*346fbb778aa5c4475fd48df3241b700341e96d83/u);
+});
+
+test("RPT1 operational signal contract records a resumable intermediate checkpoint", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03-C1/u);
+  assert.match(checkpoint, /83f13cf43679b23a6a169cc0912985b391b1c017/u);
+  assert.match(checkpoint, /1705d184bd494e80e50d8a85b723f0bc63e20abc/u);
+  assert.match(checkpoint, /Run 117 \(`35441980440`\)/u);
+  assert.match(checkpoint, /`313\/313` تست C#/u);
+  assert.match(checkpoint, /Fairness regression هر `10\/10`/u);
+  assert.match(checkpoint, /health=degraded-queue-age/u);
+  assert.match(checkpoint, /Tenant\/Project\/User\/Run ID/u);
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S06-MS03-C2/u);
+  assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
+  assert.match(roadmap, /نسخه سند: `1\.17\.0`/u);
+  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.17\.0/u);
 });
 
 function read(path) {

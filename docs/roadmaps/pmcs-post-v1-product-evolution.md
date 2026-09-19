@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.16.0`
+- نسخه سند: `1.17.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند و RPT1 فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -306,6 +306,15 @@ Permissionهای Reporting/Source بلافاصله پیش از Storage دوبا�
 صفرشدن آن پس از recovery را اثبات کرد. این Slice API خارجی/Migration/معماری را تغییر نداد و sweeper
 تولیدی، retry/load/budget، observability، Golden، PDF قانونی و UI Reporting را باز نگه می‌دارد.
 
+**Slice 06 Micro-Step 03 — Safe Checkpoint C1:** Candidate با commit
+`83f13cf43679b23a6a169cc0912985b391b1c017` و tree
+`1705d184bd494e80e50d8a85b723f0bc63e20abc` در Run 117 (`35441980440`) هر هشت Job را پاس کرد.
+نه Meter instrument و چهار tag کم‌کاردینالیتی به قرارداد تست‌شده تبدیل شدند؛ readiness فقط چهار
+مقدار عددی allowlist‌شدهٔ `reporting-worker` را منتشر می‌کند. fairness متصل `10/10`، وضعیت
+`Degraded` صف aged و عدم نشت Tenant/Project/User/Run ID را اثبات کرد. این Safe Checkpoint میانی
+MS03 است: exporter/scrape/alert rule و delivery در `S06-MS03-C2` بازند و ترتیب RPT1، COL1، UX2،
+INT1 یا هفت Stage Agent تغییر نکرده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -564,3 +573,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.14.0` | ثبت Qualification Slice پنجم RPT1 برای worker-time revocation، object-byte/missing/malformed integrity و orphan inventory؛ Gate خروج همچنان باز |
 | `1.15.0` | ثبت Safe Checkpoint `S06-MS01` برای Core ظرفیت، timeout، retry exhaustion، fairness، telemetry و health؛ Qualification متصل load/poison/fairness در `MS02` باز است |
 | `1.16.0` | ثبت Safe Checkpoint متصل `S06-MS02` برای ۲۰ Run سالم + poison، P95 و fairness دو پروژه/دو Worker؛ Operational Observability در `MS03` باز است |
+| `1.17.0` | ثبت Safe Checkpoint میانی `S06-MS03-C1` برای قرارداد کم‌کاردینالیتی Meter و readiness متصل queue-age؛ exporter/scrape/alert delivery در `MS03-C2` باز است |

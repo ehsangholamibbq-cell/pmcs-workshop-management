@@ -8,8 +8,8 @@
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Worktree source commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Source tree: `bae26b6e8295ef6ffa6f5c671d26d5fc39b34d1b`
-- آخرین Qualification Candidate: `167133fc1985c5b57c3dac90535f7a962dfd03b7`
-- آخرین Connected evidence: Run 108 (`35393509764`) — `success`
+- آخرین Qualification Candidate: `83f13cf43679b23a6a169cc0912985b391b1c017`
+- آخرین Connected evidence: Run 117 (`35441980440`) — `success`
 
 ## ۱. هدف و روش
 
@@ -182,10 +182,10 @@ Post-V1 برای ثبت DoR مرحله RPT1 به `1.8.0` همگام شد. این
 نمانده است. تنها نکته‌ای که ممکن بود اشتباه گزارش شود، معنای «UX1 Closed» بود: این عبارت فقط
 Gate جهت بصری را می‌بندد، نه کل Visual Excellence Program.
 
-آخرین اقدام تکمیل‌شده: Qualification متصل Slice 06 Micro-Step 02 برای ۲۰ Run سالم + poison، P95
-و fairness دو پروژه/دو Worker در Run 113؛ RPT1 همچنان فعال است.
+آخرین اقدام تکمیل‌شده: Safe Checkpoint میانی Slice 06 Micro-Step 03 C1 برای قرارداد کم‌کاردینالیتی
+Meter و readiness متصل queue-age در Run 117؛ RPT1 و خود MS03 همچنان فعال‌اند.
 
-نقطهٔ دقیق ادامه: Operational Observability شامل heartbeat/queue-age/metrics/export/scrape/alert؛
+نقطهٔ دقیق ادامه: MS03-C2 شامل exporter/scrape/alert rule و delivery برای signalهای اثبات‌شده؛
 سپس remediation امن orphan، Golden معنایی/XLSX، PDF پس از تصمیم حقوقی license و UI گزارش در UX2.
 
 ## ۱۱. Addendum ادامه پس از ممیزی
@@ -286,3 +286,18 @@ PostgreSQL (`t` در برابر `true`) بود؛ fix محدود در Candidate �
 Regressionها را پاس کرد. RPT1 هنوز برای Operational Observability، remediation orphan، Golden،
 PDF قانونی و UI Reporting باز است و Scope، ترتیب COL1/UX2/INT1، هفت Stage Agent و مرز مصوب Agent
 تغییر نکرده‌اند.
+
+## ۱۹. Addendum — Operational Signal Contract و Connected Queue-Age Health
+
+Slice 06 Micro-Step 03 Checkpoint C1 با source commit
+`83f13cf43679b23a6a169cc0912985b391b1c017` و tree
+`1705d184bd494e80e50d8a85b723f0bc63e20abc` در Run 117 (`35441980440`) هر هشت Job را پاس کرد.
+قرارداد نه Meter instrument و چهار tag کم‌کاردینالیتی Unit-qualify شد. readiness فقط چهار مقدار
+عددی allowlist‌شده برای `reporting-worker` منتشر می‌کند؛ fairness متصل `10/10` وضعیت `Degraded`
+صف aged و نبود Tenant/Project/User/Run ID را در payload اثبات کرد.
+
+Runهای diagnostic 115 و 116 به‌ترتیب analyzer تست و binding متغیر shell هارنس را آشکار کردند؛
+هر دو fix محدود بود و کنترل عدم نشت تضعیف نشد. این Addendum MS03 را کامل اعلام نمی‌کند:
+exporter/scrape/alert delivery در C2 باز است. RPT1، ترتیب COL1/UX2/INT1، هر هفت Stage Agent و مرز
+`Agent → Permission-aware Tool → Application Service → Business Rules → Database` بدون تغییر
+باقی مانده‌اند.

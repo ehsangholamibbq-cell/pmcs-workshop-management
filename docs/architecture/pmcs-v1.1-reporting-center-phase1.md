@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.3.0`
-- وضعیت: `Connected load/poison/fairness qualification passed | operational observability/alerts pending`
+- نسخه: `1.4.0`
+- وضعیت: `MS03 signal contract and connected queue-age health passed | exporter/scrape/alert delivery pending`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `346fbb778aa5c4475fd48df3241b700341e96d83`
-- Source tree: `98b25e2dcd109356bdea08de138995f271260cfc`
-- Connected evidence: Run 113 (`35437832281`) — `success`
+- آخرین Qualification Candidate: `83f13cf43679b23a6a169cc0912985b391b1c017`
+- Source tree: `1705d184bd494e80e50d8a85b723f0bc63e20abc`
+- Connected evidence: Run 117 (`35441980440`) — `success`
 - مرجع تصمیم: ADR 0029
 
 ## ۱. Scope
@@ -321,3 +321,9 @@ Slice 06 Micro-Step 02 در Run 113 orchestration متصل ۲۰ Run سالم + �
 fairness نیز با دو پروژه، دو Worker، دو row lock مستقل و rollback پس از `SIGKILL` هر `9/9`
 assertion را پاس کرد. این Evidence load/poison/fairness را می‌بندد، اما exporter/scrape و alert
 تولیدی، remediation امن orphan، Golden، PDF قانونی و UI اختصاصی Reporting همچنان Gate باز هستند.
+
+Slice 06 Micro-Step 03 Checkpoint C1 در Run 117 قرارداد نه instrument پایدار Meter و چهار tag
+کم‌کاردینالیتی را Unit-qualify کرد. readiness فقط برای check دقیق `reporting-worker` چهار مقدار
+عددی allowlist‌شده منتشر می‌کند. سناریوی fairness متصل، صف aged را زیر دو row lock نگه داشت و
+`Degraded` ناشی از queue age، payload محدود و عدم نشت Tenant/Project/User/Run ID را در assertion
+دهم اثبات کرد. این C1 خود MS03 را نمی‌بندد؛ exporter، scrape و alert rule/delivery در C2 بازند.

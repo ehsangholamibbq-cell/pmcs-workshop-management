@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: Runtime implemented؛ latest qualification candidate `346fbb778aa5c4475fd48df3241b700341e96d83` passed Run 113؛ external API unchanged and extended RPT1 gates open
+- Status: Runtime implemented؛ latest qualification candidate `83f13cf43679b23a6a169cc0912985b391b1c017` passed Run 117؛ business API unchanged and extended RPT1 gates open
 
 ## ۱. قواعد عمومی
 
@@ -14,6 +14,14 @@
 - Template version، locale، calendar و format در Run pin می‌شوند؛
 - Errorها Problem Details با `code` ماشین‌خوان هستند؛
 - هیچ endpoint عمومی Query/SQL/Template executable دریافت نمی‌کند.
+
+### ۱.۱ سطح عملیاتی Readiness
+
+`GET /health/ready` جزو API تجاری Reporting زیر `/api/v1` نیست. check با نام
+`reporting-worker` فقط چهار مقدار عددی `activeRuns`، `heartbeatAgeSeconds`،
+`oldestQueueAgeSeconds` و `queuedRuns` را منتشر می‌کند. دادهٔ سایر checkها، مقدارهای غیرعددی و
+هر Tenant/Project/User/Run ID حذف می‌شوند. عبور queue age از budget یا heartbeat گمشده/کهنه
+وضعیت `Degraded` می‌دهد؛ این payload جای exporter، scrape یا alert delivery را نمی‌گیرد.
 
 ## ۲. Catalog
 

@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS02 تا source commit `346fbb7` با load/poison/fairness متصل پاس و Operational Observability در MS03 باز |
+| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS03-C1 تا source commit `83f13cf` با signal/connected queue-age health پاس و exporter/scrape/alert delivery در MS03-C2 باز |
 | Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 108 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -99,6 +99,15 @@ Slice 06 Micro-Step 02 با source commit `346fbb778aa5c4475fd48df3241b700341e96
 ۲۰ Run سالم یک‌بار کامل شدند، poison در attempt سوم بدون side effect نهایی شد، P95 برابر `5.529s`
 بود و fairness دو پروژه/دو Worker هر `9/9` assertion را پاس کرد. RPT1 برای Observability عملیاتی،
 remediation orphan، Golden، PDF قانونی و UI Reporting همچنان Active است.
+
+Slice 06 Micro-Step 03 Checkpoint C1 با source commit
+`83f13cf43679b23a6a169cc0912985b391b1c017` و tree
+`1705d184bd494e80e50d8a85b723f0bc63e20abc` قرارداد کم‌کاردینالیتی نه Meter instrument و readiness
+عددی محدود `reporting-worker` را بدون تغییر endpoint تجاری `/api/v1` یا Migration اضافه کرد. Run
+117 (`35441980440`) هر هشت Job، `313/313` تست C#، `46/46` تست قراردادی، `139/139` تست Web، پنج
+browser scenario و Restore ۴۳ Migration را پاس کرد. fairness اکنون `10/10` assertion دارد و
+`Degraded` صف aged و عدم نشت Tenant/Project/User/Run ID را متصل اثبات می‌کند. exporter/scrape و
+alert delivery هنوز در C2 همین MS03 بازند؛ RPT1 Active باقی می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 
