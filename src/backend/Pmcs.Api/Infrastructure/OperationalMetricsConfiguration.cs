@@ -38,7 +38,8 @@ internal static class OperationalMetricsConfiguration
         }
 
         if (!Uri.TryCreate(value, UriKind.Absolute, out var endpoint) ||
-            endpoint.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps) ||
+            (!string.Equals(endpoint.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
+                !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal)) ||
             !string.IsNullOrEmpty(endpoint.UserInfo) ||
             !string.IsNullOrEmpty(endpoint.Query) ||
             !string.IsNullOrEmpty(endpoint.Fragment))
