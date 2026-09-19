@@ -927,6 +927,7 @@ internal static partial class Program
     private static decimal? ReadNullableDecimal(JsonElement payload, string property) =>
         payload.ValueKind == JsonValueKind.Object &&
         payload.TryGetProperty(property, out var value) &&
+        value.ValueKind == JsonValueKind.Number &&
         value.TryGetDecimal(out var parsed)
             ? parsed
             : null;
@@ -934,6 +935,7 @@ internal static partial class Program
     private static int? ReadNullableInt32(JsonElement payload, string property) =>
         payload.ValueKind == JsonValueKind.Object &&
         payload.TryGetProperty(property, out var value) &&
+        value.ValueKind == JsonValueKind.Number &&
         value.TryGetInt32(out var parsed)
             ? parsed
             : null;
