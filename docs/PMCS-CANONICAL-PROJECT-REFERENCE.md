@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.2.0`
+- نسخه: `1.3.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -23,9 +23,9 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` |
-| Remote source head پیش از انتشار Checkpoint | `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ parent مستقیم Anchor انتقال |
-| Source lineage | MS06 Candidate فرزند مستقیم Anchor `345d9d6fc2e661144a74e3001150c28d73a212c7` است؛ هیچ rebase یا baseline reset انجام نشد |
+| آخرین Source Candidate واجد Evidence | `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree `5f40383ad506d94520c741eb69fcd00086283734` |
+| Remote source head پیش از انتشار Checkpoint | `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ parent مستقیم Checkpoint MS06 |
+| Source lineage | S07-MS01 Candidate فرزند مستقیم `640fc7e4e8c75907f24883168be7317fae1f5548` است؛ هیچ rebase یا baseline reset انجام نشد |
 | Migration count | `43`؛ Restore Drill متصل پاس شده است |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.22.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.23.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,8 +48,8 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.21.0` | Superseded؛ `v1.22.0` مرجع است |
-| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S06-MS06` را اثبات می‌کند |
+| Roadmap Post-V1 | نسخه‌های تا `v1.22.0` | Superseded؛ `v1.23.0` مرجع است |
+| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS01` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
@@ -74,22 +74,22 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - Inventory/dry-run/remediation امن orphan با retention/legal hold/audit/idempotency: MS04، Run 123.
 - Semantic cutoff و XLSX Golden قطعی برای `daily-report-certified/1.0.0`: MS05، Run 130.
 - تصمیم Community، pin image/font و PDF Golden/visual/performance: MS06، Run 133.
+- تصمیم صریح حفظ Scope ده‌گانه و الزام Micro-Slice مستقل F02 تا F10: S07-MS01، ADR 0031، Run 135.
 - Run 130: هر ۸ Job سبز، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario، `13/13` Golden assertion و Restore کامل ۴۳ Migration.
-- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md`.
+- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-07-ms01-candidate.md`.
 - Anchor انتقال Run 132 (`35459192122`) روی commit `345d9d6fc2e661144a74e3001150c28d73a212c7`
   هر هشت Job را سبز کرد.
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است. تا ثبت Evidence همین Decision Candidate، Safe Resume Point قطعی قبلی
-`PMCS-V1.1-RPT1-S06-MS06-C1` باقی می‌ماند. تصمیم
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی آن `PMCS-V1.1-RPT1-S07-MS01-C1` است. تصمیم
 `QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است: فقط
-`RPT1-F01` qualify شده و F02 تا F10 Required/Not Implemented هستند. این Decision Candidate هیچ
-Runtime، Migration یا feature flag را تغییر نمی‌دهد و پس از CI سبز Checkpoint مستقل می‌گیرد.
+`RPT1-F01` qualify شده و F02 تا F10 Required/Not Implemented هستند. Run 135 هر هشت Job را روی
+Decision Candidate سبز کرد؛ هیچ Runtime، Migration یا feature flag تغییر نکرد.
 
 ## Remaining Work
 
@@ -116,6 +116,9 @@ Runtime، Migration یا feature flag را تغییر نمی‌دهد و پس ا
 - PR: `open`، `draft` و ادغام‌نشده است.
 - Checkpoint head پیش از Decision Candidate: `640fc7e4e8c75907f24883168be7317fae1f5548`؛ Run 134
   (`35464073235`) هر هشت Job را سبز کرد.
+- Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
+  `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
+  `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
 - آخرین Source CI بررسی‌شده: Run 133 (`35463350892`) — هر ۸ Job
@@ -130,10 +133,10 @@ Runtime، Migration یا feature flag را تغییر نمی‌دهد و پس ا
 
 ## Exact Next Micro-Step
 
-**گام بعدی پس از Qualification و Checkpoint همین Decision Candidate، `RPT1-F02` است:** ابتدا DoR و
-قرارداد معنایی گزارش هفتگی/ماهانه پروژه را به‌صورت یک Micro-Step مستقل تثبیت کن؛ سپس Runtime و
-Golden آن فقط در Sliceهای محدود بعدی پیاده شوند. F03 تا F10 زودتر Done اعلام نشوند و هیچ feature flag
-Production روشن نشود.
+**گام بعدی `RPT1-F02` است:** ابتدا فقط DoR و قرارداد معنایی گزارش هفتگی/ماهانه پروژه را در یک
+Micro-Step مستقل تثبیت کن: source lineage، cutoff، پارامترها، permission/classification، وضعیت‌های
+نبود داده و Golden matrix. Runtime و Renderer در Sliceهای محدود بعدی پیاده شوند؛ F03 تا F10 زودتر
+Done اعلام نشوند و هیچ feature flag Production روشن نشود.
 
 ## Resume Rule
 

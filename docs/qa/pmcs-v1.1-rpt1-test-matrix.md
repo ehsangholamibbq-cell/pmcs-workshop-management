@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.7.0`
-- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX + pinned PDF qualification passed؛ catalog decision/UI open
+- نسخه: `1.8.0`
+- وضعیت: Connected core + security/recovery + capacity/fairness + observability + orphan remediation + semantic/XLSX + pinned PDF + ten-family catalog decision passed؛ F02-F10/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -380,3 +380,22 @@ Candidate `b8f21492a4f44c7c412e5b7eda0b164e7f256758` با tree
 بازبینی مستقل Poppler clipping، overlap یا glyph شکسته نشان نداد. MS06 با Run 133 بسته است؛ این
 coverage Production enablement، eligibility دائمی Community، ۹ خانوادهٔ پیاده‌نشدهٔ Catalog یا UI
 اختصاصی Reporting را جایگزین نمی‌کند و RPT1 Active باقی می‌ماند.
+
+## ۲۳. Coverage افزوده‌شده در Slice 07 Micro-Step 01
+
+Candidate `d81ecc00762145210e1c688f8f5843f46d62fc04` با tree
+`5f40383ad506d94520c741eb69fcd00086283734` در Run 135 (`35466775368`) موارد زیر را پاس کرد:
+
+- وجود ADR 0031 با تصمیم صریح مالک محصول برای حفظ هر ده خانوادهٔ استاندارد RPT1؛
+- شمارش قراردادی دقیق `RPT1-F01` تا `RPT1-F10` و ثبت F02 تا F10 به‌عنوان
+  `Required / Not Implemented`؛
+- منع Done شدن خانواده بر مبنای Foundation مشترک، placeholder یا Catalog seed؛
+- الزام Micro-Slice، semantic/source contract، permission/classification و Golden مستقل هر خانواده؛
+- تعیین F02 گزارش هفتگی/ماهانه به‌عنوان Micro-Step بعدی بدون قطعی‌کردن زودهنگام Runtime ID؛
+- اثبات عدم تغییر API، Migration، Runtime، feature flag و defaults تولید؛
+- `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator
+  روی `344` فایل C# و audit ثابت `274/204/5`؛
+- هر هشت Job CI و Qualification report با صفر failure.
+
+این coverage فقط تصمیم Scope را qualify می‌کند. F02 تا F10 پیاده نشده‌اند، RPT1 Active است و
+Micro-Step بعدی ابتدا DoR/semantic contract خانواده F02 خواهد بود.

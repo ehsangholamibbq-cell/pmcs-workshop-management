@@ -146,6 +146,14 @@ PDF Golden متصل `8/8` assertion، رندر byte-identical، visual digest و
 MS06 بسته است؛ اختلاف کاتالوگ ده‌گانه و UI Reporting بازند و RPT1 Active می‌ماند. هیچ default
 Production یا Baseline قفل‌شدهٔ V1 تغییر نکرد.
 
+Slice 07 Micro-Step 01 با source commit
+`d81ecc00762145210e1c688f8f5843f46d62fc04` و tree
+`5f40383ad506d94520c741eb69fcd00086283734` تصمیم صریح مالک محصول را در ADR 0031 ثبت کرد: Scope
+هر ده خانواده کاتالوگ RPT1 حفظ می‌شود و F02 تا F10 با Micro-Slice و Qualification مستقل الزامی‌اند.
+Run 135 (`35466775368`) هر هشت Job، `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web
+و پنج browser scenario را پاس کرد. این Decision Record هیچ API، Migration، Runtime یا default
+Production را تغییر نداد؛ F02 تا F10 همچنان Not Implemented و RPT1 Active هستند.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛
