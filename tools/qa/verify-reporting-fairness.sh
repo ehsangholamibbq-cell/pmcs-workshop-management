@@ -104,6 +104,8 @@ start_worker() {
   ReportingCenter__QueueAgeWarningSeconds=5 \
   ReportingCenter__PollSeconds=300 \
   ReportingCenter__PdfLicense=Unconfigured \
+  Observability__OtlpEndpoint="${PMCS_QA_OTLP_ENDPOINT:-}" \
+  OTEL_METRIC_EXPORT_INTERVAL="${PMCS_QA_OTEL_METRIC_EXPORT_INTERVAL:-60000}" \
   ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" \
   ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" \
   ObjectStorage__SecretKey="${PMCS_QA_S3_SECRET_KEY}" \
@@ -239,7 +241,7 @@ execute "
          1
   from reporting.report_runs source
   cross join (values
-      ('${project_a_head_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a1', 40),
+      ('${project_a_head_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a1', 180),
       ('${project_a_second_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a2', 30),
       ('${project_a_third_run_id}'::uuid, '${project_a_id}'::uuid, 'qa-rpt1-fairness-a3', 20),
       ('${project_b_head_run_id}'::uuid, '${project_b_id}'::uuid, 'qa-rpt1-fairness-b1', 10)
@@ -287,8 +289,9 @@ expect_equal \
   "select count(*) from pg_stat_activity where datname = current_database() and application_name in ('qa-rpt1-fairness-worker-a', 'qa-rpt1-fairness-worker-b') and state = 'idle in transaction';"
 
 health_payload="$(curl --silent --fail "http://127.0.0.1:${second_port}/health/ready")"
+forbidden_identifiers="${source_forbidden_identities}|${project_a_id}|${project_b_id}|${project_a_head_run_id}|${project_a_second_run_id}|${project_a_third_run_id}|${project_b_head_run_id}"
 PMCS_REPORTING_HEALTH_PAYLOAD="${health_payload}" \
-PMCS_REPORTING_HEALTH_FORBIDDEN="${source_forbidden_identities}|${project_a_id}|${project_b_id}|${project_a_head_run_id}|${project_a_second_run_id}|${project_a_third_run_id}|${project_b_head_run_id}" \
+PMCS_REPORTING_HEALTH_FORBIDDEN="${forbidden_identifiers}" \
 node <<'NODE'
 const payload = JSON.parse(process.env.PMCS_REPORTING_HEALTH_PAYLOAD);
 const reporting = payload.checks?.["reporting-worker"];
@@ -301,7 +304,7 @@ if (!String(reporting.description).includes("queue age")) {
   throw new Error("Reporting health must identify the queue-age budget without payload detail.");
 }
 if (data?.queuedRuns !== 4 || data?.activeRuns !== 0 ||
-    !(data?.oldestQueueAgeSeconds >= 40) || !(data?.heartbeatAgeSeconds >= 0)) {
+    !(data?.oldestQueueAgeSeconds >= 180) || !(data?.heartbeatAgeSeconds >= 0)) {
   throw new Error(`Unexpected bounded reporting health data: ${JSON.stringify(data)}`);
 }
 const serialized = JSON.stringify(payload);
@@ -314,6 +317,15 @@ for (const key of Object.keys(data ?? {})) {
   }
 }
 NODE
+
+observability_inputs="${PMCS_QA_OTLP_ENDPOINT:-}${PMCS_QA_PROMETHEUS_URL:-}${PMCS_QA_ALERT_RECEIVER_URL:-}"
+if [[ -n "${observability_inputs}" ]]; then
+  : "${PMCS_QA_OTLP_ENDPOINT:?Set all reporting observability qualification endpoints together.}"
+  : "${PMCS_QA_PROMETHEUS_URL:?Set all reporting observability qualification endpoints together.}"
+  : "${PMCS_QA_ALERT_RECEIVER_URL:?Set all reporting observability qualification endpoints together.}"
+  PMCS_REPORTING_OBSERVABILITY_FORBIDDEN="${forbidden_identifiers}" \
+    node tools/qa/verify-reporting-observability.mjs
+fi
 
 crash_process "${worker_a_pid}"
 crash_process "${worker_b_pid}"

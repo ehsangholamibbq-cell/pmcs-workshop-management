@@ -89,6 +89,7 @@
             "tools/qa/verify-files-database.sh",
             "tools/qa/verify-reporting-capacity.sh",
             "tools/qa/verify-reporting-fairness.sh",
+            "tools/qa/verify-reporting-observability.sh",
             "tools/qa/verify-reporting-recovery.sh",
             "tools/qa/verify-reporting-object-security.sh",
             "tools/qa/verify-reporting-security.sh",

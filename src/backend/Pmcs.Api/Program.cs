@@ -39,6 +39,7 @@ var qaRuntime = QualityAssuranceRuntimeOptions.Create(
     releaseIdentity.Version,
     releaseIdentity.BuiltAt);
 ProductionConfigurationValidator.Validate(builder.Environment, builder.Configuration, releaseIdentity);
+OperationalMetricsConfiguration.Configure(builder.Services, builder.Configuration, releaseIdentity);
 
 const string authenticationScheme = "Pmcs";
 const long maximumRequestBodySize = 30L * 1024L * 1024L;

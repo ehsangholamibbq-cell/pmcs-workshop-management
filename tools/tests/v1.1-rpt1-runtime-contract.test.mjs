@@ -23,6 +23,13 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "tools/qa/verify-reporting-object-security.sh",
     "tools/qa/verify-reporting-capacity.sh",
     "tools/qa/verify-reporting-fairness.sh",
+    "tools/qa/verify-reporting-observability.sh",
+    "tools/qa/verify-reporting-observability.mjs",
+    "tools/qa/reporting-alert-receiver.mjs",
+    "deploy/observability/otel-collector.yaml",
+    "deploy/observability/prometheus.yaml",
+    "deploy/observability/reporting-alerts.yaml",
+    "deploy/observability/alertmanager.yaml",
     "tools/qa/verify-reporting-recovery.sh",
     "tools/qa/verify-reporting-security.sh",
     "tools/qa/verify-reporting-worker-revocation.sh",
@@ -202,7 +209,7 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(seed, /verify-reporting-recovery\.sh/u);
   assert.match(seed, /verify-reporting-worker-revocation\.sh/u);
   assert.match(seed, /verify-reporting-capacity\.sh/u);
-  assert.match(seed, /verify-reporting-fairness\.sh/u);
+  assert.match(seed, /verify-reporting-observability\.sh/u);
   assert.match(database, /certified output is a released governed document/u);
   assert.match(database, /certified reporting transactional outbox coverage/u);
   assert.match(database, /queued report cancellation is final and unclaimed/u);
@@ -212,6 +219,65 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(database, /object and metadata tamper attempts are audited/u);
   assert.match(database, /capacity runs isolate poison without delaying healthy work/u);
   assert.match(database, /capacity outputs retain singular document and event ownership/u);
+});
+
+test("RPT1 operational metrics export scrape and alert delivery remain deployment controlled", () => {
+  const composition = read("src/backend/Pmcs.Api/Infrastructure/OperationalMetricsConfiguration.cs");
+  const program = read("src/backend/Pmcs.Api/Program.cs");
+  const apiProject = read("src/backend/Pmcs.Api/Pmcs.Api.csproj");
+  const reportingProject = read(`${moduleRoot}/Pmcs.Modules.Reporting.csproj`);
+  const collector = read("deploy/observability/otel-collector.yaml");
+  const prometheus = read("deploy/observability/prometheus.yaml");
+  const rules = read("deploy/observability/reporting-alerts.yaml");
+  const alertmanager = read("deploy/observability/alertmanager.yaml");
+  const connected = read("tools/qa/verify-reporting-observability.sh");
+  const fairness = read("tools/qa/verify-reporting-fairness.sh");
+  const verifier = read("tools/qa/verify-reporting-observability.mjs");
+  const receiver = read("tools/qa/reporting-alert-receiver.mjs");
+  const seed = read("tools/qa/seed-diagnostics.sh");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.equal(settings.Observability.OtlpEndpoint, "");
+  assert.match(program, /OperationalMetricsConfiguration\.Configure/u);
+  assert.match(composition, /Observability:OtlpEndpoint/u);
+  assert.match(composition, /return null/u);
+  assert.match(composition, /AddMeter\(RequestTelemetryMiddleware\.MeterName, ReportingMeterName\)/u);
+  assert.match(composition, /AddOtlpExporter/u);
+  assert.match(composition, /without credentials, query or fragment/u);
+  assert.match(apiProject, /OpenTelemetry\.Extensions\.Hosting/u);
+  assert.match(apiProject, /OpenTelemetry\.Exporter\.OpenTelemetryProtocol/u);
+  assert.doesNotMatch(reportingProject, /OpenTelemetry/u);
+
+  assert.match(collector, /otlp:[\s\S]*?grpc:[\s\S]*?127\.0\.0\.1:4317/u);
+  assert.match(collector, /prometheus:[\s\S]*?127\.0\.0\.1:9464/u);
+  assert.match(collector, /translation_strategy: UnderscoreEscapingWithSuffixes/u);
+  assert.match(collector, /without_scope_info: true/u);
+  assert.match(prometheus, /job_name: pmcs-reporting/u);
+  assert.match(prometheus, /127\.0\.0\.1:9464/u);
+  assert.match(prometheus, /reporting-alerts\.yaml/u);
+  for (const alert of [
+    "PmcsReportingQueueAgeBudgetExceeded",
+    "PmcsReportingHeartbeatMissingOrStale",
+    "PmcsReportingFailureOrRetryDetected",
+  ]) assert.match(rules, new RegExp(`alert: ${alert}`, "u"));
+  assert.equal((rules.match(/^\s+- alert:/gmu) ?? []).length, 3);
+  assert.doesNotMatch(rules, /tenant_id|project_id|user_id|run_id/u);
+  assert.match(alertmanager, /127\.0\.0\.1:19093\/alerts/u);
+  assert.match(alertmanager, /send_resolved: true/u);
+
+  assert.match(connected, /opentelemetry-collector-contrib:0\.160\.0/u);
+  assert.match(connected, /prom\/prometheus:v3\.14\.0/u);
+  assert.match(connected, /prom\/alertmanager:v0\.34\.1/u);
+  assert.match(connected, /verify-reporting-fairness\.sh/u);
+  assert.match(fairness, /Observability__OtlpEndpoint/u);
+  assert.match(fairness, /verify-reporting-observability\.mjs/u);
+  assert.match(verifier, /pmcs_reporting_worker_queue_oldest_age_seconds/u);
+  assert.match(verifier, /PmcsReportingQueueAgeBudgetExceeded/u);
+  assert.match(verifier, /Forbidden metric label/u);
+  assert.match(verifier, /reporting-observability-delivery-regression/u);
+  assert.match(receiver, /127\.0\.0\.1/u);
+  assert.match(receiver, /maximumBodyBytes/u);
+  assert.match(seed, /verify-reporting-observability\.sh/u);
 });
 
 test("RPT1 worker capacity core is bounded observable and project-fair", () => {

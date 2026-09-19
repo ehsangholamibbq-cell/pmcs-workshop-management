@@ -56,6 +56,50 @@ public sealed class InfrastructureBoundaryTests
     }
 
     [Fact]
+    public void OperationalMetricsExporterIsDisabledWithoutACollectorEndpoint()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+
+        Assert.Null(OperationalMetricsConfiguration.ResolveEndpoint(configuration));
+    }
+
+    [Theory]
+    [InlineData("collector:4317")]
+    [InlineData("ftp://collector.internal/metrics")]
+    [InlineData("https://operator:secret@collector.internal:4317")]
+    [InlineData("https://collector.internal:4317?tenant=one")]
+    [InlineData("https://collector.internal:4317#metrics")]
+    public void OperationalMetricsExporterRejectsAmbiguousOrSecretBearingEndpoints(string endpoint)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [OperationalMetricsConfiguration.EndpointKey] = endpoint
+            })
+            .Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            OperationalMetricsConfiguration.ResolveEndpoint(configuration));
+
+        Assert.Contains(OperationalMetricsConfiguration.EndpointKey, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("http://127.0.0.1:4317")]
+    [InlineData("https://collector.internal:4317")]
+    public void OperationalMetricsExporterAcceptsExplicitCollectorTransport(string endpoint)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [OperationalMetricsConfiguration.EndpointKey] = endpoint
+            })
+            .Build();
+
+        Assert.Equal(new Uri(endpoint), OperationalMetricsConfiguration.ResolveEndpoint(configuration));
+    }
+
+    [Fact]
     public void ProductionConfigurationAcceptsExplicitSecureBoundary()
     {
         ProductionConfigurationValidator.Validate(

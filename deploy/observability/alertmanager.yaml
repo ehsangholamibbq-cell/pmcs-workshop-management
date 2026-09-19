@@ -1,0 +1,13 @@
+route:
+  receiver: pmcs-reporting-webhook
+  group_by: [alertname, component]
+  group_wait: 0s
+  group_interval: 5s
+  repeat_interval: 4h
+
+receivers:
+  - name: pmcs-reporting-webhook
+    webhook_configs:
+      - url: http://127.0.0.1:19093/alerts
+        send_resolved: true
+

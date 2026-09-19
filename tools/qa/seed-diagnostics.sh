@@ -10,6 +10,7 @@ set -euo pipefail
 : "${PMCS_QA_S3_BUCKET:?Set PMCS_QA_S3_BUCKET.}"
 
 command -v curl >/dev/null
+command -v docker >/dev/null
 command -v dotnet >/dev/null
 command -v psql >/dev/null
 
@@ -115,7 +116,7 @@ stop_api
 ./tools/qa/verify-reporting-recovery.sh
 ./tools/qa/verify-reporting-worker-revocation.sh
 ./tools/qa/verify-reporting-capacity.sh
-./tools/qa/verify-reporting-fairness.sh
+./tools/qa/verify-reporting-observability.sh
 
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
