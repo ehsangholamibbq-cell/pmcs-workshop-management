@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.28.0`
-- وضعیت: F04 deterministic Renderer/Golden safe checkpoint؛ Catalog/API/Worker wiring باز
+- نسخه: `1.29.0`
+- وضعیت: F04 connected safe checkpoint؛ F05–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -759,3 +759,39 @@ Qualification artifact `10611741833` با digest
 
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS12-C1` فقط Renderer/Golden را می‌بندد. Catalog/API/Worker
 wiring، UI و Production enablement بازند و همه Suiteهای V1/F01/F02/F03 بدون Regression سبز مانده‌اند.
+
+## ۳۵. اتصال Catalog/API/Worker خانواده F04 — Slice 07 Micro-Step 13
+
+Candidate باید بدون UI یا Production enablement موارد زیر را End-to-End اثبات کند:
+
+- Migration forward شمارهٔ 46 و Definition/Template immutable با identity، digest، Landscape و هر
+  سه Permission خواندنی Planning؛
+- Catalog visibility فقط با تمام Source permissionها و عدم نشت F04 به Actor دارای permission ناقص؛
+- parser دقیق `{}` و رد `baselineId` یا هر property اضافه؛
+- Project profile pin سروری و تطبیق Tenant/Project/Time Zone/revision/configuration/cutoff؛
+- re-evaluation مجوز در request، processing و download/verify؛ idempotent replay بدون bypass؛
+- dispatch Worker فقط به `IProjectProgressReportingSource`، Snapshot builder و Registry نسخه‌دار F04؛
+- `NotConfigured` صریح برای fixture دارای `PlanningMode=None`، بدون درصد یا Curve صفرساخته؛
+- PDF/XLSX immutable با metadata، SHA-256، ETag، security header و verification معتبر؛
+- Audit/Outbox/Idempotency یکتا، دو Output governed و absence واژه‌های Forecast/EVM/Composite/
+  Finance/Commercial در Snapshot؛
+- Database verification و Restore Drill کامل ۴۶ Migration؛
+- حفظ تمام Goldenها و regressionهای F01/F02/F03/F04، defaults خاموش و audit معماری ثابت.
+
+Source `4c48c03aad126a594e5328fc7995a72728ba2274` با tree
+`49f957729fdccb0397dd153b93135ce2eaddd68a` و PR validation merge
+`05ca8ac7e3fa643e111b9c8511e3e08d62be60a5` دارای همان tree، در Run 169 (`35535904655`) هر هشت
+Job را پاس کرد: `419/419` تست C#، `71/71` تست قراردادی Node، `139/139` تست Web، پنج browser
+scenario، هارنس متصل F04 برابر `15/15`، validator روی `382` فایل ماژولی، system audit ثابت
+`274/204/5`، Restore Drill کامل `46` Migration و Qualification برابر `7/7` Suite و `12/12`
+Command با صفر failure.
+
+Qualification artifact `10613446342` با digest
+`sha256:b254f06e6663f243ed2a69042d625e4467f03d0a1570bddddbee53f806eef55b`، Integration artifact
+`10613605950` با digest `sha256:908054eb99778c981befe78e2c960bae7ef46ec2f1df291ca39a8a3e59d4f9d5`
+و UI-E2E artifact `10613036659` با digest
+`sha256:a72471664fb355edfd74a66a2afd17e17a2168826f7c515654385be3df8fbce9` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS13-C1` اتصال End-to-End F04 را می‌بندد. F05 تا F10، UI/UX2
+و Production enablement بازند و همه Suiteها و Goldenهای V1/F01/F02/F03/F04 بدون Regression سبز
+مانده‌اند.

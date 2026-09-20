@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.25.0`
-- وضعیت: `S07-MS12 F04 Renderer/Golden safe checkpoint | Wiring/F05-F10/UI/Production open`
+- نسخه: `1.26.0`
+- وضعیت: `S07-MS13 F04 connected safe checkpoint | F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `bbe34ee57b9c96c0b075444e3b7757aa147b5770`
-- Parent checkpoint tree: `59b35b123fb45e97597f082e85069e040ae99e9c`
-- Candidate source: `6a717f10e4bff167ad7e2643313008f5afcc8264`
-- Candidate source tree: `995c7fae108bbb5265faa036f951036d36e7061e`
-- PR validation merge: `782f42ff73425cf5cad69b0635bacf05790d2ff1`؛ همان tree
-- Renderer evidence: Run 167 (`35532522587`) — `success`
+- Parent checkpoint commit: `09fbcf391ba81af73b7cf1b1cb74726079e3032d`
+- Parent checkpoint tree: `524d518da501c1190f77b3c3c9cf4da1f72be758`
+- Candidate source: `4c48c03aad126a594e5328fc7995a72728ba2274`
+- Candidate source tree: `49f957729fdccb0397dd153b93135ce2eaddd68a`
+- PR validation merge: `05ca8ac7e3fa643e111b9c8511e3e08d62be60a5`؛ همان tree
+- Connected evidence: Run 169 (`35535904655`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -51,7 +51,7 @@ PDF/XLSX قطعی را checkpoint کرده است. Checkpoint جاری Catalog/T
 definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
 qualification متصل را روی همان قراردادها بسته است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.2.1` در
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.3.1` در
 `pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md` گزارش پیشرفت را فقط از Planning
 configuration، Baseline و evidence رسمیِ مؤثر در cutoff می‌سازد. پارامتر Client خالی، انتخاب
 Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S-Curve حداکثر ۳۶۶ نقطه
@@ -59,7 +59,8 @@ Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S
 join پنهان F05 تا F10 مجاز نیست. Runtime Core، identity/schema نسخه‌دار، projection خواندنی
 FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot builder را دارد؛ legacy
 history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری Template/Renderer/Layout identity، render
-model canonical و PDF/XLSX قطعی را بسته است؛ Catalog/API/Worker wiring باز می‌ماند.
+model canonical و PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production
+defaults همچنان جدا و خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -172,9 +173,10 @@ Schema مالک: `reporting`.
 Migration اولیه با order بعد از ۱۱۰۰ Documents و شمارهٔ ۴۲ ثبت شده است. Migration forward شمارهٔ
 ۴۳ قید unique قدیمی `verification_code` را به index غیر unique تبدیل می‌کند. Migration 44 ستون‌های
 نسخه را برای قراردادهای F02 توسعه می‌دهد، `pinned_project_profile` را اضافه و Catalog/Template F02
-را seed می‌کند. Migration forward شمارهٔ 45 نیز فقط Definition/Template قطعی F03 را به همان Catalog
-allowlist اضافه می‌کند. همهٔ Migrationها forward-compatible هستند و هیچ جدول V1/V1.1 موجود را حذف
-یا بازتفسیر نمی‌کنند. Restore drill Candidate باید inventory کامل ۴۵ Migration را نگه دارد.
+را seed می‌کند. Migration forward شمارهٔ 45 فقط Definition/Template قطعی F03 و Migration forward
+شمارهٔ 46 فقط Definition/Template قطعی F04 و سه Permission خواندنی Planning را به همان Catalog
+allowlist اضافه می‌کنند. همهٔ Migrationها forward-compatible هستند و هیچ جدول V1/V1.1 موجود را حذف
+یا بازتفسیر نمی‌کنند. Restore drill Candidate باید inventory کامل ۴۶ Migration را نگه دارد.
 
 ## ۷. Application Contract منبع گزارش روزانه
 
@@ -591,3 +593,19 @@ Node، `139/139` تست Web، پنج browser scenario، validator روی `381` �
 Restore کامل ۴۵ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint
 هیچ Migration، endpoint، Catalog/Template seed، Worker dispatch، DI registration، UI یا Production
 default را تغییر نمی‌دهد؛ گام بعد فقط wiring متصل F04 است.
+
+Slice 07 Micro-Step 13 روی Safe Checkpoint `S07-MS12`، Migration forward شمارهٔ 46،
+Definition/Template ثابت `project-progress-certified/1.0.0`، strict parser برای `{}`، Project profile
+pin و policy چندPermissionی را اضافه می‌کند. Catalog، Run/Retry/Cancel، Download/Verify و
+`IReportingReadService` فقط در صورت داشتن هر سه Permission `planning.progress.read`،
+`planning.baselines.read` و `planning.milestones.read` metadata یا عملیات F04 را ارائه می‌کنند.
+Worker این مجوزها را دوباره ارزیابی، `IProjectProgressReportingSource` را با cutoff پین‌شده مصرف،
+Snapshot را با builder checkpointed تولید و پس از parse/integrity check از Registry PDF/XLSX F04
+رندر می‌کند. fixture فعلی `PlanningMode=None` را صریحاً `NotConfigured` نگه می‌دارد. Source
+`4c48c03aad126a594e5328fc7995a72728ba2274` با tree
+`49f957729fdccb0397dd153b93135ce2eaddd68a` و PR validation merge
+`05ca8ac7e3fa643e111b9c8511e3e08d62be60a5` دارای همان tree، در Run 169 (`35535904655`) هر هشت
+Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F04
+برابر `15/15`، validator روی `382` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و
+Qualification `7/7` Suite و `12/12` Command را پاس کرد. UI، feature flagها، license و Production
+defaults تغییر نکرده‌اند؛ گام بعد فقط DoR/قرارداد معنایی F05 است.

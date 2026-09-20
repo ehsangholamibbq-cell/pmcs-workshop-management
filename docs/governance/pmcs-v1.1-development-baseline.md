@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04 Runtime Core و Renderer/Golden checkpointed و wiring باز؛ F05–F10/UI باز |
-| Database migration | ۴۵ Migration در Safe Resume و Restore Drill متصل سبز است |
+| Product runtime implementation | F01 تا F04 متصل و واجد Safe Checkpoint؛ F05–F10/UI باز |
+| Database migration | ۴۶ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -262,6 +262,20 @@ Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoin
 `PMCS-V1.1-RPT1-S07-MS12-C1` است. هیچ Migration، API، Catalog/Template seed، Worker dispatch، DI
 registration، UI یا default Production تغییر نکرد؛ گام بعد فقط wiring متصل F04 و Safe Resume اکنون
 MS12 است.
+
+Slice 07 Micro-Step 13 قرارداد را به `PMCS-RPT1-F04-SEMANTIC-001 v1.3.1` ارتقا داد و Runtime و
+Rendererهای checkpointed را از مسیر Catalog/API/Worker متصل کرد. Migration forward شمارهٔ 46،
+Definition/Template ثابت، strict `{}`، Project profile pin و هر سه Permission خواندنی Planning را
+ثبت می‌کند. HTTP، سرویس read-only و Worker تمام permissionهای Definition را fail-closed ارزیابی و
+Worker از `IProjectProgressReportingSource`، Snapshot builder و Registry اختصاصی F04 dispatch می‌کند.
+Source `4c48c03aad126a594e5328fc7995a72728ba2274` با tree
+`49f957729fdccb0397dd153b93135ce2eaddd68a` و PR validation merge
+`05ca8ac7e3fa643e111b9c8511e3e08d62be60a5` دارای همان tree، در Run 169 (`35535904655`) هر هشت
+Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج browser scenario، validator روی
+`382` فایل، audit `274/204/5`، هارنس متصل F04 برابر `15/15`، Restore ۴۶ Migration و Qualification
+`7/7` را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS13-C1` است. UI/UX2، Production
+enablement و تمام defaultها تغییر نکرده‌اند؛ Safe Resume اکنون MS13 و گام بعد فقط DoR/قرارداد
+معنایی مستقل F05 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

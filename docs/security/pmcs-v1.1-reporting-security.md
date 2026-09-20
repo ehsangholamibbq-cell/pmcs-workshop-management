@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.13.0`
-- وضعیت: F01/F02/F03 connected؛ F04 Runtime Core و Renderer/Golden checkpointed؛ Wiring/Production disabled
+- نسخه: `1.14.0`
+- وضعیت: F01/F02/F03/F04 connected؛ F05–F10 open؛ UI/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -145,8 +145,15 @@ MS11 همان boundary را در Runtime Core با selector/source/builder fail-
 payload و identity/hash/cutoff را پیش از تولید bytes دوباره validate می‌کند؛ XLSX prefixهای
 `= + - @` را خنثی می‌کند، Formula/Macro ندارد و PDF هیچ HTML/JS یا template code اجرا نمی‌کند.
 text/row/page budget، Actual آینده و truncate خاموش non-transient و fail-closed هستند. Source
-`6a717f10e4bff167ad7e2643313008f5afcc8264` این سیاست را در Run 167 با هر هشت Job checkpoint کرد؛
-Catalog/API/Worker wiring و Production همچنان فعال نشده‌اند.
+`6a717f10e4bff167ad7e2643313008f5afcc8264` این سیاست را در Run 167 با هر هشت Job checkpoint کرد.
+MS13 همان سه re-evaluation را برای تمام Source permissionها متصل می‌کند: Catalog/Create و سرویس
+read-only فقط با هر سه Planning read، Worker با `reporting.run.create` و هر سه read پیش از Snapshot
+و Storage، و Download/Verify با `reporting.output.download` و همان Source permissionها. Actor دارای
+F03 permission ولی فاقد Planning read، Definition و Run F04 را نمی‌بیند و Create او با
+`reporting.source_permission.denied` fail-closed می‌شود. هارنس متصل strict `{}`، replay/conflict،
+`NotConfigured` بدون صفر ساختگی و integrity/verify هر دو فرمت را پوشش می‌دهد. Source
+`4c48c03aad126a594e5328fc7995a72728ba2274` در Run 169 هر هشت Job و `15/15` assertion F04 را
+پاس کرد. UI، feature flagها، license و Production defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

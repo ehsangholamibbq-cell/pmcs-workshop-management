@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش پیشرفت و S-Curve
 
 - شناسه: `PMCS-RPT1-F04-SEMANTIC-001`
-- نسخه: `1.2.1`
+- نسخه: `1.3.1`
 - خانواده: `RPT1-F04`
-- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS11-C1`
-- Runtime change: `Deterministic PDF/XLSX Renderer contract checkpointed in Run 167`
-- Migration / API / Catalog / Worker change: None
+- وضعیت: `Connected Safe Checkpoint | UI/Production Disabled`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS12-C1`
+- Runtime change: `Catalog/API/Worker pipeline checkpointed in Run 169`
+- Migration / API / Catalog / Worker change: `Migration 46 and connected qualification`
 
 ## ۱. هدف و مرز خانواده
 
@@ -55,8 +55,9 @@ Source contractهای `pmcs.planning.project-progress-reporting/v1` و
 `1.0.0` با content digest
 `3f19d880a7790854fcc0d79d4822c5653cb6bb888294eadf8eaeeee8b5857816`، Renderer
 `pmcs.reporting.project-progress.renderer/v1` و Layout
-`pmcs.reporting.project-progress.layout/v1` را تثبیت کرده است. Migration و Catalog seed همچنان
-تخصیص نیافته‌اند.
+`pmcs.reporting.project-progress.layout/v1` را تثبیت کرده است. Checkpoint `S07-MS13` نیز Migration
+forward شمارهٔ 46، Catalog/Template seed، strict API، Project profile pin، policy سه-Permissionی و
+Worker/Renderer dispatch را روی همین identityها متصل کرده است.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -241,7 +242,7 @@ downgrade failure امن است. گزارش محتوای Evidence، comment، ن
 semantic JSON و source manifest با property order ثابت، enum case-sensitive، UTC canonical، DateOnly
 به ISO، decimal invariant و collectionهای مرتب‌شده تولید می‌شوند. دو Run با Project profile pin،
 cutoff و Source یکسان باید semantic/source-manifest hash یکسان داشته باشند؛ query order، DB plan،
-Run ID، attempt، build time و render time نباید hash را تغییر دهند. Worker آینده بعد از ساخت Snapshot
+Run ID، attempt، build time و render time نباید hash را تغییر دهند. Worker متصل بعد از ساخت Snapshot
 آن را برای Retry/Download از Source بازسازی نمی‌کند.
 
 Curve حداکثر ۳۶۶ نقطه و Baseline حداکثر ۵۰۰۰ entry دارد. عبور از budget نسخه‌دار، متن بیش‌ازحد یا
@@ -272,9 +273,10 @@ Source سازگاری Planning فقط وقتی state جاری را projection م
 Approval تغییر نکرده باشد. در غیر این صورت با
 `configuration_history.unavailable`، `baseline_history.unavailable`،
 `milestone_history.unavailable` یا `target_history.unavailable` fail-closed می‌شود. selector خالص و
-نسخه‌دار lifecycle کامل synthetic/آینده را بدون fallback می‌پذیرد؛ Migration تولیدکنندهٔ تاریخچه،
-Catalog/API/Worker wiring و اجرای End-to-End در Sliceهای بعدی باقی می‌مانند. استفاده از status یا
-target جاری، حدس timestamp از Audit یا اعلام تاریخچهٔ قابل بازسازی بدون projection همچنان ممنوع است.
+نسخه‌دار lifecycle کامل synthetic/آینده را بدون fallback می‌پذیرد و Catalog/API/Worker متصل همین
+compatibility producer را بدون ادعای تاریخچهٔ ناموجود مصرف می‌کند. Migration تولیدکنندهٔ تاریخچهٔ
+کامل، در صورت نیاز سناریوهای آینده، یک تغییر دامنه‌ای مستقل خواهد بود. استفاده از status یا target
+جاری، حدس timestamp از Audit یا اعلام تاریخچهٔ قابل بازسازی بدون projection همچنان ممنوع است.
 
 ## ۱۲. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -324,7 +326,7 @@ parse و absence مالی/EVM/forecast/inference را اثبات کند. Golden 
 | Historical projection و Application Contract cutoff-aware | Checkpointed in Run 163؛ legacy gapها fail-closed |
 | selector/calculator/semantic Snapshot builder | Checkpointed in Run 163 |
 | PDF/XLSX/visual/performance | Checkpointed in Run 167 |
-| Catalog/API/Worker wiring | Not Implemented |
+| Catalog/API/Worker wiring | Checkpointed in Run 169 |
 
 Checkpoint `S07-MS11` فقط Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در Planning
 و FieldOperations، selector cutoff-aware، calculator/Snapshot builder و Unit/contract tests را اضافه
@@ -345,13 +347,27 @@ PDF/XLSX قطعی را روی Snapshot بالا اضافه کرده است. Sour
 `782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
 Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
 Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit ثابت `274/204/5`،
-Restore کامل ۴۵ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. Registry
-اختصاصی F04 عمداً به DI/Worker متصل نشده و Catalog/API/Worker wiring، UI و Production enablement
-باید در Sliceهای بعدی باقی بمانند.
+Restore کامل ۴۵ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. در پایان MS12،
+Registry اختصاصی F04 عمداً به DI/Worker متصل نبود و Catalog/API/Worker wiring، UI و Production
+enablement باز بودند.
+
+Checkpoint `S07-MS13` Migration forward شمارهٔ 46 و Definition/Template ثابت F04 را منتشر می‌کند،
+پارامتر API را دقیقاً به `{}` محدود و Project profile/cutoff را server-owned pin می‌کند. Catalog،
+Run و Output metadata و عملیات Create/Retry/Cancel/Download/Verify فقط با هر سه Permission منبع
+قابل دسترسی‌اند؛ `IReportingReadService` و Worker نیز همان policy را fail-closed اعمال می‌کنند.
+Worker فقط `IProjectProgressReportingSource`، Snapshot builder و Renderer Registry نسخه‌دار F04 را
+dispatch می‌کند و payload را پیش از render دوباره validate می‌کند. Source
+`4c48c03aad126a594e5328fc7995a72728ba2274` با tree
+`49f957729fdccb0397dd153b93135ce2eaddd68a` و PR validation merge
+`05ca8ac7e3fa643e111b9c8511e3e08d62be60a5` دارای همان tree، در Run 169 (`35535904655`) هر هشت
+Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج browser scenario، هارنس متصل
+F04 برابر `15/15`، validator روی `382` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و
+Qualification `7/7` Suite و `12/12` Command را پاس کرد. UI و Production enablement باز و defaultها
+خاموش/Unconfigured باقی مانده‌اند.
 
 ## ۱۴. Gate statement
 
-این نسخه Safe Checkpoint Renderer/Golden مستقل است، نه گزارش متصل. هیچ API، Migration، Catalog seed،
-Worker dispatch، DI registration، feature flag یا Production setting در این Micro-Step تغییر نکرده
-است. Micro-Step بعدی فقط Catalog/API/Worker wiring متصل F04 است؛ F04 تا پایان آن کامل نمی‌شود و F05
-تا F10 و RPT1 نیز باز هستند.
+این نسخه Safe Checkpoint متصل F04 است. Catalog/API/Worker و qualification انتهابه‌انتهای این خانواده
+بسته شده‌اند، اما UI/UX2، feature flagها، license و Production setting تغییر نکرده‌اند. Micro-Step
+بعدی فقط DoR و قرارداد معنایی مستقل F05 است؛ F05 تا F10 و RPT1 همچنان باز هستند و Evidence فعلی
+مجوز Production rollout نیست.
