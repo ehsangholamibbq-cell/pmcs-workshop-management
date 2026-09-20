@@ -1,6 +1,9 @@
 using System.Globalization;
 using System.Text;
 using Pmcs.Modules.FieldOperations.Contracts;
+using Pmcs.Modules.ProjectIntelligence.Contracts;
+using Pmcs.Modules.ProjectIntelligence.Domain;
+using Pmcs.Modules.Projects.Contracts;
 using Pmcs.Modules.Reporting.Domain;
 
 namespace Pmcs.Modules.Reporting.Rendering;
@@ -117,6 +120,29 @@ internal static class PersianReportFormatting
         _ => "علت نامشخص"
     };
 
+    public static string ReasonCode(ExecutiveProjectStateReportReasonCode reason) => reason switch
+    {
+        ExecutiveProjectStateReportReasonCode.ProjectStateReportingNotConfigured =>
+            "منبع رسمی وضعیت پروژه برای گزارش‌دهی پیکربندی نشده است",
+        ExecutiveProjectStateReportReasonCode.OfficialSnapshotMissing =>
+            "Snapshot رسمی واجد شرایط وجود ندارد",
+        ExecutiveProjectStateReportReasonCode.OfficialSnapshotNoData =>
+            "Snapshot رسمی فاقد داده قابل ارزیابی است",
+        ExecutiveProjectStateReportReasonCode.OfficialSnapshotInsufficient =>
+            "Snapshot رسمی برای ارزیابی عملیاتی ناکافی است",
+        ExecutiveProjectStateReportReasonCode.CoverageInsufficient =>
+            "پوشش گزارش‌های رسمی ناکافی است",
+        ExecutiveProjectStateReportReasonCode.FreshnessStale =>
+            "داده رسمی در زمان برش کهنه است",
+        ExecutiveProjectStateReportReasonCode.ConfidenceLow =>
+            "اعتمادپذیری داده رسمی پایین است",
+        ExecutiveProjectStateReportReasonCode.ProjectConfigurationRevisionOutdated =>
+            "نسخه پیکربندی پروژه از Snapshot رسمی جدیدتر است",
+        ExecutiveProjectStateReportReasonCode.ApprovedSourceChangedAfterSnapshot =>
+            "منبع رسمی پس از Snapshot تغییر کرده است",
+        _ => "علت نامشخص"
+    };
+
     public static string UnitState(ProjectPeriodicReportUnitState state) => state switch
     {
         ProjectPeriodicReportUnitState.SourceUnit => "واحد منبع",
@@ -131,6 +157,123 @@ internal static class PersianReportFormatting
         DailyReportReportingClassification.Restricted => "محدود",
         _ => "نامشخص"
     };
+
+    public static string Classification(ProjectStateReportingClassification classification) => classification switch
+    {
+        ProjectStateReportingClassification.Internal => "داخلی",
+        ProjectStateReportingClassification.Confidential => "محرمانه",
+        ProjectStateReportingClassification.Restricted => "محدود",
+        _ => "نامشخص"
+    };
+
+    public static string SourceState(ProjectStateReportingSourceState state) => state switch
+    {
+        ProjectStateReportingSourceState.NotConfigured => "پیکربندی نشده",
+        ProjectStateReportingSourceState.Configured => "پیکربندی شده",
+        _ => "نامشخص"
+    };
+
+    public static string AssessmentScope(ProjectAssessmentScope scope) => scope switch
+    {
+        ProjectAssessmentScope.ApprovedDailyOperations => "عملیات روزانه رسمی تأییدشده",
+        _ => "نامشخص"
+    };
+
+    public static string OperationalStatus(ProjectOperationalStatus status) => status switch
+    {
+        ProjectOperationalStatus.NoData => "بدون داده",
+        ProjectOperationalStatus.InsufficientData => "داده ناکافی",
+        ProjectOperationalStatus.Stable => "پایدار در محدوده عملیات روزانه رسمی",
+        ProjectOperationalStatus.Watch => "نیازمند پایش",
+        ProjectOperationalStatus.AtRisk => "در معرض ریسک عملیاتی",
+        ProjectOperationalStatus.Critical => "بحرانی عملیاتی",
+        _ => "نامشخص"
+    };
+
+    public static string CoverageStatus(DataCoverageStatus status) => status switch
+    {
+        DataCoverageStatus.NoData => "بدون داده",
+        DataCoverageStatus.Insufficient => "ناکافی",
+        DataCoverageStatus.Sufficient => "کافی",
+        _ => "نامشخص"
+    };
+
+    public static string FreshnessStatus(DataFreshnessStatus status) => status switch
+    {
+        DataFreshnessStatus.NoData => "بدون داده",
+        DataFreshnessStatus.Current => "به‌روز",
+        DataFreshnessStatus.Aging => "در حال کهنه‌شدن",
+        DataFreshnessStatus.Stale => "کهنه",
+        _ => "نامشخص"
+    };
+
+    public static string ConfidenceStatus(DataConfidenceStatus status) => status switch
+    {
+        DataConfidenceStatus.NoData => "بدون داده",
+        DataConfidenceStatus.Low => "پایین",
+        DataConfidenceStatus.Adequate => "کافی",
+        _ => "نامشخص"
+    };
+
+    public static string CoverageBasis(ProjectCoverageBasis basis) => basis switch
+    {
+        ProjectCoverageBasis.SevenCalendarDays => "هفت روز تقویمی",
+        ProjectCoverageBasis.FallbackSevenCalendarDays => "جایگزین هفت روز تقویمی",
+        ProjectCoverageBasis.ConfiguredWorkingDays => "روزهای کاری پیکربندی‌شده",
+        _ => "نامشخص"
+    };
+
+    public static string AttentionKind(ProjectAttentionKind kind) => kind switch
+    {
+        ProjectAttentionKind.Issue => "مسئله",
+        ProjectAttentionKind.Stoppage => "توقف",
+        _ => "نامشخص"
+    };
+
+    public static string ObservedImpact(ProjectObservedImpact? impact) => impact switch
+    {
+        ProjectObservedImpact.Low => "کم",
+        ProjectObservedImpact.Medium => "متوسط",
+        ProjectObservedImpact.High => "زیاد",
+        ProjectObservedImpact.Critical => "بحرانی",
+        _ => "ارزیابی نشده"
+    };
+
+    public static string AttentionPriority(ProjectAttentionPriority priority) => priority switch
+    {
+        ProjectAttentionPriority.Unassessed => "ارزیابی نشده",
+        ProjectAttentionPriority.Low => "کم",
+        ProjectAttentionPriority.Medium => "متوسط",
+        ProjectAttentionPriority.High => "زیاد",
+        ProjectAttentionPriority.Critical => "بحرانی",
+        _ => "نامشخص"
+    };
+
+    public static string AttentionAgeBand(ProjectAttentionAgeBand ageBand) => ageBand switch
+    {
+        ProjectAttentionAgeBand.New => "جدید",
+        ProjectAttentionAgeBand.Aging => "در حال ماندگاری",
+        ProjectAttentionAgeBand.Overdue => "معوق",
+        _ => "نامشخص"
+    };
+
+    public static string AttentionStatus(ProjectAttentionStatus status) => status switch
+    {
+        ProjectAttentionStatus.NeedsTriage => "نیازمند بررسی",
+        _ => "نامشخص"
+    };
+
+    public static string FeatureState(ProjectFeatureState state) => state switch
+    {
+        ProjectFeatureState.NotConfigured => "پیکربندی نشده",
+        ProjectFeatureState.NotEnabled => "فعال نشده",
+        ProjectFeatureState.SetupRequired => "نیازمند راه‌اندازی",
+        ProjectFeatureState.Active => "فعال",
+        ProjectFeatureState.Suspended => "تعلیق‌شده",
+        _ => "نامشخص"
+    };
+
+    public static string YesNoUnknown(bool? value) => value.HasValue ? YesNo(value.Value) : "—";
 
     public static string YesNo(bool value) => value ? "بله" : "خیر";
 

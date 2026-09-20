@@ -13,6 +13,13 @@ public static class ExecutiveProjectStateReportRuntimeContract
         "pmcs.reporting.executive-project-state.parameters/v1";
     public const string SnapshotSchemaVersion =
         "pmcs.reporting.executive-project-state.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "4bf4f1f5de92eda854ab16702fc87aaebae951eea17ef023569cc338a5ce7d7a";
+    public const string RendererContractVersion =
+        "pmcs.reporting.executive-project-state.renderer/v1";
+    public const string LayoutContractVersion =
+        "pmcs.reporting.executive-project-state.layout/v1";
     public const string PinnedProjectProfileSchemaVersion =
         "pmcs.reporting.executive-project-state.project-profile/v1";
 }
