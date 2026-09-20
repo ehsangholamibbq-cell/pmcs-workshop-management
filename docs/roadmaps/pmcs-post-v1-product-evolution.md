@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.38.0`
+- نسخه سند: `1.39.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -449,15 +449,18 @@ Coverage/Freshness/Confidence، partial scope، Attention و trend بدون Comp
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS08-C1` است و هیچ Catalog/API/Worker wiring، Migration، DI
 registration، UI یا Production enablement وارد این Micro-Step نشده است.
 
-**F03 Catalog/API/Worker — Slice 07 Micro-Step 09 Connected Candidate:** روی Safe Checkpoint
+**F03 Catalog/API/Worker — Slice 07 Micro-Step 09 Connected Safe Checkpoint:** روی Safe Checkpoint
 `PMCS-V1.1-RPT1-S07-MS08-C1`، Migration forward شمارهٔ 45، Definition/Template قطعی F03، parser
 سخت‌گیرانهٔ `{}`، Project profile pin و permission policy مستقل هر Definition اضافه شده است. Worker
 فقط از `IProjectStateReportingSource` و Runtime/Rendererهای checkpointed استفاده می‌کند و
 permission را پیش از Snapshot و Storage دوباره می‌سنجد؛ HTTP و سرویس read-only ابزارها نیز metadata
 را per-definition فیلتر می‌کنند. TestHarness با Finance Manager دارای
 `project-state.read` و فاقد `field.daily-reports.read`، جداسازی Catalog/Run و تولید/verify هر دو
-خروجی را کنترل می‌کند. این تغییر هنوز Candidate و در انتظار Full CI همان source commit است؛ Safe
-Resume همان `S07-MS08` و UI/Production defaults خاموش‌اند. پس از Qualification، گام بعد F04 است.
+خروجی را کنترل می‌کند. Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
+`ae06285bf1a68fe2592dacc76c7d31cb291ab924` در Run 156 هر هشت Job، `387/387` تست C#، `66/66`
+تست Node، `139/139` تست Web، پنج browser scenario، هارنس `14/14`، Restore ۴۵ Migration و
+Qualification `7/7` را پاس کرد. Safe Resume اکنون `S07-MS09` و UI/Production defaults خاموش‌اند؛
+گام بعد فقط F04 است.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -739,3 +742,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.36.0` | ثبت Candidate محدود `S07-MS08` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F03؛ wiring و Full CI باز است |
 | `1.37.0` | ثبت Safe Checkpoint `S07-MS08` و Evidence سبز Run 154 برای Renderer/Golden خانواده F03؛ Catalog/API/Worker wiring باز است |
 | `1.38.0` | ثبت Connected Candidate `S07-MS09` برای Migration/Catalog، strict API، permissionهای definition-aware، Worker dispatch و QA متصل F03؛ Full CI و Safe Checkpoint باز است |
+| `1.39.0` | ثبت Safe Checkpoint `S07-MS09` و Evidence سبز Run 156 برای اتصال End-to-End خانواده F03؛ F04 تا F10/UI/Production باز است |

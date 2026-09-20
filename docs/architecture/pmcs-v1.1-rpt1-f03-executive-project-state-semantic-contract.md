@@ -3,10 +3,10 @@
 - شناسه: `PMCS-RPT1-F03-SEMANTIC-001`
 - نسخه: `1.3.1`
 - خانواده: `RPT1-F03`
-- وضعیت: `Connected Candidate | Safe Resume S07-MS08 | Full CI pending`
+- وضعیت: `Connected Safe Checkpoint | UI/Production Disabled`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS08-C1`
-- Runtime change: `Catalog/API/Worker wiring implemented on checkpointed Runtime + Renderer`
-- Migration / API / Catalog / Worker change: `Candidate; Production defaults unchanged`
+- Runtime change: `Catalog/API/Worker wiring checkpointed in Run 156 on the versioned Runtime + Renderer`
+- Migration / API / Catalog / Worker change: `Connected and qualified; Production defaults unchanged`
 
 ## ۱. هدف و مرز خانواده
 
@@ -51,7 +51,7 @@ Runtime identity داخلی `executive-project-state-certified/1.0.0`، paramete
 تخصیص یافته‌اند. Checkpoint `S07-MS08` نیز Template `1.0.0` با content digest
 `4bf4f1f5de92eda854ab16702fc87aaebae951eea17ef023569cc338a5ce7d7a`، قرارداد Renderer
 `pmcs.reporting.executive-project-state.renderer/v1` و Layout
-`pmcs.reporting.executive-project-state.layout/v1` را pin کرده است. Candidate متصل جاری همان identityها
+`pmcs.reporting.executive-project-state.layout/v1` را pin کرده است. Checkpoint متصل جاری همان identityها
 را با Catalog/Template seed و pipeline مشترک منتشر می‌کند و هیچ contract یا digest قبلی را بازنویسی
 نمی‌کند.
 
@@ -258,7 +258,7 @@ parse و عدم join مالی/تجاری/Action را اثبات کند. Golden P
 | Template/Renderer/Layout identity | Checkpointed in Run 154 |
 | Source contract/selector/Snapshot builder | Checkpointed in Run 148 |
 | PDF/XLSX/visual/performance | Checkpointed in Run 154 |
-| Catalog/API/Worker wiring | Connected Candidate؛ Full CI pending |
+| Catalog/API/Worker wiring | Checkpointed in Run 156 |
 
 Checkpoint `S07-MS08` روی Runtime Core نسخه‌دار، parser/request/model fail-closed، PDF فارسی A4 با
 وضعیت‌های مستقل و هشدار scope، و XLSX هشت‌Sheet با RTL/freeze، text escaping و صفر Formula را اضافه
@@ -268,19 +268,21 @@ Checkpoint `S07-MS08` روی Runtime Core نسخه‌دار، parser/request/mod
 تست C#، `65/65` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس
 کرد.
 
-Candidate جاری Migration forward شمارهٔ 45 را برای Definition/Template قطعی F03 اضافه می‌کند،
+Checkpoint `S07-MS09` Migration forward شمارهٔ 45 را برای Definition/Template قطعی F03 اضافه می‌کند،
 strict empty-object parser را روی همان endpoint مشترک اعمال می‌کند و gateهای Catalog/Run/Retry/Cancel/
 Download/Verify و Worker را definition-aware می‌سازد. Worker فقط از `IProjectStateReportingSource`
 برای selection cutoff-aware استفاده می‌کند، Project profile سروری را هنگام پذیرش pin می‌کند و
 Renderer Registry اختصاصی F03 را dispatch می‌کند. هارنس متصل با Actor دارای `project-state.read` ولی
 فاقد `field.daily-reports.read`، isolation کاتالوگ، ایجاد/Replay/Conflict، Run visibility و هر دو خروجی
-PDF/XLSX را کنترل می‌کند. تا سبزشدن Full CI، Safe Resume همان `S07-MS08` است؛ UI و Production
-enablement همچنان جدا و خاموش‌اند.
+PDF/XLSX را کنترل می‌کند. Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
+`ae06285bf1a68fe2592dacc76c7d31cb291ab924` در Run 156 (`35515989200`) هر هشت Job، `387/387`
+تست C#، `66/66` تست Node، `139/139` تست Web، پنج browser scenario، هارنس `14/14` و Restore کامل
+۴۵ Migration را پاس کرد. Safe Resume اکنون `S07-MS09` است؛ UI و Production enablement همچنان
+جدا و خاموش‌اند.
 
 ## ۱۲. Gate statement
 
-این نسخه Candidate اتصال End-to-End خانواده F03 است، نه Safe Checkpoint نهایی آن. Migration،
-Catalog/Template seed، strict API، Project profile pin، permissionهای definition-aware، Worker dispatch،
-DI registration و qualification متصل اضافه شده‌اند؛ feature flag، license، UI و Production setting
-تغییر نکرده‌اند. تنها پس از Full CI سبز، `S07-MS09` می‌تواند Safe Checkpoint شود؛ F04 تا F10 و RPT1
-همچنان باز هستند.
+این نسخه Safe Checkpoint اتصال End-to-End خانواده F03 است. Migration، Catalog/Template seed، strict
+API، Project profile pin، permissionهای definition-aware، Worker dispatch، DI registration و
+qualification متصل بسته شده‌اند؛ feature flag، license، UI و Production setting تغییر نکرده‌اند.
+Micro-Slice بعدی فقط قرارداد معنایی/DoR مستقل F04 است؛ F04 تا F10 و RPT1 همچنان باز هستند.

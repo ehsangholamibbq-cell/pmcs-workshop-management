@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Connected Candidate روی Safe Resume MS08 و در انتظار Full CI؛ F04–F10/UI باز |
-| Database migration | ۴۴ Migration در Safe Resume؛ Migration 45 در Candidate و در انتظار Restore Drill متصل است |
+| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04–F10/UI باز |
+| Database migration | ۴۵ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -217,12 +217,16 @@ Slice 07 Micro-Step 08 فقط Renderer contract مستقل، render model canoni
 Catalog/Template seed، Worker dispatch، DI registration، UI یا default Production تغییر نکرد؛ F03
 هنوز End-to-End Done نیست و RPT1 فعال است.
 
-Slice 07 Micro-Step 09 Candidate از Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` شروع شده و فقط
+Slice 07 Micro-Step 09 از Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` شروع شده و فقط
 Migration forward شمارهٔ 45، Definition/Template seed ثابت F03، پارامتر دقیقاً خالی `{}`، pin پروفایل
 پروژه، مجوز منبع `project-state.read` به‌صورت definition-aware، Worker snapshot/renderer dispatch و
 هارنس متصل PDF/XLSX را اضافه می‌کند. این تغییر هیچ UI یا Production enablement ندارد و defaultهای
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` و `PdfLicense=Unconfigured` را تغییر نمی‌دهد.
-تا پیش از Full CI سبز، این کار فقط Connected Candidate است و Safe Resume همان MS08 باقی می‌ماند.
+Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
+`ae06285bf1a68fe2592dacc76c7d31cb291ab924` در Run 156 (`35515989200`) هر هشت Job، `387/387`
+تست C#، `66/66` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F03 برابر `14/14`،
+Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
+`PMCS-V1.1-RPT1-S07-MS09-C1` است؛ گام بعد فقط F04 و Safe Resume اکنون MS09 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

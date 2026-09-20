@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.22.0`
-- وضعیت: F03 Connected Candidate روی Safe Resume S07-MS08؛ Full CI pending؛ F04-F10/UI/Production باز
+- نسخه: `1.23.0`
+- وضعیت: F03 Connected Safe Checkpoint در Run 156؛ F04-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -605,9 +605,9 @@ Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` فقط Renderer/Golden را می‌
 wiring، UI و Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F02 بدون Regression
 باقی مانده‌اند.
 
-## ۳۱. Catalog/API/Worker wiring متصل خانواده F03 — Slice 07 Micro-Step 09 Candidate
+## ۳۱. Catalog/API/Worker wiring متصل خانواده F03 — Slice 07 Micro-Step 09 Safe Checkpoint
 
-Candidate باید بدون endpoint جدید و بدون فعال‌سازی Production این Gateها را پاس کند:
+Qualification متصل باید بدون endpoint جدید و بدون فعال‌سازی Production این Gateها را پاس کند:
 
 - Migration forward شمارهٔ 45، Definition/Template قطعی، digest و permission برابر
   `project-state.read`؛
@@ -629,8 +629,18 @@ Candidate باید بدون endpoint جدید و بدون فعال‌سازی Pr
 - عدم تغییر `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` و PDF license `Unconfigured`؛
 - عدم Regression Goldenهای F01/F02/F03، security/recovery/capacity/observability و UI/E2E.
 
-هارنس متصل F03 دارای `14/14` assertion است. انتظار Candidate برای Source CI برابر `387` تست C#،
-`66` تست قراردادی Node، `139` تست Web، پنج browser scenario، validator روی `367` فایل ماژولی،
-system audit ثابت `274/204/5`، Restore Drill کامل `45` Migration و Qualification `7/7` است. این
-اعداد تا مشاهدهٔ artifactهای همان source commit Evidence محسوب نمی‌شوند و Safe Resume همچنان
-`PMCS-V1.1-RPT1-S07-MS08-C1` است.
+Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
+`ae06285bf1a68fe2592dacc76c7d31cb291ab924` و PR validation merge
+`4944731391c2b649cd401fc9095619cb19d41f72` دارای همان tree، در Run 156 (`35515989200`) هر هشت Job
+را پاس کرد: `387/387` تست C#، `66/66` تست قراردادی Node، `139/139` تست Web، پنج browser scenario،
+validator روی `367` فایل ماژولی، system audit ثابت `274/204/5`، هارنس متصل F03 برابر `14/14`،
+Restore Drill کامل `45` Migration و Qualification برابر `7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10606892723` با digest
+`sha256:6d0eb7ee8a5bb9254946f8e04f1577920cdba9d51ca74f8dd8885aa8e632df6b`، Integration artifact
+`10606788092` با digest `sha256:faf08b54b3dba1697c99cbc48a4246cb0a73b5922086a451b15c31fe184fc188`
+و UI-E2E artifact `10606882688` با digest
+`sha256:ecbfd966d7fa016b572bed3a329a4f266c3fb0d54a5ac2fbea212cc85864ed0f` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1` اتصال End-to-End F03 را می‌بندد. F04 تا F10، UI و
+Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F02/F03 بدون Regression باقی مانده‌اند.

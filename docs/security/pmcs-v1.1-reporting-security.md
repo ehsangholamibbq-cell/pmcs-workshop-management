@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.10.0`
-- وضعیت: F01/F02 connected؛ F03 Connected Candidate روی Safe Resume S07-MS08؛ Full CI pending؛ Production disabled
+- نسخه: `1.11.0`
+- وضعیت: F01/F02/F03 connected safe checkpoints؛ Safe Resume S07-MS09؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -108,7 +108,7 @@ XLSX فقط cellهای text/number کنترل‌شده دارد، prefixهای `
 نمی‌سازد. PDF هیچ HTML/JS یا template code اجرا نمی‌کند و فقط از QuestPDF/font/image contract
 پین‌شده استفاده می‌کند. Attention یا trend silently truncate نمی‌شوند؛ متن/row/page budget
 non-transient و fail-closed است. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` این سیاست را در
-Run 154 با هر هشت Job، Runtime/Renderer پایه را checkpoint کرد. Candidate متصل اکنون Source
+Run 154 با هر هشت Job، Runtime/Renderer پایه را checkpoint کرد. Checkpoint متصل اکنون Source
 permission را از allowlist ثابت هر Definition resolve می‌کند: F03 فقط `project-state.read` و F01/F02
 فقط `field.daily-reports.read`. Catalog و فهرست Runها Definitionهای غیرمجاز را حذف می‌کنند؛
 Get/Retry/Cancel/Download/Verify برای Run موجود permission جاری همان Source را دوباره بررسی می‌کنند و
@@ -117,7 +117,9 @@ Get/Retry/Cancel/Download/Verify برای Run موجود permission جاری ه�
 Worker هنگام ساخت Snapshot و دوباره
 پیش از Storage، `reporting.run.create + project-state.read` را ارزیابی می‌کند. هارنس با Finance Manager
 دارای Project State و فاقد Daily Report permission، عدم نشت F01/F02 و اجرای کامل F03 را می‌سنجد.
-این اتصال تا Full CI یک Candidate است و feature flag، license و Production defaults خاموش می‌مانند.
+Source `40afeb37d7bf90e97a988cae141901e28d336516` در Run 156 هر هشت Job و `14/14` assertion امنیتی/
+یکپارچگی F03 را پاس کرد. این اتصال Safe Checkpoint است و feature flag، license و Production defaults
+خاموش می‌مانند.
 
 ## ۴. Threat model
 
