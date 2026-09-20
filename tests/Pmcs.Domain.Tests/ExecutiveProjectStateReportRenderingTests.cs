@@ -240,7 +240,7 @@ public sealed class ExecutiveProjectStateReportRenderingTests
             ProjectAttentionPriority.Unassessed,
             null,
             2,
-            new string('الف', ExecutiveProjectStateReportRenderingContract.MaximumAttentionDescriptionLength + 1));
+            new string('ا', ExecutiveProjectStateReportRenderingContract.MaximumAttentionDescriptionLength + 1));
         var snapshot = Snapshot(30, attentionItems: [oversized]);
         var report = Build(Select([snapshot]));
 
