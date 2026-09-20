@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 متصل و PDF/XLSX qualify؛ F02 Runtime Core و Renderer/Golden checkpointed بدون wiring؛ F03–F10/UI باز |
-| Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 130 پاس شده است |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03–F10/UI باز |
+| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 144 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -181,10 +181,13 @@ bounded پوشش داده شده‌اند. Source commit `4f68f57de2c2a79b654a19
 Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. Rendererها در DI/Worker ثبت نشده‌اند و API،
 Migration، Catalog seed، UI و default Production تغییر نکرده‌اند؛ F02/RPT1 Done محسوب نمی‌شوند.
 
-Slice 07 Micro-Step 05 به‌صورت Source Candidate محدود روی همین Checkpoint، Migration 44،
-Catalog/Template seed قطعی F02، strict API، Project profile pin، Worker dispatch و QA متصل PDF/XLSX
-را اضافه می‌کند. این Candidate تا عبور Full CI Safe Checkpoint نیست؛ UI و defaultهای Production
-تغییر نکرده‌اند و F03 تا F10 همچنان باز هستند.
+Slice 07 Micro-Step 05 روی همین Checkpoint، Migration 44، Catalog/Template seed قطعی F02، strict
+API، Project profile pin، Worker dispatch و QA متصل PDF/XLSX را اضافه کرد. Source
+`7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job، `355/355`
+تست C#، `61/61` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F02 برابر `13/13` و
+Restore کامل ۴۴ Migration را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است؛ UI و
+defaultهای Production تغییر نکرده‌اند و F03 تا F10 همچنان باز هستند.
 
 ## ۳. قرارداد شاخه و ادغام
 

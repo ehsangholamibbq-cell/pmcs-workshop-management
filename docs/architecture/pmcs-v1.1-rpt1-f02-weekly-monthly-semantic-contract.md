@@ -1,9 +1,9 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.3.0`
+- نسخه: `1.3.1`
 - خانواده: `RPT1-F02`
-- وضعیت: `Catalog/API/Worker Source Candidate | Full CI Pending | UI/Production Disabled`
+- وضعیت: `Connected Safe Checkpoint | UI/Production Disabled`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS04-C1`
 - Runtime change: certified Catalog/Template seed + strict API dispatch + pinned Project profile + Worker dispatch
 - UI / Production enablement change: None
@@ -227,7 +227,7 @@ formula-free و با ZIP timestamp/order ثابت است. XLSX hash برابر
 ۹۶ DPI نیز `058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396` و
 `d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` هستند.
 
-Micro-Step 05 این اجزا را بدون route یا feature flag تازه به runtime موجود متصل می‌کند:
+Micro-Step 05 این اجزا را بدون route یا feature flag تازه به runtime موجود متصل کرد:
 
 - Migration forward شمارهٔ 44 طول contract versionها را به ۸۰ افزایش می‌دهد، Definition/Template
   قطعی F02 را seed و ستون JSONB برای Project profile pin‌شده اضافه می‌کند؛
@@ -243,6 +243,11 @@ Micro-Step 05 این اجزا را بدون route یا feature flag تازه ب�
 این wiring تنظیمات production را فعال نمی‌کند: `Phase1Enabled`، `OutputAccessEnabled` و
 `WorkerEnabled` در `appsettings.json` همچنان `false` هستند. UI نیز تغییری نکرده است.
 
+Source نهایی `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job، هارنس متصل
+`13/13`، Restore کامل ۴۴ Migration و Qualification برابر `7/7` را پاس کرد. این نتیجه Safe
+Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` را ثبت می‌کند.
+
 ## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
 | Gate | وضعیت |
@@ -255,16 +260,16 @@ Micro-Step 05 این اجزا را بدون route یا feature flag تازه ب�
 | Golden matrix | بسته |
 | Runtime Definition/parameter/snapshot IDs | Checkpointed in S07-MS03 |
 | Period source contract/resolver/Snapshot builder | Checkpointed in S07-MS03 |
-| Unit/contract tests | Golden checkpoint در Run 141؛ regression کامل Candidate در انتظار CI |
-| Catalog/Template seed و Worker/API wiring | Source Candidate در S07-MS05؛ QA متصل اضافه شد |
+| Unit/contract tests | `355/355` تست C# و `61/61` تست Node در Run 144؛ هارنس متصل `13/13` |
+| Catalog/Template seed و Worker/API wiring | Checkpointed in S07-MS05؛ Run 144 سبز |
 | PDF/XLSX/visual/performance | Checkpointed in S07-MS04؛ deterministic Golden پاس |
 
-گام بعدی فقط Full CI و ثبت Safe Checkpoint همین Candidate است. UI و فعال‌سازی Production باید در
-Sliceهای مستقل بعدی باقی بمانند.
+گام بعدی فقط DoR و قرارداد معنایی `RPT1-F03 — Executive Project State` در یک Micro-Slice مستقل
+است؛ هیچ Runtime پیش از checkpoint قرارداد شروع نمی‌شود. UI و فعال‌سازی Production باید در Sliceهای
+مستقل بعدی باقی بمانند.
 
 ## ۱۱. Gate statement
 
-این نسخه F02 را به `Catalog/API/Worker Source Candidate` می‌رساند، نه Production rollout یا پایان
-RPT1. Migration، Catalog/Template، API و Worker dispatch تغییر کرده‌اند و QA متصل اضافه شده است؛
-اما UI و Production defaults دست‌نخورده‌اند و Full CI هنوز باید قبل از Safe Checkpoint پاس شود.
-F03 تا F10 و RPT1 نیز باز هستند.
+این نسخه F02 را به `Connected Safe Checkpoint` می‌رساند، نه Production rollout یا پایان RPT1.
+Migration، Catalog/Template، API و Worker dispatch با QA متصل در Run 144 تأیید شده‌اند؛ UI و
+Production defaults دست‌نخورده‌اند و F03 تا F10 و RPT1 باز هستند.

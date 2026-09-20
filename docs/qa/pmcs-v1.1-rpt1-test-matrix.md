@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.15.0`
-- وضعیت: F02 Catalog/API/Worker source candidate؛ Full CI و Safe Checkpoint باز
+- نسخه: `1.16.0`
+- وضعیت: F02 Connected Safe Checkpoint؛ Run 144 passed؛ F03-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -485,7 +485,7 @@ Renderer/Golden را می‌بندد، نه wiring یا Qualification انتها
 
 ## ۲۷. Catalog/API/Worker wiring متصل خانواده F02 — Slice 07 Micro-Step 05
 
-Candidate جاری پوشش‌های زیر را به pipeline متصل اضافه می‌کند:
+Checkpoint جاری پوشش‌های زیر را در pipeline متصل تثبیت می‌کند:
 
 - Migration 44 برای Definition/Template قطعی، contract-versionهای ۸۰کاراکتری و Project profile
   pin‌شدهٔ JSONB؛
@@ -497,5 +497,17 @@ Candidate جاری پوشش‌های زیر را به pipeline متصل اضاف
 - assertion مستقل PostgreSQL برای migration/catalog/template، pinned profile، Snapshot
   `NotConfigured`، دو Output، Audit/Outbox/Idempotency و governed Documents.
 
-این Candidate هنوز ادعای Full CI یا Safe Checkpoint ندارد. UI تغییر نکرده و
-`Phase1Enabled/OutputAccessEnabled/WorkerEnabled` در production defaults همچنان `false` هستند.
+Run 143 (`35498734639`) مسیر Runtime و هارنس متصل F02 را با `13/13` assertion پاس کرد و فقط query
+شواهد shell به‌دلیل تقدم عملگر `->>` پس از `||` شکست خورد. commit نهایی دو expression JSON را
+پرانتزبندی کرد و هیچ رفتار Runtime را تغییر نداد.
+
+Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد:
+`355/355` تست C#، `61/61` تست Node، `139/139` تست Web، پنج browser scenario، validator روی ۳۵۵
+فایل ماژولی، system contract audit برابر `274/204/5`، هارنس F02 برابر `13/13`، Restore کامل ۴۴
+Migration و Qualification برابر `7/7`. artifactهای Qualification، Integration و UI-E2E به‌ترتیب
+`10601457941`، `10601880116` و `10601678972` با digestهای ثبت‌شده در Checkpoint هستند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` اتصال F02 را می‌بندد. UI تغییر نکرده و
+`Phase1Enabled/OutputAccessEnabled/WorkerEnabled` در production defaults همچنان `false` هستند؛
+F03 تا F10 و RPT1 باز می‌مانند.

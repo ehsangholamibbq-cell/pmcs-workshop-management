@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.10.0`
+- نسخه: `1.11.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -23,10 +23,10 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `4f68f57de2c2a79b654a19128894d9c89878ab65`؛ tree `f4b592c72ea65974c00b936ca59c0428eb47f981` |
-| Current evidence-bearing source checkpoint | `4f68f57de2c2a79b654a19128894d9c89878ab65`؛ Run 141 سبز |
-| Source lineage | Source S07-MS04 فرزند مستقیم Checkpoint `d8fd4398309b08d1cdc90c4581dc476636` است؛ هیچ rebase یا baseline reset انجام نشد |
-| Migration count | `43`؛ Restore Drill متصل پاس شده است |
+| آخرین Source Candidate واجد Evidence | `7fc55c167ad2159a31c895b32a52d78f47574df9`؛ tree `d665fe4cdf29369f96ec0875bc6f1535db349d55` |
+| Current evidence-bearing source checkpoint | `7fc55c167ad2159a31c895b32a52d78f47574df9`؛ Run 144 سبز |
+| Source lineage | Source S07-MS05 زنجیرهٔ مستقیم دو commit از Checkpoint `1f1fc2b31840de64c70236b97d44f27fdad247d2` است؛ هیچ rebase یا baseline reset انجام نشد |
+| Migration count | `44`؛ Restore Drill متصل پاس شده است |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
 نیست. Baseline قفل‌شده V1 نیز باز نشده است.
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.30.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.31.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,8 +48,8 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.29.0` | Superseded؛ `v1.30.0` مرجع جاری است |
-| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS04` را اثبات می‌کند |
+| Roadmap Post-V1 | نسخه‌های تا `v1.30.0` | Superseded؛ `v1.31.0` مرجع جاری است |
+| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS05` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
@@ -85,31 +85,34 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - Renderer/Golden محدود F02: source `4f68f57de2c2a79b654a19128894d9c89878ab65`، tree
   `f4b592c72ea65974c00b936ca59c0428eb47f981` و Run 141 با هر هشت Job سبز؛ PDF/XLSX deterministic،
   Golden هفتگی، Monthly boundary و حالت‌های NoData/NotConfigured پاس شدند.
+- Catalog/API/Worker متصل F02: source `7fc55c167ad2159a31c895b32a52d78f47574df9`، tree
+  `d665fe4cdf29369f96ec0875bc6f1535db349d55` و Run 144 با هر هشت Job سبز؛ هارنس متصل `13/13`،
+  Restore کامل ۴۴ Migration و Qualification برابر `7/7` پاس شدند.
 - Run 130: هر ۸ Job سبز، `329/329` تست C#، `51/51` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario، `13/13` Golden assertion و Restore کامل ۴۳ Migration.
-- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-07-ms04-candidate.md`.
+- Evidence checkpoint معتبر: `docs/checkpoints/v1.1-rpt1-slice-07-ms05-candidate.md`.
 - Anchor انتقال Run 132 (`35459192122`) روی commit `345d9d6fc2e661144a74e3001150c28d73a212c7`
   هر هشت Job را سبز کرد.
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. روی این
-Checkpoint، Source Candidate محدود `S07-MS05` برای Catalog/API/Worker F02 در حال qualification است. تصمیم
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS05-C1` است. روی این
+Checkpoint، Catalog/API/Worker و qualification متصل F02 بسته شده‌اند. تصمیم
 `QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
-حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است: فقط
-`RPT1-F01` qualify شده و F03 تا F10 `Required / Not Implemented` هستند. قرارداد
-`PMCS-RPT1-F02-SEMANTIC-001 v1.3.0` Runtime Core و Renderer/Golden checkpointed دارد:
+حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است:
+`RPT1-F01` و `RPT1-F02` checkpoint متصل دارند و F03 تا F10 `Required / Not Implemented` هستند. قرارداد
+`PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` Runtime Core، Renderer/Golden و wiring checkpointed دارد:
 identity/schema نسخه‌دار، Project configuration pin، period source/resolver، semantic Snapshot،
-render request/model fail-closed و PDF/XLSX قطعی. Candidate جاری Migration 44، Definition/Template
-seed، strict API، Project profile pin و Worker/renderer dispatch را با QA متصل اضافه می‌کند. UI و
-feature flag تازه‌ای وجود ندارد و production defaults خاموش‌اند. Golden XLSX/PDF و visual digestها
-در Run 141 pin و تأیید شده‌اند؛ Full CI Candidate جاری هنوز باز است.
+render request/model fail-closed و PDF/XLSX قطعی. Migration 44، Definition/Template seed، strict
+API، Project profile pin و Worker/renderer dispatch با QA متصل در Run 144 تأیید شده‌اند. UI و feature
+flag تازه‌ای وجود ندارد و production defaults خاموش‌اند.
 
 ## Remaining Work
 
-1. Full CI و ثبت Safe Checkpoint Source Candidate `S07-MS05`. F02 تا پایان این Gate Done نیست.
+1. DoR و قرارداد معنایی مستقل `RPT1-F03 — Executive Project State`؛ هیچ Runtime پیش از checkpoint
+   قرارداد شروع نشود.
 2. تکمیل `RPT1-F03` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛ Scope ده‌گانه طبق ADR 0031
    حفظ شده و فقط `daily-report-certified/1.0.0` در F01 فعلاً qualify است.
 3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
@@ -119,7 +122,7 @@ feature flag تازه‌ای وجود ندارد و production defaults خامو
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | فقط F01 End-to-End واجد Safe Checkpoint است؛ F02 wiring متصل در Source Candidate قرار دارد | Full CI/Checkpoint F02 لازم است؛ F03 تا F10 نیز مستقل‌اند |
+| Implementation | F01 و F02 واجد Safe Checkpoint متصل‌اند؛ F03 تا F10 هنوز پیاده نشده‌اند | هر خانواده با DoR، Micro-Slice و Qualification مستقل تکمیل شود |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -149,15 +152,23 @@ feature flag تازه‌ای وجود ندارد و production defaults خامو
   `f4b592c72ea65974c00b936ca59c0428eb47f981`؛ Run 141 (`35495791821`) هر هشت Job موفق،
   `353/353` تست C#، `60/60` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳
   Migration.
+- F02 Catalog/API/Worker Source: `7fc55c167ad2159a31c895b32a52d78f47574df9`؛ tree
+  `d665fe4cdf29369f96ec0875bc6f1535db349d55`؛ PR validation merge
+  `2a91fc442a3a84a2ee3d6c59fe5186c8f0ed3efb` با همان tree؛ Run 144 (`35498990050`) هر هشت Job
+  موفق، `355/355` تست C#، `61/61` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F02
+  برابر `13/13` و Restore ۴۴ Migration.
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده: Run 141 (`35495791821`) — هر ۸ Job
+- آخرین CI بررسی‌شده: Run 144 (`35498990050`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
-- Qualification artifact Run 141 برابر `10600109655` با digest
-  `sha256:621bfda27a59f3d21fcc4793bd8d1820cd67b5238a32e0e647bfa6766e5cd19e` است.
+- Qualification artifact Run 144 برابر `10601457941` با digest
+  `sha256:3b577627970885596d83e992d04bce9093ad69e9b594e58f2919294a676206e8` است؛ Integration artifact
+  `10601880116` با digest `sha256:3b582c64f4301cf1215157263d66270bf300d1009b763679e7e86e5fe5623fd7`
+  و UI-E2E artifact `10601678972` با digest
+  `sha256:5d35548a4675c0515d54597702eb911cb9413c66eb5ba09989603874c4803ea7` ثبت شدند.
 - Run 133: build بدون warning، `330/330` تست C#، `52/52` تست قراردادی Node، `139/139` تست Web، پنج
   browser scenario و PDF Golden متصل `8/8` پاس شدند؛ PDF برابر `42489` byte و
   SHA-256 `cc188c842ddcced9a24acd5e18f92c4a6511252c40104055c8c38627cdfac863` بود.
@@ -168,8 +179,8 @@ feature flag تازه‌ای وجود ندارد و production defaults خامو
 
 ## Exact Next Micro-Step
 
-**گام بعدی فقط commit/push، Full CI و ثبت Safe Checkpoint همین Source Candidate `S07-MS05` است.**
-UI و Production enablement همچنان جدا و خاموش بمانند و F03 تا F10 Done اعلام نشوند.
+**گام بعدی فقط DoR و قرارداد معنایی `RPT1-F03 — Executive Project State` در Micro-Slice مستقل است.**
+Runtime پیش از checkpoint قرارداد شروع نشود؛ UI و Production enablement همچنان جدا و خاموش بمانند.
 
 ## Resume Rule
 

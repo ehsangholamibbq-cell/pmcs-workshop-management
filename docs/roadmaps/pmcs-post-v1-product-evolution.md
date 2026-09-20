@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.30.0`
+- نسخه سند: `1.31.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -405,11 +405,15 @@ feature flag یا Production enablement ندارد. Source commit
 تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است؛ wiring متصل F02/RPT1 همچنان باز می‌ماند.
 
-**F02 Catalog/API/Worker Source Candidate — Slice 07 Micro-Step 05:** روی Checkpoint
+**F02 Catalog/API/Worker Safe Checkpoint — Slice 07 Micro-Step 05:** روی Checkpoint
 `PMCS-V1.1-RPT1-S07-MS04-C1`، Migration 44 Definition/Template رسمی F02 و Project profile pin‌شده را
-اضافه می‌کند؛ API و Worker روی contractهای موجود dispatch می‌کنند و QA متصل PDF/XLSX، مجوز،
-idempotency و database evidence را می‌سنجد. UI و Production defaults عمداً تغییر نکرده‌اند. Full CI
-و ثبت Safe Checkpoint این Micro-Step هنوز باز است و F03 تا F10 مستقل باقی می‌مانند.
+اضافه کرد؛ API و Worker روی contractهای موجود dispatch می‌کنند و QA متصل PDF/XLSX، مجوز،
+idempotency و database evidence را می‌سنجد. Source
+`7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 هر هشت Job، `355/355` تست C#، `61/61`
+تست Node، `139/139` تست Web، پنج browser scenario، هارنس متصل `13/13` و Restore ۴۴ Migration را
+پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است. UI و Production defaults عمداً
+تغییر نکرده‌اند؛ گام بعد فقط DoR/semantic contract مستقل F03 است و F03 تا F10 باز می‌مانند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -683,3 +687,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.28.0` | ثبت Candidate محدود `S07-MS04` برای قرارداد Renderer و Golden قطعی PDF/XLSX خانواده F02؛ Catalog/API/Worker wiring و Full CI باز است |
 | `1.29.0` | ثبت Safe Checkpoint `S07-MS04` و Evidence سبز Run 141 برای Renderer/Golden خانواده F02؛ Catalog/API/Worker wiring باز است |
 | `1.30.0` | ثبت Source Candidate محدود `S07-MS05` برای Migration/Catalog/API/Worker و QA متصل F02؛ Full CI و Safe Checkpoint باز است |
+| `1.31.0` | ثبت Safe Checkpoint `S07-MS05` و Evidence سبز Run 144 برای اتصال Catalog/API/Worker خانواده F02؛ F03 تا F10/UI/Production باز است |

@@ -1,15 +1,16 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.15.0`
-- وضعیت: `S07-MS05 Catalog/API/Worker source candidate | Full CI pending | F03-F10/UI/Production open`
+- نسخه: `1.16.0`
+- وضعیت: `S07-MS05 F02 connected safe checkpoint | F03-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Parent checkpoint commit: `1f1fc2b31840de64c70236b97d44f27fdad247d2`
 - Parent checkpoint tree: `a3d81096ae61966ecce87a179524c1f92a75f1bb`
-- Candidate source: working tree؛ commit و Full CI در انتظار
-- Renderer source: `4f68f57de2c2a79b654a19128894d9c89878ab65`
-- Renderer evidence: Run 141 (`35495791821`) — `success`
+- Source commit: `7fc55c167ad2159a31c895b32a52d78f47574df9`
+- Source tree: `d665fe4cdf29369f96ec0875bc6f1535db349d55`
+- PR validation merge: `2a91fc442a3a84a2ee3d6c59fe5186c8f0ed3efb`؛ همان tree
+- Connected evidence: Run 144 (`35498990050`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -31,13 +32,13 @@ ADR 0031 تصریح می‌کند که «نخستین Vertical Slice» به‌م
 معنایی، Renderer/Golden و Checkpoint مستقل تکمیل شوند. Foundation مشترک یا Catalog placeholder
 جایگزین Qualification خانواده‌ای نیست.
 
-قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.3.0` در
+قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` در
 `pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md` مرز گزارش هفتگی/ماهانه را به roll-up
 نسخه‌های رسمی Daily Report محدود می‌کند و period/cutoff، source lineage، status،
 permission/classification و Golden matrix آن را تثبیت می‌کند. Runtime Core محدود آن identity و
 schemaهای نسخه‌دار، period-read contract، resolver و semantic Snapshot builder را دارد. Checkpoint
-فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را اضافه کرده، اما عمداً هیچ API،
-Catalog seed، Worker dispatch یا DI registration برای F02 ندارد.
+فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را با Catalog، strict API، Project
+profile pin و Worker dispatch متصل کرده است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -329,7 +330,7 @@ Diagnostics فقط code، attempt، duration، component و Correlation ID دا�
 - Migration/restore، worker crash/retry و object storage partial failure تست می‌شوند؛
 - Full Regression V1 و Checkpointهای بسته‌شده V1.1 پاس می‌ماند.
 
-## ۱۶. وضعیت پیاده‌سازی Source Candidate
+## ۱۶. وضعیت پیاده‌سازی و Checkpointهای متصل
 
 در commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` موارد زیر در Source وجود دارند:
 
@@ -461,5 +462,10 @@ Migration forward شمارهٔ 44 منتشر می‌کند. API پارامتره
 profile نسخه‌دار را هنگام پذیرش Run در JSONB pin می‌کند. Worker با dispatch allowlisted، period source
 ماژول FieldOperations، Snapshot builder و registry اختصاصی PDF/XLSX خروجی immutable می‌سازد.
 TestHarness متصل و assertionهای PostgreSQL، Documents، Audit، Outbox و Idempotency اضافه شده‌اند.
-این وضعیت Source Candidate است و تا Full CI Safe Checkpoint نیست؛ UI و سه default production همچنان
-بدون تغییر و خاموش‌اند.
+Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد:
+`355/355` تست C#، `61/61` تست Node، `139/139` تست Web، پنج browser scenario، validator روی ۳۵۵
+فایل ماژولی، system audit برابر `274/204/5`، هارنس F02 برابر `13/13` و Restore کامل ۴۴ Migration.
+Run 143 تنها به‌دلیل تقدم عملگر JSON در query شواهد shell شکست خورد و اصلاح نهایی فقط همان expression
+را پرانتزبندی کرد. Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` اتصال F02 را می‌بندد؛ UI و سه default
+production همچنان بدون تغییر و خاموش‌اند و F03 تا F10 باز هستند.

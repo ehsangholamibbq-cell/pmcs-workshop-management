@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01 qualified؛ F02 Catalog/API/Worker source candidate با Full CI باز؛ UI/Production disabled؛ RPT1 active
+- Status: F01 qualified؛ F02 Connected Safe Checkpoint در Run 144؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -43,7 +43,7 @@ Output باید bytes و SHA-256 یکسان برگرداند و workbook فقط 
 ### ۱.۴ خانواده F02 روی API موجود
 
 Micro-Step جاری endpoint تازه‌ای اضافه نمی‌کند، اما Definition دوم را روی همان routeهای موجود منتشر
-می‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.3.0` شناسه Definition
+می‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` شناسه Definition
 `project-periodic-certified/1.0.0` و schemaهای
 `pmcs.reporting.project-periodic.parameters/v1` و
 `pmcs.reporting.project-periodic.snapshot/v1` را pin کرده است. پارامترهای Client فقط
@@ -56,10 +56,14 @@ revision/configuration/time zone نیز هنگام پذیرش Run در evidence 
 
 Safe Checkpoint `S07-MS04` قرارداد داخلی
 `pmcs.reporting.project-periodic.renderer/v1`، layout
-`pmcs.reporting.project-periodic.layout/v1` و PDF/XLSX deterministic را تثبیت کرد. Candidate
+`pmcs.reporting.project-periodic.layout/v1` و PDF/XLSX deterministic را تثبیت کرد. Checkpoint
 `S07-MS05` همان Rendererها را در registry اختصاصی ثبت و Worker را براساس
 Definition dispatch می‌کند. Download/Verify از همان کنترل‌های permission، integrity و object ownership
 F01 استفاده می‌کنند؛ route یا bypass جداگانه‌ای وجود ندارد. تنظیمات production همچنان خاموش‌اند.
+
+Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد؛
+هارنس متصل F02 هر `13/13` assertion و Restore Drill هر ۴۴ Migration را تأیید کردند.
 
 ## ۲. Catalog
 

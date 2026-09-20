@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.6.0`
-- وضعیت: F01 connected gates passed؛ F02 Catalog/API/Worker source candidate با Full CI باز
+- نسخه: `1.7.0`
+- وضعیت: F01/F02 connected gates passed؛ F02 Safe Checkpoint در Run 144؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -77,12 +77,13 @@ prefixهای `= + - @` خنثی می‌کند، فرمول/Macro ندارد و u
 Source `4f68f57de2c2a79b654a19128894d9c89878ab65` این isolation و formula-safety را در Run 141 با
 هر هشت Job سبز تأیید کرده است.
 
-Candidate `S07-MS05` همان سه re-evaluation را برای F02 فعال می‌کند: Catalog/Create در request،
+Checkpoint `S07-MS05` همان سه re-evaluation را برای F02 فعال می‌کند: Catalog/Create در request،
 `reporting.run.create + field.daily-reports.read` در Worker و Source permission همراه
 `reporting.output.download` در Download/Verify. Definitionها allowlisted هستند، parser هیچ field
 اضافی نمی‌پذیرد و Project profile سروری با Tenant/Project/Time Zone/accepted-at pin و دوباره validate
 می‌شود. TestHarness deny مربوط به Observer، replay/conflict و Download/Verify هر دو فرمت را پوشش
-می‌دهد. UI و Production defaults همچنان خاموش‌اند و Full CI این Candidate هنوز باز است.
+می‌دهد. Source `7fc55c167ad2159a31c895b32a52d78f47574df9` در Run 144 (`35498990050`) هر هشت Job و هارنس
+متصل F02 را با `13/13` assertion پاس کرد. UI و Production defaults همچنان خاموش‌اند.
 
 ## ۴. Threat model
 
@@ -140,7 +141,7 @@ Candidate `S07-MS05` همان سه re-evaluation را برای F02 فعال می
 - QR/Verification بدون Session؛
 - Agent Tool آینده با Permission کمتر از user یا تلاش privilege elevation.
 
-## ۸. وضعیت کنترل‌های Source Candidate
+## ۸. وضعیت کنترل‌های Source و Checkpointهای متصل
 
 در commit `ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173`، Generated Document با object key
 server-generated، signature/size/SHA validation، read-after-write و exact-byte check منتشر می‌شود؛
