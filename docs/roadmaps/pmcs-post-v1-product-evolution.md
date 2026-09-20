@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.46.0`
+- نسخه سند: `1.47.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -522,6 +522,23 @@ Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج 
 `7/7` را پاس کرد. Safe Resume اکنون `S07-MS13` است؛ UI/UX2 و Production defaults خاموش‌اند و گام
 بعد فقط DoR/قرارداد معنایی مستقل F05 است.
 
+**F05 Financial Position / Cash / Obligations / Aging Semantic Contract — Slice 07 Micro-Step 14
+Safe Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS13-C1`، قرارداد
+`PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` Cash Position را فقط از Financial Recordهای Posted تا cutoff،
+تعهدات Approved و settlementهای immutable و Budget Baseline اختیاری می‌سازد. Cash formulaها،
+تفکیک Payable/Receivable، Aging چهار-bucketی، lifecycle مستقل Budget، status/reason و absence صفر
+ساختگی قطعی‌اند. FX، Forecast، EVM، Management Fee و join پنهان F06 ممنوع است. Client فقط `{}`
+می‌فرستد؛ چهار Permission Finance/Budget و Classification حداقل `Confidential` لازم‌اند.
+
+Candidate `72fa88349d01edd4c6455eb0af1aebfdeced8c35` با tree
+`d2722dd8fab797650ed0c9befb80df93fc0be135` و PR validation merge
+`6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7` دارای همان tree، در Run 171 (`35538654765`) هر هشت
+Job، `419/419` تست C#، `73/73` تست contract، `139/139` تست Web، پنج browser scenario، validator روی
+`382` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. این Checkpoint
+فقط DoR و Golden matrix بیست‌وپنج‌سناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS14` و گام
+بعد فقط Runtime Core محدود F05 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -810,3 +827,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.44.0` | ثبت Candidate محدود `S07-MS12` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F04؛ wiring و Full CI باز است |
 | `1.45.0` | ثبت Safe Checkpoint `S07-MS12` و Evidence سبز Run 167 برای Renderer/Golden خانواده F04؛ Catalog/API/Worker wiring باز است |
 | `1.46.0` | ثبت Safe Checkpoint `S07-MS13` و Evidence سبز Run 169 برای اتصال End-to-End Catalog/API/Worker خانواده F04؛ F05–F10/UI/Production باز است |
+| `1.47.0` | ثبت Safe Checkpoint `S07-MS14` و Evidence سبز Run 171 برای قرارداد معنایی F05؛ Runtime/Renderer/wiring و F06–F10/UI/Production باز است |

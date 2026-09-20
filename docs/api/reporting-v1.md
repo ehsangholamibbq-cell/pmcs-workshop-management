@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02/F03/F04 connected؛ F05–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02/F03/F04 connected؛ F05 contract ready/runtime not implemented؛ F06–F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -113,6 +113,21 @@ Registry نسخه‌دار F04 و مسیر immutable Generated Document منتش
 `49f957729fdccb0397dd153b93135ce2eaddd68a` در Run 169 (`35535904655`) هر هشت Job، هارنس متصل
 F04 برابر `15/15` و Restore Drill کامل ۴۶ Migration را پاس کرد. Safe Resume اکنون `S07-MS13` است
 و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
+
+### ۱.۸ قرارداد checkpointed F05 بدون تغییر API
+
+Safe Checkpoint `S07-MS14` فقط قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` را تثبیت می‌کند و هیچ
+Definition، Template، parser، endpoint یا Worker dispatch تازه‌ای اضافه نمی‌کند. پارامتر معنایی Client
+برای Runtime آینده دقیقاً `{}` خواهد بود؛ `projectId` از route و cutoff از `asOfUtc` پین‌شدهٔ Run
+می‌آیند و Client حق انتخاب Budget، ارز، Aging bucket، تاریخ محلی، filter یا Source را ندارد.
+
+Runtime آینده باید فقط Application Contract خواندنی و cutoff-aware Finance/Projects را مصرف کند؛
+`GET /finance/state`، `GET /finance/control`، `IFinancialStateSource`، `IFinanceControlReadService` و
+DbContextهای جاری Source گزارش Certified تاریخی نیستند. تمام چهار Permission
+`financial-state.read`، `finance.records.read`، `finance.obligations.read` و
+`budget.baselines.read` و Classification حداقل `Confidential` لازم‌اند. Run 171 قرارداد و Golden
+matrix بیست‌وپنج‌سناریویی را qualify کرد، اما F05 هنوز از API قابل ایجاد، اجرا یا دانلود نیست و
+Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
 ## ۲. Catalog
 

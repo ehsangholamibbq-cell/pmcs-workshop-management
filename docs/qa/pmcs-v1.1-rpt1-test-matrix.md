@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.29.0`
-- وضعیت: F04 connected safe checkpoint؛ F05–F10/UI/Production باز
+- نسخه: `1.30.0`
+- وضعیت: F05 semantic contract safe checkpoint؛ Runtime/F06–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -795,3 +795,35 @@ Qualification artifact `10613446342` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS13-C1` اتصال End-to-End F04 را می‌بندد. F05 تا F10، UI/UX2
 و Production enablement بازند و همه Suiteها و Goldenهای V1/F01/F02/F03/F04 بدون Regression سبز
 مانده‌اند.
+
+## ۳۶. قرارداد معنایی وضعیت مالی خانواده F05 — Slice 07 Micro-Step 14
+
+این Micro-Step بدون افزودن Runtime باید موارد زیر را اثبات کند:
+
+- پارامتر Client دقیقاً `{}` و منع انتخاب Budget، ارز، Aging bucket، cutoff محلی، filter یا Source؛
+- انتخاب فقط Financial Recordهای `Posted` با `postedAt <= cutoff` و transaction date محلی معتبر؛
+- formulaهای قطعی Receipt/Payment/PettyCash و عدم دوباره‌شماری Funding/Expense؛
+- انتخاب Obligationهای Approved و settlementهای immutable تا cutoff با ماندهٔ fail-closed؛
+- تفکیک Payable/Receivable و Aging ثابت `NotDue/1–30/31–60/61+`؛
+- Budget اختیاری با lifecycle مستقل و comparison nullable، بدون zero fabrication؛
+- منع FX، Forecast، EVM، Management Fee و join پنهان Commercial/F06؛
+- چهار Permission Finance/Budget و Classification حداقل `Confidential`؛
+- آشکارسازی شکاف تاریخی سرویس‌های current-state Finance و منع DbContext/HTTP fallback؛
+- Golden matrix دقیقاً بیست‌وپنج‌سناریویی و نبود هرگونه Runtime/API/Migration/Renderer F05.
+
+Source `72fa88349d01edd4c6455eb0af1aebfdeced8c35` با tree
+`d2722dd8fab797650ed0c9befb80df93fc0be135` و PR validation merge
+`6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7` دارای همان tree، در Run 171 (`35538654765`) هر هشت
+Job را پاس کرد: `419/419` تست C#، `73/73` تست قراردادی Node، `139/139` تست Web، پنج browser
+scenario، validator روی `382` فایل ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `46`
+Migration و Qualification برابر `7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10612744490` با digest
+`sha256:88a62a1ccfd2a15b7d80d1f62fac888616762acde61c90d985da2bc5843e6c3c`، Integration artifact
+`10613816900` با digest `sha256:fca6c121bebb10518db49907dae3af854f1ed33be7d0becc93695d0e2d88d417`
+و UI-E2E artifact `10613811669` با digest
+`sha256:4adc0ac90be4059e78b3d2e2ac1860cf01979eddccd62c80d40125bff7c7f6e9` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS14-C1` فقط DoR/semantic contract F05 را می‌بندد. F05 هنوز
+Runtime یا API قابل اجرا ندارد؛ F06 تا F10، UI/UX2 و Production enablement بازند و همه Suiteها و
+Goldenهای V1/F01/F02/F03/F04 بدون Regression سبز مانده‌اند.

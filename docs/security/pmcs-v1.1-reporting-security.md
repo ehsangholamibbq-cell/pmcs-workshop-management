@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.14.0`
-- وضعیت: F01/F02/F03/F04 connected؛ F05–F10 open؛ UI/Production disabled
+- نسخه: `1.15.0`
+- وضعیت: F01/F02/F03/F04 connected؛ F05 semantic security contract checkpointed؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -154,6 +154,23 @@ F03 permission ولی فاقد Planning read، Definition و Run F04 را نمی
 `NotConfigured` بدون صفر ساختگی و integrity/verify هر دو فرمت را پوشش می‌دهد. Source
 `4c48c03aad126a594e5328fc7995a72728ba2274` در Run 169 هر هشت Job و `15/15` assertion F04 را
 پاس کرد. UI، feature flagها، license و Production defaults همچنان خاموش/Unconfigured هستند.
+
+### سیاست ثابت F05
+
+F05 علاوه بر Permissionهای Reporting به هر چهار Permission `financial-state.read`،
+`finance.records.read`، `finance.obligations.read` و `budget.baselines.read` نیاز دارد. نبود حتی یکی
+از آن‌ها باید Catalog/Create/processing/download را fail-closed کند؛ Permissionهای F01 تا F04 هیچ
+دسترسی ضمنی به F05 نمی‌سازند. Classification خروجی بیشترین مقدار میان Definition، Project/Finance،
+رکوردها، تعهدات، settlementها و Budget است و حداقل `Confidential` باقی می‌ماند.
+
+Client فقط `{}` می‌فرستد و حق انتخاب Budget، ارز، Aging bucket، Contract/Party، cutoff محلی، Query یا
+Source را ندارد. Currency ناسازگار، lifecycle هم‌پوشان، settlement lineage ناقص، contract version یا
+Classification ناشناخته failure امن‌اند و به صفر یا `NoData` تبدیل نمی‌شوند. Description، Notes،
+Document Number، فایل، Audit payload و شناسه‌های Commercial وارد Snapshot یا filename/diagnostic
+نمی‌شوند. Checkpoint `S07-MS14` این policy را در قرارداد و Golden matrix تثبیت می‌کند؛ هیچ Runtime،
+Catalog، Worker یا Renderer F05 را فعال نمی‌کند. Candidate
+`72fa88349d01edd4c6455eb0af1aebfdeced8c35` در Run 171 هر هشت Job را پاس کرد و defaults همچنان
+خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

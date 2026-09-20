@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.26.0`
-- وضعیت: `S07-MS13 F04 connected safe checkpoint | F05-F10/UI/Production open`
+- نسخه: `1.27.0`
+- وضعیت: `S07-MS14 F05 semantic contract safe checkpoint | Runtime/F06-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `09fbcf391ba81af73b7cf1b1cb74726079e3032d`
-- Parent checkpoint tree: `524d518da501c1190f77b3c3c9cf4da1f72be758`
-- Candidate source: `4c48c03aad126a594e5328fc7995a72728ba2274`
-- Candidate source tree: `49f957729fdccb0397dd153b93135ce2eaddd68a`
-- PR validation merge: `05ca8ac7e3fa643e111b9c8511e3e08d62be60a5`؛ همان tree
-- Connected evidence: Run 169 (`35535904655`) — `success`
+- Parent checkpoint commit: `4e50fcadeb11bf412eff9275b8fac8561fd7d097`
+- Parent checkpoint tree: `82f09cfe36bfb725032f7397c4e3887c1ebf505c`
+- Candidate source: `72fa88349d01edd4c6455eb0af1aebfdeced8c35`
+- Candidate source tree: `d2722dd8fab797650ed0c9befb80df93fc0be135`
+- PR validation merge: `6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7`؛ همان tree
+- Contract evidence: Run 171 (`35538654765`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -61,6 +61,14 @@ FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot 
 history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری Template/Renderer/Layout identity، render
 model canonical و PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production
 defaults همچنان جدا و خاموش‌اند.
+
+قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` در
+`pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md` وضعیت مالی Certified را به Financial
+Recordهای Posted، تعهدات و settlementهای رسمی، Aging جداگانهٔ Payable/Receivable و Budget Baseline
+اختیاریِ مؤثر در cutoff محدود می‌کند. Cash formulaها، lifecycle، status، چهار Permission خواندنی و
+Classification حداقل `Confidential` قطعی‌اند؛ FX، Forecast، EVM، Management Fee و join پنهان F06
+ممنوع است. F05 فقط `Contract Ready / Runtime Not Implemented` است و سرویس‌های current-state Finance
+یا DbContext جای Application Contract تاریخی و cutoff-aware Slice بعدی را نمی‌گیرند.
 
 ## ۲. Non-Scope
 
@@ -609,3 +617,21 @@ Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج 
 برابر `15/15`، validator روی `382` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و
 Qualification `7/7` Suite و `12/12` Command را پاس کرد. UI، feature flagها، license و Production
 defaults تغییر نکرده‌اند؛ گام بعد فقط DoR/قرارداد معنایی F05 است.
+
+Slice 07 Micro-Step 14 فقط DoR و قرارداد معنایی F05 را تعریف می‌کند. رکوردهای Cash فقط با status
+`Posted`، `postedAt <= cutoff` و transaction date محلی واجد شرایط‌اند؛ `externalNetCash`،
+`recognizedSpend` و `pettyCashBalance` بدون دوباره‌شماری تنخواه محاسبه می‌شوند. تعهدات Approved و
+settlementهای immutable تا cutoff، مانده و Aging چهار-bucketی Payable/Receivable را جدا می‌سازند؛
+سررسید دقیقاً در روز cutoff `NotDue` است. Budget اختیاری با lifecycle مستقل
+`approvedAt <= cutoff < supersededAt` انتخاب و نبود آن هرگز صفر ساختگی تولید نمی‌کند.
+
+چهار Permission خواندنی Finance/Budget، Classification حداقل `Confidential`، lineage، ordering و
+failure boundaryهای fail-closed در Golden matrix بیست‌وپنج‌سناریویی pin شده‌اند. Candidate
+`72fa88349d01edd4c6455eb0af1aebfdeced8c35` با tree
+`d2722dd8fab797650ed0c9befb80df93fc0be135` و PR validation merge
+`6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7` دارای همان tree، در Run 171 (`35538654765`) هر هشت
+Job، `419/419` تست C#، `73/73` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator
+روی `382` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و Qualification `7/7` Suite و
+`12/12` Command را پاس کرد. این Checkpoint هیچ Runtime identity/schema، Source implementation،
+Migration، API، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default را تغییر
+نمی‌دهد؛ گام بعد فقط Runtime Core محدود F05 است.
