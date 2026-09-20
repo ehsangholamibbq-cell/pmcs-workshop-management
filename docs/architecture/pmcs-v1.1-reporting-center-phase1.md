@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.24.0`
-- وضعیت: `S07-MS11 F04 bounded Runtime Core candidate | Full CI pending | Renderer/Wiring/F05-F10/UI/Production open`
+- نسخه: `1.24.1`
+- وضعیت: `S07-MS11 F04 bounded Runtime Core safe checkpoint | Renderer/Wiring/F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `c59a2444f5d5dd70859441f27d05c23dea6c268e`
-- Parent checkpoint tree: `8a7926ac11abb529a3887d1e8a2091f7aeedecbd`
-- Candidate source: `f8829027c2ce073c207cd0e04a49c306b546c6a1`
-- Candidate source tree: `2b784f135894092ef55bf7c7df201b1f03e0c77f`
-- PR validation merge: `80830a48ffd5b84ecdc97990b052f6d7037eda42`؛ همان tree
-- Contract evidence: Run 158 (`35522512734`) — `success`
+- Parent checkpoint commit: `517a7dba5c20061fab3ef6f9a3dd6407cc76499f`
+- Parent checkpoint tree: `b96c3f23d73114555d25088335f73ca79f6e3668`
+- Candidate source: `deb1571ec66d820868e8f4b77b631471e3c8207c`
+- Candidate source tree: `9e41495a357480af03f1555ef640962ab863d332`
+- PR validation merge: `f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5`؛ همان tree
+- Runtime evidence: Run 163 (`35527577826`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -51,14 +51,14 @@ PDF/XLSX قطعی را checkpoint کرده است. Checkpoint جاری Catalog/T
 definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
 qualification متصل را روی همان قراردادها بسته است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.1.0` در
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.1.1` در
 `pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md` گزارش پیشرفت را فقط از Planning
 configuration، Baseline و evidence رسمیِ مؤثر در cutoff می‌سازد. پارامتر Client خالی، انتخاب
 Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S-Curve حداکثر ۳۶۶ نقطه
 است. MeasurementWeights بدون Schedule معتبر باقی می‌ماند و هیچ Forecast، EVM، Composite Health یا
-join پنهان F05 تا F10 مجاز نیست. Candidate محدود Runtime Core، identity/schema نسخه‌دار، projection
+join پنهان F05 تا F10 مجاز نیست. Safe Checkpoint محدود Runtime Core، identity/schema نسخه‌دار، projection
 خواندنی FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot builder را
-اضافه کرده است؛ legacy history غیرقابل‌اثبات fail-closed است و Renderer/wiring/Full CI بازند.
+اضافه کرده است؛ legacy history غیرقابل‌اثبات fail-closed است و Renderer/wiring بازند.
 
 ## ۲. Non-Scope
 
@@ -559,7 +559,7 @@ Classification propagation و Golden matrix بیست‌ودوسناریویی ق
 Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است و F04 تا F10 و RPT1 باز
 هستند.
 
-Slice 07 Micro-Step 11 Candidate، Runtime identity داخلی `project-progress-certified/1.0.0`،
+Slice 07 Micro-Step 11 Safe Checkpoint، Runtime identity داخلی `project-progress-certified/1.0.0`،
 parameter/snapshot/profile schemaهای نسخه‌دار، Contractهای
 `pmcs.field-operations.progress-evidence-reporting/v1` و
 `pmcs.planning.project-progress-reporting/v1`، selector صریح
@@ -568,6 +568,10 @@ configuration/Baseline و Actual/Planned/Variance/S-Curve می‌ماند؛ Repo
 اعتبارسنجی و Snapshot معنایی را canonical می‌کند. تست‌ها correction و supersession، missing Actual،
 overrun cap، calendar fallback، علامت Variance، grid حداکثر ۳۶۶، future-null، Classification و twin
 hash را می‌پوشانند. compatibility projection برای configuration، Baseline، Milestone یا target
-تاریخیِ غیرقابل‌اثبات fail-closed است. این Candidate هیچ Migration، endpoint، Catalog/Template seed،
-Worker dispatch، Renderer، UI یا Production default را تغییر نمی‌دهد و تا Full CI/Safe Checkpoint
-بسته نیست.
+تاریخیِ غیرقابل‌اثبات fail-closed است. Source `deb1571ec66d820868e8f4b77b631471e3c8207c`
+با tree `9e41495a357480af03f1555ef640962ab863d332` و PR validation merge
+`f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5` دارای همان tree، در Run 163 (`35527577826`) هر هشت
+Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `378` فایل، audit ثابت `274/204/5`، Restore کامل ۴۵ Migration و
+Qualification `7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint هیچ Migration، endpoint،
+Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default را تغییر نمی‌دهد.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.42.0`
+- نسخه سند: `1.43.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -476,14 +476,19 @@ C#، `68/68` contract، `139/139` Web، پنج browser scenario و Restore ۴۵ 
 Checkpoint فقط DoR و Golden matrix بیست‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
 Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
-**F04 Bounded Runtime Core — Slice 07 Micro-Step 11 Candidate:** روی Safe Checkpoint
+**F04 Bounded Runtime Core — Slice 07 Micro-Step 11 Safe Checkpoint:** روی Safe Checkpoint
 `PMCS-V1.1-RPT1-S07-MS10-C1` فقط identity/schema نسخه‌دار، Application Contractهای باریک و
 cutoff-aware در Planning و FieldOperations، lifecycle selector، calculator قطعی و semantic Snapshot
 builder اضافه شده است. Unit/contract testها ماتریس ۲۲سناریویی، correction/rebaseline تاریخی،
 Actual/Planned/Variance، sampling حداکثر ۳۶۶ نقطه، status/reason، Classification و determinism را
-پوشش می‌دهند. compatibility projection هر legacy history غیرقابل‌اثبات را fail-closed می‌کند؛ هیچ
-Migration، Renderer، Catalog/API/Worker wiring، UI یا Production enablement وارد Candidate نشده است
-و Full CI/Safe Checkpoint باز است.
+پوشش می‌دهند. compatibility projection هر legacy history غیرقابل‌اثبات را fail-closed می‌کند. Source
+`deb1571ec66d820868e8f4b77b631471e3c8207c` با tree
+`9e41495a357480af03f1555ef640962ab863d332` و PR validation merge
+`f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5` دارای همان tree، در Run 163 (`35527577826`) هر هشت
+Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `378` فایل، audit `274/204/5`، Restore ۴۵ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Renderer، Catalog/API/Worker wiring، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS11` و گام بعد فقط Renderer/Golden F04 است.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -769,3 +774,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.40.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F04 برای Baseline رسمی، Actual/Planned/Variance و S-Curve cutoff-aware؛ Runtime هنوز پیاده نشده است |
 | `1.41.0` | ثبت Safe Checkpoint `S07-MS10` و Evidence سبز Run 158 برای قرارداد معنایی F04؛ Runtime/Renderer/wiring باز است |
 | `1.42.0` | ثبت Candidate محدود `S07-MS11` برای Runtime Core F04؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.43.0` | ثبت Safe Checkpoint `S07-MS11` و Evidence سبز Run 163 برای Runtime Core F04؛ Renderer/Golden و wiring باز است |

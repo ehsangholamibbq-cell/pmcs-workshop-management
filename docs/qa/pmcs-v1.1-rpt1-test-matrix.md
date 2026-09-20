@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.26.0`
-- وضعیت: F04 bounded Runtime Core candidate؛ Full CI/Checkpoint و Renderer/Wiring باز
+- نسخه: `1.27.0`
+- وضعیت: F04 bounded Runtime Core safe checkpoint؛ Renderer/Wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -682,7 +682,7 @@ API، Security، Roadmap و Canonical Reference را کنترل می‌کند. C
 Catalog/Template seed، Renderer، TestHarness یا UI اضافه نشده و F04
 `Contract Ready / Runtime Not Implemented` است.
 
-## ۳۳. Runtime Core محدود خانواده F04 — Slice 07 Micro-Step 11 Candidate
+## ۳۳. Runtime Core محدود خانواده F04 — Slice 07 Micro-Step 11 Safe Checkpoint
 
 Candidate باید بدون Migration، API، Renderer یا Worker wiring موارد زیر را با Unit/contract test
 اثبات کند:
@@ -702,5 +702,20 @@ Candidate باید بدون Migration، API، Renderer یا Worker wiring موا
 - hash یکسان twinها مستقل از query order، Run ID و build time؛
 - عدم وجود Forecast/EVM/Composite Health، endpoint، Migration، Renderer و Production enablement.
 
-Full CI و ثبت Safe Checkpoint این Candidate هنوز باز است. Restore باید همان ۴۵ Migration را بدون
-Migration تازه پاس کند و همه Suiteهای V1/F01/F02/F03 بدون Regression سبز بمانند.
+Source `deb1571ec66d820868e8f4b77b631471e3c8207c` با tree
+`9e41495a357480af03f1555ef640962ab863d332` و PR validation merge
+`f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5` دارای همان tree، در Run 163 (`35527577826`) هر هشت
+Job را پاس کرد: `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست قراردادی Node،
+`139/139` تست Web، پنج browser scenario، validator روی `378` فایل ماژولی، system audit ثابت
+`274/204/5`، Restore Drill کامل `45` Migration و Qualification برابر `7/7` Suite و `12/12`
+Command با صفر failure.
+
+Qualification artifact `10610087527` با digest
+`sha256:c5aedf39da9ff26acf0229022be0fc2c07ac4276feea2ea963bfbcafef085aef`، Integration artifact
+`10609649369` با digest `sha256:3bd0caa9ce75948cee75835844e5313e4d3aed971d1d843c6b7fb27d45c44fab`
+و UI-E2E artifact `10609914179` با digest
+`sha256:4ff0672c2ff02f142a4dfc901e563bcaed6249c14ca3d4b4bdbd8c0aac5726f2` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS11-C1` فقط Runtime Core را می‌بندد. Renderer/Golden،
+Catalog/API/Worker wiring، UI و Production enablement بازند و همه Suiteهای V1/F01/F02/F03 بدون
+Regression سبز مانده‌اند.

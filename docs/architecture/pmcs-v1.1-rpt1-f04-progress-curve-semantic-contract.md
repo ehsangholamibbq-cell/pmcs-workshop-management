@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش پیشرفت و S-Curve
 
 - شناسه: `PMCS-RPT1-F04-SEMANTIC-001`
-- نسخه: `1.1.0`
+- نسخه: `1.1.1`
 - خانواده: `RPT1-F04`
-- وضعیت: `Runtime Core Candidate | Renderer/Wiring Not Implemented`
+- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS10-C1`
-- Runtime change: `Bounded identity/projection/selector/calculator/semantic Snapshot candidate`
+- Runtime change: `Bounded identity/projection/selector/calculator/semantic Snapshot checkpointed in Run 163`
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -49,14 +49,14 @@ Calendar و Baseline مؤثر در cutoff را از Source نسخه‌دار ب�
 Runtime identity داخلی `project-progress-certified/1.0.0`، parameter schema
 `pmcs.reporting.project-progress.parameters/v1`، Snapshot schema
 `pmcs.reporting.project-progress.snapshot/v1` و Project profile pin
-`pmcs.reporting.project-progress.project-profile/v1` در Candidate محدود `S07-MS11` تخصیص یافته‌اند.
+`pmcs.reporting.project-progress.project-profile/v1` در Safe Checkpoint محدود `S07-MS11` تثبیت شده‌اند.
 Source contractهای `pmcs.planning.project-progress-reporting/v1` و
 `pmcs.field-operations.progress-evidence-reporting/v1` نیز نسخه‌دارند. Template/Renderer identity،
 Migration و Catalog seed همچنان تخصیص نیافته‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
 
-Runtime Core Candidate F04 فقط دو Application Contract خواندنی را مصرف می‌کند:
+Runtime Core checkpointed F04 فقط دو Application Contract خواندنی را مصرف می‌کند:
 
 1. Projects برای هویت جاری، lifecycle، revision و Time Zone پین‌شده؛
 2. Planning برای read model نسخه‌دار، cutoff-aware و classification-aware پیشرفت رسمی.
@@ -311,23 +311,27 @@ parse و absence مالی/EVM/forecast/inference را اثبات کند. Golden 
 | Data status، reasonها و failure boundary | بسته |
 | Permission/classification/minimization | بسته |
 | Golden matrix بیست‌ودوسناریویی | بسته |
-| Runtime Definition و parameter/snapshot/profile/source IDs | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Runtime Definition و parameter/snapshot/profile/source IDs | Checkpointed in Run 163 |
 | Template/Renderer identity | عمداً باز برای Slice Renderer |
-| Historical projection و Application Contract cutoff-aware | Candidate پیاده‌سازی‌شده؛ legacy gapها fail-closed |
-| selector/calculator/semantic Snapshot builder | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Historical projection و Application Contract cutoff-aware | Checkpointed in Run 163؛ legacy gapها fail-closed |
+| selector/calculator/semantic Snapshot builder | Checkpointed in Run 163 |
 | PDF/XLSX/visual/performance | Not Implemented |
 | Catalog/API/Worker wiring | Not Implemented |
 
-Candidate `S07-MS11` فقط Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در Planning
+Checkpoint `S07-MS11` فقط Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در Planning
 و FieldOperations، selector cutoff-aware، calculator/Snapshot builder و Unit/contract tests را اضافه
 کرده است. lifecycle Baseline/configuration/evidence، Actual/Planned/Variance، grid حداکثر ۳۶۶ نقطه،
-status/reason، Classification و hash در Core مستقل از Renderer پیاده شده‌اند. Full CI و Safe
-Checkpoint این Candidate هنوز باز است. Renderer، Golden binary، Catalog/API/Worker wiring، UI و
-Production enablement باید در Sliceهای بعدی باقی بمانند.
+status/reason، Classification و hash در Core مستقل از Renderer پیاده شده‌اند. Source
+`deb1571ec66d820868e8f4b77b631471e3c8207c` با tree
+`9e41495a357480af03f1555ef640962ab863d332` و PR validation merge
+`f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5` دارای همان tree، در Run 163 (`35527577826`) هر هشت
+Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `378` فایل، audit ثابت `274/204/5`، Restore کامل ۴۵ Migration و
+Qualification برابر `7/7` Suite و `12/12` Command را پاس کرد. Renderer، Golden binary،
+Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی باقی بمانند.
 
 ## ۱۴. Gate statement
 
-این نسخه bounded Runtime Core را فقط به‌عنوان Candidate پیاده‌سازی می‌کند، نه Runtime Qualified یا
-گزارش متصل. هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این
-Micro-Step تغییر نکرده است. تا Full CI و Safe Checkpoint، Candidate مجوز مرحله Renderer نیست؛ F04
-تا پایان Renderer/Golden و wiring متصل کامل نمی‌شود و F05 تا F10 و RPT1 نیز باز هستند.
+این نسخه Safe Checkpoint bounded Runtime Core است، نه گزارش متصل. هیچ API، Migration، Catalog seed،
+Renderer، feature flag یا Production setting در این Micro-Step تغییر نکرده است. Micro-Step بعدی فقط
+Renderer/Golden مستقل است؛ F04 تا پایان wiring متصل کامل نمی‌شود و F05 تا F10 و RPT1 نیز باز هستند.
