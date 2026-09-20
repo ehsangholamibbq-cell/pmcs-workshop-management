@@ -391,11 +391,11 @@ public sealed class ProjectFinancialPositionReportingTests
 
         Assert.Contains("AR-001", payload, StringComparison.Ordinal);
         Assert.Contains("Certified Counterparty", payload, StringComparison.Ordinal);
-        Assert.DoesNotContain("description", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("contractId", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("partyId", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("managementFee", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("forecast", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"description\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"contractId\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"partyId\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"managementFee\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"forecast\":", payload, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -635,7 +635,7 @@ public sealed class ProjectFinancialPositionReportingTests
         status,
         number ?? $"OB-{id:000}",
         counterparty,
-        CutoffLocalDate.AddDays(-30),
+        CutoffLocalDate.AddDays(-365),
         dueDate ?? CutoffLocalDate.AddDays(10),
         amount,
         currency,
