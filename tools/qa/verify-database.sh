@@ -269,12 +269,12 @@ expect_equal \
 expect_equal \
   "project-periodic run completed from a pinned project profile" \
   "Succeeded|Complete|1|2|project-periodic-certified|pmcs.reporting.project-periodic.project-profile/v1|true" \
-  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || pinned_project_profile->>'schemaVersion' || '|' || (pinned_project_profile->>'id' = project_id::text and pinned_project_profile->>'tenantId' = tenant_id::text and pinned_project_profile->>'timeZone' = project_time_zone)::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_periodic_run_id}';"
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || (pinned_project_profile->>'schemaVersion') || '|' || ((pinned_project_profile->>'id') = project_id::text and (pinned_project_profile->>'tenantId') = tenant_id::text and (pinned_project_profile->>'timeZone') = project_time_zone)::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_periodic_run_id}';"
 
 expect_equal \
   "project-periodic semantic snapshot records explicit NotConfigured evidence" \
   "pmcs.reporting.project-periodic.snapshot/v1|NotConfigured|project-periodic-certified|Weekly|3|0" \
-  "select schema_version || '|' || data_status || '|' || payload_json->>'definitionCode' || '|' || payload_json#>>'{period,kind}' || '|' || jsonb_array_length(payload_json->'reasonCodes')::text || '|' || jsonb_array_length(payload_json->'officialReports')::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_periodic_run_id}';"
+  "select schema_version || '|' || data_status || '|' || (payload_json->>'definitionCode') || '|' || (payload_json#>>'{period,kind}') || '|' || jsonb_array_length(payload_json->'reasonCodes')::text || '|' || jsonb_array_length(payload_json->'officialReports')::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_periodic_run_id}';"
 
 expect_equal \
   "project-periodic PDF and XLSX outputs are governed and complete" \
