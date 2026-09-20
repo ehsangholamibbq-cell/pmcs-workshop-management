@@ -9,7 +9,8 @@
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS06-C1` در Run 146، DoR و قرارداد معنایی Executive Project
 State را قطعی پاس کرده است. F01 و F02 checkpoint متصل دارند؛ F03 اکنون
-`Contract Ready / Runtime Not Implemented` است و F04 تا F10 باز هستند. RPT1 فعال و همهٔ feature
+`Runtime Core Candidate / Full CI Pending` است و F04 تا F10 باز هستند. Safe Resume Point تا بسته‌شدن
+Candidate همچنان همان MS06 است. RPT1 فعال و همهٔ feature
 flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
@@ -141,7 +142,8 @@ flagها، license و remediation در defaults خاموش یا `Unconfigured` �
 - گزارش هفتگی/ماهانه F02 متصل: Source رسمی correction-safe، مرز شمسی و شنبه‌محور، Snapshot/hash
   قطعی، PDF/XLSX deterministic و Catalog/API/Worker دارای qualification متصل
 - قرارداد checkpointed F03 برای Executive Project State: فقط Snapshot رسمی و immutable،
-  cutoff-aware، بدون Recalculate، Composite Health، join پنهان F04 تا F10 یا Runtime
+  cutoff-aware، بدون Recalculate، Composite Health یا join پنهان F04 تا F10؛ Runtime Core محدود در
+  Candidate مستقل و بدون Renderer/API/Worker wiring
 
 ## تصمیم‌های بنیادین
 

@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Contract Ready بدون Runtime؛ F04–F10/UI باز |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core Candidate با Full CI باز؛ F04–F10/UI باز |
 | Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 146 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |

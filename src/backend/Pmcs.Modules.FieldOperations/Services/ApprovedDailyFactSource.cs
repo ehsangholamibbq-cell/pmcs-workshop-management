@@ -55,6 +55,42 @@ internal sealed class ApprovedDailyFactSource(FieldOperationsDbContext dbContext
             .Select(report => (DateTimeOffset?)report.LastModifiedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<DateTimeOffset?> GetLatestApprovedChangeAtAsync(
+        Guid tenantId,
+        Guid projectId,
+        DateTimeOffset asOfUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var cutoff = asOfUtc.ToUniversalTime();
+        var versions = await dbContext.DailyReports
+            .AsNoTracking()
+            .Where(report => report.TenantId == tenantId &&
+                report.ProjectId == projectId &&
+                (report.Status == DailyReportStatus.Approved || report.Status == DailyReportStatus.Superseded) &&
+                report.ReviewedAt.HasValue &&
+                report.ReviewedAt.Value <= cutoff)
+            .Select(report => new
+            {
+                ApprovedAt = report.ReviewedAt!.Value,
+                report.LastModifiedAt,
+                report.SupersededAt
+            })
+            .ToArrayAsync(cancellationToken);
+
+        return versions
+            .SelectMany(version => new DateTimeOffset?[]
+            {
+                version.ApprovedAt,
+                version.LastModifiedAt <= cutoff ? version.LastModifiedAt : null,
+                version.SupersededAt <= cutoff ? version.SupersededAt : null
+            })
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value.ToUniversalTime())
+            .OrderByDescending(value => value)
+            .Cast<DateTimeOffset?>()
+            .FirstOrDefault();
+    }
+
     public async Task<IReadOnlyDictionary<Guid, DateTimeOffset>> GetLatestApprovedChangesAsync(
         Guid tenantId,
         IReadOnlyCollection<Guid> projectIds,

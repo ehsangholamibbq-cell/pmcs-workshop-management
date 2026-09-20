@@ -234,7 +234,7 @@ const allowedProjectReferences = new Map([
   ["Pmcs.Modules.ProjectIntelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.IdentityAccess", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.WorkManagement", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
-  ["Pmcs.Modules.Reporting", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Documents", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
+  ["Pmcs.Modules.Reporting", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Documents", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.QualityAssurance", ["Pmcs.BuildingBlocks"]],
 ]);
 

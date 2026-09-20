@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.18.0`
-- وضعیت: F03 Semantic Contract passed in Run 146؛ Runtime not implemented؛ F04-F10/UI/Production باز
+- نسخه: `1.19.0`
+- وضعیت: F03 bounded Runtime Core candidate؛ Full CI/Checkpoint و Renderer/Wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -540,3 +540,23 @@ Security، Roadmap و Canonical Reference را کنترل می‌کند. Candida
 این Micro-Step فقط contract/readiness را qualify می‌کند. هیچ C# Runtime، Migration، endpoint،
 Catalog/Template seed، Renderer، TestHarness یا UI اضافه نشده و F03
 `Contract Ready / Runtime Not Implemented` است.
+
+## ۲۹. Runtime Core محدود خانواده F03 — Slice 07 Micro-Step 07 Candidate
+
+Candidate باید بدون API، Migration، Renderer یا Worker wiring موارد زیر را با Unit/contract test
+اثبات کند:
+
+- Runtime identity و parameter/snapshot/profile schema نسخه‌دار؛ پارامتر معنایی همچنان `{}`؛
+- Source فقط از `IProjectStateReportingSource` و بدون import از Persistence یا SQL بین‌ماژولی؛
+- cutoff و tie-break قطعی، حذف Snapshot پس از cutoff و collapse محاسبات تکراری هر تاریخ؛
+- trend حداکثر ۱۴ تاریخ متمایز و ordering قدیم به جدید؛
+- `NotConfigured/NoData/InsufficientData/Available` و reasonهای مستقل currency؛
+- `isPartial` و Aging بدون تبدیل خودکار به Insufficient و حفظ Operational Status؛
+- ordering Attention با `Critical → High → Medium → Low → Unassessed` و lineage کامل؛
+- propagation Classification و fail-closed برای Tenant/Project/version/classification نامعتبر؛
+- hash یکسان twinها مستقل از query order، Run ID و build time؛
+- عدم وجود Composite Health، Finance/Commercial join، Recalculate، endpoint، Migration، Renderer و
+  Production enablement.
+
+Full CI و ثبت Safe Checkpoint این Candidate هنوز باز است. Restore باید همان ۴۴ Migration را بدون
+Migration تازه پاس کند و تمام Suiteهای V1/F01/F02 بدون Regression سبز بمانند.

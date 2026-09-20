@@ -763,7 +763,7 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its conne
   assert.match(canonical, /`RPT1-F01` و `RPT1-F02` checkpoint متصل دارند/u);
 });
 
-test("RPT1-F03 fixes the Executive Project State semantic contract before Runtime implementation", () => {
+test("RPT1-F03 keeps its semantic contract while bounding the Runtime Core candidate", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   );
@@ -779,11 +779,30 @@ test("RPT1-F03 fixes the Executive Project State semantic contract before Runtim
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
   const migration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
+  const sourceContract = read(
+    "src/backend/Pmcs.Modules.ProjectIntelligence/Contracts/IProjectStateReportingSource.cs",
+  );
+  const selector = read(
+    "src/backend/Pmcs.Modules.ProjectIntelligence/Services/ProjectStateReportingSelector.cs",
+  );
+  const source = read(
+    "src/backend/Pmcs.Modules.ProjectIntelligence/Services/ProjectStateReportingSource.cs",
+  );
+  const projectIntelligenceModule = read(
+    "src/backend/Pmcs.Modules.ProjectIntelligence/ProjectIntelligenceModule.cs",
+  );
+  const identity = read(
+    `${moduleRoot}/Domain/ExecutiveProjectStateReportRuntimeContract.cs`,
+  );
+  const builder = read(
+    `${moduleRoot}/Services/ExecutiveProjectStateReportSnapshotBuilder.cs`,
+  );
+  const tests = read("tests/Pmcs.Domain.Tests/ExecutiveProjectStateReportingTests.cs");
 
   assert.match(contract, /PMCS-RPT1-F03-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.0\.0`/u);
-  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
-  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS05-C1`/u);
+  assert.match(contract, /نسخه: `1\.1\.0`/u);
+  assert.match(contract, /Runtime Core Candidate \| Renderer\/Wiring Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
   assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
   assert.match(contract, /Client نمی‌تواند Snapshot مطلوب خود را[\s\S]*انتخاب کند/u);
   assert.match(contract, /`calculatedAt <= sourceCutoffUtc`/u);
@@ -802,16 +821,39 @@ test("RPT1-F03 fixes the Executive Project State semantic contract before Runtim
   assert.match(contract, /`project-state\.recalculate` برای F03 لازم نیست/u);
   assert.match(contract, /حداقل `Internal`/u);
   assert.equal((contract.match(/\| `F03-[A-Z]\d{2}` \|/gu) ?? []).length, 17);
-  assert.match(contract, /هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag/u);
+  assert.match(contract, /هیچ API، Migration، Catalog seed، Renderer، feature flag/u);
 
   assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.0\.0/u);
   assert.match(api, /قرارداد checkpointed F03 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F03/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.33\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.34\.0`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*Run 146[\s\S]*Runtime not implemented/u);
   assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.0\.0[\s\S]*Run 146/u);
   assert.match(rootReadme, /قرارداد checkpointed F03 برای Executive Project State/u);
+
+  assert.match(sourceContract, /pmcs\.project-intelligence\.project-state-reporting\/v1/u);
+  assert.match(sourceContract, /MaximumTrendDates = 14/u);
+  assert.match(sourceContract, /interface IProjectStateReportingSource/u);
+  assert.match(selector, /AsOfDate <= cutoffLocalDate/u);
+  assert.match(selector, /CalculatedAt <= cutoff/u);
+  assert.match(selector, /ThenByDescending\(snapshot => snapshot\.SnapshotId\.ToString\("D"\)/u);
+  assert.match(source, /IApprovedDailyFactSource/u);
+  assert.match(source, /GetLatestApprovedChangeAtAsync/u);
+  assert.match(projectIntelligenceModule, /IProjectStateReportingSource, ProjectStateReportingSource/u);
+  assert.match(identity, /executive-project-state-certified/u);
+  assert.match(identity, /pmcs\.reporting\.executive-project-state\.snapshot\/v1/u);
+  assert.match(builder, /ProjectStateReportingContract\.Version/u);
+  assert.match(builder, /ProjectConfigurationRevisionOutdated/u);
+  assert.match(builder, /ApprovedSourceChangedAfterSnapshot/u);
+  assert.match(builder, /CanonicalJson\.Sha256/u);
+  assert.doesNotMatch(builder, /DbContext|ExecuteSql|CommandCenter|Finance|Commercial|Recalculate/u);
+  assert.match(tests, /SelectorUsesCutoffAndCanonicalAsOfCalculatedAtAndOrdinalIdentityTieBreak/u);
+  assert.match(tests, /SelectorKeepsFourteenDistinctDatesAndCollapsesSameDateRecalculations/u);
+  assert.match(tests, /HistoricalCutoffIgnoresLaterCorrectionAndTwinSourceOrderIsDeterministic/u);
+  assert.match(tests, /StablePartialSnapshotIsAvailableButRetainsItsBoundedAssessmentScope/u);
+  assert.match(tests, /AttentionItemsUsePriorityAgeDateAndOrdinalLineageOrderingWithoutInventingImpact/u);
+  assert.match(tests, /CrossTenantAndUnsupportedEligibleCalculationVersionFailClosed/u);
 
   for (const source of [module, worker, endpoints, migration]) {
     assert.doesNotMatch(source, /ExecutiveProjectState|executive-project-state|RPT1-F03/u);
@@ -852,11 +894,11 @@ test("RPT1-F03 semantic contract records the S07-MS06 safe checkpoint without cl
   assert.match(roadmap, /\| `1\.33\.0` \| ثبت Safe Checkpoint `S07-MS06`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*e3218555a38f7ba460558e51b4db3f8bc17fcd9c/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
-  assert.match(canonical, /Micro-Step بعدی فقط Runtime identity نسخه‌دار F03/u);
-  assert.match(architecture, /نسخه: `1\.17\.1`[\s\S]*Run 146/u);
+  assert.match(checkpoint, /Micro-Step بعدی فقط Runtime identity/u);
+  assert.match(architecture, /نسخه: `1\.18\.0`[\s\S]*Run 146/u);
   assert.match(baseline, /Slice 07 Micro-Step 06[\s\S]*Run 146/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Run 146/u);
-  assert.match(matrix, /نسخه: `1\.18\.0`/u);
+  assert.match(matrix, /نسخه: `1\.19\.0`/u);
   assert.match(security, /نسخه: `1\.8\.1`[\s\S]*Run 146/u);
 });
 

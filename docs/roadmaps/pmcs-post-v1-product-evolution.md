@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.33.0`
+- نسخه سند: `1.34.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -428,6 +428,14 @@ C#، `63/63` contract، `139/139` Web، پنج browser scenario و Restore ۴۴ 
 Checkpoint فقط DoR و Golden matrix هفده‌سناریویی را می‌بندد؛ Runtime identity/source/builder،
 Renderer، Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
+**F03 Bounded Runtime Core — Slice 07 Micro-Step 07 Candidate:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS06-C1` فقط identity/schema نسخه‌دار، Project profile pin، Application
+Contract خواندنی ProjectIntelligence، selector cutoff-aware و semantic Snapshot builder اضافه شده
+است. Unit/contract testها cutoff/tie-break، trend چهارده‌تاریخی، چهار data status، currency، partial
+scope، Attention ordering، Classification و determinism را پوشش می‌دهند. Full CI و Safe Checkpoint
+باز است و هیچ Renderer، Catalog/API/Worker wiring، Migration، UI یا Production enablement وارد این
+Candidate نشده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -703,3 +711,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.31.0` | ثبت Safe Checkpoint `S07-MS05` و Evidence سبز Run 144 برای اتصال Catalog/API/Worker خانواده F02؛ F03 تا F10/UI/Production باز است |
 | `1.32.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F03 برای Executive Project State رسمی، cutoff-aware و بدون Composite Health؛ Runtime هنوز پیاده نشده است |
 | `1.33.0` | ثبت Safe Checkpoint `S07-MS06` و Evidence سبز Run 146 برای قرارداد معنایی F03؛ Runtime/Renderer/wiring باز است |
+| `1.34.0` | ثبت Candidate محدود `S07-MS07` برای Runtime Core F03؛ Full CI/Checkpoint و Renderer/wiring باز است |

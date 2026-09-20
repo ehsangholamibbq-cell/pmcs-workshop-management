@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش مدیریتی / Executive Project State
 
 - شناسه: `PMCS-RPT1-F03-SEMANTIC-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0`
 - خانواده: `RPT1-F03`
-- وضعیت: `Contract Ready | Runtime Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS05-C1`
-- Runtime change: None
+- وضعیت: `Runtime Core Candidate | Renderer/Wiring Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS06-C1`
+- Runtime change: `Bounded identity/source/selector/semantic Snapshot candidate`
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -44,9 +44,11 @@ Server هنگام پذیرش Run این evidence را پین می‌کند و Cl
 نمی‌کند؛ profile جاری هنگام پذیرش جداگانه pin می‌شود و revision آن برای تشخیص outdated بودن Snapshot
 استفاده می‌شود.
 
-شناسه Runtime Definition، Template Version، parameter schema identifier و snapshot schema
-identifier در این Micro-Step تخصیص داده نمی‌شوند؛ آن‌ها فقط همراه کد، Migration و seed واقعی در
-Slice محدود بعدی قطعی خواهند شد.
+Runtime identity داخلی `executive-project-state-certified/1.0.0`، parameter schema
+`pmcs.reporting.executive-project-state.parameters/v1`، Snapshot schema
+`pmcs.reporting.executive-project-state.snapshot/v1` و Project profile pin
+`pmcs.reporting.executive-project-state.project-profile/v1` در Candidate محدود `S07-MS07`
+تخصیص یافته‌اند. Template/Renderer identity، Migration و Catalog seed همچنان تخصیص نیافته‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -56,7 +58,8 @@ F03 فقط دو Application Contract خواندنی و نسخه‌دار را م
 2. ProjectIntelligence، Snapshotهای رسمی Project State و metadata لازم برای currency/classification
    را تا cutoff برمی‌گرداند.
 
-Runtime آینده باید یک Contract باریک reporting-read در `ProjectIntelligence` اضافه کند. import از
+Runtime Core Candidate یک Contract باریک reporting-read با نسخه
+`pmcs.project-intelligence.project-state-reporting/v1` در `ProjectIntelligence` اضافه می‌کند. import از
 `ProjectIntelligenceDbContext`، SQL روی schema ماژول دیگر، فراخوانی HTTP به Command Center، یا
 Recalculate کردن Project State از داخل Reporting ممنوع است. Source contract حداقل باید این lineage
 را برگرداند:
@@ -235,19 +238,22 @@ Qualification آینده باید selection و currency را با query مستق
 | منع Composite Health و inference | بسته |
 | Permission/classification | بسته |
 | Golden matrix هفده‌سناریویی | بسته |
-| Runtime Definition/Template/schema IDs | عمداً باز برای Slice پیاده‌سازی |
-| Source contract/selector/Snapshot builder | Not Implemented |
+| Runtime Definition و parameter/snapshot/profile schema IDs | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Template/Renderer identity | عمداً باز برای Slice Renderer |
+| Source contract/selector/Snapshot builder | Candidate پیاده‌سازی‌شده؛ Full CI باز |
 | PDF/XLSX/visual/performance | Not Implemented |
 | Catalog/API/Worker wiring | Not Implemented |
 
-Micro-Step بعدی فقط می‌تواند Runtime identity نسخه‌دار، Contract خواندنی باریک در
-ProjectIntelligence، selector cutoff-aware، semantic Snapshot builder و Unit/contract tests را اضافه
-کند. Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در
-Sliceهای بعدی و پس از Snapshot قطعی باقی بمانند.
+Candidate `S07-MS07` فقط Runtime identity نسخه‌دار، Contract خواندنی باریک در ProjectIntelligence،
+selector cutoff-aware، semantic Snapshot builder و Unit/contract tests را اضافه کرده است. انتخاب
+Source، trend چهارده‌تاریخی، currency، status precedence، ordering Attention، Classification و hash
+در کد مستقل از Renderer پیاده شده‌اند. Full CI و Safe Checkpoint این Candidate هنوز باز است.
+Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی
+و پس از Snapshot قطعی باقی بمانند.
 
 ## ۱۲. Gate statement
 
-این قرارداد F03 را `Ready for bounded Runtime implementation` می‌کند، نه `Implemented` یا
-`Qualified`. هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag یا Production
-setting در این Micro-Step تغییر نکرده است. F03 تا پایان Runtime، Renderer/Golden و CI متصل
-`Required / Not Implemented` باقی می‌ماند؛ F04 تا F10 و RPT1 نیز باز هستند.
+این نسخه، bounded Runtime Core را فقط به‌عنوان Candidate پیاده‌سازی می‌کند، نه Runtime Qualified یا
+گزارش متصل. هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این
+Micro-Step تغییر نکرده است. تا Full CI و Safe Checkpoint، Candidate مجوز مرحله Renderer نیست؛ F03
+تا پایان Renderer/Golden و wiring متصل کامل نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.

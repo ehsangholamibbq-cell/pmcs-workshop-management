@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.17.1`
-- وضعیت: `S07-MS06 complete in Run 146 | F03 Contract Ready / Runtime not implemented | F04-F10/UI/Production open`
+- نسخه: `1.18.0`
+- وضعیت: `S07-MS07 F03 bounded Runtime Core candidate | Full CI pending | Renderer/Wiring/F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Parent checkpoint commit: `a7b7e885c1e59de894100ade96444184692ab5d3`
@@ -44,7 +44,10 @@ profile pin و Worker dispatch متصل کرده است؛ UI و Production defau
 `pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md` گزارش مدیریتی را فقط به Snapshot
 immutable و رسمی Project State محدود می‌کند. Client پارامتر ندارد، انتخاب Snapshot cutoff-aware و
 server-owned است، وضعیت داده از Operational Status جدا می‌ماند و هیچ Composite Health، Recalculate،
-AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime F03 هنوز پیاده نشده است.
+AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Candidate محدود Runtime Core فقط
+identity/schema نسخه‌دار، Project profile pin، Application Contract
+`pmcs.project-intelligence.project-state-reporting/v1`، selector cutoff-aware و semantic Snapshot
+builder را اضافه کرده است. Renderer، Catalog/API/Worker wiring و Full CI هنوز بازند.
 
 ## ۲. Non-Scope
 
@@ -66,6 +69,7 @@ Dependencyهای مجاز:
 - `Pmcs.BuildingBlocks` برای Clock، Actor، Audit/Outbox/Idempotency و Manifest؛
 - `Pmcs.Modules.Projects` فقط از `IProjectDirectory`؛
 - `Pmcs.Modules.FieldOperations` فقط از `IDailyReportReportingSource`؛
+- `Pmcs.Modules.ProjectIntelligence` فقط از `IProjectStateReportingSource` برای F03؛
 - `Pmcs.Modules.Documents` فقط از Contract انتشار/خواندن Generated Document؛
 - `Pmcs.Modules.IdentityAccess` به‌صورت مستقیم لازم نیست؛ Permission از BuildingBlocks contract تزریق می‌شود.
 
@@ -486,3 +490,12 @@ Contract باریک استفاده خواهد کرد. Candidate `e3218555a38f7ba
 F03 اکنون `Contract Ready / Runtime Not Implemented` است. هیچ Runtime، Migration، endpoint،
 Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است؛ F04 تا F10 و RPT1 باز
 هستند.
+
+Slice 07 Micro-Step 07 Candidate، Runtime identity داخلی
+`executive-project-state-certified/1.0.0`، parameter/snapshot/profile schemaهای نسخه‌دار، Source
+خواندنی ProjectIntelligence و selector قطعی `asOfDate → calculatedAt → snapshotId` را اضافه می‌کند.
+Builder چهار وضعیت داده، currency دوگانه Project revision/Approved Source، partial scope، ordering
+Attention، trend چهارده‌تاریخی، Classification و semantic/source-manifest hash را بدون محاسبه مجدد
+Project State پیاده می‌کند. تست‌های Unit/contract ماتریس هفده‌سناریویی را پوشش می‌دهند. این Candidate
+هیچ endpoint، Migration، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default
+را تغییر نمی‌دهد و تا Full CI و Safe Checkpoint بسته نیست.
