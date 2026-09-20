@@ -294,8 +294,9 @@ public sealed class ProjectFinancialPositionReportingTests
     [Fact]
     public void EligibleCurrencyMismatchFailsClosedWithoutFxOrSilentExclusion()
     {
-        var exception = Assert.Throws<DomainRuleException>(() => Select(Projection(records:
-        [Record(10, FinancialRecordType.Receipt, 100m, currency: "USD")]));
+        var exception = Assert.Throws<DomainRuleException>(() =>
+            Select(Projection(
+                records: [Record(10, FinancialRecordType.Receipt, 100m, currency: "USD")])));
 
         Assert.Equal("finance.financial_position_reporting.record.currency_mismatch", exception.Code);
     }
