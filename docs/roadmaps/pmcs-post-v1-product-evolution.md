@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.34.0`
+- نسخه سند: `1.35.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -428,13 +428,16 @@ C#، `63/63` contract، `139/139` Web، پنج browser scenario و Restore ۴۴ 
 Checkpoint فقط DoR و Golden matrix هفده‌سناریویی را می‌بندد؛ Runtime identity/source/builder،
 Renderer، Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
-**F03 Bounded Runtime Core — Slice 07 Micro-Step 07 Candidate:** روی Safe Checkpoint
+**F03 Bounded Runtime Core — Slice 07 Micro-Step 07 Safe Checkpoint:** روی Safe Checkpoint
 `PMCS-V1.1-RPT1-S07-MS06-C1` فقط identity/schema نسخه‌دار، Project profile pin، Application
 Contract خواندنی ProjectIntelligence، selector cutoff-aware و semantic Snapshot builder اضافه شده
 است. Unit/contract testها cutoff/tie-break، trend چهارده‌تاریخی، چهار data status، currency، partial
-scope، Attention ordering، Classification و determinism را پوشش می‌دهند. Full CI و Safe Checkpoint
-باز است و هیچ Renderer، Catalog/API/Worker wiring، Migration، UI یا Production enablement وارد این
-Candidate نشده است.
+scope، Attention ordering، Classification و determinism را پوشش می‌دهند. Source
+`22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 هر هشت Job، `377/377` تست C#، `64/64`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS07-C1` است و هیچ Renderer، Catalog/API/Worker wiring،
+Migration، UI یا Production enablement وارد این Micro-Step نشده است.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -712,3 +715,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.32.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F03 برای Executive Project State رسمی، cutoff-aware و بدون Composite Health؛ Runtime هنوز پیاده نشده است |
 | `1.33.0` | ثبت Safe Checkpoint `S07-MS06` و Evidence سبز Run 146 برای قرارداد معنایی F03؛ Runtime/Renderer/wiring باز است |
 | `1.34.0` | ثبت Candidate محدود `S07-MS07` برای Runtime Core F03؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.35.0` | ثبت Safe Checkpoint `S07-MS07` و Evidence سبز Run 148 برای Runtime Core F03؛ Renderer/Golden و wiring متصل باز است |

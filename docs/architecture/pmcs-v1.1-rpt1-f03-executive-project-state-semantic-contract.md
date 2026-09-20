@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش مدیریتی / Executive Project State
 
 - شناسه: `PMCS-RPT1-F03-SEMANTIC-001`
-- نسخه: `1.1.0`
+- نسخه: `1.1.1`
 - خانواده: `RPT1-F03`
-- وضعیت: `Runtime Core Candidate | Renderer/Wiring Not Implemented`
+- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS06-C1`
-- Runtime change: `Bounded identity/source/selector/semantic Snapshot candidate`
+- Runtime change: `Bounded identity/source/selector/semantic Snapshot checkpointed in Run 148`
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -47,7 +47,7 @@ Server هنگام پذیرش Run این evidence را پین می‌کند و Cl
 Runtime identity داخلی `executive-project-state-certified/1.0.0`، parameter schema
 `pmcs.reporting.executive-project-state.parameters/v1`، Snapshot schema
 `pmcs.reporting.executive-project-state.snapshot/v1` و Project profile pin
-`pmcs.reporting.executive-project-state.project-profile/v1` در Candidate محدود `S07-MS07`
+`pmcs.reporting.executive-project-state.project-profile/v1` در Safe Checkpoint `S07-MS07`
 تخصیص یافته‌اند. Template/Renderer identity، Migration و Catalog seed همچنان تخصیص نیافته‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
@@ -58,7 +58,7 @@ F03 فقط دو Application Contract خواندنی و نسخه‌دار را م
 2. ProjectIntelligence، Snapshotهای رسمی Project State و metadata لازم برای currency/classification
    را تا cutoff برمی‌گرداند.
 
-Runtime Core Candidate یک Contract باریک reporting-read با نسخه
+Runtime Core یک Contract باریک reporting-read با نسخه
 `pmcs.project-intelligence.project-state-reporting/v1` در `ProjectIntelligence` اضافه می‌کند. import از
 `ProjectIntelligenceDbContext`، SQL روی schema ماژول دیگر، فراخوانی HTTP به Command Center، یا
 Recalculate کردن Project State از داخل Reporting ممنوع است. Source contract حداقل باید این lineage
@@ -238,22 +238,25 @@ Qualification آینده باید selection و currency را با query مستق
 | منع Composite Health و inference | بسته |
 | Permission/classification | بسته |
 | Golden matrix هفده‌سناریویی | بسته |
-| Runtime Definition و parameter/snapshot/profile schema IDs | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Runtime Definition و parameter/snapshot/profile schema IDs | Checkpointed in Run 148 |
 | Template/Renderer identity | عمداً باز برای Slice Renderer |
-| Source contract/selector/Snapshot builder | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Source contract/selector/Snapshot builder | Checkpointed in Run 148 |
 | PDF/XLSX/visual/performance | Not Implemented |
 | Catalog/API/Worker wiring | Not Implemented |
 
-Candidate `S07-MS07` فقط Runtime identity نسخه‌دار، Contract خواندنی باریک در ProjectIntelligence،
+Checkpoint `S07-MS07` فقط Runtime identity نسخه‌دار، Contract خواندنی باریک در ProjectIntelligence،
 selector cutoff-aware، semantic Snapshot builder و Unit/contract tests را اضافه کرده است. انتخاب
 Source، trend چهارده‌تاریخی، currency، status precedence، ordering Attention، Classification و hash
-در کد مستقل از Renderer پیاده شده‌اند. Full CI و Safe Checkpoint این Candidate هنوز باز است.
-Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی
-و پس از Snapshot قطعی باقی بمانند.
+در کد مستقل از Renderer پیاده شده‌اند. Source
+`22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 (`35507127968`) هر هشت Job، `377/377`
+تست C#، `64/64` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس
+کرد. Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در
+Sliceهای بعدی و پس از Snapshot قطعی باقی بمانند.
 
 ## ۱۲. Gate statement
 
-این نسخه، bounded Runtime Core را فقط به‌عنوان Candidate پیاده‌سازی می‌کند، نه Runtime Qualified یا
-گزارش متصل. هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این
-Micro-Step تغییر نکرده است. تا Full CI و Safe Checkpoint، Candidate مجوز مرحله Renderer نیست؛ F03
-تا پایان Renderer/Golden و wiring متصل کامل نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.
+این نسخه bounded Runtime Core را checkpoint می‌کند، نه گزارش متصل یا F03 End-to-End.
+هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این Micro-Step تغییر نکرده است.
+Micro-Step بعدی فقط Renderer/Golden مستقل است؛ F03 تا پایان Renderer/Golden و wiring متصل کامل
+نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.19.0`
-- وضعیت: F03 bounded Runtime Core candidate؛ Full CI/Checkpoint و Renderer/Wiring باز
+- نسخه: `1.20.0`
+- وضعیت: F03 bounded Runtime Core passed in Run 148؛ Renderer/Wiring و F04-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -541,9 +541,9 @@ Security، Roadmap و Canonical Reference را کنترل می‌کند. Candida
 Catalog/Template seed، Renderer، TestHarness یا UI اضافه نشده و F03
 `Contract Ready / Runtime Not Implemented` است.
 
-## ۲۹. Runtime Core محدود خانواده F03 — Slice 07 Micro-Step 07 Candidate
+## ۲۹. Runtime Core محدود خانواده F03 — Slice 07 Micro-Step 07
 
-Candidate باید بدون API، Migration، Renderer یا Worker wiring موارد زیر را با Unit/contract test
+Runtime Core باید بدون API، Migration، Renderer یا Worker wiring موارد زیر را با Unit/contract test
 اثبات کند:
 
 - Runtime identity و parameter/snapshot/profile schema نسخه‌دار؛ پارامتر معنایی همچنان `{}`؛
@@ -558,5 +558,12 @@ Candidate باید بدون API، Migration، Renderer یا Worker wiring موا
 - عدم وجود Composite Health، Finance/Commercial join، Recalculate، endpoint، Migration، Renderer و
   Production enablement.
 
-Full CI و ثبت Safe Checkpoint این Candidate هنوز باز است. Restore باید همان ۴۴ Migration را بدون
-Migration تازه پاس کند و تمام Suiteهای V1/F01/F02 بدون Regression سبز بمانند.
+Source `22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 (`35507127968`) هر هشت Job را پاس کرد:
+`377/377` تست C#، شامل `22/22` case متمرکز F03؛ `64/64` تست قراردادی Node؛ `139/139` تست Web؛
+پنج browser scenario؛ validator روی `362` فایل ماژولی؛ audit ثابت `274/204/5`؛ Restore کامل ۴۴
+Migration و Qualification برابر `7/7` با صفر failure.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS07-C1` فقط Runtime Core را می‌بندد. Renderer/Golden،
+Catalog/API/Worker wiring، UI و Production enablement بازند و تمام Suiteهای V1/F01/F02 بدون
+Regression باقی مانده‌اند.

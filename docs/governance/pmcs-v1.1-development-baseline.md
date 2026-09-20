@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core Candidate با Full CI باز؛ F04–F10/UI باز |
-| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 146 پاس شده است |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core checkpointed و Renderer/wiring باز؛ F04–F10/UI باز |
+| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 148 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -198,6 +198,16 @@ Composite Health، AI summary و join پنهان F04 تا F10 ممنوع‌ان�
 تست C#، `63/63` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration
 را پاس کرد. هیچ Runtime، Migration، API، Catalog seed، Renderer، UI یا default Production تغییر
 نکرد؛ F03 اکنون `Contract Ready / Runtime Not Implemented` و RPT1 فعال است.
+
+Slice 07 Micro-Step 07، قرارداد را به `PMCS-RPT1-F03-SEMANTIC-001 v1.1.1` ارتقا داد و فقط Runtime
+Core داخلی شامل identity/schema نسخه‌دار، Project profile pin، Contract خواندنی
+ProjectIntelligence، selector cutoff-aware و semantic Snapshot builder را اضافه کرد. Source
+`22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 (`35507127968`) هر هشت Job، `377/377`
+تست C#، `64/64` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration
+را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS07-C1` است. هیچ endpoint، Migration،
+Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ F03 هنوز
+End-to-End Done نیست و RPT1 فعال است.
 
 ## ۳. قرارداد شاخه و ادغام
 

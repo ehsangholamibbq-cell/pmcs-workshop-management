@@ -1,16 +1,16 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.18.0`
-- وضعیت: `S07-MS07 F03 bounded Runtime Core candidate | Full CI pending | Renderer/Wiring/F04-F10/UI/Production open`
+- نسخه: `1.19.0`
+- وضعیت: `S07-MS07 complete in Run 148 | F03 Runtime Core checkpointed | Renderer/Wiring/F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- Parent checkpoint commit: `a7b7e885c1e59de894100ade96444184692ab5d3`
-- Parent checkpoint tree: `5a476abb23ad650cb7334f537583ee4fa7b3c628`
-- Qualification candidate: `e3218555a38f7ba460558e51b4db3f8bc17fcd9c`
-- Source tree: `1fe4cc804fdd078a71ff2633201c8c690447900e`
-- PR validation merge: `a6987cd47bb1be917d34a94fb064aa72ec6b89c2`؛ همان tree
-- Connected evidence: Run 146 (`35500809115`) — `success`
+- Parent checkpoint commit: `11220dd8b407a2239fd4583f5e62d6b71665b6cf`
+- Parent checkpoint tree: `e20dccd7fdfdb1bbff7b91ab84fea37487e1a903`
+- Qualification candidate: `22d5b0f91edf8d733192fae0ba946c8538c63bca`
+- Source tree: `eb5ea4253a7b80e8ab3320b9ccea747624f89790`
+- PR validation merge: `b89ca9920fc216644203d9cd5b3868cabed453fe`؛ همان tree
+- Connected evidence: Run 148 (`35507127968`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -40,14 +40,14 @@ schemaهای نسخه‌دار، period-read contract، resolver و semantic Sna
 فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را با Catalog، strict API، Project
 profile pin و Worker dispatch متصل کرده است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` در
+قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.1.1` در
 `pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md` گزارش مدیریتی را فقط به Snapshot
 immutable و رسمی Project State محدود می‌کند. Client پارامتر ندارد، انتخاب Snapshot cutoff-aware و
 server-owned است، وضعیت داده از Operational Status جدا می‌ماند و هیچ Composite Health، Recalculate،
-AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Candidate محدود Runtime Core فقط
+AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime Core checkpointed فقط
 identity/schema نسخه‌دار، Project profile pin، Application Contract
 `pmcs.project-intelligence.project-state-reporting/v1`، selector cutoff-aware و semantic Snapshot
-builder را اضافه کرده است. Renderer، Catalog/API/Worker wiring و Full CI هنوز بازند.
+builder را اضافه کرده است. Renderer و Catalog/API/Worker wiring هنوز بازند.
 
 ## ۲. Non-Scope
 
@@ -491,11 +491,14 @@ F03 اکنون `Contract Ready / Runtime Not Implemented` است. هیچ Runtime
 Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است؛ F04 تا F10 و RPT1 باز
 هستند.
 
-Slice 07 Micro-Step 07 Candidate، Runtime identity داخلی
+Slice 07 Micro-Step 07، Runtime identity داخلی
 `executive-project-state-certified/1.0.0`، parameter/snapshot/profile schemaهای نسخه‌دار، Source
 خواندنی ProjectIntelligence و selector قطعی `asOfDate → calculatedAt → snapshotId` را اضافه می‌کند.
 Builder چهار وضعیت داده، currency دوگانه Project revision/Approved Source، partial scope، ordering
 Attention، trend چهارده‌تاریخی، Classification و semantic/source-manifest hash را بدون محاسبه مجدد
-Project State پیاده می‌کند. تست‌های Unit/contract ماتریس هفده‌سناریویی را پوشش می‌دهند. این Candidate
-هیچ endpoint، Migration، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default
-را تغییر نمی‌دهد و تا Full CI و Safe Checkpoint بسته نیست.
+Project State پیاده می‌کند. Source `22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` هر هشت Job Run 148 (`35507127968`) را پاس کرد:
+`377/377` تست C#، `64/64` تست Node، `139/139` تست Web، پنج browser scenario و Restore کامل ۴۴
+Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS07-C1` Runtime Core را می‌بندد. هیچ endpoint،
+Migration، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default تغییر نکرده
+است؛ F03 هنوز End-to-End قابل اجرا/دانلود نیست.

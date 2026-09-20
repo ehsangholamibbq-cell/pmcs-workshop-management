@@ -169,6 +169,7 @@ const requiredFiles = [
   "docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-07-ms05-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-07-ms06-candidate.md",
+  "docs/checkpoints/v1.1-rpt1-slice-07-ms07-candidate.md",
   "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   "docs/security/pmcs-v1.1-reporting-security.md",
   "docs/qa/pmcs-v1.1-rpt1-test-matrix.md",
