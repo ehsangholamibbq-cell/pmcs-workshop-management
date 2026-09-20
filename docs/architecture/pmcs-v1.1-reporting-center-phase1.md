@@ -1,16 +1,14 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.16.0`
-- وضعیت: `S07-MS05 F02 connected safe checkpoint | F03-F10/UI/Production open`
+- نسخه: `1.17.0`
+- وضعیت: `S07-MS06 F03 semantic contract candidate | Runtime not implemented | F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- Parent checkpoint commit: `1f1fc2b31840de64c70236b97d44f27fdad247d2`
-- Parent checkpoint tree: `a3d81096ae61966ecce87a179524c1f92a75f1bb`
-- Source commit: `7fc55c167ad2159a31c895b32a52d78f47574df9`
-- Source tree: `d665fe4cdf29369f96ec0875bc6f1535db349d55`
-- PR validation merge: `2a91fc442a3a84a2ee3d6c59fe5186c8f0ed3efb`؛ همان tree
-- Connected evidence: Run 144 (`35498990050`) — `success`
+- Parent checkpoint commit: `a7b7e885c1e59de894100ade96444184692ab5d3`
+- Parent checkpoint tree: `5a476abb23ad650cb7334f537583ee4fa7b3c628`
+- Candidate source: working tree؛ commit و Full CI در انتظار
+- Parent checkpoint evidence: Run 145 (`35499768898`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -39,6 +37,12 @@ permission/classification و Golden matrix آن را تثبیت می‌کند. R
 schemaهای نسخه‌دار، period-read contract، resolver و semantic Snapshot builder را دارد. Checkpoint
 فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را با Catalog، strict API، Project
 profile pin و Worker dispatch متصل کرده است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
+
+قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` در
+`pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md` گزارش مدیریتی را فقط به Snapshot
+immutable و رسمی Project State محدود می‌کند. Client پارامتر ندارد، انتخاب Snapshot cutoff-aware و
+server-owned است، وضعیت داده از Operational Status جدا می‌ماند و هیچ Composite Health، Recalculate،
+AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime F03 هنوز پیاده نشده است.
 
 ## ۲. Non-Scope
 
@@ -469,3 +473,12 @@ Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
 Run 143 تنها به‌دلیل تقدم عملگر JSON در query شواهد shell شکست خورد و اصلاح نهایی فقط همان expression
 را پرانتزبندی کرد. Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` اتصال F02 را می‌بندد؛ UI و سه default
 production همچنان بدون تغییر و خاموش‌اند و F03 تا F10 باز هستند.
+
+Slice 07 Micro-Step 06 فقط DoR و قرارداد معنایی F03 را تعریف می‌کند. انتخاب Snapshot براساس
+`asOfDate → calculatedAt → snapshotId` تا cutoff، trend چهارده‌تاریخی بدون duplicate، currency
+برپایه Project revision و آخرین Source رسمی، partial-scope warning، permission/classification و
+Golden matrix هفده‌سناریویی قطعی شده‌اند. Command Center response، Finance/Commercial، disposition
+جاری و ProjectIntelligence persistence مستقیماً مصرف نمی‌شوند؛ Runtime آینده فقط از Application
+Contract باریک استفاده خواهد کرد. این وضعیت Contract Candidate است و تا Full CI Safe Checkpoint
+نیست. هیچ Runtime، Migration، endpoint، Catalog/Template seed، Renderer، UI یا default Production
+تغییر نکرده است؛ F03 تا F10 و RPT1 باز هستند.

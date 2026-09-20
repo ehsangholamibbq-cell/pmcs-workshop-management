@@ -7,11 +7,11 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS03-C1` در Run 139، Runtime Core گزارش هفتگی/ماهانه F02 را
-با identity، period source/resolver و semantic Snapshot builder قطعی پاس کرده است. فقط F01 گزارش
-روزانه Runtime/Renderer واجد Qualification انتهابه‌انتها دارد؛ F02 هنوز از API/Worker قابل اجرا یا
-با Renderer قابل دانلود نیست و F03 تا F10 باز هستند. RPT1 فعال و همهٔ feature flagها، license و
-remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` در Runهای 144 و 145، Catalog/API/Worker و PDF/XLSX
+متصل گزارش هفتگی/ماهانه F02 را قطعی پاس کرده است. F01 و F02 اکنون checkpoint متصل دارند؛ F03 در
+Micro-Step 06 فقط قرارداد معنایی Executive Project State را تثبیت می‌کند و هنوز Runtime ندارد.
+F04 تا F10 نیز باز هستند. RPT1 فعال و همهٔ feature flagها، license و remediation در defaults خاموش
+یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -139,8 +139,10 @@ remediation در defaults خاموش یا `Unconfigured` باقی مانده‌�
 - Location/LBS سلسله‌مراتبی با ROOT، بازنشستگی کنترل‌شده و شناسه پایدار تا Fact و Project State
 - گیت سراسری قرارداد ۲۱۲ Endpoint و ۱۶۹ Mutation در CI
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
-- Runtime Core محدود F02 برای گزارش هفتگی/ماهانه: Source رسمی دوره‌ای correction-safe، مرز شمسی و
-  شنبه‌محور، coverage سه cadence، Snapshot/hash قطعی و propagation طبقه‌بندی؛ بدون API/Renderer/seed
+- گزارش هفتگی/ماهانه F02 متصل: Source رسمی correction-safe، مرز شمسی و شنبه‌محور، Snapshot/hash
+  قطعی، PDF/XLSX deterministic و Catalog/API/Worker دارای qualification متصل
+- قرارداد معنایی F03 برای Executive Project State: فقط Snapshot رسمی و immutable، cutoff-aware،
+  بدون Recalculate، Composite Health، join پنهان F04 تا F10 یا Runtime در این Micro-Step
 
 ## تصمیم‌های بنیادین
 

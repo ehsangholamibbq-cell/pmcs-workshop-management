@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.7.0`
-- وضعیت: F01/F02 connected gates passed؛ F02 Safe Checkpoint در Run 144؛ Production disabled
+- نسخه: `1.8.0`
+- وضعیت: F01/F02 connected؛ F03 semantic security contract candidate؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -84,6 +84,25 @@ Checkpoint `S07-MS05` همان سه re-evaluation را برای F02 فعال م�
 می‌شود. TestHarness deny مربوط به Observer، replay/conflict و Download/Verify هر دو فرمت را پوشش
 می‌دهد. Source `7fc55c167ad2159a31c895b32a52d78f47574df9` در Run 144 (`35498990050`) هر هشت Job و هارنس
 متصل F02 را با `13/13` assertion پاس کرد. UI و Production defaults همچنان خاموش‌اند.
+
+### ۳.۲ سیاست ثابت F03
+
+F03 فقط Source رسمی Project State را با `project-state.read` مصرف می‌کند. نبود این Permission کل
+Definition/Run/Output را deny می‌کند؛ حذف خاموش Attention یا trend point مجاز نیست. Create/Retry به
+`reporting.run.create` و Download/Verify به `reporting.output.download` نیز نیاز دارند و هر سه نقطه
+request، processing و download دوباره ارزیابی می‌شوند. `project-state.recalculate` هرگز بخشی از
+اجرای F03 نیست.
+
+Client فقط `{}` می‌فرستد و نمی‌تواند `snapshotId` یا Source مطلوب انتخاب کند. Source رسمی با
+Tenant/Project و cutoff محدود می‌شود و Snapshotهای بعد از cutoff، Command Center joinهای جاری،
+Finance/Commercial و dispositionهای mutable وارد F03 نمی‌شوند. Cross-tenant ID، calculation version
+ناشناخته، lineage ناقص، hash conflict یا currency اثبات‌نشده failure امن هستند.
+
+Classification F03 بیشترین مقدار میان Definition، Project/source configuration و Snapshotهای
+واردشده و حداقل `Internal` است. Source contract باید classification را صریح صادر کند؛ نبود آن یا
+Permission طبقه بالاتر کل Run را fail-closed می‌کند. متن Attention، Location و Source IDs در
+filename، event یا diagnostic ثبت نمی‌شوند. این سیاست در `S07-MS06` فقط قرارداد است و هنوز Runtime،
+Catalog، Worker یا Renderer F03 را فعال نمی‌کند.
 
 ## ۴. Threat model
 

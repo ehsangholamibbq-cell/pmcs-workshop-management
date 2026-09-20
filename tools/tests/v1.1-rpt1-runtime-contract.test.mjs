@@ -763,6 +763,61 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its conne
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS05-C1`/u);
 });
 
+test("RPT1-F03 fixes the Executive Project State semantic contract before Runtime implementation", () => {
+  const contract = read(
+    "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
+  );
+  const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
+  const api = read("docs/api/reporting-v1.md");
+  const security = read("docs/security/pmcs-v1.1-reporting-security.md");
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const rootReadme = read("README.md");
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const migration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
+
+  assert.match(contract, /PMCS-RPT1-F03-SEMANTIC-001/u);
+  assert.match(contract, /نسخه: `1\.0\.0`/u);
+  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS05-C1`/u);
+  assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
+  assert.match(contract, /Client نمی‌تواند Snapshot مطلوب خود را[\s\S]*انتخاب کند/u);
+  assert.match(contract, /`calculatedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`asOfDate <= cutoffLocalDate`/u);
+  assert.match(contract, /بزرگ‌ترین `asOfDate`[\s\S]*جدیدترین `calculatedAt`[\s\S]*بزرگ‌ترین `snapshotId`/u);
+  assert.match(contract, /حداکثر ۱۴ تاریخ متمایز/u);
+  assert.match(contract, /ProjectIntelligenceDbContext[\s\S]*Recalculate کردن Project State[\s\S]*ممنوع/u);
+  assert.match(contract, /خروجی `GET \/command-center` منبع مستقیم F03 نیست/u);
+  assert.match(contract, /`project-state-v1` و `project-state-v2`[\s\S]*allowlisted/u);
+  assert.match(contract, /`NotConfigured`[\s\S]*`NoData`[\s\S]*`InsufficientData`[\s\S]*`Available`/u);
+  assert.match(contract, /`ProjectStateReportingNotConfigured`[\s\S]*`ApprovedSourceChangedAfterSnapshot`/u);
+  assert.match(contract, /`isPartial=true`[\s\S]*به‌تنهایی[\s\S]*`InsufficientData` نمی‌کند/u);
+  assert.match(contract, /`Stable` فقط وضعیت عملیاتی[\s\S]*سلامت\s+مالی/u);
+  assert.match(contract, /هیچ رنگ\/امتیاز کل از feature stateها ساخته نمی‌شود/u);
+  assert.match(contract, /`project-state\.read`/u);
+  assert.match(contract, /`project-state\.recalculate` برای F03 لازم نیست/u);
+  assert.match(contract, /حداقل `Internal`/u);
+  assert.equal((contract.match(/\| `F03-[A-Z]\d{2}` \|/gu) ?? []).length, 17);
+  assert.match(contract, /هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag/u);
+
+  assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.0\.0/u);
+  assert.match(api, /قرارداد آینده F03 بدون تغییر API/u);
+  assert.match(security, /سیاست ثابت F03/u);
+  assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
+  assert.match(roadmap, /نسخه سند: `1\.32\.0`/u);
+  assert.match(registry, /Slice 07 MS06[\s\S]*Runtime not implemented[\s\S]*Full CI pending/u);
+  assert.match(canonical, /Candidate\s+اسنادی `S07-MS06`[\s\S]*PMCS-RPT1-F03-SEMANTIC-001 v1\.0\.0/u);
+  assert.match(rootReadme, /قرارداد معنایی F03 برای Executive Project State/u);
+
+  for (const source of [module, worker, endpoints, migration]) {
+    assert.doesNotMatch(source, /ExecutiveProjectState|executive-project-state|RPT1-F03/u);
+  }
+});
+
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {
   const sourceContract = read(
     "src/backend/Pmcs.Modules.FieldOperations/Contracts/IDailyReportPeriodReportingSource.cs",

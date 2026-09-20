@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03–F10/UI باز |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Contract Candidate بدون Runtime؛ F04–F10/UI باز |
 | Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 144 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -188,6 +188,13 @@ API، Project profile pin، Worker dispatch و QA متصل PDF/XLSX را اضا�
 تست C#، `61/61` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F02 برابر `13/13` و
 Restore کامل ۴۴ Migration را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است؛ UI و
 defaultهای Production تغییر نکرده‌اند و F03 تا F10 همچنان باز هستند.
+
+Slice 07 Micro-Step 06 فقط قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` را روی Checkpoint
+`PMCS-V1.1-RPT1-S07-MS05-C1` تعریف می‌کند. F03 فقط Snapshot رسمی Project State را تا cutoff، با
+partial scope، کیفیت داده، currency، lineage و trend canonical گزارش خواهد کرد؛ Recalculate،
+Composite Health، AI summary و join پنهان F04 تا F10 ممنوع‌اند. این Candidate هیچ Runtime،
+Migration، API، Catalog seed، Renderer، UI یا default Production را تغییر نمی‌دهد و تا Full CI و
+Checkpoint مستقل، F03 همچنان `Required / Not Implemented` است.
 
 ## ۳. قرارداد شاخه و ادغام
 

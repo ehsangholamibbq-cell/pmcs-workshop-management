@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.16.0`
-- وضعیت: F02 Connected Safe Checkpoint؛ Run 144 passed؛ F03-F10/UI/Production باز
+- نسخه: `1.17.0`
+- وضعیت: F03 Semantic Contract Candidate؛ Runtime not implemented؛ Full CI و Checkpoint باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -511,3 +511,25 @@ Migration و Qualification برابر `7/7`. artifactهای Qualification، Inte
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` اتصال F02 را می‌بندد. UI تغییر نکرده و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled` در production defaults همچنان `false` هستند؛
 F03 تا F10 و RPT1 باز می‌مانند.
+
+## ۲۸. قرارداد Qualification خانواده F03 — Slice 07 Micro-Step 06
+
+قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` پیش از هر Runtime این Gateها را قطعی می‌کند:
+
+- پارامتر Client دقیقاً `{}` و منع `snapshotId`، تاریخ، status، include flag یا Source دلخواه؛
+- انتخاب Snapshot رسمی با Tenant/Project، `calculatedAt <= cutoff` و `asOfDate <= cutoffLocalDate`؛
+- precedence انتخاب `asOfDate → calculatedAt → snapshotId` و trend حداکثر ۱۴ تاریخ متمایز؛
+- Source فقط از Application Contract باریک ProjectIntelligence، بدون DbContext/SQL، Command Center
+  HTTP یا Recalculate؛
+- جدایی `dataStatus` از Operational/Coverage/Freshness/Confidence و حفظ هشدار `isPartial`؛
+- currency براساس Project revision و آخرین Approved Source مؤثر تا cutoff؛
+- منع Composite Health، AI summary، inference و join پنهان Finance/Commercial/F04 تا F10؛
+- permission کامل `project-state.read`، propagation Classification و منع حذف خاموش Source؛
+- ordering canonical Attention/Trend، semantic/source-manifest hash و budget fail-closed؛
+- Golden matrix هفده‌سناریویی `F03-C01..D01` برای cutoff، selection، NoData/NotConfigured،
+  InsufficientData، outdated، Operational state، trend، Attention، security و determinism.
+
+Contract test باید وجود سند، هر ۱۷ fixture، reason allowlist، منع Runtime و هم‌راستایی معماری، API،
+Security، Roadmap و Canonical Reference را کنترل کند. در این Micro-Step هیچ C# Runtime، Migration،
+endpoint، Catalog/Template seed، Renderer، TestHarness یا UI اضافه نمی‌شود. Full CI و ثبت
+Checkpoint `S07-MS06` هنوز Gate باز Candidate است.
