@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02 connected؛ F03 Runtime Core passed in Run 148 بدون Catalog/API/Worker/Renderer؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02 connected؛ F03 Runtime Core + Renderer/Golden passed in Run 154 بدون Catalog/API/Worker؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -65,10 +65,10 @@ Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
 `d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد؛
 هارنس متصل F02 هر `13/13` assertion و Restore Drill هر ۴۴ Migration را تأیید کردند.
 
-### ۱.۶ Runtime Core checkpointed F03 بدون تغییر API
+### ۱.۶ Runtime Core و Renderer/Golden checkpointed F03 بدون تغییر API
 
-Micro-Stepهای `S07-MS06/MS07` route تازه‌ای اضافه نمی‌کنند. قرارداد
-`PMCS-RPT1-F03-SEMANTIC-001 v1.1.1` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
+Micro-Stepهای `S07-MS06/MS07/MS08` route تازه‌ای اضافه نمی‌کنند. قرارداد
+`PMCS-RPT1-F03-SEMANTIC-001 v1.2.1` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
 و `sourceCutoffUtc` از `asOfUtc` پین‌شدهٔ Run می‌آیند. Client اجازه ارسال `snapshotId`، تاریخ، status،
 include flag یا انتخاب Source را ندارد.
 
@@ -76,13 +76,14 @@ Runtime Core فقط از Application Contract خواندنی ProjectIntelligence
 تا cutoff را انتخاب می‌کند و هرگز `project-state.recalculate` یا endpoint Command Center را
 فراخوانی نمی‌کند. Project State عملیاتی، Coverage/Freshness/Confidence و partial scope بدون join
 Finance/Commercial/Planning/Quality/HSE/Action حمل می‌شوند. Runtime identity و parameter/snapshot/
-profile schemaها داخلی‌اند؛ Definition/Template Catalog، API dispatch، Worker و Renderer F03 هنوز
-وجود ندارند.
+profile schemaها داخلی‌اند. Template/Renderer/Layout identity و PDF/XLSX قطعی در Registry مستقل
+وجود دارند، اما Definition/Template Catalog، API dispatch و Worker F03 هنوز وجود ندارند و Registry
+در DI ثبت نشده است.
 
-Source `22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
-`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 (`35507127968`) هر هشت Job را پاس کرد.
-این Evidence Runtime Core داخلی را checkpoint می‌کند، اما route، Catalog یا Worker تازه‌ای فعال
-نمی‌کند و هیچ گزارش F03 هنوز از API قابل ایجاد یا دانلود نیست.
+Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job را پاس کرد.
+این Evidence Runtime Core و Renderer/Golden داخلی را checkpoint می‌کند، اما route، Catalog یا Worker
+تازه‌ای فعال نمی‌کند و هیچ گزارش F03 هنوز از API قابل ایجاد، retry، verify یا دانلود نیست.
 
 ## ۲. Catalog
 

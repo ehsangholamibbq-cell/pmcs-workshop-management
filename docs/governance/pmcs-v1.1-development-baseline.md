@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core checkpointed و Renderer/wiring باز؛ F04–F10/UI باز |
-| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 148 پاس شده است |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core و Renderer/Golden checkpointed و wiring باز؛ F04–F10/UI باز |
+| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 154 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -208,6 +208,14 @@ ProjectIntelligence، selector cutoff-aware و semantic Snapshot builder را ا
 را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS07-C1` است. هیچ endpoint، Migration،
 Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ F03 هنوز
 End-to-End Done نیست و RPT1 فعال است.
+
+Slice 07 Micro-Step 08 فقط Renderer contract مستقل، render model canonical و PDF/XLSX قطعی F03 را
+روی Runtime Core MS07 اضافه کرد. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job، `383/383`
+تست C#، `65/65` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration
+را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS08-C1` است. هیچ endpoint، Migration،
+Catalog/Template seed، Worker dispatch، DI registration، UI یا default Production تغییر نکرد؛ F03
+هنوز End-to-End Done نیست و RPT1 فعال است.
 
 ## ۳. قرارداد شاخه و ادغام
 

@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش مدیریتی / Executive Project State
 
 - شناسه: `PMCS-RPT1-F03-SEMANTIC-001`
-- نسخه: `1.1.1`
+- نسخه: `1.2.1`
 - خانواده: `RPT1-F03`
-- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS06-C1`
-- Runtime change: `Bounded identity/source/selector/semantic Snapshot checkpointed in Run 148`
-- Migration / API / Renderer / Template change: None
+- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS07-C1`
+- Runtime change: `Deterministic PDF/XLSX Renderer contract checkpointed in Run 154`
+- Migration / API / Catalog / Worker change: None
 
 ## ۱. هدف و مرز خانواده
 
@@ -48,7 +48,11 @@ Runtime identity داخلی `executive-project-state-certified/1.0.0`، paramete
 `pmcs.reporting.executive-project-state.parameters/v1`، Snapshot schema
 `pmcs.reporting.executive-project-state.snapshot/v1` و Project profile pin
 `pmcs.reporting.executive-project-state.project-profile/v1` در Safe Checkpoint `S07-MS07`
-تخصیص یافته‌اند. Template/Renderer identity، Migration و Catalog seed همچنان تخصیص نیافته‌اند.
+تخصیص یافته‌اند. Checkpoint `S07-MS08` نیز Template `1.0.0` با content digest
+`4bf4f1f5de92eda854ab16702fc87aaebae951eea17ef023569cc338a5ce7d7a`، قرارداد Renderer
+`pmcs.reporting.executive-project-state.renderer/v1` و Layout
+`pmcs.reporting.executive-project-state.layout/v1` را pin کرده است. Migration و Catalog/Template
+seed همچنان اضافه نشده‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -197,10 +201,16 @@ ISO، decimal invariant و collectionهای مرتب‌شده تولید می‌
 یکسان باید semantic/source-manifest hash یکسان داشته باشند؛ query order، DB plan، Run ID و زمان
 پردازش نباید hash را تغییر دهند.
 
-Runtime/Renderer آینده حق truncate خاموش Attention یا trend را ندارد. trend طبق قرارداد حداکثر ۱۴
-نقطه است؛ عبور Attention/row/page از budget نسخه‌دار Renderer باید non-transient و fail-closed باشد،
-نه حذف داده. PDF/XLSX، visual digest و performance budget فقط بعد از تثبیت Runtime Snapshot در
-Micro-Step جداگانه قطعی می‌شوند.
+Renderer حق truncate خاموش Attention یا trend را ندارد. trend طبق قرارداد حداکثر ۱۴ نقطه است؛
+عبور Attention/row/page از budget نسخه‌دار Renderer، متن بیش‌ازحد و hash/identity ناسازگار
+non-transient و fail-closed هستند، نه حذف داده. PDF دوصفحه‌ای A4/RTL و XLSX هشت‌Sheet قطعی از همان
+render model canonical ساخته می‌شوند. SHA-256 قطعی XLSX برابر
+`e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3` و PDF برابر
+`d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1` است. visual digestهای دو
+صفحه در ۹۶ DPI به‌ترتیب
+`6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba` و
+`252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205` هستند. cold/warm render،
+اندازهٔ PDF و row budget همان قرارداد گواهی‌شدهٔ مشترک را پاس می‌کنند.
 
 ## ۱۰. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -224,8 +234,9 @@ Micro-Step جداگانه قطعی می‌شوند.
 | `F03-S02` | Source با Classification بالاتر یا نامعلوم | propagation بالاتر یا deny؛ هرگز downgrade |
 | `F03-D01` | Source یکسان با query order متفاوت و دو Run twin | semantic/manifest hash یکسان و canonical ordering |
 
-Qualification آینده باید selection و currency را با query مستقل کنترل، semantic Snapshot را parse و
-عدم join مالی/تجاری/Action را اثبات کند. Golden PDF/XLSX جای Golden معنایی را نمی‌گیرد.
+Qualification متصل آینده باید selection و currency را با query مستقل کنترل، semantic Snapshot را
+parse و عدم join مالی/تجاری/Action را اثبات کند. Golden PDF/XLSX checkpointed جای Golden معنایی را
+نمی‌گیرد و هنوز از API/Worker قابل اجرا نیست.
 
 ## ۱۱. Definition of Ready و Slice مجاز بعدی
 
@@ -239,24 +250,22 @@ Qualification آینده باید selection و currency را با query مستق
 | Permission/classification | بسته |
 | Golden matrix هفده‌سناریویی | بسته |
 | Runtime Definition و parameter/snapshot/profile schema IDs | Checkpointed in Run 148 |
-| Template/Renderer identity | عمداً باز برای Slice Renderer |
+| Template/Renderer/Layout identity | Checkpointed in Run 154 |
 | Source contract/selector/Snapshot builder | Checkpointed in Run 148 |
-| PDF/XLSX/visual/performance | Not Implemented |
+| PDF/XLSX/visual/performance | Checkpointed in Run 154 |
 | Catalog/API/Worker wiring | Not Implemented |
 
-Checkpoint `S07-MS07` فقط Runtime identity نسخه‌دار، Contract خواندنی باریک در ProjectIntelligence،
-selector cutoff-aware، semantic Snapshot builder و Unit/contract tests را اضافه کرده است. انتخاب
-Source، trend چهارده‌تاریخی، currency، status precedence، ordering Attention، Classification و hash
-در کد مستقل از Renderer پیاده شده‌اند. Source
-`22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
-`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 (`35507127968`) هر هشت Job، `377/377`
-تست C#، `64/64` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس
-کرد. Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در
-Sliceهای بعدی و پس از Snapshot قطعی باقی بمانند.
+Checkpoint `S07-MS08` روی Runtime Core نسخه‌دار، parser/request/model fail-closed، PDF فارسی A4 با
+وضعیت‌های مستقل و هشدار scope، و XLSX هشت‌Sheet با RTL/freeze، text escaping و صفر Formula را اضافه
+کرده است. Registry Renderer مستقل است و عمداً به DI/Worker وصل نشده است. Source
+`d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job، `383/383`
+تست C#، `65/65` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس
+کرد. Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی باقی بمانند.
 
 ## ۱۲. Gate statement
 
-این نسخه bounded Runtime Core را checkpoint می‌کند، نه گزارش متصل یا F03 End-to-End.
-هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این Micro-Step تغییر نکرده است.
-Micro-Step بعدی فقط Renderer/Golden مستقل است؛ F03 تا پایان Renderer/Golden و wiring متصل کامل
-نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.
+این نسخه Renderer/Golden مستقل را checkpoint می‌کند، نه گزارش متصل یا F03 End-to-End.
+هیچ API، Migration، Catalog/Template seed، Worker dispatch، DI registration، feature flag یا
+Production setting در این Micro-Step تغییر نکرده است. Micro-Step بعدی فقط Catalog/API/Worker wiring
+متصل F03 است؛ F03 تا پایان آن کامل نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.35.0`
+- نسخه سند: `1.37.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -439,6 +439,16 @@ scope، Attention ordering، Classification و determinism را پوشش می‌
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS07-C1` است و هیچ Renderer، Catalog/API/Worker wiring،
 Migration، UI یا Production enablement وارد این Micro-Step نشده است.
 
+**F03 Renderer/Golden — Slice 07 Micro-Step 08 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS07-C1` فقط Template/Renderer/Layout identity، parser/request/model
+fail-closed، PDF دوصفحه‌ای A4 فارسی و XLSX هشت‌Sheet قطعی اضافه شده است. Operational،
+Coverage/Freshness/Confidence، partial scope، Attention و trend بدون Composite Health یا truncate
+حفظ می‌شوند. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 هر هشت Job، `383/383` تست C#، `65/65`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS08-C1` است و هیچ Catalog/API/Worker wiring، Migration، DI
+registration، UI یا Production enablement وارد این Micro-Step نشده است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -716,3 +726,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.33.0` | ثبت Safe Checkpoint `S07-MS06` و Evidence سبز Run 146 برای قرارداد معنایی F03؛ Runtime/Renderer/wiring باز است |
 | `1.34.0` | ثبت Candidate محدود `S07-MS07` برای Runtime Core F03؛ Full CI/Checkpoint و Renderer/wiring باز است |
 | `1.35.0` | ثبت Safe Checkpoint `S07-MS07` و Evidence سبز Run 148 برای Runtime Core F03؛ Renderer/Golden و wiring متصل باز است |
+| `1.36.0` | ثبت Candidate محدود `S07-MS08` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F03؛ wiring و Full CI باز است |
+| `1.37.0` | ثبت Safe Checkpoint `S07-MS08` و Evidence سبز Run 154 برای Renderer/Golden خانواده F03؛ Catalog/API/Worker wiring باز است |

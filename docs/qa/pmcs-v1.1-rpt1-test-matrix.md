@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.20.0`
-- وضعیت: F03 bounded Runtime Core passed in Run 148؛ Renderer/Wiring و F04-F10/UI/Production باز
+- نسخه: `1.21.0`
+- وضعیت: F03 deterministic Renderer/Golden passed in Run 154؛ Wiring و F04-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -567,3 +567,40 @@ Migration و Qualification برابر `7/7` با صفر failure.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS07-C1` فقط Runtime Core را می‌بندد. Renderer/Golden،
 Catalog/API/Worker wiring، UI و Production enablement بازند و تمام Suiteهای V1/F01/F02 بدون
 Regression باقی مانده‌اند.
+
+## ۳۰. Renderer/Golden خانواده F03 — Slice 07 Micro-Step 08
+
+Renderer مستقل باید پیش از هر wiring این Gateها را پاس کند:
+
+- parser/request روی schema، Definition/Template/Renderer/Layout، snapshot/source-manifest hash،
+  cutoff، filename و format به‌صورت fail-closed؛
+- render model canonical برای reason، Attention، trend، Fact count و feature state مستقل از ترتیب
+  collection؛
+- PDF دوصفحه‌ای A4، فارسی/RTL و شمسی با وضعیت‌های مستقل، partial-scope warning، Attention، trend و
+  lineage و بدون Composite Health یا inference؛
+- دو رندر PDF byte-identical، دو raster ۹۶ DPI pixel-identical و عبور cold/warm/size budget؛
+- XLSX هشت‌Sheet ثابت با entry order/timestamp قطعی، RTL، frozen header، numeric cell واقعی، text
+  escaping برای `= + - @` و صفر Formula/Macro؛
+- `NoData` با data sheetهای header-only و reason صریح، بدون صفر یا وضعیت Stable ساختگی؛
+- null impact و `Unassessed` مستقل، feature state فقط به‌عنوان configuration و Attention بدون
+  truncate خاموش؛
+- text/attention/row/page budget، wrong format و hash/identity mismatch به‌صورت non-transient و
+  fail-closed؛
+- نبود نام F03 در `ReportingModule`، `ReportGenerationWorker`، endpointها و Migration 44 و خاموش
+  ماندن تمام defaultهای Production.
+
+Goldenهای قطعی عبارت‌اند از XLSX
+`e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3`، PDF
+`d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1` و visual digestهای
+`6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba` و
+`252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205`.
+
+Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job را پاس کرد:
+`383/383` تست C#، شامل شش case Renderer/Golden تازه و `28/28` case متمرکز F03؛ `65/65` تست Node؛
+`139/139` تست Web؛ پنج browser scenario؛ validator روی `365` فایل ماژولی؛ audit ثابت
+`274/204/5`؛ Restore کامل ۴۴ Migration و Qualification برابر `7/7` با صفر failure.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` فقط Renderer/Golden را می‌بندد. Catalog/API/Worker
+wiring، UI و Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F02 بدون Regression
+باقی مانده‌اند.

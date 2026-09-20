@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.8.2`
-- وضعیت: F01/F02 connected؛ F03 bounded Runtime Core passed in Run 148؛ wiring/Production disabled
+- نسخه: `1.9.0`
+- وضعیت: F01/F02 connected؛ F03 bounded Runtime Core + Renderer/Golden passed in Run 154؛ wiring/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -101,9 +101,15 @@ Finance/Commercial و dispositionهای mutable وارد F03 نمی‌شوند. 
 Classification F03 بیشترین مقدار میان Definition، Project/source configuration و Snapshotهای
 واردشده و حداقل `Internal` است. Source contract باید classification را صریح صادر کند؛ نبود آن یا
 Permission طبقه بالاتر کل Run را fail-closed می‌کند. متن Attention، Location و Source IDs در
-filename، event یا diagnostic ثبت نمی‌شوند. Source
-`22d5b0f91edf8d733192fae0ba946c8538c63bca` این سیاست را در Runtime Core و Run 148 با هر هشت Job
-checkpoint کرد؛ این گیت هنوز Catalog، API/Worker dispatch یا Renderer F03 را فعال نمی‌کند.
+filename، event یا diagnostic ثبت نمی‌شوند.
+
+Renderer Checkpoint نیز payload و identity/hash/cutoff را پیش از تولید bytes دوباره validate می‌کند.
+XLSX فقط cellهای text/number کنترل‌شده دارد، prefixهای `= + - @` را خنثی می‌کند و هیچ Formula/Macro
+نمی‌سازد. PDF هیچ HTML/JS یا template code اجرا نمی‌کند و فقط از QuestPDF/font/image contract
+پین‌شده استفاده می‌کند. Attention یا trend silently truncate نمی‌شوند؛ متن/row/page budget
+non-transient و fail-closed است. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` این سیاست را در
+Run 154 با هر هشت Job checkpoint کرد؛ این گیت هنوز Catalog یا API/Worker dispatch F03 را فعال
+نمی‌کند و Renderer Registry در DI ثبت نشده است.
 
 ## ۴. Threat model
 

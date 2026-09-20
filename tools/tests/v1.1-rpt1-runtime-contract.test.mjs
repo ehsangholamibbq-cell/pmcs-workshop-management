@@ -763,7 +763,7 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its conne
   assert.match(canonical, /`RPT1-F01` و `RPT1-F02` checkpoint متصل دارند/u);
 });
 
-test("RPT1-F03 keeps its semantic contract while checkpointing the bounded Runtime Core", () => {
+test("RPT1-F03 keeps its semantic contract through the independent Renderer and Golden", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   );
@@ -798,11 +798,24 @@ test("RPT1-F03 keeps its semantic contract while checkpointing the bounded Runti
     `${moduleRoot}/Services/ExecutiveProjectStateReportSnapshotBuilder.cs`,
   );
   const tests = read("tests/Pmcs.Domain.Tests/ExecutiveProjectStateReportingTests.cs");
+  const renderingContract = read(
+    `${moduleRoot}/Rendering/ExecutiveProjectStateReportRenderingContracts.cs`,
+  );
+  const pdfRenderer = read(
+    `${moduleRoot}/Rendering/ExecutiveProjectStateReportPdfRenderer.cs`,
+  );
+  const xlsxRenderer = read(
+    `${moduleRoot}/Rendering/ExecutiveProjectStateReportXlsxRenderer.cs`,
+  );
+  const rendererRegistry = read(`${moduleRoot}/Rendering/ReportRendererRegistry.cs`);
+  const renderingTests = read(
+    "tests/Pmcs.Domain.Tests/ExecutiveProjectStateReportRenderingTests.cs",
+  );
 
   assert.match(contract, /PMCS-RPT1-F03-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.1\.1`/u);
-  assert.match(contract, /Runtime Core Safe Checkpoint \| Renderer\/Wiring Not Implemented/u);
-  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
+  assert.match(contract, /نسخه: `1\.2\.1`/u);
+  assert.match(contract, /Renderer\/Golden Safe Checkpoint \| Catalog\/API\/Worker Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS07-C1`/u);
   assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
   assert.match(contract, /Client نمی‌تواند Snapshot مطلوب خود را[\s\S]*انتخاب کند/u);
   assert.match(contract, /`calculatedAt <= sourceCutoffUtc`/u);
@@ -821,15 +834,16 @@ test("RPT1-F03 keeps its semantic contract while checkpointing the bounded Runti
   assert.match(contract, /`project-state\.recalculate` برای F03 لازم نیست/u);
   assert.match(contract, /حداقل `Internal`/u);
   assert.equal((contract.match(/\| `F03-[A-Z]\d{2}` \|/gu) ?? []).length, 17);
-  assert.match(contract, /هیچ API، Migration، Catalog seed، Renderer، feature flag/u);
+  assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، DI registration/u);
 
-  assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.1\.1/u);
-  assert.match(api, /Runtime Core checkpointed F03 بدون تغییر API/u);
+  assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.2\.1/u);
+  assert.match(api, /Runtime Core و Renderer\/Golden checkpointed F03 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F03/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.35\.0`/u);
+  assert.match(matrix, /## ۳۰\.[\s\S]*Renderer\/Golden خانواده F03/u);
+  assert.match(roadmap, /نسخه سند: `1\.37\.0`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*Run 146[\s\S]*Runtime not implemented/u);
-  assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.1\.1[\s\S]*Run 148/u);
+  assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.2\.1[\s\S]*Run 154/u);
   assert.match(rootReadme, /قرارداد checkpointed F03 برای Executive Project State/u);
 
   assert.match(sourceContract, /pmcs\.project-intelligence\.project-state-reporting\/v1/u);
@@ -843,6 +857,10 @@ test("RPT1-F03 keeps its semantic contract while checkpointing the bounded Runti
   assert.match(projectIntelligenceModule, /IProjectStateReportingSource, ProjectStateReportingSource/u);
   assert.match(identity, /executive-project-state-certified/u);
   assert.match(identity, /pmcs\.reporting\.executive-project-state\.snapshot\/v1/u);
+  assert.match(identity, /TemplateVersion = "1\.0\.0"/u);
+  assert.match(identity, /4bf4f1f5de92eda854ab16702fc87aaebae951eea17ef023569cc338a5ce7d7a/u);
+  assert.match(identity, /pmcs\.reporting\.executive-project-state\.renderer\/v1/u);
+  assert.match(identity, /pmcs\.reporting\.executive-project-state\.layout\/v1/u);
   assert.match(builder, /ProjectStateReportingContract\.Version/u);
   assert.match(builder, /ProjectConfigurationRevisionOutdated/u);
   assert.match(builder, /ApprovedSourceChangedAfterSnapshot/u);
@@ -854,6 +872,19 @@ test("RPT1-F03 keeps its semantic contract while checkpointing the bounded Runti
   assert.match(tests, /StablePartialSnapshotIsAvailableButRetainsItsBoundedAssessmentScope/u);
   assert.match(tests, /AttentionItemsUsePriorityAgeDateAndOrdinalLineageOrderingWithoutInventingImpact/u);
   assert.match(tests, /CrossTenantAndUnsupportedEligibleCalculationVersionFailClosed/u);
+  assert.match(renderingContract, /ExecutiveProjectStateReportRenderModel/u);
+  assert.match(renderingContract, /reporting\.executive_state\.snapshot\.payload_invalid/u);
+  assert.match(pdfRenderer, /ContentFromRightToLeft/u);
+  assert.match(pdfRenderer, /GenerateImages/u);
+  assert.match(pdfRenderer, /MaximumPdfFacts/u);
+  assert.match(xlsxRenderer, /CompressionLevel\.NoCompression/u);
+  assert.match(xlsxRenderer, /rightToLeft/u);
+  assert.match(xlsxRenderer, /MaximumXlsxRows/u);
+  assert.match(rendererRegistry, /ExecutiveProjectStateReportRendererRegistry/u);
+  assert.match(renderingTests, /e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3/u);
+  assert.match(renderingTests, /d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1/u);
+  assert.match(renderingTests, /6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba/u);
+  assert.match(renderingTests, /252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205/u);
 
   for (const source of [module, worker, endpoints, migration]) {
     assert.doesNotMatch(source, /ExecutiveProjectState|executive-project-state|RPT1-F03/u);
@@ -895,11 +926,11 @@ test("RPT1-F03 semantic contract records the S07-MS06 safe checkpoint without cl
   assert.match(registry, /Slice 07 MS06[\s\S]*e3218555a38f7ba460558e51b4db3f8bc17fcd9c/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Runtime identity/u);
-  assert.match(architecture, /نسخه: `1\.19\.0`[\s\S]*Run 146/u);
+  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 146/u);
   assert.match(baseline, /Slice 07 Micro-Step 06[\s\S]*Run 146/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Run 146/u);
-  assert.match(matrix, /نسخه: `1\.20\.0`/u);
-  assert.match(security, /نسخه: `1\.8\.2`[\s\S]*Run 148/u);
+  assert.match(matrix, /نسخه: `1\.21\.0`/u);
+  assert.match(security, /نسخه: `1\.9\.0`[\s\S]*Run 154/u);
 });
 
 test("RPT1-F03 Runtime Core records the S07-MS07 safe checkpoint without opening renderer or wiring", () => {
@@ -936,13 +967,61 @@ test("RPT1-F03 Runtime Core records the S07-MS07 safe checkpoint without opening
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS07-C1`/u);
   assert.match(roadmap, /\| `1\.35\.0` \| ثبت Safe Checkpoint `S07-MS07`/u);
   assert.match(registry, /Slice 07 MS07[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
-  assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS07-C1`/u);
-  assert.match(canonical, /Micro-Step بعدی فقط Renderer contract/u);
-  assert.match(architecture, /نسخه: `1\.19\.0`[\s\S]*Run 148/u);
+  assert.match(canonical, /F03 Runtime Core Source:[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
+  assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
+  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 148/u);
   assert.match(baseline, /Slice 07 Micro-Step 07[\s\S]*Run 148/u);
   assert.match(matrix, /## ۲۹\.[\s\S]*Run 148/u);
-  assert.match(matrix, /نسخه: `1\.20\.0`/u);
-  assert.match(api, /هیچ گزارش F03 هنوز از API قابل ایجاد یا دانلود نیست/u);
+  assert.match(matrix, /نسخه: `1\.21\.0`/u);
+  assert.match(api, /هیچ گزارش F03 هنوز از API قابل ایجاد[\s\S]*دانلود نیست/u);
+});
+
+test("RPT1-F03 Renderer and Golden record the S07-MS08 safe checkpoint without opening wiring", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms08-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
+  const baseline = read("docs/governance/pmcs-v1.1-development-baseline.md");
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+  const api = read("docs/api/reporting-v1.md");
+  const security = read("docs/security/pmcs-v1.1-reporting-security.md");
+
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS08-C1/u);
+  assert.match(checkpoint, /d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f/u);
+  assert.match(checkpoint, /58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434/u);
+  assert.match(checkpoint, /235e0a0f12b560bba06792c3290724d739117b73/u);
+  assert.match(checkpoint, /Run 154 \(`35512969648`\)/u);
+  assert.match(checkpoint, /`383\/383` تست C#/u);
+  assert.match(checkpoint, /شش case Renderer\/Golden تازه/u);
+  assert.match(checkpoint, /`28\/28` case متمرکز F03/u);
+  assert.match(checkpoint, /`65\/65` تست قراردادی Node/u);
+  assert.match(checkpoint, /`139\/139` تست Web/u);
+  assert.match(checkpoint, /`365` فایل C#/u);
+  assert.match(checkpoint, /`274` endpoint، `204` mutation و `5`/u);
+  assert.match(checkpoint, /Restore Drill کامل `44` Migration/u);
+  assert.match(checkpoint, /`7\/7` Suite/u);
+  assert.match(checkpoint, /Qualification artifact: `10605799275`/u);
+  assert.match(checkpoint, /sha256:22f72f9b6babee82d76f1900b36bafbbb9a627ac6b72009746978cda97b6eb84/u);
+  assert.match(checkpoint, /Integration artifact: `10605432920`/u);
+  assert.match(checkpoint, /sha256:f594d32316681f532bfed4200240c0aedceac33d9d5b2621bff5300aed1a0317/u);
+  assert.match(checkpoint, /UI-E2E artifact: `10605298077`/u);
+  assert.match(checkpoint, /sha256:7cc5ee459c0297500370c2dfe2c8799d06b3935fdb924e014d9c2da0ff5a7e86/u);
+  assert.match(checkpoint, /e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3/u);
+  assert.match(checkpoint, /d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1/u);
+  assert.match(checkpoint, /هیچ endpoint تازه، Migration، Catalog\/Template seed/u);
+  assert.match(checkpoint, /هیچ گزارش F03 هنوز از API قابل ایجاد، retry، مشاهده، verify یا دانلود نیست/u);
+  assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
+  assert.match(roadmap, /\| `1\.37\.0` \| ثبت Safe Checkpoint `S07-MS08`/u);
+  assert.match(registry, /Slice 07 MS08[\s\S]*d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f[\s\S]*Run 154/u);
+  assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
+  assert.match(canonical, /Micro-Step بعدی فقط Catalog\/Template seed/u);
+  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 154/u);
+  assert.match(baseline, /Slice 07 Micro-Step 08[\s\S]*Run 154/u);
+  assert.match(matrix, /## ۳۰\.[\s\S]*Run 154/u);
+  assert.match(matrix, /نسخه: `1\.21\.0`/u);
+  assert.match(api, /هیچ گزارش F03 هنوز از API قابل ایجاد[\s\S]*دانلود نیست/u);
+  assert.match(security, /نسخه: `1\.9\.0`[\s\S]*Run 154/u);
 });
 
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {
@@ -1087,7 +1166,7 @@ test("RPT1-F02 renderer contract stays deterministic while wiring remains produc
   assert.match(matrix, /## ۲۷\. Catalog\/API\/Worker wiring متصل خانواده F02/u);
   assert.match(roadmap, /F02 Catalog\/API\/Worker Safe Checkpoint — Slice 07 Micro-Step 05/u);
   assert.match(registry, /Slice 07 MS05[\s\S]*Run 144/u);
-  assert.match(canonical, /Catalog\/API\/Worker و qualification متصل F02 و Runtime Core محدود F03 بسته شده‌اند/u);
+  assert.match(canonical, /Catalog\/API\/Worker و qualification متصل F02 و Runtime Core و Renderer\/Golden محدود F03[\s\S]*بسته شده‌اند/u);
 });
 
 test("RPT1-F02 Catalog API and Worker record the S07-MS05 connected safe checkpoint", () => {

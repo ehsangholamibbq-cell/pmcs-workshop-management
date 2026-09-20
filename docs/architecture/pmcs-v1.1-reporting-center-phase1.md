@@ -1,16 +1,16 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.19.0`
-- وضعیت: `S07-MS07 complete in Run 148 | F03 Runtime Core checkpointed | Renderer/Wiring/F04-F10/UI/Production open`
+- نسخه: `1.20.0`
+- وضعیت: `S07-MS08 complete in Run 154 | F03 Renderer/Golden checkpointed | Wiring/F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- Parent checkpoint commit: `11220dd8b407a2239fd4583f5e62d6b71665b6cf`
-- Parent checkpoint tree: `e20dccd7fdfdb1bbff7b91ab84fea37487e1a903`
-- Qualification candidate: `22d5b0f91edf8d733192fae0ba946c8538c63bca`
-- Source tree: `eb5ea4253a7b80e8ab3320b9ccea747624f89790`
-- PR validation merge: `b89ca9920fc216644203d9cd5b3868cabed453fe`؛ همان tree
-- Connected evidence: Run 148 (`35507127968`) — `success`
+- Parent checkpoint commit: `7b7222ef70f32fb882690b1c6465771067dbf3dc`
+- Parent checkpoint tree: `922532668ccc4c47678b35b438c589878e5d434b`
+- Qualification candidate: `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f`
+- Source tree: `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434`
+- PR validation merge: `235e0a0f12b560bba06792c3290724d739117b73`؛ همان tree
+- Connected evidence: Run 154 (`35512969648`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -40,14 +40,15 @@ schemaهای نسخه‌دار، period-read contract، resolver و semantic Sna
 فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را با Catalog، strict API، Project
 profile pin و Worker dispatch متصل کرده است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.1.1` در
+قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.2.1` در
 `pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md` گزارش مدیریتی را فقط به Snapshot
 immutable و رسمی Project State محدود می‌کند. Client پارامتر ندارد، انتخاب Snapshot cutoff-aware و
 server-owned است، وضعیت داده از Operational Status جدا می‌ماند و هیچ Composite Health، Recalculate،
 AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime Core checkpointed فقط
 identity/schema نسخه‌دار، Project profile pin، Application Contract
 `pmcs.project-intelligence.project-state-reporting/v1`، selector cutoff-aware و semantic Snapshot
-builder را اضافه کرده است. Renderer و Catalog/API/Worker wiring هنوز بازند.
+builder را اضافه کرده است. Renderer مستقل نیز Template/Renderer/Layout identity، render model
+canonical و PDF/XLSX قطعی را checkpoint کرده، اما Catalog/API/Worker wiring هنوز باز است.
 
 ## ۲. Non-Scope
 
@@ -502,3 +503,15 @@ Project State پیاده می‌کند. Source `22d5b0f91edf8d733192fae0ba946c85
 Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS07-C1` Runtime Core را می‌بندد. هیچ endpoint،
 Migration، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default تغییر نکرده
 است؛ F03 هنوز End-to-End قابل اجرا/دانلود نیست.
+
+Slice 07 Micro-Step 08 فقط قرارداد Renderer مستقل F03 را روی Snapshot نسخه‌دار MS07 می‌بندد.
+Template `1.0.0`، Renderer/Layout v1، parser/request/model fail-closed، PDF دوصفحه‌ای A4 فارسی و
+XLSX هشت‌Sheet با ZIP قطعی، RTL/freeze و formula escaping اضافه شده‌اند. Operational، Coverage،
+Freshness و Confidence مستقل می‌مانند؛ partial scope و `Unassessed` صریح‌اند و Composite Health،
+zero fabrication یا truncate خاموش تولید نمی‌شود. Source
+`d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` هر هشت Job Run 154 (`35512969648`) را پاس کرد:
+`383/383` تست C#، `65/65` تست Node، `139/139` تست Web، پنج browser scenario و Restore کامل ۴۴
+Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` Renderer/Golden را می‌بندد. Registry F03 در
+DI/Worker ثبت نشده و هیچ endpoint، Migration، Catalog/Template seed، UI یا Production default
+تغییر نکرده است؛ F03 هنوز End-to-End قابل اجرا/دانلود نیست.
