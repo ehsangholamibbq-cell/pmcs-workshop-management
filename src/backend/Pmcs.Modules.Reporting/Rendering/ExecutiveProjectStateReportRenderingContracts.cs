@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Pmcs.Modules.ProjectIntelligence.Contracts;
 using Pmcs.Modules.ProjectIntelligence.Domain;
 using Pmcs.Modules.Projects.Contracts;
 using Pmcs.Modules.Reporting.Domain;
