@@ -720,7 +720,7 @@ test("RPT1 ten-family decision records the S07-MS01 safe checkpoint without clai
   assert.match(matrix, /## ۲۳\.[\s\S]*Run 135/u);
 });
 
-test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Renderer Golden candidate", () => {
+test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Renderer Golden checkpoint", () => {
   const contract = read("docs/architecture/pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md");
   const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
   const api = read("docs/api/reporting-v1.md");
@@ -731,8 +731,8 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Rende
   const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
 
   assert.match(contract, /PMCS-RPT1-F02-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.2\.0`/u);
-  assert.match(contract, /Renderer\/Golden Candidate \| API\/Worker\/Catalog Not Implemented/u);
+  assert.match(contract, /نسخه: `1\.2\.1`/u);
+  assert.match(contract, /Renderer\/Golden Safe Checkpoint \| API\/Worker\/Catalog Not Implemented/u);
   assert.match(contract, /`periodKind`[\s\S]*`Weekly` یا `Monthly`/u);
   assert.match(contract, /`periodStartLocalDate`[\s\S]*برای Weekly باید شنبه[\s\S]*برای Monthly باید روز اول ماه شمسی/u);
   assert.match(contract, /بازه نیمه‌باز `[\s\S]*periodEndLocalDateExclusive/u);
@@ -747,13 +747,12 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Rende
   assert.match(contract, /هیچ درصد کل[\s\S]*S-Curve/u);
   assert.equal((contract.match(/\| `F02-[A-Z]\d{2}` \|/gu) ?? []).length, 14);
   assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، DI/u);
-  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.2\.0/u);
+  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.2\.1/u);
   assert.match(api, /Renderer\/Golden خانواده F02 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F02/u);
   assert.match(matrix, /## ۲۶\.[\s\S]*Renderer\/Golden خانواده F02/u);
-  assert.match(roadmap, /نسخه سند: `1\.28\.0`/u);
   assert.match(registry, /Slice 07 MS03[\s\S]*6fc28cf54a6df820c49a2365eab76e3550ae421a[\s\S]*Run 139/u);
-  assert.match(canonical, /Renderer\/Golden Candidate/u);
+  assert.match(canonical, /F02 Renderer\/Golden Source/u);
 });
 
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {
@@ -879,12 +878,50 @@ test("RPT1-F02 renderer contract and Golden stay deterministic and isolated from
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
-  assert.match(semantic, /Renderer\/Golden Candidate/u);
+  assert.match(semantic, /Renderer\/Golden Safe Checkpoint/u);
   assert.match(semantic, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
   assert.match(matrix, /## ۲۶\. Renderer\/Golden خانواده F02/u);
-  assert.match(roadmap, /F02 Renderer\/Golden Candidate — Slice 07 Micro-Step 04/u);
-  assert.match(registry, /Slice 07 MS04 Candidate/u);
-  assert.match(canonical, /Full CI و Safe Checkpoint `S07-MS04`/u);
+  assert.match(roadmap, /F02 Renderer\/Golden Safe Checkpoint — Slice 07 Micro-Step 04/u);
+  assert.match(registry, /Slice 07 MS04[\s\S]*4f68f57de2c2a79b654a19128894d9c89878ab65[\s\S]*Run 141/u);
+  assert.match(canonical, /F02 Renderer\/Golden Source:[\s\S]*Run 141/u);
+});
+
+test("RPT1-F02 renderer and Golden record the S07-MS04 safe checkpoint without opening wiring", () => {
+  const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms04-candidate.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const baseline = read("docs/governance/pmcs-v1.1-development-baseline.md");
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+  const security = read("docs/security/pmcs-v1.1-reporting-security.md");
+
+  assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS04-C1/u);
+  assert.match(checkpoint, /4f68f57de2c2a79b654a19128894d9c89878ab65/u);
+  assert.match(checkpoint, /f4b592c72ea65974c00b936ca59c0428eb47f981/u);
+  assert.match(checkpoint, /Run 141 \(`35495791821`\)/u);
+  assert.match(checkpoint, /`353\/353` تست C#/u);
+  assert.match(checkpoint, /`60\/60` تست قراردادی Node/u);
+  assert.match(checkpoint, /`139\/139` تست Web/u);
+  assert.match(checkpoint, /repository validator روی `354` فایل C#/u);
+  assert.match(checkpoint, /`274` endpoint، `204` mutation و `5`/u);
+  assert.match(checkpoint, /Restore Drill کامل `43` Migration/u);
+  assert.match(checkpoint, /هر `7\/7` Suite/u);
+  assert.match(checkpoint, /Qualification artifact: `10600109655`/u);
+  assert.match(checkpoint, /sha256:621bfda27a59f3d21fcc4793bd8d1820cd67b5238a32e0e647bfa6766e5cd19e/u);
+  assert.match(checkpoint, /Integration artifact: `10600910298`/u);
+  assert.match(checkpoint, /sha256:9a614a04f57af341dcb9838e84eed57716bfa654a50221af17cced27d08fd1b1/u);
+  assert.match(checkpoint, /UI-E2E artifact: `10599559968`/u);
+  assert.match(checkpoint, /sha256:e64d16a6e0e8e98d4226e14fecb904162c7671a88e57d1c17f0fde4cb673808d/u);
+  assert.match(checkpoint, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
+  assert.match(checkpoint, /52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989/u);
+  assert.match(checkpoint, /هیچ endpoint،[\s\S]*Catalog\/Template seed[\s\S]*DI registration/u);
+  assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS04-C1`/u);
+  assert.match(roadmap, /\| `1\.29\.0` \| ثبت Safe Checkpoint `S07-MS04`/u);
+  assert.match(registry, /Slice 07 MS04[\s\S]*4f68f57de2c2a79b654a19128894d9c89878ab65[\s\S]*Run 141/u);
+  assert.match(canonical, /F02 Renderer\/Golden Source:[\s\S]*Run 141/u);
+  assert.match(baseline, /Slice 07 Micro-Step 04[\s\S]*Run 141/u);
+  assert.match(matrix, /## ۲۶\.[\s\S]*Run 141/u);
+  assert.match(security, /formula-safety[\s\S]*Run 141/u);
 });
 
 test("RPT1-F02 semantic contract records the S07-MS02 safe checkpoint without claiming Runtime", () => {

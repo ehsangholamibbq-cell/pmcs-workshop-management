@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.28.0`
+- نسخه سند: `1.29.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -391,16 +391,19 @@ Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. API، Migration، Catalog/T
 dispatch، Renderer، UI و Production defaults دست‌نخورده‌اند؛ بنابراین F02 هنوز End-to-End Done
 نیست و RPT1 فعال می‌ماند.
 
-**F02 Renderer/Golden Candidate — Slice 07 Micro-Step 04:** روی Safe Checkpoint
+**F02 Renderer/Golden Safe Checkpoint — Slice 07 Micro-Step 04:** روی Safe Checkpoint
 `PMCS-V1.1-RPT1-S07-MS03-C1` قراردادهای Template `1.0.0`، Renderer
 `pmcs.reporting.project-periodic.renderer/v1` و Layout
 `pmcs.reporting.project-periodic.layout/v1` اضافه شدند. parser/request hash و cutoff را fail-closed
 تطبیق می‌دهند و یک model canonical، PDF دوصفحه‌ای RTL/Jalali و XLSX هشت-Sheet deterministic را
-می‌سازد. Golden محلی PDF/XLSX و دو visual digest، Monthly boundary، `NoData`، `NotConfigured`،
+می‌سازد. Golden قطعی PDF/XLSX و دو visual digest، Monthly boundary، `NoData`، `NotConfigured`،
 formula escaping، unit separation، budget و regression بدون تغییر F01 را پوشش می‌دهند. این
-Candidate عمداً هیچ Catalog/Template seed، API، Worker dispatch، DI registration، Migration، UI،
-feature flag یا Production enablement ندارد؛ Full CI و Safe Checkpoint `S07-MS04` پیش از شروع
-wiring متصل الزامی است و F02/RPT1 همچنان باز می‌مانند.
+Slice عمداً هیچ Catalog/Template seed، API، Worker dispatch، DI registration، Migration، UI،
+feature flag یا Production enablement ندارد. Source commit
+`4f68f57de2c2a79b654a19128894d9c89878ab65` و tree
+`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 هر هشت Job، `353/353` تست C#، `60/60`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است؛ wiring متصل F02/RPT1 همچنان باز می‌ماند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -672,3 +675,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.26.0` | ثبت Candidate محدود Runtime Core F02 برای identity/source/resolver/Snapshot و Unit/contract؛ API/Renderer و Qualification متصل باز است |
 | `1.27.0` | ثبت Safe Checkpoint `S07-MS03` و Evidence سبز Run 139 برای Runtime Core F02؛ Renderer/Golden و wiring متصل باز است |
 | `1.28.0` | ثبت Candidate محدود `S07-MS04` برای قرارداد Renderer و Golden قطعی PDF/XLSX خانواده F02؛ Catalog/API/Worker wiring و Full CI باز است |
+| `1.29.0` | ثبت Safe Checkpoint `S07-MS04` و Evidence سبز Run 141 برای Renderer/Golden خانواده F02؛ Catalog/API/Worker wiring باز است |

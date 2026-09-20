@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.13.0`
-- وضعیت: F02 Renderer/Golden Candidate؛ Full CI و API/Worker/Catalog wiring باز
+- نسخه: `1.14.0`
+- وضعیت: F02 Renderer/Golden passed in Run 141؛ API/Worker/Catalog wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -472,10 +472,13 @@ Candidate باید پیش از هر wiring این Gateهای محلی را پا�
 - `ReportingModule`، `ReportGenerationWorker`، endpointها، Migrationها، Catalog seed، settings و UI
   از F02 Renderer نامی نبرند و defaultهای Production خاموش بمانند.
 
-Golden محلی Candidate، XLSX SHA-256 برابر
+Golden قطعی، XLSX SHA-256 برابر
 `83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d`، PDF SHA-256 برابر
 `52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989` و visual digestهای
 `058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396` و
-`d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` را pin می‌کند. هفت test
-جدید Renderer و regressionهای F01 محلی پاس‌اند؛ Full CI روی source commit ثابت و Safe Checkpoint
-`PMCS-V1.1-RPT1-S07-MS04-C1` هنوز قبل از اعلام Gate لازم است.
+`d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` را pin می‌کند. Source commit
+`4f68f57de2c2a79b654a19128894d9c89878ab65` با tree
+`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 (`35495791821`) هر هشت Job را پاس کرد:
+`353/353` تست C#، `60/60` تست Node، `139/139` تست Web، پنج browser scenario، validator روی ۳۵۴
+فایل ماژولی و Restore کامل ۴۳ Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS04-C1` فقط
+Renderer/Golden را می‌بندد، نه wiring یا Qualification انتهابه‌انتهای F02.

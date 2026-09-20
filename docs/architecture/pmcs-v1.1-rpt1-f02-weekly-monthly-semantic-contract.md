@@ -1,13 +1,14 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.2.0`
+- نسخه: `1.2.1`
 - خانواده: `RPT1-F02`
-- وضعیت: `Renderer/Golden Candidate | API/Worker/Catalog Not Implemented`
+- وضعیت: `Renderer/Golden Safe Checkpoint | API/Worker/Catalog Not Implemented`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS03-C1`
 - Runtime change: isolated renderer contract + deterministic PDF/XLSX only
 - Migration / API / Catalog seed / Worker dispatch / UI change: None
 - Parent evidence: checkpoint `d8fd4398309b08d1cdc90e26140c4581dc476636`؛ Run 140
+- Renderer evidence: source `4f68f57de2c2a79b654a19128894d9c89878ab65`؛ Run 141
 
 ## ۱. هدف و مرز خانواده
 
@@ -51,7 +52,7 @@ Server فیلدهای زیر را قطعی و در Snapshot ثبت می‌کند
 
 Runtime Core شناسه‌های `project-periodic-certified/1.0.0`،
 `pmcs.reporting.project-periodic.parameters/v1` و
-`pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Renderer Candidate نیز Template
+`pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Renderer checkpoint نیز Template
 contract `1.0.0`، قرارداد `pmcs.reporting.project-periodic.renderer/v1` و layout
 `pmcs.reporting.project-periodic.layout/v1` را pin می‌کند. این شناسه‌ها قرارداد کد هستند، نه رکورد
 منتشرشدهٔ Catalog؛ `TemplateVersionId` واقعی تا Slice مستقل seed/wiring تخصیص داده نمی‌شود و F02
@@ -194,7 +195,7 @@ Qualification متصل آینده باید boundaryها را مستقل از imp
 Source manifest را با query مستقل بررسی کند. Golden محلی PDF/XLSX فعلی جای Golden معنایی یا
 integration متصل را نمی‌گیرد.
 
-## ۹. نگاشت Runtime Core و Renderer Candidate
+## ۹. نگاشت Runtime Core و Renderer Checkpoint
 
 Runtime Core این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
 
@@ -213,7 +214,7 @@ Runtime Core این قرارداد را بدون بازکردن API یا Rendere
 - ۱۶ case C# مرزهای هفتگی/ماهانه، leap Esfand، Daily/WorkingDays/Weekly coverage، وضعیت‌ها،
   unit ordinal، classification، correction cutoff، hash twin و duplicate invariant را پوشش می‌دهد.
 
-Renderer Candidate روی همان Snapshot یک parser و request fail-closed با تطبیق schema/definition،
+Renderer checkpointed روی همان Snapshot یک parser و request fail-closed با تطبیق schema/definition،
 semantic SHA-256، source-manifest SHA-256 و cutoff می‌سازد و سپس یک render model با ordering قطعی
 به هر دو خروجی می‌دهد. PDF دوصفحه‌ای RTL، Jalali، reason/status، coverage، aggregateهای unit-safe،
 High/Critical و lineage را با runtime/font pin‌شده تولید می‌کند. XLSX هشت Sheet
@@ -227,6 +228,9 @@ formula-free و با ZIP timestamp/order ثابت است. XLSX hash برابر
 این Rendererها عمداً در DI/registry ثبت نشده‌اند و Worker/endpoint آن‌ها را فراخوانی نمی‌کند.
 Definition/Template seed، Migration، API، UI و feature flag جدید وجود ندارد؛ Shared PDF runtime
 فقط از F01 استخراج شده و Golden تصویری موجود F01 بدون تغییر پاس می‌شود.
+Source commit `4f68f57de2c2a79b654a19128894d9c89878ab65` با tree
+`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 (`35495791821`) هر هشت Job را پاس کرد و
+Checkpoint `PMCS-V1.1-RPT1-S07-MS04-C1` مرز ادامه را ثبت می‌کند.
 
 ## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
@@ -240,16 +244,16 @@ Definition/Template seed، Migration، API، UI و feature flag جدید وجو�
 | Golden matrix | بسته |
 | Runtime Definition/parameter/snapshot IDs | Checkpointed in S07-MS03 |
 | Period source contract/resolver/Snapshot builder | Checkpointed in S07-MS03 |
-| Unit/contract tests | `353/353` C# و `60/60` Node محلی؛ Full CI Candidate pending |
+| Unit/contract tests | `353/353` C# و `60/60` Node در Run 141 |
 | Catalog/Template seed و Worker/API wiring | Not Implemented |
-| PDF/XLSX/visual/performance | Candidate؛ deterministic Golden محلی پاس |
+| PDF/XLSX/visual/performance | Checkpointed in S07-MS04؛ deterministic Golden پاس |
 
-Micro-Step بعدی پس از Safe Checkpoint این Candidate فقط Catalog/API/Worker wiring متصل F02 است.
+Micro-Step بعدی فقط Catalog/API/Worker wiring متصل F02 است.
 UI و فعال‌سازی Production باید در Sliceهای مستقل بعدی باقی بمانند.
 
 ## ۱۱. Gate statement
 
-این نسخه F02 را به `Renderer/Golden Candidate` می‌رساند، نه `End-to-End Implemented` یا
+این نسخه F02 را به `Renderer/Golden Safe Checkpoint` می‌رساند، نه `End-to-End Implemented` یا
 Qualification کامل خانواده. هیچ API، Migration، Catalog/Template seed، Worker dispatch، DI
 registration، UI، feature flag یا Production setting در این Micro-Step تغییر نکرده است. F02 تا
 پایان wiring و integration متصل باز می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.

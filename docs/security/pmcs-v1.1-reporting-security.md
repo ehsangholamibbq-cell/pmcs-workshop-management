@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.4.0`
-- وضعیت: F01 connected gates passed؛ F02 Renderer/Golden Candidate با API/Worker gates باز
+- نسخه: `1.5.0`
+- وضعیت: F01 connected gates passed؛ F02 Renderer/Golden checkpointed با API/Worker gates باز
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -70,14 +70,16 @@ Runtime Core Checkpoint این مرز را با predicate صریح Tenant/Projec
 Permission gate زمان request/worker/download یا Output ندارد؛ آن gateها در wiring متصل بعدی الزامی‌اند.
 Source commit `6fc28cf54a6df820c49a2365eab76e3550ae421a` این isolation را در Run 139 با هر هشت Job سبز کرد.
 
-Renderer Candidate علاوه بر contractهای schema/hash/cutoff، Snapshot را پیش از تولید bytes
+Renderer Checkpoint علاوه بر contractهای schema/hash/cutoff، Snapshot را پیش از تولید bytes
 fail-closed validate می‌کند و ordering مستقل از ترتیب collection می‌سازد. XLSX تمام textها را برای
 prefixهای `= + - @` خنثی می‌کند، فرمول/Macro ندارد و unitهای متفاوت یا missing را هرگز ادغام
 نمی‌کند. PDF فقط از runtime/font digest پین‌شده استفاده می‌کند و Narrative/Fact را به‌صورت text
 رندر می‌کند؛ هیچ HTML/JS یا template code اجرا نمی‌شود. `NoData` و `NotConfigured` Sheetهای داده
 را header-only نگه می‌دارند و عدد صفر ساختگی ندارند. چون Rendererها هنوز در DI/Worker/API ثبت
-نشده‌اند، این Candidate سطح دسترسی تازه‌ای باز نمی‌کند؛ negative gateهای request/worker/download
-در Slice wiring متصل همچنان الزامی‌اند.
+نشده‌اند، این Checkpoint سطح دسترسی تازه‌ای باز نمی‌کند؛ negative gateهای request/worker/download
+در Slice wiring متصل همچنان الزامی‌اند. Source
+`4f68f57de2c2a79b654a19128894d9c89878ab65` این isolation و formula-safety را در Run 141 با هر
+هشت Job سبز تأیید کرده است.
 
 ## ۴. Threat model
 

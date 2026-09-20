@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 متصل و PDF/XLSX qualify؛ F02 Runtime Core checkpointed و Renderer/Golden Candidate بدون wiring؛ F03–F10/UI باز |
+| Product runtime implementation | F01 متصل و PDF/XLSX qualify؛ F02 Runtime Core و Renderer/Golden checkpointed بدون wiring؛ F03–F10/UI باز |
 | Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 130 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -172,13 +172,14 @@ FieldOperations، resolver مرز هفتگی/ماه شمسی و semantic Snapsho
 پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. این Slice هیچ API، Migration،
 Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production را تغییر نمی‌دهد.
 
-Slice 07 Micro-Step 04 Candidate از Checkpoint
-`d8fd4398309b08d1cdc90e26140c4581dc476636` و Run 140 شروع می‌شود و فقط قرارداد Renderer مستقل،
-render model canonical و PDF/XLSX deterministic خانواده F02 را اضافه می‌کند. Golden هفتگی، مرز
+Slice 07 Micro-Step 04 از Checkpoint
+`d8fd4398309b08d1cdc90e26140c4581dc476636` و Run 140 شروع شد و فقط قرارداد Renderer مستقل،
+render model canonical و PDF/XLSX deterministic خانواده F02 را اضافه کرد. Golden هفتگی، مرز
 Monthly، `NoData/NotConfigured`، formula escaping، unit separation، hash/visual digest و budgetهای
-bounded محلی پوشش داده شده‌اند. Rendererها در DI/Worker ثبت نشده‌اند و API، Migration، Catalog seed،
-UI و default Production تغییر نکرده‌اند. تا Full CI و Checkpoint `S07-MS04` این تغییر Candidate است
-و F02/RPT1 Done محسوب نمی‌شوند.
+bounded پوشش داده شده‌اند. Source commit `4f68f57de2c2a79b654a19128894d9c89878ab65` با tree
+`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 (`35495791821`) هر هشت Job را پاس کرد.
+Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. Rendererها در DI/Worker ثبت نشده‌اند و API،
+Migration، Catalog seed، UI و default Production تغییر نکرده‌اند؛ F02/RPT1 Done محسوب نمی‌شوند.
 
 ## ۳. قرارداد شاخه و ادغام
 

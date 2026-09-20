@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01 Runtime qualified؛ F02 Renderer/Golden Candidate، API/Worker/Catalog not implemented؛ RPT1 active
+- Status: F01 Runtime qualified؛ F02 Renderer/Golden checkpointed، API/Worker/Catalog not implemented؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -43,7 +43,7 @@ Output باید bytes و SHA-256 یکسان برگرداند و workbook فقط 
 ### ۱.۴ Runtime Core خانواده F02 بدون تغییر API
 
 Micro-Step جاری هیچ endpoint، Catalog row، Template Version یا payload عمومی تازه‌ای منتشر
-نمی‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.2.0` در Core داخلی شناسه Definition
+نمی‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.2.1` در Core داخلی شناسه Definition
 `project-periodic-certified/1.0.0` و schemaهای
 `pmcs.reporting.project-periodic.parameters/v1` و
 `pmcs.reporting.project-periodic.snapshot/v1` را pin کرده است. پارامترهای Client آینده همچنان فقط
@@ -53,13 +53,15 @@ API/Worker/Catalog، ارسال این Definition به endpoint موجود پش�
 
 ### ۱.۵ Renderer/Golden خانواده F02 بدون تغییر API
 
-Candidate `S07-MS04` فقط قرارداد داخلی
+Safe Checkpoint `S07-MS04` فقط قرارداد داخلی
 `pmcs.reporting.project-periodic.renderer/v1`، layout
 `pmcs.reporting.project-periodic.layout/v1` و PDF/XLSX deterministic را اضافه می‌کند. Rendererهای
 F02 در `ReportingModule` ثبت نشده‌اند، `ReportGenerationWorker` همچنان فقط مسیر F01 را می‌شناسد و
 هیچ route، request/response عمومی یا verification path تازه‌ای منتشر نشده است. بنابراین پذیرش
 `project-periodic-certified` از endpoint موجود همچنان پشتیبانی نمی‌شود؛ نمایش hash و verification
 code در Artifact محلی به معنی قابل‌دسترسی‌شدن Download/Verify عمومی F02 نیست.
+Source `4f68f57de2c2a79b654a19128894d9c89878ab65` این مرز منفی را در Run 141 با هر هشت Job سبز
+تأیید کرده است.
 
 ## ۲. Catalog
 
