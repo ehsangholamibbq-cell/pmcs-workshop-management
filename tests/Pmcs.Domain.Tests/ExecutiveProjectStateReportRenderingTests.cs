@@ -132,9 +132,12 @@ public sealed class ExecutiveProjectStateReportRenderingTests
         Assert.DoesNotContain("امتیاز سلامت", string.Concat(worksheetXml), StringComparison.Ordinal);
 
         WriteQualificationArtifacts("executive-project-state-golden.xlsx", first.Bytes);
-        Assert.Equal(
-            "F03_XLSX_GOLDEN_SHA256_PENDING",
-            first.Sha256);
+        Assert.True(
+            string.Equals(
+                "F03_XLSX_GOLDEN_SHA256_PENDING",
+                first.Sha256,
+                StringComparison.Ordinal),
+            $"F03_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
     [Fact]
@@ -188,12 +191,16 @@ public sealed class ExecutiveProjectStateReportRenderingTests
                 firstImages[index]);
         }
 
-        Assert.Equal(
-            "F03_PDF_GOLDEN_SHA256_PENDING",
-            first.Sha256);
-        Assert.Equal(
-            ["F03_PDF_VISUAL_SHA256_PENDING"],
-            visualDigests);
+        Assert.True(
+            string.Equals(
+                "F03_PDF_GOLDEN_SHA256_PENDING",
+                first.Sha256,
+                StringComparison.Ordinal),
+            $"F03_PDF_GOLDEN_SHA256={first.Sha256}; " +
+            $"F03_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
+        Assert.True(
+            new[] { "F03_PDF_VISUAL_SHA256_PENDING" }.SequenceEqual(visualDigests),
+            $"F03_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
 
     [Fact]
