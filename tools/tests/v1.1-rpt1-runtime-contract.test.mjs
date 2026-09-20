@@ -13,6 +13,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Contracts/IReportingReadService.cs`,
     `${moduleRoot}/Endpoints/ReportingEndpoints.cs`,
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
@@ -24,6 +25,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingPdfGoldenVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -65,9 +67,10 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migration 42 owns reporting schema and migration 43 preserves deterministic verification", () => {
+test("migrations 42 through 44 own reporting schema verification and F02 catalog", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
+  const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
   const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
   assert.match(migration, /public string Version => "20260918-001"/u);
@@ -84,9 +87,14 @@ test("migration 42 owns reporting schema and migration 43 preserves deterministi
   assert.match(verificationMigration, /public long Order => 1201/u);
   assert.match(verificationMigration, /public string Version => "20260918-002"/u);
   assert.match(verificationMigration, /drop constraint if exists report_outputs_verification_code_key/u);
+  assert.match(periodicMigration, /public long Order => 1202/u);
+  assert.match(periodicMigration, /public string Version => "20260920-003"/u);
+  assert.match(periodicMigration, /project-periodic-certified/u);
+  assert.match(periodicMigration, /pmcs\.reporting\.project-periodic\.parameters\/v1/u);
+  assert.match(periodicMigration, /pinned_project_profile jsonb/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"43"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"44"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -720,7 +728,7 @@ test("RPT1 ten-family decision records the S07-MS01 safe checkpoint without clai
   assert.match(matrix, /## ۲۳\.[\s\S]*Run 135/u);
 });
 
-test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Renderer Golden checkpoint", () => {
+test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its connected source candidate", () => {
   const contract = read("docs/architecture/pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md");
   const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
   const api = read("docs/api/reporting-v1.md");
@@ -731,8 +739,8 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Rende
   const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
 
   assert.match(contract, /PMCS-RPT1-F02-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.2\.1`/u);
-  assert.match(contract, /Renderer\/Golden Safe Checkpoint \| API\/Worker\/Catalog Not Implemented/u);
+  assert.match(contract, /نسخه: `1\.3\.0`/u);
+  assert.match(contract, /Catalog\/API\/Worker Source Candidate \| Full CI Pending/u);
   assert.match(contract, /`periodKind`[\s\S]*`Weekly` یا `Monthly`/u);
   assert.match(contract, /`periodStartLocalDate`[\s\S]*برای Weekly باید شنبه[\s\S]*برای Monthly باید روز اول ماه شمسی/u);
   assert.match(contract, /بازه نیمه‌باز `[\s\S]*periodEndLocalDateExclusive/u);
@@ -746,13 +754,13 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Rende
   assert.match(contract, /Caller نمی‌تواند آن را پایین بیاورد/u);
   assert.match(contract, /هیچ درصد کل[\s\S]*S-Curve/u);
   assert.equal((contract.match(/\| `F02-[A-Z]\d{2}` \|/gu) ?? []).length, 14);
-  assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، DI/u);
-  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.2\.1/u);
-  assert.match(api, /Renderer\/Golden خانواده F02 بدون تغییر API/u);
+  assert.match(contract, /Migration forward شمارهٔ 44[\s\S]*strict parse[\s\S]*registry اختصاصی/u);
+  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.3\.0/u);
+  assert.match(api, /خانواده F02 روی API موجود/u);
   assert.match(security, /سیاست ثابت F02/u);
-  assert.match(matrix, /## ۲۶\.[\s\S]*Renderer\/Golden خانواده F02/u);
-  assert.match(registry, /Slice 07 MS03[\s\S]*6fc28cf54a6df820c49a2365eab76e3550ae421a[\s\S]*Run 139/u);
-  assert.match(canonical, /F02 Renderer\/Golden Source/u);
+  assert.match(matrix, /## ۲۷\.[\s\S]*Catalog\/API\/Worker wiring متصل خانواده F02/u);
+  assert.match(registry, /Slice 07 MS05[\s\S]*Full CI pending/u);
+  assert.match(canonical, /Source Candidate محدود `S07-MS05`/u);
 });
 
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {
@@ -790,6 +798,8 @@ test("RPT1-F02 runtime core stays bounded to identity period source resolver and
   assert.match(identity, /SnapshotSchemaVersion = "pmcs\.reporting\.project-periodic\.snapshot\/v1"/u);
   assert.match(identity, /RendererContractVersion = "pmcs\.reporting\.project-periodic\.renderer\/v1"/u);
   assert.match(identity, /LayoutContractVersion = "pmcs\.reporting\.project-periodic\.layout\/v1"/u);
+  assert.match(identity, /record ProjectPeriodicPinnedProjectProfile/u);
+  assert.match(identity, /PinnedProjectProfileSchemaVersion/u);
   assert.match(resolver, /DayOfWeek\.Saturday/u);
   assert.match(resolver, /PersianCalendar/u);
   assert.match(resolver, /IsInvalidTime/u);
@@ -804,7 +814,7 @@ test("RPT1-F02 runtime core stays bounded to identity period source resolver and
   assert.match(builder, /StringComparer\.Ordinal/u);
   assert.match(builder, /root\.Classification/u);
   assert.match(builder, /version\.CreatedAt\.ToUniversalTime\(\) > sourceCutoffUtc/u);
-  assert.match(builder, /project\.ConfigurationChangedAt\.Value\.ToUniversalTime\(\) > normalizedValidationTime/u);
+  assert.match(builder, /project\.ValidateForRun/u);
   assert.doesNotMatch(builder, /FieldOperationsDbContext|field_operations\./u);
   assert.match(projectProfile, /ConfigurationVersion/u);
   assert.match(projectProfile, /DailyCutoffLocalTime/u);
@@ -813,10 +823,12 @@ test("RPT1-F02 runtime core stays bounded to identity period source resolver and
   assert.match(tests, /MonthlyPeriodUsesPersianMonthBoundaries/u);
   assert.match(tests, /SemanticAndManifestHashesIgnoreQueryOrderRunIdentityAndBuildTime/u);
   assert.match(tests, /DuplicateRootDateAndDuplicateCurrentOfficialFailClosed/u);
-  assert.doesNotMatch(worker, /IDailyReportPeriodReportingSource|ProjectPeriodicReportSnapshotBuilder/u);
+  assert.match(worker, /IDailyReportPeriodReportingSource/u);
+  assert.match(worker, /ProjectPeriodicReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectPeriodicPinnedProjectProfile/u);
 });
 
-test("RPT1-F02 renderer contract and Golden stay deterministic and isolated from production wiring", () => {
+test("RPT1-F02 renderer contract stays deterministic while wiring remains production-disabled", () => {
   const identity = read(
     "src/backend/Pmcs.Modules.Reporting/Domain/ProjectPeriodicReportRuntimeContract.cs",
   );
@@ -841,13 +853,17 @@ test("RPT1-F02 renderer contract and Golden stay deterministic and isolated from
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
   const registry = read("docs/roadmaps/README.md");
   const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const migration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
+  const harness = read("src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs");
 
   for (const path of [
     `${moduleRoot}/Rendering/CertifiedPdfRuntime.cs`,
     `${moduleRoot}/Rendering/ProjectPeriodicReportRenderingContracts.cs`,
     `${moduleRoot}/Rendering/ProjectPeriodicReportPdfRenderer.cs`,
     `${moduleRoot}/Rendering/ProjectPeriodicReportXlsxRenderer.cs`,
+    `${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`,
     "tests/Pmcs.Domain.Tests/ProjectPeriodicReportRenderingTests.cs",
+    "src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs",
   ]) assert.equal(existsSync(path), true, `Missing ${path}`);
 
   assert.match(identity, /RendererContractVersion = "pmcs\.reporting\.project-periodic\.renderer\/v1"/u);
@@ -871,19 +887,25 @@ test("RPT1-F02 renderer contract and Golden stay deterministic and isolated from
   assert.match(tests, /NoDataWorkbookKeepsSemanticSheetsHeaderOnly/u);
   assert.match(tests, /NotConfiguredWorkbookCarriesExplicitReasons/u);
 
-  assert.doesNotMatch(module, /ProjectPeriodicReport(?:Pdf|Xlsx)Renderer|IProjectPeriodicReportRenderer/u);
-  assert.doesNotMatch(worker, /ProjectPeriodicReport(?:Pdf|Xlsx)Renderer|IProjectPeriodicReportRenderer/u);
-  assert.doesNotMatch(worker, /ProjectPeriodicReportRenderSnapshot|ProjectPeriodicReportRenderRequest/u);
-  assert.doesNotMatch(endpoints, /project-periodic-certified/u);
+  assert.match(module, /IProjectPeriodicReportRenderer, ProjectPeriodicReportPdfRenderer/u);
+  assert.match(module, /IProjectPeriodicReportRenderer, ProjectPeriodicReportXlsxRenderer/u);
+  assert.match(module, /ProjectPeriodicReportCatalogMigration/u);
+  assert.match(worker, /ProjectPeriodicReportRendererRegistry/u);
+  assert.match(worker, /ProjectPeriodicReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /ProjectPeriodicReportRenderRequest/u);
+  assert.match(endpoints, /ProjectPeriodicReportRuntimeContract\.DefinitionCode/u);
+  assert.match(endpoints, /ParsePeriodicParameters/u);
+  assert.match(migration, /project-periodic-certified/u);
+  assert.match(harness, /verify-reporting-periodic|VerifyReportingPeriodicAsync/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
-  assert.match(semantic, /Renderer\/Golden Safe Checkpoint/u);
+  assert.match(semantic, /Catalog\/API\/Worker Source Candidate/u);
   assert.match(semantic, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
-  assert.match(matrix, /## ۲۶\. Renderer\/Golden خانواده F02/u);
-  assert.match(roadmap, /F02 Renderer\/Golden Safe Checkpoint — Slice 07 Micro-Step 04/u);
-  assert.match(registry, /Slice 07 MS04[\s\S]*4f68f57de2c2a79b654a19128894d9c89878ab65[\s\S]*Run 141/u);
-  assert.match(canonical, /F02 Renderer\/Golden Source:[\s\S]*Run 141/u);
+  assert.match(matrix, /## ۲۷\. Catalog\/API\/Worker wiring متصل خانواده F02/u);
+  assert.match(roadmap, /F02 Catalog\/API\/Worker Source Candidate — Slice 07 Micro-Step 05/u);
+  assert.match(registry, /Slice 07 MS05[\s\S]*Full CI pending/u);
+  assert.match(canonical, /Full CI Candidate جاری هنوز باز است/u);
 });
 
 test("RPT1-F02 renderer and Golden record the S07-MS04 safe checkpoint without opening wiring", () => {

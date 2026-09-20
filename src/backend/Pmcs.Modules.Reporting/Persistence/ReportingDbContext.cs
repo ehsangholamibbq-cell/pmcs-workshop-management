@@ -27,7 +27,7 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.Classification).HasColumnName("classification").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.SupportedFormatsJson).HasColumnName("supported_formats").HasColumnType("jsonb");
             builder.Property(item => item.RequiredPermissionsJson).HasColumnName("required_permissions").HasColumnType("jsonb");
-            builder.Property(item => item.ParameterSchemaVersion).HasColumnName("parameter_schema_version").HasMaxLength(40);
+            builder.Property(item => item.ParameterSchemaVersion).HasColumnName("parameter_schema_version").HasMaxLength(80);
             builder.Property(item => item.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.CurrentTemplateVersionId).HasColumnName("current_template_version_id");
             builder.Property(item => item.CreatedAt).HasColumnName("created_at");
@@ -42,8 +42,8 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
             builder.Property(item => item.DefinitionId).HasColumnName("definition_id");
             builder.Property(item => item.Version).HasColumnName("version").HasMaxLength(40);
-            builder.Property(item => item.RendererContractVersion).HasColumnName("renderer_contract_version").HasMaxLength(40);
-            builder.Property(item => item.LayoutContractVersion).HasColumnName("layout_contract_version").HasMaxLength(40);
+            builder.Property(item => item.RendererContractVersion).HasColumnName("renderer_contract_version").HasMaxLength(80);
+            builder.Property(item => item.LayoutContractVersion).HasColumnName("layout_contract_version").HasMaxLength(80);
             builder.Property(item => item.ContentDigest).HasColumnName("content_digest").HasMaxLength(64);
             builder.Property(item => item.PublishedAt).HasColumnName("published_at");
             builder.Property(item => item.RetiredAt).HasColumnName("retired_at");
@@ -70,6 +70,9 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.RequestedFormatsJson).HasColumnName("requested_formats").HasColumnType("jsonb");
             builder.Property(item => item.AsOfUtc).HasColumnName("as_of_utc");
             builder.Property(item => item.ProjectTimeZone).HasColumnName("project_time_zone").HasMaxLength(120);
+            builder.Property(item => item.PinnedProjectProfileJson)
+                .HasColumnName("pinned_project_profile")
+                .HasColumnType("jsonb");
             builder.Property(item => item.RequestedBy).HasColumnName("requested_by");
             builder.Property(item => item.RequestPermissionSnapshotJson).HasColumnName("request_permission_snapshot").HasColumnType("jsonb");
             builder.Property(item => item.ProcessingPermissionSnapshotJson).HasColumnName("processing_permission_snapshot").HasColumnType("jsonb");

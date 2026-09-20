@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01 Runtime qualified؛ F02 Renderer/Golden checkpointed، API/Worker/Catalog not implemented؛ RPT1 active
+- Status: F01 qualified؛ F02 Catalog/API/Worker source candidate با Full CI باز؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -40,28 +40,26 @@ metadata supersession آینده را نشت نمی‌دهد؛ v3 Draft نیز �
 Output باید bytes و SHA-256 یکسان برگرداند و workbook فقط metadata خروجی‌ویژه را از semantic digest
 حذف می‌کند.
 
-### ۱.۴ Runtime Core خانواده F02 بدون تغییر API
+### ۱.۴ خانواده F02 روی API موجود
 
-Micro-Step جاری هیچ endpoint، Catalog row، Template Version یا payload عمومی تازه‌ای منتشر
-نمی‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.2.1` در Core داخلی شناسه Definition
+Micro-Step جاری endpoint تازه‌ای اضافه نمی‌کند، اما Definition دوم را روی همان routeهای موجود منتشر
+می‌کند. قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.3.0` شناسه Definition
 `project-periodic-certified/1.0.0` و schemaهای
 `pmcs.reporting.project-periodic.parameters/v1` و
-`pmcs.reporting.project-periodic.snapshot/v1` را pin کرده است. پارامترهای Client آینده همچنان فقط
+`pmcs.reporting.project-periodic.snapshot/v1` را pin کرده است. پارامترهای Client فقط
 `periodKind=Weekly|Monthly` و `periodStartLocalDate` خواهند بود؛ `projectId` از route و `asOfUtc` از
-Run pin می‌شود و end date، Time Zone، Source ID، Query یا filter دلخواه پذیرفته نمی‌شود. تا Slice
-API/Worker/Catalog، ارسال این Definition به endpoint موجود پشتیبانی نمی‌شود و fail-closed باقی می‌ماند.
+Run pin می‌شود و end date، Time Zone، Source ID، Query یا filter دلخواه پذیرفته نمی‌شود. Project
+revision/configuration/time zone نیز هنگام پذیرش Run در evidence سروری جداگانه pin می‌شود و Client
+اجازه ارسال یا override آن را ندارد.
 
-### ۱.۵ Renderer/Golden خانواده F02 بدون تغییر API
+### ۱.۵ Renderer و Worker خانواده F02
 
-Safe Checkpoint `S07-MS04` فقط قرارداد داخلی
+Safe Checkpoint `S07-MS04` قرارداد داخلی
 `pmcs.reporting.project-periodic.renderer/v1`، layout
-`pmcs.reporting.project-periodic.layout/v1` و PDF/XLSX deterministic را اضافه می‌کند. Rendererهای
-F02 در `ReportingModule` ثبت نشده‌اند، `ReportGenerationWorker` همچنان فقط مسیر F01 را می‌شناسد و
-هیچ route، request/response عمومی یا verification path تازه‌ای منتشر نشده است. بنابراین پذیرش
-`project-periodic-certified` از endpoint موجود همچنان پشتیبانی نمی‌شود؛ نمایش hash و verification
-code در Artifact محلی به معنی قابل‌دسترسی‌شدن Download/Verify عمومی F02 نیست.
-Source `4f68f57de2c2a79b654a19128894d9c89878ab65` این مرز منفی را در Run 141 با هر هشت Job سبز
-تأیید کرده است.
+`pmcs.reporting.project-periodic.layout/v1` و PDF/XLSX deterministic را تثبیت کرد. Candidate
+`S07-MS05` همان Rendererها را در registry اختصاصی ثبت و Worker را براساس
+Definition dispatch می‌کند. Download/Verify از همان کنترل‌های permission، integrity و object ownership
+F01 استفاده می‌کنند؛ route یا bypass جداگانه‌ای وجود ندارد. تنظیمات production همچنان خاموش‌اند.
 
 ## ۲. Catalog
 
@@ -91,6 +89,10 @@ Permission: `reporting.catalog.read` و Permissionهای پایه‌ای که De
 
 Catalog فقط Definitionهایی را برمی‌گرداند که Actor در همان Project اجازه دیدن آن‌ها را دارد.
 
+Definition دوم `project-periodic-certified` با schema
+`pmcs.reporting.project-periodic.parameters/v1`، Template `1.0.0`، فرمت‌های `Pdf/Xlsx` و چهار وضعیت
+`Available/NoData/InsufficientData/NotConfigured` منتشر می‌شود.
+
 ## ۳. ایجاد Run
 
 ```http
@@ -109,6 +111,22 @@ Content-Type: application/json
   "parameters": {
     "dailyReportId": "22222222-2222-2222-8222-222222222222",
     "includeRevisionChain": true
+  }
+}
+```
+
+نمونهٔ F02 روی همان endpoint:
+
+```json
+{
+  "clientGeneratedId": "11111111-1111-1111-8111-111111111112",
+  "definitionCode": "project-periodic-certified",
+  "templateVersion": "1.0.0",
+  "asOfUtc": "2026-09-20T12:00:00Z",
+  "formats": ["Pdf", "Xlsx"],
+  "parameters": {
+    "periodKind": "Weekly",
+    "periodStartLocalDate": "2026-09-12"
   }
 }
 ```

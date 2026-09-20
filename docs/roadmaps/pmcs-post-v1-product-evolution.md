@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.29.0`
+- نسخه سند: `1.30.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -405,6 +405,12 @@ feature flag یا Production enablement ندارد. Source commit
 تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است؛ wiring متصل F02/RPT1 همچنان باز می‌ماند.
 
+**F02 Catalog/API/Worker Source Candidate — Slice 07 Micro-Step 05:** روی Checkpoint
+`PMCS-V1.1-RPT1-S07-MS04-C1`، Migration 44 Definition/Template رسمی F02 و Project profile pin‌شده را
+اضافه می‌کند؛ API و Worker روی contractهای موجود dispatch می‌کنند و QA متصل PDF/XLSX، مجوز،
+idempotency و database evidence را می‌سنجد. UI و Production defaults عمداً تغییر نکرده‌اند. Full CI
+و ثبت Safe Checkpoint این Micro-Step هنوز باز است و F03 تا F10 مستقل باقی می‌مانند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -676,3 +682,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.27.0` | ثبت Safe Checkpoint `S07-MS03` و Evidence سبز Run 139 برای Runtime Core F02؛ Renderer/Golden و wiring متصل باز است |
 | `1.28.0` | ثبت Candidate محدود `S07-MS04` برای قرارداد Renderer و Golden قطعی PDF/XLSX خانواده F02؛ Catalog/API/Worker wiring و Full CI باز است |
 | `1.29.0` | ثبت Safe Checkpoint `S07-MS04` و Evidence سبز Run 141 برای Renderer/Golden خانواده F02؛ Catalog/API/Worker wiring باز است |
+| `1.30.0` | ثبت Source Candidate محدود `S07-MS05` برای Migration/Catalog/API/Worker و QA متصل F02؛ Full CI و Safe Checkpoint باز است |

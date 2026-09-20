@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pmcs.BuildingBlocks.Application;
+using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.Documents.Contracts;
 using Pmcs.Modules.Documents.Domain;
 using Pmcs.Modules.Projects.Contracts;
@@ -19,11 +21,15 @@ namespace Pmcs.Modules.Reporting.Endpoints;
 
 internal static class ReportingEndpoints
 {
-    private const string DefinitionCode = "daily-report-certified";
+    private const string DailyDefinitionCode = "daily-report-certified";
     private const string SourcePermission = "field.daily-reports.read";
     private const string CreateOperation = "reporting.run.create";
+    private static readonly string[] SupportedDefinitionCodes =
+        [DailyDefinitionCode, ProjectPeriodicReportRuntimeContract.DefinitionCode];
     private static readonly HashSet<string> DailyParameterNames =
         new(StringComparer.Ordinal) { "dailyReportId", "includeRevisionChain" };
+    private static readonly HashSet<string> PeriodicParameterNames =
+        new(StringComparer.Ordinal) { "periodKind", "periodStartLocalDate" };
 
     public static void MapReportingEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -67,7 +73,8 @@ internal static class ReportingEndpoints
         }
 
         var definitions = await dbContext.Definitions.AsNoTracking()
-            .Where(item => item.Status == ReportDefinitionStatus.Active && item.Code == DefinitionCode)
+            .Where(item => item.Status == ReportDefinitionStatus.Active &&
+                SupportedDefinitionCodes.Contains(item.Code))
             .OrderBy(item => item.Code)
             .ToArrayAsync(cancellationToken);
         var responses = new List<ReportCatalogDefinitionResponse>(definitions.Length);
@@ -101,7 +108,7 @@ internal static class ReportingEndpoints
             return gate.Result;
         }
 
-        if (!gate.SourceAllowed || !string.Equals(definitionCode, DefinitionCode, StringComparison.Ordinal))
+        if (!gate.SourceAllowed || !SupportedDefinitionCodes.Contains(definitionCode, StringComparer.Ordinal))
         {
             return Results.NotFound(new { code = "reporting.definition.not_found" });
         }
@@ -178,7 +185,7 @@ internal static class ReportingEndpoints
         }
 
         var definitionCode = request.DefinitionCode?.Trim() ?? string.Empty;
-        if (!string.Equals(definitionCode, DefinitionCode, StringComparison.Ordinal))
+        if (!SupportedDefinitionCodes.Contains(definitionCode, StringComparer.Ordinal))
         {
             return Problem(StatusCodes.Status400BadRequest, "reporting.definition.invalid", "Report definition is invalid.");
         }
@@ -208,7 +215,7 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status400BadRequest, "reporting.format.unsupported", "Requested format is unsupported.");
         }
 
-        var parameters = ParseDailyParameters(request.Parameters);
+        var parameters = ParseParameters(definitionCode, request.Parameters);
         if (parameters is null)
         {
             return Problem(StatusCodes.Status400BadRequest, "reporting.parameters.invalid", "Report parameters are invalid.");
@@ -219,6 +226,37 @@ internal static class ReportingEndpoints
         if (asOfUtc > now)
         {
             return Problem(StatusCodes.Status400BadRequest, "reporting.as_of.future", "Report cutoff cannot be in the future.");
+        }
+
+        ProjectPeriodicPinnedProjectProfile? pinnedProjectProfile = null;
+        if (parameters is ProjectPeriodicReportParameters periodicParameters)
+        {
+            try
+            {
+                _ = ProjectPeriodicReportPeriodResolver.Resolve(
+                    periodicParameters,
+                    project.TimeZone,
+                    asOfUtc,
+                    now);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status400BadRequest, exception.Code, exception.Message);
+            }
+
+            try
+            {
+                pinnedProjectProfile = ProjectPeriodicPinnedProjectProfile.Capture(project);
+                pinnedProjectProfile.ValidateForRun(
+                    actor.TenantId,
+                    projectId,
+                    project.TimeZone,
+                    now);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
+            }
         }
 
         var permissionPreview = await permissionService.PreviewProjectPermissionsAsync(
@@ -236,7 +274,8 @@ internal static class ReportingEndpoints
         }
 
         var permissionSnapshotJson = SerializePermissionSnapshot(permissionPreview);
-        var parametersJson = CanonicalJson.Serialize(parameters);
+        var parametersJson = SerializeParameters(parameters);
+        var canonicalParameters = JsonSerializer.Deserialize<JsonElement>(parametersJson);
         var requestedFormatsJson = CanonicalJson.Serialize(formats);
         var canonicalRequest = CanonicalJson.Serialize(new CreateRunIdentity(
             projectId,
@@ -245,7 +284,7 @@ internal static class ReportingEndpoints
             templateVersion,
             request.AsOfUtc?.ToUniversalTime(),
             formats,
-            parameters));
+            canonicalParameters));
         var requestHash = RequestHash.Create(canonicalRequest);
         var idempotencyKey = httpContext.Request.Headers["Idempotency-Key"].ToString().Trim();
         IdempotencyKeyRules.Validate(idempotencyKey);
@@ -273,6 +312,7 @@ internal static class ReportingEndpoints
             requestedFormatsJson,
             asOfUtc,
             project.TimeZone,
+            pinnedProjectProfile is null ? null : CanonicalJson.Serialize(pinnedProjectProfile),
             actor.UserId,
             permissionSnapshotJson,
             httpContext.TraceIdentifier,
@@ -1149,7 +1189,14 @@ internal static class ReportingEndpoints
             template.Version,
             Deserialize<ReportFormat[]>(definition.SupportedFormatsJson),
             Deserialize<string[]>(definition.RequiredPermissionsJson),
-            [ReportDataStatus.Available, ReportDataStatus.NoData, ReportDataStatus.InsufficientData]);
+            definition.Code == ProjectPeriodicReportRuntimeContract.DefinitionCode
+                ? [
+                    ReportDataStatus.Available,
+                    ReportDataStatus.NoData,
+                    ReportDataStatus.InsufficientData,
+                    ReportDataStatus.NotConfigured
+                ]
+                : [ReportDataStatus.Available, ReportDataStatus.NoData, ReportDataStatus.InsufficientData]);
     }
 
     private static async Task<ReportRunResponse> LoadRunResponseAsync(
@@ -1260,6 +1307,51 @@ internal static class ReportingEndpoints
         return new DailyReportReportParameters(reportId, includeRevisionChain);
     }
 
+    private static object? ParseParameters(string definitionCode, JsonElement parameters) =>
+        definitionCode switch
+        {
+            DailyDefinitionCode => ParseDailyParameters(parameters),
+            ProjectPeriodicReportRuntimeContract.DefinitionCode => ParsePeriodicParameters(parameters),
+            _ => null
+        };
+
+    private static ProjectPeriodicReportParameters? ParsePeriodicParameters(JsonElement parameters)
+    {
+        if (parameters.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var properties = parameters.EnumerateObject().ToArray();
+        if (properties.Length != PeriodicParameterNames.Count ||
+            properties.Select(property => property.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length ||
+            properties.Any(property => !PeriodicParameterNames.Contains(property.Name)) ||
+            !parameters.TryGetProperty("periodKind", out var kindElement) ||
+            kindElement.ValueKind != JsonValueKind.String ||
+            !Enum.TryParse<ProjectReportPeriodKind>(kindElement.GetString(), ignoreCase: false, out var periodKind) ||
+            !Enum.IsDefined(periodKind) ||
+            !parameters.TryGetProperty("periodStartLocalDate", out var startElement) ||
+            startElement.ValueKind != JsonValueKind.String ||
+            !DateOnly.TryParseExact(
+                startElement.GetString(),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var periodStartLocalDate))
+        {
+            return null;
+        }
+
+        return new ProjectPeriodicReportParameters(periodKind, periodStartLocalDate);
+    }
+
+    private static string SerializeParameters(object parameters) => parameters switch
+    {
+        DailyReportReportParameters daily => CanonicalJson.Serialize(daily),
+        ProjectPeriodicReportParameters periodic => CanonicalJson.Serialize(periodic),
+        _ => throw new InvalidOperationException("Unsupported reporting parameters.")
+    };
+
     private static T Deserialize<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, CanonicalJson.SerializerOptions)
         ?? throw new InvalidOperationException("Stored reporting JSON is invalid.");
@@ -1290,5 +1382,5 @@ internal static class ReportingEndpoints
         string TemplateVersion,
         DateTimeOffset? AsOfUtc,
         IReadOnlyCollection<ReportFormat> Formats,
-        DailyReportReportParameters Parameters);
+        JsonElement Parameters);
 }

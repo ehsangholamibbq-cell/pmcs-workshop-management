@@ -1,13 +1,13 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.2.1`
+- نسخه: `1.3.0`
 - خانواده: `RPT1-F02`
-- وضعیت: `Renderer/Golden Safe Checkpoint | API/Worker/Catalog Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS03-C1`
-- Runtime change: isolated renderer contract + deterministic PDF/XLSX only
-- Migration / API / Catalog seed / Worker dispatch / UI change: None
-- Parent evidence: checkpoint `d8fd4398309b08d1cdc90e26140c4581dc476636`؛ Run 140
+- وضعیت: `Catalog/API/Worker Source Candidate | Full CI Pending | UI/Production Disabled`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS04-C1`
+- Runtime change: certified Catalog/Template seed + strict API dispatch + pinned Project profile + Worker dispatch
+- UI / Production enablement change: None
+- Parent evidence: checkpoint `1f1fc2b31840de64c70236b97d44f27fdad247d2`؛ Run 142
 - Renderer evidence: source `4f68f57de2c2a79b654a19128894d9c89878ab65`؛ Run 141
 
 ## ۱. هدف و مرز خانواده
@@ -54,9 +54,11 @@ Runtime Core شناسه‌های `project-periodic-certified/1.0.0`،
 `pmcs.reporting.project-periodic.parameters/v1` و
 `pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Renderer checkpoint نیز Template
 contract `1.0.0`، قرارداد `pmcs.reporting.project-periodic.renderer/v1` و layout
-`pmcs.reporting.project-periodic.layout/v1` را pin می‌کند. این شناسه‌ها قرارداد کد هستند، نه رکورد
-منتشرشدهٔ Catalog؛ `TemplateVersionId` واقعی تا Slice مستقل seed/wiring تخصیص داده نمی‌شود و F02
-هنوز Definition قابل اجرا یا Output قابل دانلود منتشر نمی‌کند.
+`pmcs.reporting.project-periodic.layout/v1` را pin می‌کند. Migration 44 تعریف
+`project-periodic-certified` و Template immutable `1.0.0` را با digest
+`eca353e00f07fbdb054613768399496e137ab0deda731c5d319d5cd4ebd3be6b` منتشر می‌کند. API فقط همین
+دو پارامتر allowlisted را می‌پذیرد و پروفایل نسخه‌دار پروژه را جدا از payload Client در Run pin
+می‌کند؛ بنابراین retry و Worker از configuration جدیدتر پروژه معنا نمی‌گیرند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -67,7 +69,7 @@ F02 فقط دو Application Contract خواندنی و نسخه‌دار را م
 2. FieldOperations، ریشه‌های گزارش روزانه همان Tenant/Project و همان بازه را همراه نسخه‌های رسمی
    تا `asOfUtc` می‌دهد.
 
-Runtime آینده باید یک Contract باریک period-read در FieldOperations اضافه کند؛ loop کردن endpoint
+Runtime از Contract باریک و نسخه‌دار period-read در FieldOperations استفاده می‌کند؛ loop کردن endpoint
 عمومی F01، import از `FieldOperationsDbContext` یا SQL روی schema ماژول دیگر ممنوع است. برای هر
 تاریخ حداکثر یک root رسمی وجود دارد. Source response حداقل این lineage را نگه می‌دارد:
 
@@ -195,7 +197,7 @@ Qualification متصل آینده باید boundaryها را مستقل از imp
 Source manifest را با query مستقل بررسی کند. Golden محلی PDF/XLSX فعلی جای Golden معنایی یا
 integration متصل را نمی‌گیرد.
 
-## ۹. نگاشت Runtime Core و Renderer Checkpoint
+## ۹. نگاشت Runtime، Renderer و wiring متصل
 
 Runtime Core این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
 
@@ -225,12 +227,21 @@ formula-free و با ZIP timestamp/order ثابت است. XLSX hash برابر
 ۹۶ DPI نیز `058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396` و
 `d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` هستند.
 
-این Rendererها عمداً در DI/registry ثبت نشده‌اند و Worker/endpoint آن‌ها را فراخوانی نمی‌کند.
-Definition/Template seed، Migration، API، UI و feature flag جدید وجود ندارد؛ Shared PDF runtime
-فقط از F01 استخراج شده و Golden تصویری موجود F01 بدون تغییر پاس می‌شود.
-Source commit `4f68f57de2c2a79b654a19128894d9c89878ab65` با tree
-`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 (`35495791821`) هر هشت Job را پاس کرد و
-Checkpoint `PMCS-V1.1-RPT1-S07-MS04-C1` مرز ادامه را ثبت می‌کند.
+Micro-Step 05 این اجزا را بدون route یا feature flag تازه به runtime موجود متصل می‌کند:
+
+- Migration forward شمارهٔ 44 طول contract versionها را به ۸۰ افزایش می‌دهد، Definition/Template
+  قطعی F02 را seed و ستون JSONB برای Project profile pin‌شده اضافه می‌کند؛
+- Catalog فقط F01 و F02 allowlisted را برمی‌گرداند و همان `field.daily-reports.read` را در scope پروژه
+  دوباره ارزیابی می‌کند؛
+- API براساس Definition پارامترهای F01/F02 را strict parse می‌کند؛ field اضافه، enum با casing دیگر،
+  شنبه/اول ماه نامعتبر، cutoff آینده یا پیش از شروع fail-closed است؛
+- Worker برای F02 پروفایل pin‌شده را با Tenant/Project/Time Zone/accepted-at تطبیق می‌دهد، Source دوره
+  را می‌خواند، semantic Snapshot را می‌سازد و PDF/XLSX را با registry اختصاصی تولید می‌کند؛
+- TestHarness متصل Catalog، deny، validation، replay/conflict، Worker، هر دو Download/Verify و
+  evidence دیتابیس را پوشش می‌دهد.
+
+این wiring تنظیمات production را فعال نمی‌کند: `Phase1Enabled`، `OutputAccessEnabled` و
+`WorkerEnabled` در `appsettings.json` همچنان `false` هستند. UI نیز تغییری نکرده است.
 
 ## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
@@ -244,16 +255,16 @@ Checkpoint `PMCS-V1.1-RPT1-S07-MS04-C1` مرز ادامه را ثبت می‌ک�
 | Golden matrix | بسته |
 | Runtime Definition/parameter/snapshot IDs | Checkpointed in S07-MS03 |
 | Period source contract/resolver/Snapshot builder | Checkpointed in S07-MS03 |
-| Unit/contract tests | `353/353` C# و `60/60` Node در Run 141 |
-| Catalog/Template seed و Worker/API wiring | Not Implemented |
+| Unit/contract tests | Golden checkpoint در Run 141؛ regression کامل Candidate در انتظار CI |
+| Catalog/Template seed و Worker/API wiring | Source Candidate در S07-MS05؛ QA متصل اضافه شد |
 | PDF/XLSX/visual/performance | Checkpointed in S07-MS04؛ deterministic Golden پاس |
 
-Micro-Step بعدی فقط Catalog/API/Worker wiring متصل F02 است.
-UI و فعال‌سازی Production باید در Sliceهای مستقل بعدی باقی بمانند.
+گام بعدی فقط Full CI و ثبت Safe Checkpoint همین Candidate است. UI و فعال‌سازی Production باید در
+Sliceهای مستقل بعدی باقی بمانند.
 
 ## ۱۱. Gate statement
 
-این نسخه F02 را به `Renderer/Golden Safe Checkpoint` می‌رساند، نه `End-to-End Implemented` یا
-Qualification کامل خانواده. هیچ API، Migration، Catalog/Template seed، Worker dispatch، DI
-registration، UI، feature flag یا Production setting در این Micro-Step تغییر نکرده است. F02 تا
-پایان wiring و integration متصل باز می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.
+این نسخه F02 را به `Catalog/API/Worker Source Candidate` می‌رساند، نه Production rollout یا پایان
+RPT1. Migration، Catalog/Template، API و Worker dispatch تغییر کرده‌اند و QA متصل اضافه شده است؛
+اما UI و Production defaults دست‌نخورده‌اند و Full CI هنوز باید قبل از Safe Checkpoint پاس شود.
+F03 تا F10 و RPT1 نیز باز هستند.

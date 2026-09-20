@@ -181,6 +181,11 @@ bounded پوشش داده شده‌اند. Source commit `4f68f57de2c2a79b654a19
 Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. Rendererها در DI/Worker ثبت نشده‌اند و API،
 Migration، Catalog seed، UI و default Production تغییر نکرده‌اند؛ F02/RPT1 Done محسوب نمی‌شوند.
 
+Slice 07 Micro-Step 05 به‌صورت Source Candidate محدود روی همین Checkpoint، Migration 44،
+Catalog/Template seed قطعی F02، strict API، Project profile pin، Worker dispatch و QA متصل PDF/XLSX
+را اضافه می‌کند. این Candidate تا عبور Full CI Safe Checkpoint نیست؛ UI و defaultهای Production
+تغییر نکرده‌اند و F03 تا F10 همچنان باز هستند.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛

@@ -16,21 +16,31 @@ internal static class ProjectPeriodicReportSnapshotBuilder
         ProjectPeriodicReportParameters parameters,
         DailyReportReportingPeriod source,
         DateTimeOffset validatedAtUtc,
+        DateTimeOffset builtAt) => Build(
+        runId,
+        tenantId,
+        ProjectPeriodicPinnedProjectProfile.Capture(project),
+        asOfUtc,
+        parameters,
+        source,
+        validatedAtUtc,
+        builtAt);
+
+    public static ReportSnapshot Build(
+        Guid runId,
+        Guid tenantId,
+        ProjectPeriodicPinnedProjectProfile project,
+        DateTimeOffset asOfUtc,
+        ProjectPeriodicReportParameters parameters,
+        DailyReportReportingPeriod source,
+        DateTimeOffset validatedAtUtc,
         DateTimeOffset builtAt)
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(source);
         var normalizedValidationTime = validatedAtUtc.ToUniversalTime();
-        if (tenantId == Guid.Empty || project.Id == Guid.Empty || project.TenantId != tenantId ||
-            project.Status != ProjectStatus.Active || project.Revision <= 0 || project.ConfigurationVersion <= 0 ||
-            !project.ConfigurationChangedAt.HasValue ||
-            project.ConfigurationChangedAt.Value.ToUniversalTime() > normalizedValidationTime)
-        {
-            throw new DomainRuleException(
-                "reporting.period.project_scope.invalid",
-                "The pinned project does not match the report tenant scope.");
-        }
+        project.ValidateForRun(tenantId, project.Id, project.TimeZone, normalizedValidationTime);
 
         var period = ProjectPeriodicReportPeriodResolver.Resolve(
             parameters,
@@ -105,12 +115,12 @@ internal static class ProjectPeriodicReportSnapshotBuilder
                 project.TimeZone,
                 project.Revision,
                 project.ConfigurationVersion,
-                project.ConfigurationChangedAt.Value.ToUniversalTime(),
+                project.ConfigurationChangedAt.ToUniversalTime(),
                 project.ReportingFrequency,
                 project.DailyReportWorkflow,
                 project.DailyCutoffLocalTime,
-                project.Calendar.State,
-                project.Calendar.WorkingDaysMask),
+                project.CalendarState,
+                project.WorkingDaysMask),
             new ProjectPeriodicReportPeriodIdentity(
                 period.PeriodKind,
                 period.PeriodStartLocalDate,
@@ -314,11 +324,11 @@ internal static class ProjectPeriodicReportSnapshotBuilder
     }
 
     private static HashSet<ProjectPeriodicReportReasonCode> ResolveConfigurationReasons(
-        ProjectControlProfile project)
+        ProjectPeriodicPinnedProjectProfile project)
     {
         if (!Enum.IsDefined(project.ReportingFrequency) ||
             !Enum.IsDefined(project.DailyReportWorkflow) ||
-            !Enum.IsDefined(project.Calendar.State))
+            !Enum.IsDefined(project.CalendarState))
         {
             throw new DomainRuleException(
                 "reporting.period.project_configuration.invalid",
@@ -339,8 +349,8 @@ internal static class ProjectPeriodicReportSnapshotBuilder
             reasons.Add(ProjectPeriodicReportReasonCode.DailyCutoffMissing);
         }
         if (project.ReportingFrequency == ReportingFrequency.WorkingDays &&
-            (project.Calendar.State != ProjectCalendarConfigurationState.Configured ||
-                project.Calendar.WorkingDaysMask is null or <= 0 or > 127))
+            (project.CalendarState != ProjectCalendarConfigurationState.Configured ||
+                project.WorkingDaysMask is null or <= 0 or > 127))
         {
             reasons.Add(ProjectPeriodicReportReasonCode.WorkingCalendarMissing);
         }
@@ -389,7 +399,7 @@ internal static class ProjectPeriodicReportSnapshotBuilder
     }
 
     private static ExpectedCoverageSlot[] BuildExpectedSlots(
-        ProjectControlProfile project,
+        ProjectPeriodicPinnedProjectProfile project,
         ResolvedProjectReportPeriod period)
     {
         var cutoff = project.DailyCutoffLocalTime
@@ -402,7 +412,7 @@ internal static class ProjectPeriodicReportSnapshotBuilder
                  date = date.AddDays(1))
             {
                 if (project.ReportingFrequency == ReportingFrequency.WorkingDays &&
-                    !project.Calendar.IsWorkingDay(date.DayOfWeek))
+                    !project.IsWorkingDay(date.DayOfWeek))
                 {
                     continue;
                 }
@@ -504,7 +514,7 @@ internal static class ProjectPeriodicReportSnapshotBuilder
             .ToArray();
 
     private static ProjectPeriodicSourceManifest BuildSourceManifest(
-        ProjectControlProfile project,
+        ProjectPeriodicPinnedProjectProfile project,
         ResolvedProjectReportPeriod period,
         IReadOnlyCollection<DailyReportReportingRoot> roots) =>
         new(
@@ -513,7 +523,7 @@ internal static class ProjectPeriodicReportSnapshotBuilder
             project.Id,
             project.Revision,
             project.ConfigurationVersion,
-            project.ConfigurationChangedAt!.Value.ToUniversalTime(),
+            project.ConfigurationChangedAt.ToUniversalTime(),
             period.PeriodStartLocalDate,
             period.PeriodEndLocalDateExclusive,
             period.SourceCutoffUtc,

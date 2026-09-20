@@ -112,8 +112,12 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IReportRenderer, DailyReportPdfRenderer>();
         services.AddSingleton<IReportRenderer, DailyReportXlsxRenderer>();
         services.AddSingleton<ReportRendererRegistry>();
+        services.AddSingleton<IProjectPeriodicReportRenderer, ProjectPeriodicReportPdfRenderer>();
+        services.AddSingleton<IProjectPeriodicReportRenderer, ProjectPeriodicReportXlsxRenderer>();
+        services.AddSingleton<ProjectPeriodicReportRendererRegistry>();
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectPeriodicReportCatalogMigration>();
         services.AddHostedService<ReportGenerationWorker>();
         services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(

@@ -28,6 +28,7 @@ internal sealed partial class ReportGenerationWorker(
     ReportingWorkerTelemetry telemetry,
     ILogger<ReportGenerationWorker> logger) : BackgroundService
 {
+    private const string DailyDefinitionCode = "daily-report-certified";
     private static readonly Guid SystemActorId =
         Guid.Parse("00000000-0000-0000-0000-000000000001");
 
@@ -226,7 +227,6 @@ internal sealed partial class ReportGenerationWorker(
         var services = scope.ServiceProvider;
         var permissionService = services.GetRequiredService<IProjectPermissionService>();
         var projectDirectory = services.GetRequiredService<IProjectDirectory>();
-        var source = services.GetRequiredService<IDailyReportReportingSource>();
         var dbContext = services.GetRequiredService<ReportingDbContext>();
         var clock = services.GetRequiredService<IClock>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
@@ -256,28 +256,84 @@ internal sealed partial class ReportGenerationWorker(
             claimed,
             permissionSnapshotJson,
             cancellationToken);
-        var parameters = JsonSerializer.Deserialize<DailyReportReportParameters>(
-            claimed.ParametersJson,
-            CanonicalJson.SerializerOptions)
-            ?? throw new ReportProcessingException(
+        var builtAt = clock.UtcNow;
+        ReportSnapshot snapshot;
+        if (string.Equals(run.DefinitionCode, DailyDefinitionCode, StringComparison.Ordinal))
+        {
+            if (run.PinnedProjectProfileJson is not null)
+            {
+                throw new ReportProcessingException(
+                    "reporting.project_profile.invalid",
+                    transient: false,
+                    permissionSnapshotJson: permissionSnapshotJson);
+            }
+
+            var parameters = DeserializeStored<DailyReportReportParameters>(
+                run.ParametersJson,
                 "reporting.parameters.invalid",
+                permissionSnapshotJson);
+            var chain = await services.GetRequiredService<IDailyReportReportingSource>().LoadChainAsync(
+                run.TenantId,
+                run.ProjectId,
+                parameters.DailyReportId,
+                run.AsOfUtc,
+                cancellationToken);
+            snapshot = DailyReportSnapshotBuilder.Build(
+                run.Id,
+                run.TenantId,
+                project,
+                run.AsOfUtc,
+                parameters,
+                chain,
+                builtAt);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectPeriodicReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            var parameters = DeserializeStored<ProjectPeriodicReportParameters>(
+                run.ParametersJson,
+                "reporting.parameters.invalid",
+                permissionSnapshotJson);
+            var pinnedProject = DeserializeStored<ProjectPeriodicPinnedProjectProfile>(
+                run.PinnedProjectProfileJson,
+                "reporting.period.project_profile.invalid",
+                permissionSnapshotJson);
+            pinnedProject.ValidateForRun(
+                run.TenantId,
+                run.ProjectId,
+                run.ProjectTimeZone,
+                run.CreatedAt);
+            var period = ProjectPeriodicReportPeriodResolver.Resolve(
+                parameters,
+                pinnedProject.TimeZone,
+                run.AsOfUtc,
+                run.CreatedAt);
+            var source = await services.GetRequiredService<IDailyReportPeriodReportingSource>().LoadPeriodAsync(
+                run.TenantId,
+                run.ProjectId,
+                period.PeriodStartLocalDate,
+                period.PeriodEndLocalDateExclusive,
+                period.SourceCutoffUtc,
+                cancellationToken);
+            snapshot = ProjectPeriodicReportSnapshotBuilder.Build(
+                run.Id,
+                run.TenantId,
+                pinnedProject,
+                run.AsOfUtc,
+                parameters,
+                source,
+                run.CreatedAt,
+                builtAt);
+        }
+        else
+        {
+            throw new ReportProcessingException(
+                "reporting.definition.invalid",
                 transient: false,
                 permissionSnapshotJson: permissionSnapshotJson);
-        var chain = await source.LoadChainAsync(
-            claimed.TenantId,
-            claimed.ProjectId,
-            parameters.DailyReportId,
-            claimed.AsOfUtc,
-            cancellationToken);
-        var builtAt = clock.UtcNow;
-        var snapshot = DailyReportSnapshotBuilder.Build(
-            claimed.Id,
-            claimed.TenantId,
-            project,
-            claimed.AsOfUtc,
-            parameters,
-            chain,
-            builtAt);
+        }
 
         dbContext.Snapshots.Add(snapshot);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -320,6 +376,7 @@ internal sealed partial class ReportGenerationWorker(
         var projectDirectory = services.GetRequiredService<IProjectDirectory>();
         var dbContext = services.GetRequiredService<ReportingDbContext>();
         var rendererRegistry = services.GetRequiredService<ReportRendererRegistry>();
+        var periodicRendererRegistry = services.GetRequiredService<ProjectPeriodicReportRendererRegistry>();
         var publisher = services.GetRequiredService<IGeneratedDocumentPublisher>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
         var clock = services.GetRequiredService<IClock>();
@@ -358,8 +415,28 @@ internal sealed partial class ReportGenerationWorker(
                 transient: false,
                 permissionSnapshotJson: permissionSnapshotJson);
         VerifySnapshot(snapshot, run);
-        var renderSnapshot = DailyReportRenderSnapshot.Parse(snapshot.PayloadJson);
-        VerifyRenderSnapshot(renderSnapshot, snapshot, run);
+        DailyReportRenderSnapshot? dailyRenderSnapshot = null;
+        ProjectPeriodicReportSemanticSnapshot? periodicRenderSnapshot = null;
+        if (string.Equals(run.DefinitionCode, DailyDefinitionCode, StringComparison.Ordinal))
+        {
+            dailyRenderSnapshot = DailyReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(dailyRenderSnapshot, snapshot, run);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectPeriodicReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            periodicRenderSnapshot = ProjectPeriodicReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(periodicRenderSnapshot, snapshot, run);
+        }
+        else
+        {
+            throw new ReportProcessingException(
+                "reporting.definition.invalid",
+                transient: false,
+                permissionSnapshotJson: permissionSnapshotJson);
+        }
         var template = await dbContext.TemplateVersions.AsNoTracking().SingleOrDefaultAsync(
             item => item.Id == run.TemplateVersionId &&
                 item.DefinitionId == run.DefinitionId &&
@@ -428,26 +505,54 @@ internal sealed partial class ReportGenerationWorker(
             var outputId = ReportArtifactIdentity.OutputId(run.Id, format);
             var documentId = ReportArtifactIdentity.DocumentId(outputId);
             var manifest = ReportArtifactIdentity.CreateManifest(run, snapshot, template, format);
-            var fileName = ReportArtifactIdentity.FileName(renderSnapshot, format);
-            var renderRequest = new ReportRenderRequest(
-                run.Id,
-                outputId,
-                snapshot.Id,
-                template.Id,
-                run.DefinitionCode,
-                run.TemplateVersion,
-                template.ContentDigest,
-                template.RendererContractVersion,
-                template.LayoutContractVersion,
-                format,
-                fileName,
-                manifest.VerificationCode,
-                manifest.Sha256,
-                snapshot.Sha256,
-                snapshot.SourceManifestSha256,
-                snapshot.SourceCutoffUtc,
-                renderSnapshot);
-            var artifact = rendererRegistry.Require(format).Render(renderRequest);
+            var fileName = dailyRenderSnapshot is not null
+                ? ReportArtifactIdentity.FileName(dailyRenderSnapshot, format)
+                : ReportArtifactIdentity.FileName(periodicRenderSnapshot!, format);
+            RenderedReportArtifact artifact;
+            if (dailyRenderSnapshot is not null)
+            {
+                artifact = rendererRegistry.Require(format).Render(new ReportRenderRequest(
+                    run.Id,
+                    outputId,
+                    snapshot.Id,
+                    template.Id,
+                    run.DefinitionCode,
+                    run.TemplateVersion,
+                    template.ContentDigest,
+                    template.RendererContractVersion,
+                    template.LayoutContractVersion,
+                    format,
+                    fileName,
+                    manifest.VerificationCode,
+                    manifest.Sha256,
+                    snapshot.Sha256,
+                    snapshot.SourceManifestSha256,
+                    snapshot.SourceCutoffUtc,
+                    dailyRenderSnapshot));
+            }
+            else
+            {
+                artifact = periodicRendererRegistry.Require(format).Render(
+                    new ProjectPeriodicReportRenderRequest(
+                        run.Id,
+                        outputId,
+                        snapshot.Id,
+                        template.Id,
+                        run.DefinitionCode,
+                        ProjectPeriodicReportRuntimeContract.DefinitionVersion,
+                        run.TemplateVersion,
+                        template.ContentDigest,
+                        template.RendererContractVersion,
+                        template.LayoutContractVersion,
+                        format,
+                        fileName,
+                        manifest.VerificationCode,
+                        manifest.Sha256,
+                        snapshot.Sha256,
+                        snapshot.SourceManifestSha256,
+                        snapshot.SourceCutoffUtc,
+                        periodicRenderSnapshot!));
+            }
             VerifyRenderedArtifact(artifact, manifest, fileName, format);
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
         }
@@ -1026,6 +1131,69 @@ internal sealed partial class ReportGenerationWorker(
                 "reporting.snapshot.integrity_failed",
                 transient: false,
                 permissionSnapshotJson: null);
+        }
+    }
+
+    private static void VerifyRenderSnapshot(
+        ProjectPeriodicReportSemanticSnapshot renderSnapshot,
+        ReportSnapshot snapshot,
+        ReportRun run)
+    {
+        if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
+            !string.Equals(
+                renderSnapshot.DefinitionVersion,
+                ProjectPeriodicReportRuntimeContract.DefinitionVersion,
+                StringComparison.Ordinal) ||
+            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Period.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
+            !string.Equals(
+                renderSnapshot.SourceManifestSha256,
+                snapshot.SourceManifestSha256,
+                StringComparison.Ordinal))
+        {
+            throw new ReportProcessingException(
+                "reporting.snapshot.integrity_failed",
+                transient: false,
+                permissionSnapshotJson: null);
+        }
+    }
+
+    private static T DeserializeStored<T>(
+        string? json,
+        string diagnosticCode,
+        string? permissionSnapshotJson)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ReportProcessingException(
+                diagnosticCode,
+                transient: false,
+                permissionSnapshotJson: permissionSnapshotJson);
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(json, CanonicalJson.SerializerOptions)
+                ?? throw new ReportProcessingException(
+                    diagnosticCode,
+                    transient: false,
+                    permissionSnapshotJson: permissionSnapshotJson);
+        }
+        catch (JsonException)
+        {
+            throw new ReportProcessingException(
+                diagnosticCode,
+                transient: false,
+                permissionSnapshotJson: permissionSnapshotJson);
+        }
+        catch (NotSupportedException)
+        {
+            throw new ReportProcessingException(
+                diagnosticCode,
+                transient: false,
+                permissionSnapshotJson: permissionSnapshotJson);
         }
     }
 

@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.9.0`
+- نسخه: `1.10.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -35,7 +35,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.29.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.30.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,7 +48,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.28.0` | Superseded؛ `v1.29.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.29.0` | Superseded؛ `v1.30.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS04` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -93,22 +93,23 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. تصمیم
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS04-C1` است. روی این
+Checkpoint، Source Candidate محدود `S07-MS05` برای Catalog/API/Worker F02 در حال qualification است. تصمیم
 `QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است: فقط
 `RPT1-F01` qualify شده و F03 تا F10 `Required / Not Implemented` هستند. قرارداد
-`PMCS-RPT1-F02-SEMANTIC-001 v1.2.1` Runtime Core و Renderer/Golden checkpointed دارد:
+`PMCS-RPT1-F02-SEMANTIC-001 v1.3.0` Runtime Core و Renderer/Golden checkpointed دارد:
 identity/schema نسخه‌دار، Project configuration pin، period source/resolver، semantic Snapshot،
-render request/model fail-closed و PDF/XLSX قطعی. Rendererها عمداً در DI/Worker ثبت نشده‌اند و
-API، Catalog/Template seed، Migration، UI یا feature flag تازه‌ای وجود ندارد. Golden XLSX/PDF و
-visual digestها در Run 141 pin و تأیید شده‌اند؛ wiring متصل مرحله بعد است.
+render request/model fail-closed و PDF/XLSX قطعی. Candidate جاری Migration 44، Definition/Template
+seed، strict API، Project profile pin و Worker/renderer dispatch را با QA متصل اضافه می‌کند. UI و
+feature flag تازه‌ای وجود ندارد و production defaults خاموش‌اند. Golden XLSX/PDF و visual digestها
+در Run 141 pin و تأیید شده‌اند؛ Full CI Candidate جاری هنوز باز است.
 
 ## Remaining Work
 
-1. Catalog/Template seed، API و Worker wiring متصل F02 در Slice مستقل. F02 تا پایان این Gate و
-   Qualification انتهابه‌انتها Done نیست.
+1. Full CI و ثبت Safe Checkpoint Source Candidate `S07-MS05`. F02 تا پایان این Gate Done نیست.
 2. تکمیل `RPT1-F03` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛ Scope ده‌گانه طبق ADR 0031
    حفظ شده و فقط `daily-report-certified/1.0.0` در F01 فعلاً qualify است.
 3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
@@ -118,7 +119,7 @@ visual digestها در Run 141 pin و تأیید شده‌اند؛ wiring متص
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | فقط F01 End-to-End واجد Qualification است؛ F02 Renderer/Golden checkpointed دارد ولی بدون wiring است | Catalog/API/Worker و integration متصل F02 لازم است؛ F03 تا F10 نیز مستقل‌اند |
+| Implementation | فقط F01 End-to-End واجد Safe Checkpoint است؛ F02 wiring متصل در Source Candidate قرار دارد | Full CI/Checkpoint F02 لازم است؛ F03 تا F10 نیز مستقل‌اند |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -167,9 +168,8 @@ visual digestها در Run 141 pin و تأیید شده‌اند؛ wiring متص
 
 ## Exact Next Micro-Step
 
-**Micro-Step بعدی فقط Catalog/Template seed، API و Worker wiring متصل F02 روی Checkpoint
-`S07-MS04` است.** UI و Production enablement همچنان جدا و خاموش بمانند و F03 تا F10 Done اعلام
-نشوند.
+**گام بعدی فقط commit/push، Full CI و ثبت Safe Checkpoint همین Source Candidate `S07-MS05` است.**
+UI و Production enablement همچنان جدا و خاموش بمانند و F03 تا F10 Done اعلام نشوند.
 
 ## Resume Rule
 

@@ -20,6 +20,7 @@ public sealed class ReportRun : AggregateRoot
     public string RequestedFormatsJson { get; private set; } = string.Empty;
     public DateTimeOffset AsOfUtc { get; private set; }
     public string ProjectTimeZone { get; private set; } = string.Empty;
+    public string? PinnedProjectProfileJson { get; private set; }
     public Guid RequestedBy { get; private set; }
     public string RequestPermissionSnapshotJson { get; private set; } = string.Empty;
     public string? ProcessingPermissionSnapshotJson { get; private set; }
@@ -51,6 +52,7 @@ public sealed class ReportRun : AggregateRoot
         string requestedFormatsJson,
         DateTimeOffset asOfUtc,
         string projectTimeZone,
+        string? pinnedProjectProfileJson,
         Guid requestedBy,
         string requestPermissionSnapshotJson,
         string correlationId,
@@ -77,6 +79,9 @@ public sealed class ReportRun : AggregateRoot
             RequestedFormatsJson = RequiredJson(requestedFormatsJson, "reporting.format.unsupported"),
             AsOfUtc = asOfUtc.ToUniversalTime(),
             ProjectTimeZone = Required(projectTimeZone, 120, "reporting.project.time_zone.invalid"),
+            PinnedProjectProfileJson = OptionalJson(
+                pinnedProjectProfileJson,
+                "reporting.project_profile.invalid"),
             RequestedBy = requestedBy,
             RequestPermissionSnapshotJson = RequiredJson(
                 requestPermissionSnapshotJson,
@@ -318,6 +323,9 @@ public sealed class ReportRun : AggregateRoot
 
         return normalized;
     }
+
+    private static string? OptionalJson(string? value, string code) =>
+        string.IsNullOrWhiteSpace(value) ? null : RequiredJson(value, code);
 
     private static string RequiredHash(string value, string code)
     {

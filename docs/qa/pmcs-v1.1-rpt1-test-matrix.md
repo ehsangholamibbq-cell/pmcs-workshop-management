@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.14.0`
-- وضعیت: F02 Renderer/Golden passed in Run 141؛ API/Worker/Catalog wiring باز
+- نسخه: `1.15.0`
+- وضعیت: F02 Catalog/API/Worker source candidate؛ Full CI و Safe Checkpoint باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -482,3 +482,20 @@ Golden قطعی، XLSX SHA-256 برابر
 `353/353` تست C#، `60/60` تست Node، `139/139` تست Web، پنج browser scenario، validator روی ۳۵۴
 فایل ماژولی و Restore کامل ۴۳ Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS04-C1` فقط
 Renderer/Golden را می‌بندد، نه wiring یا Qualification انتهابه‌انتهای F02.
+
+## ۲۷. Catalog/API/Worker wiring متصل خانواده F02 — Slice 07 Micro-Step 05
+
+Candidate جاری پوشش‌های زیر را به pipeline متصل اضافه می‌کند:
+
+- Migration 44 برای Definition/Template قطعی، contract-versionهای ۸۰کاراکتری و Project profile
+  pin‌شدهٔ JSONB؛
+- Catalog شامل F01/F02 و نمایش `NotConfigured` برای F02؛
+- parser بسته برای `periodKind` و `periodStartLocalDate`، field اضافه، boundary نامعتبر و cutoff؛
+- deny ساخت Run توسط Observer، replay یکسان و conflict همان idempotency key؛
+- Worker dispatch از period source تا semantic Snapshot و هر دو Renderer PDF/XLSX؛
+- Download و Verify با SHA-256، headerهای امن و verification code؛
+- assertion مستقل PostgreSQL برای migration/catalog/template، pinned profile، Snapshot
+  `NotConfigured`، دو Output، Audit/Outbox/Idempotency و governed Documents.
+
+این Candidate هنوز ادعای Full CI یا Safe Checkpoint ندارد. UI تغییر نکرده و
+`Phase1Enabled/OutputAccessEnabled/WorkerEnabled` در production defaults همچنان `false` هستند.

@@ -683,6 +683,7 @@ public sealed class ReportingTests
             CanonicalJson.Serialize(new[] { ReportFormat.Pdf, ReportFormat.Xlsx }),
             Cutoff,
             "Asia/Tehran",
+            null,
             Guid.NewGuid(),
             "{\"allowed\":true}",
             "reporting-test",

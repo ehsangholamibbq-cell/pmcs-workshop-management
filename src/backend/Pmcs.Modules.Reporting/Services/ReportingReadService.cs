@@ -15,7 +15,8 @@ internal sealed class ReportingReadService(
     private const string CatalogPermission = "reporting.catalog.read";
     private const string OutputPermission = "reporting.output.download";
     private const string DailyReportSourcePermission = "field.daily-reports.read";
-    private const string DailyReportDefinition = "daily-report-certified";
+    private static readonly string[] SupportedDefinitions =
+        ["daily-report-certified", ProjectPeriodicReportRuntimeContract.DefinitionCode];
 
     public async Task<IReadOnlyCollection<ReportingCatalogEntry>> ListCatalogAsync(
         Guid tenantId,
@@ -34,7 +35,8 @@ internal sealed class ReportingReadService(
         }
 
         var definitions = await dbContext.Definitions.AsNoTracking()
-            .Where(item => item.Code == DailyReportDefinition && item.Status == ReportDefinitionStatus.Active)
+            .Where(item => SupportedDefinitions.Contains(item.Code) &&
+                item.Status == ReportDefinitionStatus.Active)
             .OrderBy(item => item.Code)
             .ToArrayAsync(cancellationToken);
         var result = new List<ReportingCatalogEntry>(definitions.Length);

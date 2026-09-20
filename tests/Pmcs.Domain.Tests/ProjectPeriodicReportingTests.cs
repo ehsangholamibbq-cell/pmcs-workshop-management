@@ -37,8 +37,65 @@ public sealed class ProjectPeriodicReportingTests
             "pmcs.reporting.project-periodic.layout/v1",
             ProjectPeriodicReportRuntimeContract.LayoutContractVersion);
         Assert.Equal(
+            "eca353e00f07fbdb054613768399496e137ab0deda731c5d319d5cd4ebd3be6b",
+            ProjectPeriodicReportRuntimeContract.TemplateContentDigest);
+        Assert.Equal(
+            "pmcs.reporting.project-periodic.project-profile/v1",
+            ProjectPeriodicReportRuntimeContract.PinnedProjectProfileSchemaVersion);
+        Assert.Equal(
             "pmcs.field-operations.daily-report-period/v1",
             DailyReportPeriodReportingContract.Version);
+    }
+
+    [Fact]
+    public void PinnedProjectProfileCapturesVersionedInputsAndSupportsNonWorkingDayCalendarGaps()
+    {
+        var project = Project() with
+        {
+            Calendar = new ProjectCalendarProfile(ProjectCalendarConfigurationState.Configured, null)
+        };
+
+        var pinned = ProjectPeriodicPinnedProjectProfile.Capture(project);
+        pinned.ValidateForRun(TenantId, ProjectId, "Asia/Tehran", ClosedCutoff.AddMinutes(1));
+        var snapshot = ProjectPeriodicReportSnapshotBuilder.Build(
+            Id(4),
+            TenantId,
+            pinned,
+            ClosedCutoff,
+            new ProjectPeriodicReportParameters(ProjectReportPeriodKind.Weekly, WeeklyStart),
+            Source(ClosedCutoff, []),
+            ClosedCutoff.AddMinutes(1),
+            ClosedCutoff.AddMinutes(2));
+
+        Assert.Equal(
+            ProjectPeriodicReportRuntimeContract.PinnedProjectProfileSchemaVersion,
+            pinned.SchemaVersion);
+        Assert.Equal(project.ConfigurationVersion, pinned.ConfigurationVersion);
+        Assert.Null(pinned.WorkingDaysMask);
+        Assert.Equal(ReportDataStatus.NoData, snapshot.DataStatus);
+    }
+
+    [Fact]
+    public void PinnedProjectProfileRejectsUnversionedFutureAndMismatchedRunScope()
+    {
+        var unversioned = Assert.Throws<DomainRuleException>(() =>
+            ProjectPeriodicPinnedProjectProfile.Capture(Project() with { ConfigurationChangedAt = null }));
+        var pinned = ProjectPeriodicPinnedProjectProfile.Capture(Project());
+        var future = Assert.Throws<DomainRuleException>(() =>
+            (pinned with { ConfigurationChangedAt = ClosedCutoff.AddMinutes(2) }).ValidateForRun(
+                TenantId,
+                ProjectId,
+                "Asia/Tehran",
+                ClosedCutoff.AddMinutes(1)));
+        var wrongTenant = Assert.Throws<DomainRuleException>(() =>
+            pinned.ValidateForRun(Id(999), ProjectId, "Asia/Tehran", ClosedCutoff.AddMinutes(1)));
+        var wrongTimeZone = Assert.Throws<DomainRuleException>(() =>
+            pinned.ValidateForRun(TenantId, ProjectId, "UTC", ClosedCutoff.AddMinutes(1)));
+
+        Assert.Equal("reporting.period.project_configuration.unversioned", unversioned.Code);
+        Assert.Equal("reporting.period.project_scope.invalid", future.Code);
+        Assert.Equal("reporting.period.project_scope.invalid", wrongTenant.Code);
+        Assert.Equal("reporting.period.project_scope.invalid", wrongTimeZone.Code);
     }
 
     [Fact]
