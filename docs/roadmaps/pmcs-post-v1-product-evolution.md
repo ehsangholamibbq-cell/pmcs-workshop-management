@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.41.0`
+- نسخه سند: `1.42.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -476,6 +476,15 @@ C#، `68/68` contract، `139/139` Web، پنج browser scenario و Restore ۴۵ 
 Checkpoint فقط DoR و Golden matrix بیست‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
 Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
+**F04 Bounded Runtime Core — Slice 07 Micro-Step 11 Candidate:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS10-C1` فقط identity/schema نسخه‌دار، Application Contractهای باریک و
+cutoff-aware در Planning و FieldOperations، lifecycle selector، calculator قطعی و semantic Snapshot
+builder اضافه شده است. Unit/contract testها ماتریس ۲۲سناریویی، correction/rebaseline تاریخی،
+Actual/Planned/Variance، sampling حداکثر ۳۶۶ نقطه، status/reason، Classification و determinism را
+پوشش می‌دهند. compatibility projection هر legacy history غیرقابل‌اثبات را fail-closed می‌کند؛ هیچ
+Migration، Renderer، Catalog/API/Worker wiring، UI یا Production enablement وارد Candidate نشده است
+و Full CI/Safe Checkpoint باز است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -759,3 +768,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.39.0` | ثبت Safe Checkpoint `S07-MS09` و Evidence سبز Run 156 برای اتصال End-to-End خانواده F03؛ F04 تا F10/UI/Production باز است |
 | `1.40.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F04 برای Baseline رسمی، Actual/Planned/Variance و S-Curve cutoff-aware؛ Runtime هنوز پیاده نشده است |
 | `1.41.0` | ثبت Safe Checkpoint `S07-MS10` و Evidence سبز Run 158 برای قرارداد معنایی F04؛ Runtime/Renderer/wiring باز است |
+| `1.42.0` | ثبت Candidate محدود `S07-MS11` برای Runtime Core F04؛ Full CI/Checkpoint و Renderer/wiring باز است |

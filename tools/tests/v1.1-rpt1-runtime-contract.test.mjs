@@ -864,7 +864,7 @@ test("RPT1-F03 connects its checkpointed semantic runtime and renderers without 
   assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
   assert.match(matrix, /## ۳۰\.[\s\S]*Renderer\/Golden خانواده F03/u);
   assert.match(matrix, /## ۳۱\.[\s\S]*Catalog\/API\/Worker wiring متصل خانواده F03/u);
-  assert.match(roadmap, /نسخه سند: `1\.41\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.42\.0`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*Run 146[\s\S]*Runtime not implemented/u);
   assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.3\.1/u);
   assert.match(rootReadme, /F03 متصل و checkpointed/u);
@@ -977,15 +977,15 @@ test("RPT1-F03 Catalog API and Worker record the S07-MS09 connected safe checkpo
   assert.match(registry, /Slice 07 MS09[\s\S]*40afeb37d7bf90e97a988cae141901e28d336516[\s\S]*Run 156/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS10-C1`/u);
   assert.match(canonical, /PMCS-RPT1-F04-SEMANTIC-001 v1\.0\.0[\s\S]*Run 158/u);
-  assert.match(architecture, /نسخه: `1\.23\.1`[\s\S]*Run 156/u);
+  assert.match(architecture, /نسخه: `1\.24\.0`[\s\S]*Run 156/u);
   assert.match(baseline, /Slice 07 Micro-Step 09[\s\S]*Run 156/u);
   assert.match(matrix, /## ۳۱\.[\s\S]*Run 156/u);
-  assert.match(matrix, /نسخه: `1\.25\.0`/u);
+  assert.match(matrix, /نسخه: `1\.26\.0`/u);
   assert.match(api, /خانواده F03 روی API متصل — Safe Checkpoint/u);
   assert.match(security, /نسخه: `1\.12\.1`[\s\S]*Run 156/u);
 });
 
-test("RPT1-F04 fixes the official progress and bounded S-Curve contract before Runtime implementation", () => {
+test("RPT1-F04 keeps its semantic contract while bounding the Runtime Core candidate", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md",
   );
@@ -1003,12 +1003,39 @@ test("RPT1-F04 fixes the official progress and bounded S-Curve contract before R
   const migration = read(
     `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
   );
+  const evidenceContract = read(
+    "src/backend/Pmcs.Modules.FieldOperations/Contracts/IProgressEvidenceReportingSource.cs",
+  );
+  const evidenceSelector = read(
+    "src/backend/Pmcs.Modules.FieldOperations/Services/ProgressEvidenceReportingSelector.cs",
+  );
+  const evidenceSource = read(
+    "src/backend/Pmcs.Modules.FieldOperations/Services/ProgressEvidenceReportingSource.cs",
+  );
+  const fieldModule = read("src/backend/Pmcs.Modules.FieldOperations/FieldOperationsModule.cs");
+  const sourceContract = read(
+    "src/backend/Pmcs.Modules.Planning/Contracts/IProjectProgressReportingSource.cs",
+  );
+  const selector = read(
+    "src/backend/Pmcs.Modules.Planning/Services/ProjectProgressReportingSelector.cs",
+  );
+  const calculator = read(
+    "src/backend/Pmcs.Modules.Planning/Services/ProjectProgressReportingCalculator.cs",
+  );
+  const source = read(
+    "src/backend/Pmcs.Modules.Planning/Services/ProjectProgressReportingSource.cs",
+  );
+  const planningModule = read("src/backend/Pmcs.Modules.Planning/PlanningModule.cs");
+  const identity = read(`${moduleRoot}/Domain/ProjectProgressReportRuntimeContract.cs`);
+  const builder = read(`${moduleRoot}/Services/ProjectProgressReportSnapshotBuilder.cs`);
+  const tests = read("tests/Pmcs.Domain.Tests/ProjectProgressReportingTests.cs");
+  const reportingProject = read(`${moduleRoot}/Pmcs.Modules.Reporting.csproj`);
   const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
 
   assert.match(contract, /PMCS-RPT1-F04-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.0\.0`/u);
-  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
-  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS09-C1`/u);
+  assert.match(contract, /نسخه: `1\.1\.0`/u);
+  assert.match(contract, /Runtime Core Candidate \| Renderer\/Wiring Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS10-C1`/u);
   assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
   assert.match(contract, /Client نمی‌تواند Baseline مطلوب خود را[\s\S]*انتخاب کند/u);
   assert.match(contract, /`approvedAt <= sourceCutoffUtc`/u);
@@ -1032,16 +1059,56 @@ test("RPT1-F04 fixes the official progress and bounded S-Curve contract before R
   assert.match(contract, /`PlanningBaseline\.ReviewedAt` هنگام Supersede بازنویسی می‌شود/u);
   assert.match(contract, /target\/unit\/title قلم اندازه‌گیری را هنگام Approval snapshot نمی‌کند/u);
   assert.equal((contract.match(/\| `F04-[A-Z]{1,2}\d{2}` \|/gu) ?? []).length, 22);
-  assert.match(contract, /هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag/u);
+  assert.match(contract, /هیچ API، Migration، Catalog seed، Renderer، feature flag/u);
 
-  assert.match(architecture, /PMCS-RPT1-F04-SEMANTIC-001 v1\.0\.0/u);
+  assert.match(architecture, /PMCS-RPT1-F04-SEMANTIC-001 v1\.1\.0/u);
   assert.match(api, /قرارداد checkpointed F04 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F04/u);
   assert.match(matrix, /## ۳۲\.[\s\S]*Golden matrix بیست‌ودوسناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.41\.0`/u);
+  assert.match(matrix, /## ۳۳\.[\s\S]*Runtime Core محدود خانواده F04/u);
+  assert.match(roadmap, /نسخه سند: `1\.42\.0`/u);
   assert.match(registry, /Slice 07 MS10[\s\S]*Run 158[\s\S]*Runtime not implemented/u);
   assert.match(canonical, /PMCS-RPT1-F04-SEMANTIC-001 v1\.0\.0[\s\S]*Run 158/u);
   assert.match(rootReadme, /قرارداد checkpointed F04 برای پیشرفت فیزیکی و S-Curve/u);
+
+  assert.match(evidenceContract, /pmcs\.field-operations\.progress-evidence-reporting\/v1/u);
+  assert.match(evidenceContract, /interface IProgressEvidenceReportingSource/u);
+  assert.match(evidenceSelector, /sourceCutoffUtc < supersededAt\.Value/u);
+  assert.match(evidenceSource, /DailyReportStatus\.Approved/u);
+  assert.match(evidenceSource, /DailyReportStatus\.Superseded/u);
+  assert.match(evidenceSource, /DailyFactKind\.WorkProgress/u);
+  assert.doesNotMatch(evidenceContract, /Narrative|ReviewComment|Description|EvidenceReference/u);
+  assert.match(fieldModule, /IProgressEvidenceReportingSource, ProgressEvidenceReportingSource/u);
+  assert.match(sourceContract, /pmcs\.planning\.project-progress-reporting\/v1/u);
+  assert.match(sourceContract, /MaximumBaselineEntries = 5_000/u);
+  assert.match(sourceContract, /MaximumCurvePoints = 366/u);
+  assert.match(sourceContract, /interface IProjectProgressReportingSource/u);
+  assert.match(selector, /baseline\.overlap/u);
+  assert.match(selector, /baseline\.target_snapshot\.missing/u);
+  assert.match(selector, /ProjectProgressCanonicalJson\.Sha256/u);
+  assert.match(calculator, /Math\.Min\(100m, item\.ActualPercent/u);
+  assert.match(calculator, /actual\.Value - planned\.Value/u);
+  assert.match(calculator, /UniformCurveGridPoints/u);
+  assert.match(calculator, /pointDate <= selection\.CutoffLocalDate/u);
+  assert.doesNotMatch(calculator, /Forecast|EarnedValue|Finance|Commercial/u);
+  assert.match(source, /configuration_history\.unavailable/u);
+  assert.match(source, /baseline_history\.unavailable/u);
+  assert.match(source, /milestone_history\.unavailable/u);
+  assert.match(source, /target_history\.unavailable/u);
+  assert.match(source, /IProgressEvidenceReportingSource/u);
+  assert.doesNotMatch(source, /IProgressFactSource/u);
+  assert.match(planningModule, /IProjectProgressReportingSource, ProjectProgressReportingSource/u);
+  assert.match(identity, /project-progress-certified/u);
+  assert.match(identity, /pmcs\.reporting\.project-progress\.snapshot\/v1/u);
+  assert.match(builder, /ProjectProgressReportingContract\.Version/u);
+  assert.match(builder, /CanonicalJson\.Sha256/u);
+  assert.doesNotMatch(builder, /DbContext|ExecuteSql|IProgressFactSource|Forecast|EarnedValue/u);
+  assert.match(reportingProject, /Pmcs\.Modules\.Planning\/Pmcs\.Modules\.Planning\.csproj/u);
+  assert.match(tests, /DailyReportCorrectionOfficialAfterCutoffDoesNotRewriteHistoricalEvidence/u);
+  assert.match(tests, /OverlappingEffectiveBaselinesFailClosedWithoutLatestTieBreak/u);
+  assert.match(tests, /QuantityOverrunIsPreservedOnRowButCappedOnlyInWeightedAggregate/u);
+  assert.match(tests, /LongCurveUsesUniform365GridPlusCutoffAndNeverExceeds366Points/u);
+  assert.match(tests, /TwinRunsWithDifferentQueryOrderRunIdAndBuildTimeAreDeterministic/u);
 
   for (const source of [module, worker, endpoints, migration]) {
     assert.doesNotMatch(source, /ProjectProgressReport|project-progress-certified|RPT1-F04/u);
@@ -1088,11 +1155,11 @@ test("RPT1-F04 semantic contract records the S07-MS10 safe checkpoint without cl
   assert.match(roadmap, /\| `1\.41\.0` \| ثبت Safe Checkpoint `S07-MS10`/u);
   assert.match(registry, /Slice 07 MS10[\s\S]*f8829027c2ce073c207cd0e04a49c306b546c6a1[\s\S]*Run 158/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS10-C1`/u);
-  assert.match(canonical, /Micro-Step بعدی فقط Runtime identity نسخه‌دار F04/u);
-  assert.match(architecture, /نسخه: `1\.23\.1`[\s\S]*Run 158/u);
+  assert.match(canonical, /`S07-MS11`/u);
+  assert.match(architecture, /نسخه: `1\.24\.0`[\s\S]*Run 158/u);
   assert.match(baseline, /Slice 07 Micro-Step 10[\s\S]*Run 158/u);
   assert.match(matrix, /## ۳۲\.[\s\S]*Run 158/u);
-  assert.match(matrix, /نسخه: `1\.25\.0`/u);
+  assert.match(matrix, /نسخه: `1\.26\.0`/u);
   assert.match(api, /قرارداد checkpointed F04 بدون تغییر API/u);
   assert.match(security, /نسخه: `1\.12\.1`[\s\S]*Run 158/u);
 });
@@ -1132,10 +1199,10 @@ test("RPT1-F03 semantic contract records the S07-MS06 safe checkpoint without cl
   assert.match(registry, /Slice 07 MS06[\s\S]*e3218555a38f7ba460558e51b4db3f8bc17fcd9c/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Runtime identity/u);
-  assert.match(architecture, /نسخه: `1\.23\.1`[\s\S]*Run 146/u);
+  assert.match(architecture, /نسخه: `1\.24\.0`[\s\S]*Run 146/u);
   assert.match(baseline, /Slice 07 Micro-Step 06[\s\S]*Run 146/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Run 146/u);
-  assert.match(matrix, /نسخه: `1\.25\.0`/u);
+  assert.match(matrix, /نسخه: `1\.26\.0`/u);
   assert.match(security, /نسخه: `1\.12\.1`[\s\S]*Run 154/u);
 });
 
@@ -1175,10 +1242,10 @@ test("RPT1-F03 Runtime Core records the S07-MS07 safe checkpoint without opening
   assert.match(registry, /Slice 07 MS07[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
   assert.match(canonical, /F03 Runtime Core Source:[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS10-C1`/u);
-  assert.match(architecture, /نسخه: `1\.23\.1`[\s\S]*Run 148/u);
+  assert.match(architecture, /نسخه: `1\.24\.0`[\s\S]*Run 148/u);
   assert.match(baseline, /Slice 07 Micro-Step 07[\s\S]*Run 148/u);
   assert.match(matrix, /## ۲۹\.[\s\S]*Run 148/u);
-  assert.match(matrix, /نسخه: `1\.25\.0`/u);
+  assert.match(matrix, /نسخه: `1\.26\.0`/u);
   assert.match(api, /خانواده F03 روی API متصل — Safe Checkpoint/u);
 });
 
@@ -1221,10 +1288,10 @@ test("RPT1-F03 Renderer and Golden record the S07-MS08 safe checkpoint without o
   assert.match(roadmap, /\| `1\.37\.0` \| ثبت Safe Checkpoint `S07-MS08`/u);
   assert.match(registry, /Slice 07 MS08[\s\S]*d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f[\s\S]*Run 154/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS10-C1`/u);
-  assert.match(architecture, /نسخه: `1\.23\.1`[\s\S]*Run 154/u);
+  assert.match(architecture, /نسخه: `1\.24\.0`[\s\S]*Run 154/u);
   assert.match(baseline, /Slice 07 Micro-Step 08[\s\S]*Run 154/u);
   assert.match(matrix, /## ۳۰\.[\s\S]*Run 154/u);
-  assert.match(matrix, /نسخه: `1\.25\.0`/u);
+  assert.match(matrix, /نسخه: `1\.26\.0`/u);
   assert.match(api, /خانواده F03 روی API متصل — Safe Checkpoint/u);
   assert.match(security, /نسخه: `1\.12\.1`[\s\S]*Run 154/u);
 });

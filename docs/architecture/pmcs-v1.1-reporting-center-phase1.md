@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.23.1`
-- وضعیت: `S07-MS10 F04 semantic contract safe checkpoint in Run 158 | Runtime not implemented | F05-F10/UI/Production open`
+- نسخه: `1.24.0`
+- وضعیت: `S07-MS11 F04 bounded Runtime Core candidate | Full CI pending | Renderer/Wiring/F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `c59a2444f5d5dd70859441f27d05c23dea6c268e`
 - Parent checkpoint tree: `8a7926ac11abb529a3887d1e8a2091f7aeedecbd`
@@ -51,12 +51,14 @@ PDF/XLSX قطعی را checkpoint کرده است. Checkpoint جاری Catalog/T
 definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
 qualification متصل را روی همان قراردادها بسته است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` در
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.1.0` در
 `pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md` گزارش پیشرفت را فقط از Planning
 configuration، Baseline و evidence رسمیِ مؤثر در cutoff می‌سازد. پارامتر Client خالی، انتخاب
 Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S-Curve حداکثر ۳۶۶ نقطه
 است. MeasurementWeights بدون Schedule معتبر باقی می‌ماند و هیچ Forecast، EVM، Composite Health یا
-join پنهان F05 تا F10 مجاز نیست. Runtime F04 هنوز پیاده نشده است.
+join پنهان F05 تا F10 مجاز نیست. Candidate محدود Runtime Core، identity/schema نسخه‌دار، projection
+خواندنی FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot builder را
+اضافه کرده است؛ legacy history غیرقابل‌اثبات fail-closed است و Renderer/wiring/Full CI بازند.
 
 ## ۲. Non-Scope
 
@@ -77,7 +79,9 @@ Dependencyهای مجاز:
 
 - `Pmcs.BuildingBlocks` برای Clock، Actor، Audit/Outbox/Idempotency و Manifest؛
 - `Pmcs.Modules.Projects` فقط از `IProjectDirectory`؛
-- `Pmcs.Modules.FieldOperations` فقط از `IDailyReportReportingSource`؛
+- `Pmcs.Modules.FieldOperations` فقط از Contractهای reporting-read از جمله
+  `IDailyReportReportingSource` و `IProgressEvidenceReportingSource`؛
+- `Pmcs.Modules.Planning` فقط از `IProjectProgressReportingSource` برای F04؛
 - `Pmcs.Modules.ProjectIntelligence` فقط از `IProjectStateReportingSource` برای F03؛
 - `Pmcs.Modules.Documents` فقط از Contract انتشار/خواندن Generated Document؛
 - `Pmcs.Modules.IdentityAccess` به‌صورت مستقیم لازم نیست؛ Permission از BuildingBlocks contract تزریق می‌شود.
@@ -554,3 +558,16 @@ Classification propagation و Golden matrix بیست‌ودوسناریویی ق
 را پاس کرد. این Checkpoint فقط DoR/contract را می‌بندد؛ هیچ Runtime، Migration، endpoint،
 Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است و F04 تا F10 و RPT1 باز
 هستند.
+
+Slice 07 Micro-Step 11 Candidate، Runtime identity داخلی `project-progress-certified/1.0.0`،
+parameter/snapshot/profile schemaهای نسخه‌دار، Contractهای
+`pmcs.field-operations.progress-evidence-reporting/v1` و
+`pmcs.planning.project-progress-reporting/v1`، selector صریح
+`approvedAt <= cutoff < supersededAt` و calculator قطعی را اضافه می‌کند. Planning مالک انتخاب
+configuration/Baseline و Actual/Planned/Variance/S-Curve می‌ماند؛ Reporting فقط source نسخه‌دار را
+اعتبارسنجی و Snapshot معنایی را canonical می‌کند. تست‌ها correction و supersession، missing Actual،
+overrun cap، calendar fallback، علامت Variance، grid حداکثر ۳۶۶، future-null، Classification و twin
+hash را می‌پوشانند. compatibility projection برای configuration، Baseline، Milestone یا target
+تاریخیِ غیرقابل‌اثبات fail-closed است. این Candidate هیچ Migration، endpoint، Catalog/Template seed،
+Worker dispatch، Renderer، UI یا Production default را تغییر نمی‌دهد و تا Full CI/Safe Checkpoint
+بسته نیست.

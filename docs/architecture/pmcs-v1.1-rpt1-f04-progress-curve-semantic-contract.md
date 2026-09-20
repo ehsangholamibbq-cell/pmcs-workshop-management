@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش پیشرفت و S-Curve
 
 - شناسه: `PMCS-RPT1-F04-SEMANTIC-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0`
 - خانواده: `RPT1-F04`
-- وضعیت: `Contract Ready | Runtime Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS09-C1`
-- Runtime change: None
+- وضعیت: `Runtime Core Candidate | Renderer/Wiring Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS10-C1`
+- Runtime change: `Bounded identity/projection/selector/calculator/semantic Snapshot candidate`
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -46,13 +46,17 @@ Server هنگام پذیرش Run این evidence را پین می‌کند و Cl
 Calendar و Baseline مؤثر در cutoff را از Source نسخه‌دار بگیرد؛ profile جاری جای تاریخچهٔ برنامه‌ریزی
 را نمی‌گیرد.
 
-شناسه Runtime Definition، Template Version، parameter/snapshot schema و source contract در این
-Micro-Step تخصیص داده نمی‌شوند؛ آن‌ها فقط همراه کد و تست واقعی در Runtime Slice محدود بعدی قطعی
-خواهند شد.
+Runtime identity داخلی `project-progress-certified/1.0.0`، parameter schema
+`pmcs.reporting.project-progress.parameters/v1`، Snapshot schema
+`pmcs.reporting.project-progress.snapshot/v1` و Project profile pin
+`pmcs.reporting.project-progress.project-profile/v1` در Candidate محدود `S07-MS11` تخصیص یافته‌اند.
+Source contractهای `pmcs.planning.project-progress-reporting/v1` و
+`pmcs.field-operations.progress-evidence-reporting/v1` نیز نسخه‌دارند. Template/Renderer identity،
+Migration و Catalog seed همچنان تخصیص نیافته‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
 
-Runtime آینده F04 فقط دو Application Contract خواندنی را مصرف می‌کند:
+Runtime Core Candidate F04 فقط دو Application Contract خواندنی را مصرف می‌کند:
 
 1. Projects برای هویت جاری، lifecycle، revision و Time Zone پین‌شده؛
 2. Planning برای read model نسخه‌دار، cutoff-aware و classification-aware پیشرفت رسمی.
@@ -63,7 +67,7 @@ Planning مالک انتخاب configuration/baseline و محاسبهٔ پیشر
 `GET /planning/progress`، یا مصرف مستقیم `IProgressFactSource` را ندارد. endpoint جاری
 `GET /planning/progress` یک read model زنده است و Source گزارش Certified تاریخی محسوب نمی‌شود.
 
-Application Contract آینده Planning حداقل باید این evidence را برگرداند:
+Application Contract نسخه‌دار Planning این evidence را در projection صریح برمی‌گرداند:
 
 - contract version، Tenant/Project، cutoff و Classification صریح؛
 - Planning Mode و Project configuration revision مؤثر در cutoff، همراه بازهٔ اثر آن؛
@@ -240,9 +244,11 @@ Curve حداکثر ۳۶۶ نقطه و Baseline حداکثر ۵۰۰۰ entry دا�
 manifest/semantic hash ناسازگار باید non-transient و fail-closed باشد، نه truncate یا تجمیع پنهان.
 PDF/XLSX، page/sheet/row budget، visual digest و performance فقط در Renderer Slice مستقل قطعی می‌شوند.
 
-## ۱۱. شکاف صریح Runtime موجود
+## ۱۱. projection نسخه‌دار و مرز سازگاری Persistence موجود
 
-Runtime فعلی برای اجرای Certified F04 کافی نیست و این Micro-Step آن را کافی جلوه نمی‌دهد:
+Runtime Core، projection کامل و مستقل lifecycle را به‌صورت Contract/selector پیاده کرده است، اما
+Persistence قدیمی فقط در حالت‌هایی به read-through source تبدیل می‌شود که بازسازی تاریخی قابل اثبات
+باشد. این محدودیت‌ها همچنان وجود دارند:
 
 - `IProgressFactSource.LoadAsync` cutoff ندارد، Submitted را نیز برمی‌گرداند و lifecycle نسخهٔ رسمی
   Daily Report را حفظ نمی‌کند؛
@@ -253,9 +259,14 @@ Runtime فعلی برای اجرای Certified F04 کافی نیست و این M
 - Project history فعلی Planning Mode/Calendar مؤثر در cutoff را از Contract گزارش‌دهی نسخه‌دار ارائه
   نمی‌کند.
 
-بنابراین Runtime Slice بعدی باید projection/lifecycle read model نسخه‌دار و cutoff-aware را در مالک
-هر bounded context اضافه کند. استفاده از status یا target جاری، حدس timestamp از Audit، یا اعلام
-تاریخچهٔ قابل بازسازی بدون این projection ممنوع است.
+Source سازگاری Planning فقط وقتی state جاری را projection می‌کند که آخرین configuration پیش از cutoff
+باشد، Baseline یا Milestone superseded با lifecycle قدیمی وجود نداشته باشد و Measurement Item پس از
+Approval تغییر نکرده باشد. در غیر این صورت با
+`configuration_history.unavailable`، `baseline_history.unavailable`،
+`milestone_history.unavailable` یا `target_history.unavailable` fail-closed می‌شود. selector خالص و
+نسخه‌دار lifecycle کامل synthetic/آینده را بدون fallback می‌پذیرد؛ Migration تولیدکنندهٔ تاریخچه،
+Catalog/API/Worker wiring و اجرای End-to-End در Sliceهای بعدی باقی می‌مانند. استفاده از status یا
+target جاری، حدس timestamp از Audit یا اعلام تاریخچهٔ قابل بازسازی بدون projection همچنان ممنوع است.
 
 ## ۱۲. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -300,20 +311,23 @@ parse و absence مالی/EVM/forecast/inference را اثبات کند. Golden 
 | Data status، reasonها و failure boundary | بسته |
 | Permission/classification/minimization | بسته |
 | Golden matrix بیست‌ودوسناریویی | بسته |
-| Runtime Definition/Template/schema/source IDs | عمداً باز برای Slice پیاده‌سازی |
-| Historical projection و Application Contract cutoff-aware | Not Implemented |
-| selector/calculator/semantic Snapshot builder | Not Implemented |
+| Runtime Definition و parameter/snapshot/profile/source IDs | Candidate پیاده‌سازی‌شده؛ Full CI باز |
+| Template/Renderer identity | عمداً باز برای Slice Renderer |
+| Historical projection و Application Contract cutoff-aware | Candidate پیاده‌سازی‌شده؛ legacy gapها fail-closed |
+| selector/calculator/semantic Snapshot builder | Candidate پیاده‌سازی‌شده؛ Full CI باز |
 | PDF/XLSX/visual/performance | Not Implemented |
 | Catalog/API/Worker wiring | Not Implemented |
 
-Micro-Step بعدی فقط می‌تواند Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در
-Planning و FieldOperations، selector cutoff-aware، calculator/Snapshot builder و Unit/contract tests
-را اضافه کند. Renderer، Golden binary، Catalog/API/Worker wiring، UI و Production enablement باید در
-Sliceهای بعدی باقی بمانند.
+Candidate `S07-MS11` فقط Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در Planning
+و FieldOperations، selector cutoff-aware، calculator/Snapshot builder و Unit/contract tests را اضافه
+کرده است. lifecycle Baseline/configuration/evidence، Actual/Planned/Variance، grid حداکثر ۳۶۶ نقطه،
+status/reason، Classification و hash در Core مستقل از Renderer پیاده شده‌اند. Full CI و Safe
+Checkpoint این Candidate هنوز باز است. Renderer، Golden binary، Catalog/API/Worker wiring، UI و
+Production enablement باید در Sliceهای بعدی باقی بمانند.
 
 ## ۱۴. Gate statement
 
-این قرارداد F04 را `Ready for bounded Runtime implementation` می‌کند، نه `Implemented` یا
-`Qualified`. هیچ API، Migration، Catalog seed، Domain runtime، Renderer، feature flag یا Production
-setting در این Micro-Step تغییر نکرده است. F04 تا پایان Runtime، Renderer/Golden و CI متصل
-`Required / Not Implemented` باقی می‌ماند؛ F05 تا F10 و RPT1 نیز باز هستند.
+این نسخه bounded Runtime Core را فقط به‌عنوان Candidate پیاده‌سازی می‌کند، نه Runtime Qualified یا
+گزارش متصل. هیچ API، Migration، Catalog seed، Renderer، feature flag یا Production setting در این
+Micro-Step تغییر نکرده است. تا Full CI و Safe Checkpoint، Candidate مجوز مرحله Renderer نیست؛ F04
+تا پایان Renderer/Golden و wiring متصل کامل نمی‌شود و F05 تا F10 و RPT1 نیز باز هستند.

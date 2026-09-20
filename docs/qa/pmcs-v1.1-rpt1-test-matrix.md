@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.25.0`
-- وضعیت: F04 Semantic Contract passed in Run 158؛ Runtime not implemented؛ F05-F10/UI/Production باز
+- نسخه: `1.26.0`
+- وضعیت: F04 bounded Runtime Core candidate؛ Full CI/Checkpoint و Renderer/Wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -681,3 +681,26 @@ API، Security، Roadmap و Canonical Reference را کنترل می‌کند. C
 این Micro-Step فقط contract/readiness را qualify می‌کند. هیچ C# Runtime، Migration، endpoint،
 Catalog/Template seed، Renderer، TestHarness یا UI اضافه نشده و F04
 `Contract Ready / Runtime Not Implemented` است.
+
+## ۳۳. Runtime Core محدود خانواده F04 — Slice 07 Micro-Step 11 Candidate
+
+Candidate باید بدون Migration، API، Renderer یا Worker wiring موارد زیر را با Unit/contract test
+اثبات کند:
+
+- Runtime identity و parameter/snapshot/profile schema نسخه‌دار؛ پارامتر معنایی همچنان `{}`؛
+- FieldOperations فقط lineage رسمی WorkProgress را با cutoff مستقل و بدون Narrative/Comment برگرداند؛
+- Planning فقط projection نسخه‌دار configuration/Baseline/target/Milestone/evidence را مصرف کند و
+  هر legacy history غیرقابل‌اثبات را fail-closed نگه دارد؛
+- انتخاب lifecycle با `approvedAt <= cutoff < supersededAt`، رد overlap و عدم splice Baseline؛
+- tie-break Milestone بر پایه `statusDate → approvedAt → updateId` و correction-safe بودن Daily Report؛
+- چهار data status، سه status مستقل Actual/Schedule/Curve و reason allowlist مرتب؛
+- Actual quantity/manual، missing-null، overrun cap فقط در aggregate، Planned working/calendar days و
+  Variance دقیقاً `Actual - Planned`؛
+- S-Curve روزانه یا grid یکنواخت، cutoff اجباری، حداکثر ۳۶۶ نقطه و future Actual/Variance برابر null؛
+- شمار Factهای Approved خارج Baseline بدون تخصیص، unit mismatch بدون conversion و target pin اجباری؛
+- Classification propagation و fail-closed برای Tenant/Project/version/classification/hash نامعتبر؛
+- hash یکسان twinها مستقل از query order، Run ID و build time؛
+- عدم وجود Forecast/EVM/Composite Health، endpoint، Migration، Renderer و Production enablement.
+
+Full CI و ثبت Safe Checkpoint این Candidate هنوز باز است. Restore باید همان ۴۵ Migration را بدون
+Migration تازه پاس کند و همه Suiteهای V1/F01/F02/F03 بدون Regression سبز بمانند.
