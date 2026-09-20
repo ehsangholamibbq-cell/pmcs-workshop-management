@@ -1,13 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.12.0`
-- وضعیت: `S07-MS03 complete in Run 139 | F02 API/Renderer not implemented | F03-F10/UI open`
+- نسخه: `1.13.0`
+- وضعیت: `S07-MS04 Renderer/Golden Candidate | F02 API/Worker/Catalog not implemented | F03-F10/UI open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- آخرین Qualification Candidate: `b4a59fa966320a1da4b53759814224e21893c01e`
-- Source tree: `6b5b486dace3c07b0b4e0385413bf1add5aee7a3`
-- Connected evidence: Run 137 (`35474388839`) — `success`
+- Parent checkpoint commit: `d8fd4398309b08d1cdc90e26140c4581dc476636`
+- Parent checkpoint tree: `5345fdfc0cf1b0663b9cb1fa3bb97a4b6abf7c9b`
+- Parent connected evidence: Run 140 (`35477677819`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -29,12 +29,13 @@ ADR 0031 تصریح می‌کند که «نخستین Vertical Slice» به‌م
 معنایی، Renderer/Golden و Checkpoint مستقل تکمیل شوند. Foundation مشترک یا Catalog placeholder
 جایگزین Qualification خانواده‌ای نیست.
 
-قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.1.1` در
+قرارداد `PMCS-RPT1-F02-SEMANTIC-001 v1.2.0` در
 `pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md` مرز گزارش هفتگی/ماهانه را به roll-up
 نسخه‌های رسمی Daily Report محدود می‌کند و period/cutoff، source lineage، status،
-permission/classification و Golden matrix آن را تثبیت می‌کند. Runtime Core محدود آن اکنون identity
-و schemaهای نسخه‌دار، period-read contract، resolver و semantic Snapshot builder را بدون API،
-Catalog seed، Worker dispatch یا Renderer پیاده می‌کند.
+permission/classification و Golden matrix آن را تثبیت می‌کند. Runtime Core محدود آن identity و
+schemaهای نسخه‌دار، period-read contract، resolver و semantic Snapshot builder را دارد. Candidate
+فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را اضافه می‌کند، اما عمداً هیچ API،
+Catalog seed، Worker dispatch یا DI registration برای F02 ندارد.
 
 ## ۲. Non-Scope
 
@@ -438,3 +439,14 @@ parameter/snapshot schema، Project configuration pin، Contract خواندنی
 Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS03-C1` Runtime Core را می‌بندد. هیچ API، Migration،
 Catalog/Template seed، Worker dispatch، PDF/XLSX، UI یا Production flag تغییر نکرده و F02 هنوز
 End-to-End قابل اجرا/دانلود نیست.
+
+Slice 07 Micro-Step 04 Candidate، Renderer contract را عمداً جدا از `IReportRenderer` و registry
+فعلی F01 تعریف می‌کند تا پیش از وجود Catalog/Worker dispatch هیچ route اجرای ناقص باز نشود. Request
+با schema/definition/template/renderer/layout، semantic hash، source-manifest hash و cutoff
+fail-closed تطبیق می‌شود و یک render model canonical تنها ورودی PDF/XLSX است. PDF از همان
+QuestPDF/font/image contract تأییدشده F01 استفاده می‌کند؛ استخراج تنظیم runtime مشترک با Golden
+تصویری F01 بدون تغییر کنترل شده است. XLSX هشت Sheet، ZIP ثابت، RTL/freeze و escaping فرمول دارد؛
+null/UnitMissing به صفر یا grand total تبدیل نمی‌شوند. Fixture هفتگی hashهای PDF/XLSX و دو visual
+digest را pin می‌کند و fixtureهای Monthly، NoData، NotConfigured، mismatch و budget نیز تست دارند.
+این Candidate هیچ Migration، endpoint، Catalog row، Worker change، DI registration، UI یا default
+Production ندارد و تا Full CI و Checkpoint `S07-MS04` فقط Candidate است.

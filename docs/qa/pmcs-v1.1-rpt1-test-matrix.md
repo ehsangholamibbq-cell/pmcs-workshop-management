@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.12.0`
-- وضعیت: F02 Runtime Core passed in Run 139؛ Renderer و F03-F10/UI open
+- نسخه: `1.13.0`
+- وضعیت: F02 Renderer/Golden Candidate؛ Full CI و API/Worker/Catalog wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -450,3 +450,32 @@ Source commit `6fc28cf54a6df820c49a2365eab76e3550ae421a` با tree
 تست Node که `27/27` مورد آن در contract مرتبط RPT1 است؛ `139/139` تست Web؛ پنج browser scenario؛
 validator روی ۳۵۰ فایل ماژولی و Restore کامل ۴۳ Migration. Checkpoint
 `PMCS-V1.1-RPT1-S07-MS03-C1` فقط Runtime Core را می‌بندد، نه Qualification انتهابه‌انتهای F02.
+
+## ۲۶. Renderer/Golden خانواده F02 در Slice 07 Micro-Step 04
+
+Candidate باید پیش از هر wiring این Gateهای محلی را پاس کند:
+
+- parser و render request روی schema، Definition/Template/Renderer/Layout version، Snapshot hash،
+  Source Manifest hash و cutoff fail-closed باشند؛
+- canonical render model ترتیب reports/facts/coverage/aggregateها را مستقل از ترتیب collection pin کند؛
+- PDF هفتگی RTL/Jalali شامل status/reason، coverage، aggregateهای جدا برحسب unit، resource
+  observations، High/Critical، narrative و lineage باشد؛
+- دو رندر PDF byte-identical و دو raster qualification در ۹۶ DPI pixel-identical باشند و
+  cold/warm/size budgetهای runtime گواهی‌شده را پاس کنند؛
+- XLSX دارای هشت Sheet ثابت، entry order/timestamp ثابت، RTL، frozen header، numeric cell واقعی،
+  text escaping برای `= + - @` و صفر Formula باشد؛
+- `m3`، `M3` و `UnitMissing` مستقل بمانند و هیچ `grandTotal` یا conversion پنهان ساخته نشود؛
+- `NoData` و `NotConfigured` data sheetهای header-only و reason صریح بدون `<v>0</v>` داشته باشند؛
+- Monthly مرز روز اول تا آخر ماه شمسی را در filename/metadata نگه دارد؛
+- wrong format، hash mismatch، PDF fact budget و XLSX row budget fail-closed باشند؛
+- Golden قبلی F01 پس از استخراج `CertifiedPdfRuntime` همان visual digest را نگه دارد؛
+- `ReportingModule`، `ReportGenerationWorker`، endpointها، Migrationها، Catalog seed، settings و UI
+  از F02 Renderer نامی نبرند و defaultهای Production خاموش بمانند.
+
+Golden محلی Candidate، XLSX SHA-256 برابر
+`83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d`، PDF SHA-256 برابر
+`52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989` و visual digestهای
+`058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396` و
+`d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` را pin می‌کند. هفت test
+جدید Renderer و regressionهای F01 محلی پاس‌اند؛ Full CI روی source commit ثابت و Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS04-C1` هنوز قبل از اعلام Gate لازم است.

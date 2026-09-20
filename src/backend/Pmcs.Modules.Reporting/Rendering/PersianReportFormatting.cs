@@ -97,6 +97,43 @@ internal static class PersianReportFormatting
         _ => "—"
     };
 
+    public static string PeriodKind(ProjectReportPeriodKind kind) => kind switch
+    {
+        ProjectReportPeriodKind.Weekly => "هفتگی",
+        ProjectReportPeriodKind.Monthly => "ماهانه",
+        _ => "نامشخص"
+    };
+
+    public static string ReasonCode(ProjectPeriodicReportReasonCode reason) => reason switch
+    {
+        ProjectPeriodicReportReasonCode.ReportingCadenceMissing => "تناوب گزارش‌دهی پیکربندی نشده است",
+        ProjectPeriodicReportReasonCode.DailyWorkflowMissing => "گردش‌کار گزارش روزانه پیکربندی نشده است",
+        ProjectPeriodicReportReasonCode.DailyCutoffMissing => "زمان برش روزانه پیکربندی نشده است",
+        ProjectPeriodicReportReasonCode.WorkingCalendarMissing => "تقویم کاری معتبر پیکربندی نشده است",
+        ProjectPeriodicReportReasonCode.PeriodOpenAtCutoff => "دوره در زمان برش هنوز بسته نشده است",
+        ProjectPeriodicReportReasonCode.ExpectedSlotMissing => "یک یا چند نوبت مورد انتظار پوشش داده نشده است",
+        ProjectPeriodicReportReasonCode.OfficialVersionMissing => "نسخه رسمی یکی از گزارش‌ها موجود نیست",
+        ProjectPeriodicReportReasonCode.OfficialReportEmpty => "یکی از گزارش‌های رسمی Fact ساختاریافته ندارد",
+        _ => "علت نامشخص"
+    };
+
+    public static string UnitState(ProjectPeriodicReportUnitState state) => state switch
+    {
+        ProjectPeriodicReportUnitState.SourceUnit => "واحد منبع",
+        ProjectPeriodicReportUnitState.UnitMissing => "واحد ثبت نشده",
+        _ => "نامشخص"
+    };
+
+    public static string Classification(DailyReportReportingClassification classification) => classification switch
+    {
+        DailyReportReportingClassification.Internal => "داخلی",
+        DailyReportReportingClassification.Confidential => "محرمانه",
+        DailyReportReportingClassification.Restricted => "محدود",
+        _ => "نامشخص"
+    };
+
+    public static string YesNo(bool value) => value ? "بله" : "خیر";
+
     public static string SafeText(string? value, int maximumLength = 4_000)
     {
         if (string.IsNullOrWhiteSpace(value))

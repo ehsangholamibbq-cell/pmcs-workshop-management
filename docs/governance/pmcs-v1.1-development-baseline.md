@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | RPT1 Slice 01–05 متصل پاس؛ Slice 06 MS05 تا source commit `38a03f3` با semantic cutoff و XLSX Golden پاس؛ PDF/UI باز |
+| Product runtime implementation | F01 متصل و PDF/XLSX qualify؛ F02 Runtime Core checkpointed و Renderer/Golden Candidate بدون wiring؛ F03–F10/UI باز |
 | Database migration | ۴۳ Migration؛ Restore Drill متصلِ ۴۳ Migration در Run 130 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -171,6 +171,14 @@ FieldOperations، resolver مرز هفتگی/ماه شمسی و semantic Snapsho
 تست C#، `58/58` تست Node، `139/139` تست Web، پنج browser scenario و Restore کامل ۴۳ Migration را
 پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. این Slice هیچ API، Migration،
 Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production را تغییر نمی‌دهد.
+
+Slice 07 Micro-Step 04 Candidate از Checkpoint
+`d8fd4398309b08d1cdc90e26140c4581dc476636` و Run 140 شروع می‌شود و فقط قرارداد Renderer مستقل،
+render model canonical و PDF/XLSX deterministic خانواده F02 را اضافه می‌کند. Golden هفتگی، مرز
+Monthly، `NoData/NotConfigured`، formula escaping، unit separation، hash/visual digest و budgetهای
+bounded محلی پوشش داده شده‌اند. Rendererها در DI/Worker ثبت نشده‌اند و API، Migration، Catalog seed،
+UI و default Production تغییر نکرده‌اند. تا Full CI و Checkpoint `S07-MS04` این تغییر Candidate است
+و F02/RPT1 Done محسوب نمی‌شوند.
 
 ## ۳. قرارداد شاخه و ادغام
 

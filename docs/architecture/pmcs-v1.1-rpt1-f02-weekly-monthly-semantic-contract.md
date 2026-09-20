@@ -1,13 +1,13 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.1.1`
+- نسخه: `1.2.0`
 - خانواده: `RPT1-F02`
-- وضعیت: `Runtime Core Safe Checkpoint | API/Worker/Catalog/Renderer Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS02-C1`
-- Runtime change: bounded semantic Core only
-- Migration / API / Renderer / Template change: None
-- Runtime evidence: source `6fc28cf54a6df820c49a2365eab76e3550ae421a`؛ Run 139
+- وضعیت: `Renderer/Golden Candidate | API/Worker/Catalog Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS03-C1`
+- Runtime change: isolated renderer contract + deterministic PDF/XLSX only
+- Migration / API / Catalog seed / Worker dispatch / UI change: None
+- Parent evidence: checkpoint `d8fd4398309b08d1cdc90e26140c4581dc476636`؛ Run 140
 
 ## ۱. هدف و مرز خانواده
 
@@ -51,9 +51,11 @@ Server فیلدهای زیر را قطعی و در Snapshot ثبت می‌کند
 
 Runtime Core شناسه‌های `project-periodic-certified/1.0.0`،
 `pmcs.reporting.project-periodic.parameters/v1` و
-`pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Template Version و شناسه رکوردهای
-Catalog تا زمان وجود Renderer و seed واقعی تخصیص داده نمی‌شوند؛ Runtime Core به‌تنهایی Definition
-قابل اجرا یا Output قابل دانلود منتشر نمی‌کند.
+`pmcs.reporting.project-periodic.snapshot/v1` را pin می‌کند. Renderer Candidate نیز Template
+contract `1.0.0`، قرارداد `pmcs.reporting.project-periodic.renderer/v1` و layout
+`pmcs.reporting.project-periodic.layout/v1` را pin می‌کند. این شناسه‌ها قرارداد کد هستند، نه رکورد
+منتشرشدهٔ Catalog؛ `TemplateVersionId` واقعی تا Slice مستقل seed/wiring تخصیص داده نمی‌شود و F02
+هنوز Definition قابل اجرا یا Output قابل دانلود منتشر نمی‌کند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -145,7 +147,7 @@ Reason codeهای allowlist عبارت‌اند از `ReportingCadenceMissing`،
 `OfficialVersionMissing` و `OfficialReportEmpty`. Missing configuration یا
 missing source عدد صفر، درصد صفر یا وضعیت سبز تولید نمی‌کند.
 
-چهار مقدار جدول `dataStatus` هستند، نه failure پردازشی. Runtime/Renderer آینده برای
+چهار مقدار جدول `dataStatus` هستند، نه failure پردازشی. Renderer فعلی برای
 `NotConfigured`، `NoData` و `InsufficientData` نیز Artifact صریحِ بدون عدد ساختگی تولید می‌کند؛
 فقط خطاهای پارامتر، امنیت، invariant یا زیرساخت Run را fail می‌کنند.
 
@@ -188,10 +190,11 @@ Classification خروجی بیشترین مقدار میان Definition، Projec
 | `F02-S03` | دو current official یا duplicate root/date | failure امن؛ بدون Snapshot/Output |
 | `F02-D01` | Source یکسان با query order متفاوت و دو Run twin | semantic/manifest hash یکسان و canonical ordering |
 
-Qualification آینده باید boundaryها را مستقل از implementation محاسبه، Snapshot را parse و
-Source manifest را با query مستقل بررسی کند. Golden متن/PDF/XLSX جای Golden معنایی را نمی‌گیرد.
+Qualification متصل آینده باید boundaryها را مستقل از implementation محاسبه، Snapshot را parse و
+Source manifest را با query مستقل بررسی کند. Golden محلی PDF/XLSX فعلی جای Golden معنایی یا
+integration متصل را نمی‌گیرد.
 
-## ۹. نگاشت Runtime Core
+## ۹. نگاشت Runtime Core و Renderer Candidate
 
 Runtime Core این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
 
@@ -207,12 +210,23 @@ Runtime Core این قرارداد را بدون بازکردن API یا Rendere
 - `ProjectPeriodicReportSnapshotBuilder` ordering، coverage سه cadence، چهار data status، reason
   allowlist، classification propagation، lineage manifest، semantic hash و aggregateهای بدون
   conversion/zero fabrication را می‌سازد؛
-- ۱۶ case جدید C# مرزهای هفتگی/ماهانه، leap Esfand، Daily/WorkingDays/Weekly coverage، وضعیت‌ها،
+- ۱۶ case C# مرزهای هفتگی/ماهانه، leap Esfand، Daily/WorkingDays/Weekly coverage، وضعیت‌ها،
   unit ordinal، classification، correction cutoff، hash twin و duplicate invariant را پوشش می‌دهد.
 
-این Core هنوز توسط endpoint/worker فراخوانی نمی‌شود و Definition/Template seed، Migration،
-PDF/XLSX، Golden binary، UI و feature flag جدید ندارد. Source آن در Run 139 هر هشت Job CI را پاس
-کرده و Checkpoint `PMCS-V1.1-RPT1-S07-MS03-C1` مرز ادامه را ثبت می‌کند.
+Renderer Candidate روی همان Snapshot یک parser و request fail-closed با تطبیق schema/definition،
+semantic SHA-256، source-manifest SHA-256 و cutoff می‌سازد و سپس یک render model با ordering قطعی
+به هر دو خروجی می‌دهد. PDF دوصفحه‌ای RTL، Jalali، reason/status، coverage، aggregateهای unit-safe،
+High/Critical و lineage را با runtime/font pin‌شده تولید می‌کند. XLSX هشت Sheet
+`Metadata/Coverage/Reports/Facts/Fact Counts/Quantities/Resources/High Impact` دارد، RTL/frozen،
+formula-free و با ZIP timestamp/order ثابت است. XLSX hash برابر
+`83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d` و PDF hash برابر
+`52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989` است؛ visual digestهای
+۹۶ DPI نیز `058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396` و
+`d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770` هستند.
+
+این Rendererها عمداً در DI/registry ثبت نشده‌اند و Worker/endpoint آن‌ها را فراخوانی نمی‌کند.
+Definition/Template seed، Migration، API، UI و feature flag جدید وجود ندارد؛ Shared PDF runtime
+فقط از F01 استخراج شده و Golden تصویری موجود F01 بدون تغییر پاس می‌شود.
 
 ## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
@@ -226,17 +240,16 @@ PDF/XLSX، Golden binary، UI و feature flag جدید ندارد. Source آن �
 | Golden matrix | بسته |
 | Runtime Definition/parameter/snapshot IDs | Checkpointed in S07-MS03 |
 | Period source contract/resolver/Snapshot builder | Checkpointed in S07-MS03 |
-| Unit/contract tests | `346/346` C# و `58/58` Node در Run 139 |
+| Unit/contract tests | `353/353` C# و `60/60` Node محلی؛ Full CI Candidate pending |
 | Catalog/Template seed و Worker/API wiring | Not Implemented |
-| PDF/XLSX/visual/performance | Not Implemented |
+| PDF/XLSX/visual/performance | Candidate؛ deterministic Golden محلی پاس |
 
-Micro-Step بعدی فقط Renderer contract و Golden قطعی F02 را روی همین Snapshot اضافه می‌کند.
-Catalog/API/Worker wiring، UI و فعال‌سازی Production باید در Sliceهای مستقل بعدی باقی بمانند.
+Micro-Step بعدی پس از Safe Checkpoint این Candidate فقط Catalog/API/Worker wiring متصل F02 است.
+UI و فعال‌سازی Production باید در Sliceهای مستقل بعدی باقی بمانند.
 
 ## ۱۱. Gate statement
 
-این نسخه F02 را به `Runtime Core Safe Checkpoint` می‌رساند، نه `End-to-End Implemented` یا
-Qualification کامل خانواده.
-هیچ API، Migration، Catalog/Template seed، Worker dispatch، Renderer، feature flag یا Production
-setting در این Micro-Step تغییر نکرده است. F02 تا پایان Renderer، Golden و integration متصل باز
-می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.
+این نسخه F02 را به `Renderer/Golden Candidate` می‌رساند، نه `End-to-End Implemented` یا
+Qualification کامل خانواده. هیچ API، Migration، Catalog/Template seed، Worker dispatch، DI
+registration، UI، feature flag یا Production setting در این Micro-Step تغییر نکرده است. F02 تا
+پایان wiring و integration متصل باز می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.

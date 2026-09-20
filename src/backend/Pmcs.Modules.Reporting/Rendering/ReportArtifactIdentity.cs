@@ -69,6 +69,28 @@ internal static class ReportArtifactIdentity
         return $"daily-report-{projectCode}-{PersianReportFormatting.FormatDate(date, persianDigits: false).Replace('/', '-')}-r{revision}.{extension}";
     }
 
+    public static string FileName(ProjectPeriodicReportSemanticSnapshot snapshot, ReportFormat format)
+    {
+        var projectCode = SafeFileSegment(snapshot.Project.Code);
+        var period = snapshot.Period.Kind == ProjectReportPeriodKind.Weekly ? "weekly" : "monthly";
+        var start = PersianReportFormatting.FormatDate(
+            snapshot.Period.StartLocalDate,
+            persianDigits: false).Replace('/', '-');
+        var end = PersianReportFormatting.FormatDate(
+            snapshot.Period.EndLocalDateExclusive.AddDays(-1),
+            persianDigits: false).Replace('/', '-');
+        var extension = format switch
+        {
+            ReportFormat.Pdf => "pdf",
+            ReportFormat.Xlsx => "xlsx",
+            _ => throw new ReportRenderingException(
+                "reporting.format.unsupported",
+                transient: false,
+                "Output format is not supported by the certified template.")
+        };
+        return $"project-{period}-{projectCode}-{start}-{end}.{extension}";
+    }
+
     public static string ContentType(ReportFormat format) => format switch
     {
         ReportFormat.Pdf => "application/pdf",

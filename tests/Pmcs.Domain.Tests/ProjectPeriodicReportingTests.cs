@@ -29,6 +29,13 @@ public sealed class ProjectPeriodicReportingTests
         Assert.Equal(
             "pmcs.reporting.project-periodic.snapshot/v1",
             ProjectPeriodicReportRuntimeContract.SnapshotSchemaVersion);
+        Assert.Equal("1.0.0", ProjectPeriodicReportRuntimeContract.TemplateVersion);
+        Assert.Equal(
+            "pmcs.reporting.project-periodic.renderer/v1",
+            ProjectPeriodicReportRuntimeContract.RendererContractVersion);
+        Assert.Equal(
+            "pmcs.reporting.project-periodic.layout/v1",
+            ProjectPeriodicReportRuntimeContract.LayoutContractVersion);
         Assert.Equal(
             "pmcs.field-operations.daily-report-period/v1",
             DailyReportPeriodReportingContract.Version);

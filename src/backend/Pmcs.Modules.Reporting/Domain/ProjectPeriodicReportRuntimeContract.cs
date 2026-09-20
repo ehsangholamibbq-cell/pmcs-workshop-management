@@ -7,6 +7,9 @@ public static class ProjectPeriodicReportRuntimeContract
     public const string DefinitionVersion = "1.0.0";
     public const string ParameterSchemaVersion = "pmcs.reporting.project-periodic.parameters/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.project-periodic.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string RendererContractVersion = "pmcs.reporting.project-periodic.renderer/v1";
+    public const string LayoutContractVersion = "pmcs.reporting.project-periodic.layout/v1";
 }
 
 public sealed record ProjectPeriodicReportParameters(

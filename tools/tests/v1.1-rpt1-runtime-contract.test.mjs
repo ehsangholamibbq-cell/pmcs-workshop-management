@@ -120,6 +120,7 @@ test("generated outputs use the Documents owner contract and certified renderers
   const publisher = read("src/backend/Pmcs.Modules.Documents/Services/GeneratedDocumentPublisher.cs");
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const pdf = read(`${moduleRoot}/Rendering/DailyReportPdfRenderer.cs`);
+  const pdfRuntime = read(`${moduleRoot}/Rendering/CertifiedPdfRuntime.cs`);
   const xlsx = read(`${moduleRoot}/Rendering/DailyReportXlsxRenderer.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
   const pdfContract = read(`${moduleRoot}/Rendering/CertifiedPdfRuntimeContract.cs`);
@@ -137,11 +138,12 @@ test("generated outputs use the Documents owner contract and certified renderers
   assert.match(worker, /rendered\.Add[\s\S]*?foreach \(var item in rendered\)[\s\S]*?PublishReportOutputAsync/u);
   assert.match(worker, /reporting\.report\.completed\.v1/u);
   assert.match(pdf, /ContentFromRightToLeft/u);
-  assert.match(pdf, /SHA256\.HashData[\s\S]*FontManager\.RegisterFont\(/u);
   assert.match(pdf, /GenerateImages[\s\S]*QualificationRasterDpi/u);
-  assert.match(pdf, /reporting\.renderer\.configuration_unpinned/u);
-  assert.match(pdf, /reporting\.renderer\.font_integrity_failed/u);
-  assert.match(pdf, /reporting\.renderer\.license_unapproved/u);
+  assert.match(pdf, /CertifiedPdfRuntime\.EnsureConfigured/u);
+  assert.match(pdfRuntime, /SHA256\.HashData[\s\S]*FontManager\.RegisterFont\(/u);
+  assert.match(pdfRuntime, /reporting\.renderer\.configuration_unpinned/u);
+  assert.match(pdfRuntime, /reporting\.renderer\.font_integrity_failed/u);
+  assert.match(pdfRuntime, /reporting\.renderer\.license_unapproved/u);
   assert.match(packages, /PackageVersion Include="QuestPDF" Version="2026\.8\.0"/u);
   assert.match(packages, /PackageVersion Include="PdfPig" Version="0\.1\.16"/u);
   assert.match(pdfContract, /LicenseDecision = "Community"/u);
@@ -636,9 +638,7 @@ test("RPT1 semantic and XLSX Golden records the MS05 checkpoint without closing 
   assert.match(checkpoint, /revision `12`/u);
   assert.match(checkpoint, /RPT1 بسته نیست/u);
   assert.match(checkpoint, /هنوز[\s\S]*`Feature Complete`/u);
-  assert.match(roadmap, /نسخه سند: `1\.27\.0`/u);
   assert.match(roadmap, /\| `1\.20\.0` \| ثبت Safe Checkpoint `S06-MS05`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.27\.0/u);
   assert.match(registry, /V1\.1 RPT1 Slice 06 MS05[\s\S]*38a03f33f4747d0b6a76696705877633acd17678/u);
   assert.match(runbook, /## Semantic\/XLSX Golden verification/u);
   assert.match(runbook, /Run 130 \(`35449387794`\)/u);
@@ -690,8 +690,8 @@ test("RPT1 preserves the approved ten-family catalog through an explicit owner d
   assert.match(decision, /هر ده خانواده[\s\S]*Gate خروج `V1\.1-RPT1`/u);
   assert.match(decision, /هیچ API، Migration، Renderer، feature flag یا Production setting/u);
   assert.match(roadmap, /`D-PV1-16`[\s\S]*ده خانوادهٔ استاندارد/u);
-  assert.match(roadmap, /نسخه سند: `1\.27\.0`/u);
-  assert.match(registry, /PMCS-RM-POST-V1-001 v1\.27\.0/u);
+  assert.match(roadmap, /\| `1\.22\.0` \| ثبت ADR 0031 و تصمیم صریح حفظ Scope ده‌گانه/u);
+  assert.match(registry, /V1\.1 RPT1 Slice 07 MS01/u);
   assert.match(canonical, /ADR 0031[\s\S]*RPT1-F02/u);
 });
 
@@ -718,10 +718,9 @@ test("RPT1 ten-family decision records the S07-MS01 safe checkpoint without clai
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS01-C1`/u);
   assert.match(baseline, /Slice 07 Micro-Step 01[\s\S]*Run 135/u);
   assert.match(matrix, /## ۲۳\.[\s\S]*Run 135/u);
-  assert.match(matrix, /نسخه: `1\.12\.0`/u);
 });
 
-test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its bounded Runtime Core", () => {
+test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its Renderer Golden candidate", () => {
   const contract = read("docs/architecture/pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md");
   const architecture = read("docs/architecture/pmcs-v1.1-reporting-center-phase1.md");
   const api = read("docs/api/reporting-v1.md");
@@ -732,8 +731,8 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its bound
   const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
 
   assert.match(contract, /PMCS-RPT1-F02-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.1\.1`/u);
-  assert.match(contract, /Runtime Core Safe Checkpoint \| API\/Worker\/Catalog\/Renderer Not Implemented/u);
+  assert.match(contract, /نسخه: `1\.2\.0`/u);
+  assert.match(contract, /Renderer\/Golden Candidate \| API\/Worker\/Catalog Not Implemented/u);
   assert.match(contract, /`periodKind`[\s\S]*`Weekly` یا `Monthly`/u);
   assert.match(contract, /`periodStartLocalDate`[\s\S]*برای Weekly باید شنبه[\s\S]*برای Monthly باید روز اول ماه شمسی/u);
   assert.match(contract, /بازه نیمه‌باز `[\s\S]*periodEndLocalDateExclusive/u);
@@ -747,14 +746,14 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its bound
   assert.match(contract, /Caller نمی‌تواند آن را پایین بیاورد/u);
   assert.match(contract, /هیچ درصد کل[\s\S]*S-Curve/u);
   assert.equal((contract.match(/\| `F02-[A-Z]\d{2}` \|/gu) ?? []).length, 14);
-  assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، Renderer، feature flag/u);
-  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.1\.1/u);
-  assert.match(api, /Runtime Core خانواده F02 بدون تغییر API/u);
+  assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، DI/u);
+  assert.match(architecture, /PMCS-RPT1-F02-SEMANTIC-001 v1\.2\.0/u);
+  assert.match(api, /Renderer\/Golden خانواده F02 بدون تغییر API/u);
   assert.match(security, /سیاست ثابت F02/u);
-  assert.match(matrix, /## ۲۴\.[\s\S]*Golden matrix چهارده‌سناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.27\.0`/u);
+  assert.match(matrix, /## ۲۶\.[\s\S]*Renderer\/Golden خانواده F02/u);
+  assert.match(roadmap, /نسخه سند: `1\.28\.0`/u);
   assert.match(registry, /Slice 07 MS03[\s\S]*6fc28cf54a6df820c49a2365eab76e3550ae421a[\s\S]*Run 139/u);
-  assert.match(canonical, /Runtime Core محدود و checkpointed/u);
+  assert.match(canonical, /Renderer\/Golden Candidate/u);
 });
 
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {
@@ -790,6 +789,8 @@ test("RPT1-F02 runtime core stays bounded to identity period source resolver and
   assert.match(identity, /DefinitionCode = "project-periodic-certified"/u);
   assert.match(identity, /ParameterSchemaVersion = "pmcs\.reporting\.project-periodic\.parameters\/v1"/u);
   assert.match(identity, /SnapshotSchemaVersion = "pmcs\.reporting\.project-periodic\.snapshot\/v1"/u);
+  assert.match(identity, /RendererContractVersion = "pmcs\.reporting\.project-periodic\.renderer\/v1"/u);
+  assert.match(identity, /LayoutContractVersion = "pmcs\.reporting\.project-periodic\.layout\/v1"/u);
   assert.match(resolver, /DayOfWeek\.Saturday/u);
   assert.match(resolver, /PersianCalendar/u);
   assert.match(resolver, /IsInvalidTime/u);
@@ -814,6 +815,76 @@ test("RPT1-F02 runtime core stays bounded to identity period source resolver and
   assert.match(tests, /SemanticAndManifestHashesIgnoreQueryOrderRunIdentityAndBuildTime/u);
   assert.match(tests, /DuplicateRootDateAndDuplicateCurrentOfficialFailClosed/u);
   assert.doesNotMatch(worker, /IDailyReportPeriodReportingSource|ProjectPeriodicReportSnapshotBuilder/u);
+});
+
+test("RPT1-F02 renderer contract and Golden stay deterministic and isolated from production wiring", () => {
+  const identity = read(
+    "src/backend/Pmcs.Modules.Reporting/Domain/ProjectPeriodicReportRuntimeContract.cs",
+  );
+  const contract = read(
+    "src/backend/Pmcs.Modules.Reporting/Rendering/ProjectPeriodicReportRenderingContracts.cs",
+  );
+  const pdf = read(
+    "src/backend/Pmcs.Modules.Reporting/Rendering/ProjectPeriodicReportPdfRenderer.cs",
+  );
+  const xlsx = read(
+    "src/backend/Pmcs.Modules.Reporting/Rendering/ProjectPeriodicReportXlsxRenderer.cs",
+  );
+  const tests = read("tests/Pmcs.Domain.Tests/ProjectPeriodicReportRenderingTests.cs");
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+  const semantic = read(
+    "docs/architecture/pmcs-v1.1-rpt1-f02-weekly-monthly-semantic-contract.md",
+  );
+  const matrix = read("docs/qa/pmcs-v1.1-rpt1-test-matrix.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const registry = read("docs/roadmaps/README.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+
+  for (const path of [
+    `${moduleRoot}/Rendering/CertifiedPdfRuntime.cs`,
+    `${moduleRoot}/Rendering/ProjectPeriodicReportRenderingContracts.cs`,
+    `${moduleRoot}/Rendering/ProjectPeriodicReportPdfRenderer.cs`,
+    `${moduleRoot}/Rendering/ProjectPeriodicReportXlsxRenderer.cs`,
+    "tests/Pmcs.Domain.Tests/ProjectPeriodicReportRenderingTests.cs",
+  ]) assert.equal(existsSync(path), true, `Missing ${path}`);
+
+  assert.match(identity, /RendererContractVersion = "pmcs\.reporting\.project-periodic\.renderer\/v1"/u);
+  assert.match(identity, /LayoutContractVersion = "pmcs\.reporting\.project-periodic\.layout\/v1"/u);
+  assert.match(contract, /interface IProjectPeriodicReportRenderer/u);
+  assert.match(contract, /CanonicalJson\.Sha256\(canonicalSnapshot\)/u);
+  assert.match(contract, /reporting\.periodic\.snapshot\.payload_invalid/u);
+  assert.match(contract, /reporting\.periodic\.render_request\.invalid/u);
+  assert.match(pdf, /ContentFromRightToLeft/u);
+  assert.match(pdf, /GenerateImages[\s\S]*QualificationRasterDpi/u);
+  assert.match(pdf, /execution\.MaximumPdfFacts/u);
+  assert.match(xlsx, /rightToLeft/u);
+  assert.match(xlsx, /CompressionLevel\.NoCompression/u);
+  assert.match(xlsx, /execution\.MaximumXlsxRows/u);
+  assert.doesNotMatch(xlsx, /<f>|WriteStartElement\("f"/u);
+  assert.match(tests, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
+  assert.match(tests, /52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989/u);
+  assert.match(tests, /058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396/u);
+  assert.match(tests, /d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770/u);
+  assert.match(tests, /MonthlyWorkbookUsesCanonicalPersianMonthBoundariesAndIdentity/u);
+  assert.match(tests, /NoDataWorkbookKeepsSemanticSheetsHeaderOnly/u);
+  assert.match(tests, /NotConfiguredWorkbookCarriesExplicitReasons/u);
+
+  assert.doesNotMatch(module, /ProjectPeriodicReport(?:Pdf|Xlsx)Renderer|IProjectPeriodicReportRenderer/u);
+  assert.doesNotMatch(worker, /ProjectPeriodicReport(?:Pdf|Xlsx)Renderer|IProjectPeriodicReportRenderer/u);
+  assert.doesNotMatch(worker, /ProjectPeriodicReportRenderSnapshot|ProjectPeriodicReportRenderRequest/u);
+  assert.doesNotMatch(endpoints, /project-periodic-certified/u);
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.match(semantic, /Renderer\/Golden Candidate/u);
+  assert.match(semantic, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
+  assert.match(matrix, /## ۲۶\. Renderer\/Golden خانواده F02/u);
+  assert.match(roadmap, /F02 Renderer\/Golden Candidate — Slice 07 Micro-Step 04/u);
+  assert.match(registry, /Slice 07 MS04 Candidate/u);
+  assert.match(canonical, /Full CI و Safe Checkpoint `S07-MS04`/u);
 });
 
 test("RPT1-F02 semantic contract records the S07-MS02 safe checkpoint without claiming Runtime", () => {
@@ -849,7 +920,6 @@ test("RPT1-F02 semantic contract records the S07-MS02 safe checkpoint without cl
   assert.match(canonical, /F02 semantic Checkpoint:[\s\S]*42e607ee98e2bbdedafaec892c8af47b9f947aa1[\s\S]*Run 138/u);
   assert.match(baseline, /Slice 07 Micro-Step 02[\s\S]*Run 137/u);
   assert.match(matrix, /## ۲۴\.[\s\S]*Run 137/u);
-  assert.match(matrix, /نسخه: `1\.12\.0`/u);
 });
 
 test("RPT1-F02 runtime core records the S07-MS03 safe checkpoint without opening API or renderer", () => {
@@ -882,10 +952,9 @@ test("RPT1-F02 runtime core records the S07-MS03 safe checkpoint without opening
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS03-C1`/u);
   assert.match(roadmap, /\| `1\.27\.0` \| ثبت Safe Checkpoint `S07-MS03`/u);
   assert.match(registry, /Slice 07 MS03[\s\S]*6fc28cf54a6df820c49a2365eab76e3550ae421a/u);
-  assert.match(canonical, /Safe Resume Point قطعی آن `PMCS-V1\.1-RPT1-S07-MS03-C1`/u);
+  assert.match(canonical, /F02 Runtime Core Source:[\s\S]*6fc28cf54a6df820c49a2365eab76e3550ae421a/u);
   assert.match(baseline, /Slice 07 Micro-Step 03[\s\S]*Run 139/u);
   assert.match(matrix, /## ۲۵\.[\s\S]*Run 139/u);
-  assert.match(matrix, /نسخه: `1\.12\.0`/u);
 });
 
 function read(path) {
