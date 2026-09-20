@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.12.1`
-- وضعیت: F01/F02/F03 connected؛ F04 semantic security contract passed in Run 158؛ Runtime/Production disabled
+- نسخه: `1.13.0`
+- وضعیت: F01/F02/F03 connected؛ F04 Runtime Core و Renderer/Golden checkpointed؛ Wiring/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -141,7 +141,12 @@ Classification F04 بیشترین مقدار میان Definition، Project/confi
 Evidence Reference، Review Comment، نام Actor و Factهای غیرپیشرفت وارد Snapshot نمی‌شوند و Source ID
 یا عنوان حساس در filename/event/diagnostic ثبت نمی‌شود. این سیاست در `S07-MS10` فقط قرارداد است و
 Candidate `f8829027c2ce073c207cd0e04a49c306b546c6a1` آن را در Run 158 با هر هشت Job checkpoint کرد؛
-این گیت هنوز Runtime، Catalog، Worker یا Renderer F04 را فعال نمی‌کند.
+MS11 همان boundary را در Runtime Core با selector/source/builder fail-closed پیاده کرد. MS12 نیز
+payload و identity/hash/cutoff را پیش از تولید bytes دوباره validate می‌کند؛ XLSX prefixهای
+`= + - @` را خنثی می‌کند، Formula/Macro ندارد و PDF هیچ HTML/JS یا template code اجرا نمی‌کند.
+text/row/page budget، Actual آینده و truncate خاموش non-transient و fail-closed هستند. Source
+`6a717f10e4bff167ad7e2643313008f5afcc8264` این سیاست را در Run 167 با هر هشت Job checkpoint کرد؛
+Catalog/API/Worker wiring و Production همچنان فعال نشده‌اند.
 
 ## ۴. Threat model
 

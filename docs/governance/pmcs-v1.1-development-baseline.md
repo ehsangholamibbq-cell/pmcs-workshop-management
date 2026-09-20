@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04 Runtime Core checkpointed و Renderer/Wiring باز؛ F05–F10/UI باز |
+| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04 Runtime Core و Renderer/Golden checkpointed و wiring باز؛ F05–F10/UI باز |
 | Database migration | ۴۵ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -250,6 +250,18 @@ browser scenario، validator روی `378` فایل، audit `274/204/5` و Restor
 Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS11-C1` است. هیچ Migration، API، Catalog/Template seed،
 Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ گام بعد فقط Renderer/Golden F04 و
 Safe Resume اکنون MS11 است.
+
+Slice 07 Micro-Step 12 قرارداد را به `PMCS-RPT1-F04-SEMANTIC-001 v1.2.1` ارتقا داد و فقط
+Template/Renderer/Layout identity، parser/request/model canonical و PDF/XLSX قطعی را روی Snapshot
+MS11 اضافه کرد. Source `6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit `274/204/5`،
+Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
+`PMCS-V1.1-RPT1-S07-MS12-C1` است. هیچ Migration، API، Catalog/Template seed، Worker dispatch، DI
+registration، UI یا default Production تغییر نکرد؛ گام بعد فقط wiring متصل F04 و Safe Resume اکنون
+MS12 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

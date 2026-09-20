@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.43.0`
+- نسخه سند: `1.45.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -490,6 +490,22 @@ browser scenario، validator روی `378` فایل، audit `274/204/5`، Restore
 `7/7` را پاس کرد. هیچ Migration، Renderer، Catalog/API/Worker wiring، UI یا Production enablement
 وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS11` و گام بعد فقط Renderer/Golden F04 است.
 
+**F04 Deterministic Renderer/Golden — Slice 07 Micro-Step 12 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS11-C1` فقط Template/Renderer/Layout identity، parser/request/model
+fail-closed و PDF/XLSX قطعی اضافه شده است. PDF فارسی/RTL و A4 افقی، XLSX هشت-Sheet با ZIP قطعی،
+RTL، frozen header، سلول عددی واقعی و صفر Formula، NoData بدون صفر ساختگی و budgetهای fail-closed
+دارد. Goldenهای XLSX/PDF به‌ترتیب
+`8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7` و
+`bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef` هستند. Source
+`6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit `274/204/5`،
+Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/API/Worker wiring،
+DI registration، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
+`S07-MS12` و گام بعد فقط wiring متصل F04 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -775,3 +791,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.41.0` | ثبت Safe Checkpoint `S07-MS10` و Evidence سبز Run 158 برای قرارداد معنایی F04؛ Runtime/Renderer/wiring باز است |
 | `1.42.0` | ثبت Candidate محدود `S07-MS11` برای Runtime Core F04؛ Full CI/Checkpoint و Renderer/wiring باز است |
 | `1.43.0` | ثبت Safe Checkpoint `S07-MS11` و Evidence سبز Run 163 برای Runtime Core F04؛ Renderer/Golden و wiring باز است |
+| `1.44.0` | ثبت Candidate محدود `S07-MS12` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F04؛ wiring و Full CI باز است |
+| `1.45.0` | ثبت Safe Checkpoint `S07-MS12` و Evidence سبز Run 167 برای Renderer/Golden خانواده F04؛ Catalog/API/Worker wiring باز است |

@@ -183,6 +183,7 @@ const requiredFiles = [
   "docs/checkpoints/v1.1-rpt1-slice-07-ms09-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-07-ms10-candidate.md",
   "docs/checkpoints/v1.1-rpt1-slice-07-ms11-candidate.md",
+  "docs/checkpoints/v1.1-rpt1-slice-07-ms12-candidate.md",
   "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   "docs/architecture/pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md",
   "docs/security/pmcs-v1.1-reporting-security.md",

@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.24.1`
-- وضعیت: `S07-MS11 F04 bounded Runtime Core safe checkpoint | Renderer/Wiring/F05-F10/UI/Production open`
+- نسخه: `1.25.0`
+- وضعیت: `S07-MS12 F04 Renderer/Golden safe checkpoint | Wiring/F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `517a7dba5c20061fab3ef6f9a3dd6407cc76499f`
-- Parent checkpoint tree: `b96c3f23d73114555d25088335f73ca79f6e3668`
-- Candidate source: `deb1571ec66d820868e8f4b77b631471e3c8207c`
-- Candidate source tree: `9e41495a357480af03f1555ef640962ab863d332`
-- PR validation merge: `f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5`؛ همان tree
-- Runtime evidence: Run 163 (`35527577826`) — `success`
+- Parent checkpoint commit: `bbe34ee57b9c96c0b075444e3b7757aa147b5770`
+- Parent checkpoint tree: `59b35b123fb45e97597f082e85069e040ae99e9c`
+- Candidate source: `6a717f10e4bff167ad7e2643313008f5afcc8264`
+- Candidate source tree: `995c7fae108bbb5265faa036f951036d36e7061e`
+- PR validation merge: `782f42ff73425cf5cad69b0635bacf05790d2ff1`؛ همان tree
+- Renderer evidence: Run 167 (`35532522587`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -51,14 +51,15 @@ PDF/XLSX قطعی را checkpoint کرده است. Checkpoint جاری Catalog/T
 definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
 qualification متصل را روی همان قراردادها بسته است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.1.1` در
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.2.1` در
 `pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md` گزارش پیشرفت را فقط از Planning
 configuration، Baseline و evidence رسمیِ مؤثر در cutoff می‌سازد. پارامتر Client خالی، انتخاب
 Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S-Curve حداکثر ۳۶۶ نقطه
 است. MeasurementWeights بدون Schedule معتبر باقی می‌ماند و هیچ Forecast، EVM، Composite Health یا
-join پنهان F05 تا F10 مجاز نیست. Safe Checkpoint محدود Runtime Core، identity/schema نسخه‌دار، projection
-خواندنی FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot builder را
-اضافه کرده است؛ legacy history غیرقابل‌اثبات fail-closed است و Renderer/wiring بازند.
+join پنهان F05 تا F10 مجاز نیست. Runtime Core، identity/schema نسخه‌دار، projection خواندنی
+FieldOperations/Planning، selector lifecycle، calculator و semantic Snapshot builder را دارد؛ legacy
+history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری Template/Renderer/Layout identity، render
+model canonical و PDF/XLSX قطعی را بسته است؛ Catalog/API/Worker wiring باز می‌ماند.
 
 ## ۲. Non-Scope
 
@@ -575,3 +576,18 @@ Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تس�
 browser scenario، validator روی `378` فایل، audit ثابت `274/204/5`، Restore کامل ۴۵ Migration و
 Qualification `7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint هیچ Migration، endpoint،
 Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default را تغییر نمی‌دهد.
+
+Slice 07 Micro-Step 12 فقط Template `1.0.0`، Renderer/Layout identity نسخه‌دار، parser/request/model
+fail-closed و PDF/XLSX قطعی F04 را روی Snapshot MS11 اضافه می‌کند. PDF فارسی/RTL و A4 افقی، دو بخش
+قطعی summary/detail و S-Curve/lineage دارد. XLSX هشت Sheet ثابت، RTL، frozen header، سلول عددی واقعی،
+ZIP قطعی و صفر Formula دارد؛ NoData بدون صفر ساختگی و data sheetهای header-only باقی می‌ماند. XLSX
+Golden برابر `8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7` و PDF Golden برابر
+`bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef` است. Source
+`6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit ثابت `274/204/5`،
+Restore کامل ۴۵ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint
+هیچ Migration، endpoint، Catalog/Template seed، Worker dispatch، DI registration، UI یا Production
+default را تغییر نمی‌دهد؛ گام بعد فقط wiring متصل F04 است.

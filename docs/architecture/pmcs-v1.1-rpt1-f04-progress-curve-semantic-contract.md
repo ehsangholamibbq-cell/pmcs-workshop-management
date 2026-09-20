@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش پیشرفت و S-Curve
 
 - شناسه: `PMCS-RPT1-F04-SEMANTIC-001`
-- نسخه: `1.1.1`
+- نسخه: `1.2.1`
 - خانواده: `RPT1-F04`
-- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS10-C1`
-- Runtime change: `Bounded identity/projection/selector/calculator/semantic Snapshot checkpointed in Run 163`
-- Migration / API / Renderer / Template change: None
+- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS11-C1`
+- Runtime change: `Deterministic PDF/XLSX Renderer contract checkpointed in Run 167`
+- Migration / API / Catalog / Worker change: None
 
 ## ۱. هدف و مرز خانواده
 
@@ -51,8 +51,12 @@ Runtime identity داخلی `project-progress-certified/1.0.0`، parameter schem
 `pmcs.reporting.project-progress.snapshot/v1` و Project profile pin
 `pmcs.reporting.project-progress.project-profile/v1` در Safe Checkpoint محدود `S07-MS11` تثبیت شده‌اند.
 Source contractهای `pmcs.planning.project-progress-reporting/v1` و
-`pmcs.field-operations.progress-evidence-reporting/v1` نیز نسخه‌دارند. Template/Renderer identity،
-Migration و Catalog seed همچنان تخصیص نیافته‌اند.
+`pmcs.field-operations.progress-evidence-reporting/v1` نیز نسخه‌دارند. Checkpoint `S07-MS12` Template
+`1.0.0` با content digest
+`3f19d880a7790854fcc0d79d4822c5653cb6bb888294eadf8eaeeee8b5857816`، Renderer
+`pmcs.reporting.project-progress.renderer/v1` و Layout
+`pmcs.reporting.project-progress.layout/v1` را تثبیت کرده است. Migration و Catalog seed همچنان
+تخصیص نیافته‌اند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -242,7 +246,11 @@ Run ID، attempt، build time و render time نباید hash را تغییر د�
 
 Curve حداکثر ۳۶۶ نقطه و Baseline حداکثر ۵۰۰۰ entry دارد. عبور از budget نسخه‌دار، متن بیش‌ازحد یا
 manifest/semantic hash ناسازگار باید non-transient و fail-closed باشد، نه truncate یا تجمیع پنهان.
-PDF/XLSX، page/sheet/row budget، visual digest و performance فقط در Renderer Slice مستقل قطعی می‌شوند.
+Renderer مستقل MS12، PDF فارسی/RTL و A4 افقی را در دو بخش قطعی و XLSX را با هشت Sheet ثابت، RTL،
+frozen header، ZIP قطعی، سلول عددی واقعی و صفر Formula می‌سازد. row/page/fact budget، visual digest،
+performance، formula escaping، Actual آینده، format و identity/hash ناسازگار fail-closed آزموده شده‌اند.
+XLSX Golden برابر `8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7` و PDF Golden برابر
+`bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef` است.
 
 ## ۱۱. projection نسخه‌دار و مرز سازگاری Persistence موجود
 
@@ -312,10 +320,10 @@ parse و absence مالی/EVM/forecast/inference را اثبات کند. Golden 
 | Permission/classification/minimization | بسته |
 | Golden matrix بیست‌ودوسناریویی | بسته |
 | Runtime Definition و parameter/snapshot/profile/source IDs | Checkpointed in Run 163 |
-| Template/Renderer identity | عمداً باز برای Slice Renderer |
+| Template/Renderer identity | Checkpointed in Run 167 |
 | Historical projection و Application Contract cutoff-aware | Checkpointed in Run 163؛ legacy gapها fail-closed |
 | selector/calculator/semantic Snapshot builder | Checkpointed in Run 163 |
-| PDF/XLSX/visual/performance | Not Implemented |
+| PDF/XLSX/visual/performance | Checkpointed in Run 167 |
 | Catalog/API/Worker wiring | Not Implemented |
 
 Checkpoint `S07-MS11` فقط Runtime identity نسخه‌دار، projection/Contract خواندنی و باریک در Planning
@@ -328,10 +336,22 @@ status/reason، Classification و hash در Core مستقل از Renderer پیا
 Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست Node، `139/139` تست Web، پنج
 browser scenario، validator روی `378` فایل، audit ثابت `274/204/5`، Restore کامل ۴۵ Migration و
 Qualification برابر `7/7` Suite و `12/12` Command را پاس کرد. Renderer، Golden binary،
-Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی باقی بمانند.
+Catalog/API/Worker wiring، UI و Production enablement در پایان MS11 باز بودند.
+
+Checkpoint `S07-MS12` فقط parser/request/model canonical، Template/Renderer/Layout identity و
+PDF/XLSX قطعی را روی Snapshot بالا اضافه کرده است. Source
+`6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit ثابت `274/204/5`،
+Restore کامل ۴۵ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. Registry
+اختصاصی F04 عمداً به DI/Worker متصل نشده و Catalog/API/Worker wiring، UI و Production enablement
+باید در Sliceهای بعدی باقی بمانند.
 
 ## ۱۴. Gate statement
 
-این نسخه Safe Checkpoint bounded Runtime Core است، نه گزارش متصل. هیچ API، Migration، Catalog seed،
-Renderer، feature flag یا Production setting در این Micro-Step تغییر نکرده است. Micro-Step بعدی فقط
-Renderer/Golden مستقل است؛ F04 تا پایان wiring متصل کامل نمی‌شود و F05 تا F10 و RPT1 نیز باز هستند.
+این نسخه Safe Checkpoint Renderer/Golden مستقل است، نه گزارش متصل. هیچ API، Migration، Catalog seed،
+Worker dispatch، DI registration، feature flag یا Production setting در این Micro-Step تغییر نکرده
+است. Micro-Step بعدی فقط Catalog/API/Worker wiring متصل F04 است؛ F04 تا پایان آن کامل نمی‌شود و F05
+تا F10 و RPT1 نیز باز هستند.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.27.0`
-- وضعیت: F04 bounded Runtime Core safe checkpoint؛ Renderer/Wiring باز
+- نسخه: `1.28.0`
+- وضعیت: F04 deterministic Renderer/Golden safe checkpoint؛ Catalog/API/Worker wiring باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -719,3 +719,43 @@ Qualification artifact `10610087527` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS11-C1` فقط Runtime Core را می‌بندد. Renderer/Golden،
 Catalog/API/Worker wiring، UI و Production enablement بازند و همه Suiteهای V1/F01/F02/F03 بدون
 Regression سبز مانده‌اند.
+
+## ۳۴. Renderer/Golden خانواده F04 — Slice 07 Micro-Step 12
+
+Candidate باید بدون Migration، Catalog/API/Worker wiring یا Production enablement موارد زیر را اثبات
+کند:
+
+- Template `1.0.0`، content digest و Renderer/Layout identity ثابت و fail-closed؛
+- parser/request/model با تطبیق Definition، schema، cutoff، profile، manifest/semantic hash و filename؛
+- نگهداری مستقل data/metric statusها، reasonها و null بدون صفر یا وضعیت سبز ساختگی؛
+- PDF فارسی/RTL و A4 افقی با summary، configuration، Baseline، Entry، Milestone، S-Curve و lineage؛
+- XLSX با هشت Sheet ثابت `Metadata/Summary/Configuration/Baseline/Entries/Milestones/S-Curve/Lineage`،
+  RTL، frozen header، سلول عددی واقعی، ZIP deterministic و صفر Formula؛
+- neutralization متن فرمول‌مانند، NoData header-only و نبود Forecast/EVM/SPI/CPI/Composite Health؛
+- fail-closed برای budget، Actual آینده، format نادرست، version/hash ناسازگار و بدون truncate؛
+- byte equality رندر تکراری، Goldenهای PDF/XLSX، visual digest دو صفحه و performance cold/warm؛
+- Registry اختصاصی F04 موجود اما بدون registration در DI، Worker، endpoint یا Migration.
+
+Goldenهای قطعی XLSX/PDF به‌ترتیب
+`8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7` و
+`bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef` هستند. visual digestهای
+صفحهٔ اول و دوم به‌ترتیب
+`556d3b6a56d59e0c4ac8e8fcd526fca405fe9ba066ae5823b2c9c7482ea4b69b` و
+`8fbb9b69d9322522e8a55f041e16c8785716dc7554660bf2eacdf9030fe5e850` پین شده‌اند.
+
+Source `6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job را پاس کرد: `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04،
+`70/70` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل
+ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `45` Migration و Qualification برابر
+`7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10611741833` با digest
+`sha256:d0f0c1e6b7e580823a9f07d8adcaf4bf6ada44e0712d7f843ea53ce662e9cc00`، Integration artifact
+`10611777630` با digest `sha256:71a090f4c49a39a24803948a248aa0cec45c1a16316b1730ae62c9a6423b03f6`
+و UI-E2E artifact `10611587190` با digest
+`sha256:720ca87b8e30b3904cd327e345f086262587f7824e0c16e550eedc99f837e423` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS12-C1` فقط Renderer/Golden را می‌بندد. Catalog/API/Worker
+wiring، UI و Production enablement بازند و همه Suiteهای V1/F01/F02/F03 بدون Regression سبز مانده‌اند.

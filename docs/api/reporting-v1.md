@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02/F03 connected؛ F04 semantic contract passed in Run 158 بدون Runtime؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02/F03 connected؛ F04 Runtime Core و Renderer/Golden checkpointed بدون API/Worker wiring؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -89,23 +89,29 @@ Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
 برابر `14/14` و Restore Drill کامل ۴۵ Migration را پاس کرد. Safe Resume اکنون `S07-MS09` است و
 همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
-### ۱.۷ قرارداد checkpointed F04 بدون تغییر API
+### ۱.۷ Runtime/Renderer checkpointed F04 بدون تغییر API
 
 Micro-Step `S07-MS10` route تازه‌ای اضافه نمی‌کند. قرارداد
 `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
 و `sourceCutoffUtc` از `asOfUtc` پین‌شدهٔ Run می‌آیند. Client اجازه ارسال `baselineId`، تاریخ، interval
 Curve، Planning Mode، include/forecast flag یا انتخاب Source را ندارد.
 
-Runtime آینده فقط از Application Contract خواندنی و cutoff-aware Planning استفاده می‌کند؛ endpoint
-زنده `GET /planning/progress`، `IProgressFactSource` و DbContextهای Planning/FieldOperations Source
-مستقیم Reporting نیستند. Baseline رسمی، Actual تأییدشده، Planned، `Actual - Planned` و S-Curve
-حداکثر ۳۶۶ نقطه‌ای بدون Forecast/EVM ساخته می‌شوند. Definition، Template، schema ID، Catalog/API
-dispatch، Worker و Renderer F04 در این Micro-Step هنوز وجود ندارند.
+Runtime Core MS11 فقط از Application Contract خواندنی و cutoff-aware Planning/FieldOperations
+استفاده می‌کند؛ endpoint زنده `GET /planning/progress`، `IProgressFactSource` و DbContextهای آن‌ها
+Source مستقیم Reporting نیستند. Baseline رسمی، Actual تأییدشده، Planned، `Actual - Planned` و
+S-Curve حداکثر ۳۶۶ نقطه‌ای بدون Forecast/EVM ساخته می‌شوند. MS12 نیز Template/Renderer/Layout
+identity، render model canonical و PDF/XLSX قطعی را اضافه کرده است. Registry داخلی F04 عمداً به DI
+یا Worker متصل نیست؛ Definition/Catalog seed، API dispatch و Worker wiring هنوز وجود ندارند.
 
 Candidate `f8829027c2ce073c207cd0e04a49c306b546c6a1` با tree
 `2b784f135894092ef55bf7c7df201b1f03e0c77f` در Run 158 (`35522512734`) هر هشت Job را پاس کرد.
 Safe Resume اکنون `S07-MS10` است؛ این Evidence فقط قرارداد را checkpoint می‌کند و هیچ route، Runtime
 یا Production default تازه‌ای اضافه نمی‌کند.
+
+Runtime/Renderer Source `6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` در Run 167 (`35532522587`) هر هشت Job را پاس کرد.
+Safe Resume اکنون `S07-MS12` است؛ routeها و رفتار API موجود تغییر نکرده‌اند و Micro-Step بعدی فقط
+Catalog/API/Worker wiring F04 است.
 
 ## ۲. Catalog
 
