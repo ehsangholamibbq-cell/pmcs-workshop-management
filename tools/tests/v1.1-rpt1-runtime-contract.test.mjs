@@ -1360,6 +1360,77 @@ test("RPT1-F04 Catalog API and Worker record the S07-MS13 connected safe checkpo
   assert.match(validator, /docs\/checkpoints\/v1\.1-rpt1-slice-07-ms13-candidate\.md/u);
 });
 
+test("RPT1-F05 fixes the certified financial position contract before Runtime implementation", () => {
+  const contract = read(
+    "docs/architecture/pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md",
+  );
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const migration = read(
+    `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
+  );
+  const financialStateSource = read(
+    "src/backend/Pmcs.Modules.Finance/Contracts/IFinancialStateSource.cs",
+  );
+  const financeControlSource = read(
+    "src/backend/Pmcs.Modules.Finance/Services/FinanceControlReadService.cs",
+  );
+  const budget = read("src/backend/Pmcs.Modules.Finance/Domain/BudgetBaseline.cs");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(contract, /PMCS-RPT1-F05-SEMANTIC-001/u);
+  assert.match(contract, /نسخه: `1\.0\.0`/u);
+  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS13-C1`/u);
+  assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
+  assert.match(contract, /Client نمی‌تواند Budget مطلوب، ارز، bucket یا cutoff محلی را انتخاب کند/u);
+  assert.match(contract, /`postedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`transactionDate <= cutoffLocalDate`/u);
+  assert.match(contract, /`externalNetCash = totalReceipts - directPayments - pettyCashFunding`/u);
+  assert.match(contract, /`recognizedSpend = directPayments \+ pettyCashExpenses`/u);
+  assert.match(contract, /Funding تنخواه هزینه نیست/u);
+  assert.match(contract, /هیچ رکورد رسمی واجد شرایط وجود نداشته باشد[\s\S]*همهٔ metricهای Cash برابر `null`/u);
+  assert.match(contract, /`outstandingAmount = obligationAmount - Σ eligibleSettlementAmount`/u);
+  assert.match(contract, /`NotDue`[\s\S]*`Overdue1To30`[\s\S]*`Overdue31To60`[\s\S]*`Overdue61Plus`/u);
+  assert.match(contract, /Payable و Receivable همیشه جدا[\s\S]*net نمی‌شوند/u);
+  assert.match(contract, /سررسید دقیقاً در روز cutoff دیرکرد نیست/u);
+  assert.match(contract, /`approvedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`sourceCutoffUtc < supersededAt`/u);
+  assert.match(contract, /حداکثر یک Baseline مؤثر[\s\S]*overlap[\s\S]*processing failure/u);
+  assert.match(contract, /`budgetRemainingAmount = approvedBudgetAmount - recognizedSpend`/u);
+  assert.match(contract, /درصد بالاتر از ۱۰۰ و مانده منفی cap/u);
+  assert.match(contract, /`NotConfigured`[\s\S]*`NoData`[\s\S]*`InsufficientData`[\s\S]*`Available`/u);
+  assert.match(contract, /`FinancialSourceIncomplete`[\s\S]*`ObligationSettlementLineageIncomplete`/u);
+  assert.match(contract, /`financial-state\.read`[\s\S]*`finance\.records\.read`[\s\S]*`finance\.obligations\.read`[\s\S]*`budget\.baselines\.read`/u);
+  assert.match(contract, /حداقل `Confidential`/u);
+  assert.match(contract, /`FinanceDbContext`[\s\S]*`GET \/finance\/state`[\s\S]*`IFinancialStateSource`[\s\S]*`IFinanceControlReadService`/u);
+  assert.match(contract, /`IFinancialStateSource\.GetCurrentAsync` فقط آخرین Snapshot/u);
+  assert.match(contract, /`BudgetBaseline\.ReviewedAt` هنگام Supersede بازنویسی می‌شود/u);
+  assert.match(contract, /`FinanceControlCalculator` Aging bucketها را میان Payable\/Receivable جمع می‌کند/u);
+  assert.match(contract, /`ManagementFeePolicy`[\s\S]*خارج از Snapshot/u);
+  assert.equal((contract.match(/\| `F05-[A-Z]{1,2}\d{2}` \|/gu) ?? []).length, 25);
+  assert.match(contract, /هیچ API، Migration، Catalog seed،[\s\S]*Renderer، feature flag/u);
+
+  assert.match(canonical, /F05 تا F10 `Required \/ Not Implemented`/u);
+  assert.match(financialStateSource, /GetCurrentAsync/u);
+  assert.doesNotMatch(financialStateSource, /sourceCutoffUtc|SourceManifest|Classification/u);
+  assert.match(financeControlSource, /clock\.UtcNow/u);
+  assert.match(financeControlSource, /FinanceDbContext/u);
+  assert.match(budget, /void Supersede[\s\S]*ReviewedAt = reviewedAt/u);
+
+  for (const source of [module, worker, endpoints, migration]) {
+    assert.doesNotMatch(
+      source,
+      /ProjectFinancialPositionReport|project-financial-position-certified|RPT1-F05/u,
+    );
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+});
+
 test("RPT1-F04 semantic contract records the S07-MS10 safe checkpoint without claiming Runtime", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms10-candidate.md");
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
