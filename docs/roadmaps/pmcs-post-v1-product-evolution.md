@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.40.0`
+- نسخه سند: `1.41.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -463,16 +463,18 @@ Qualification `7/7` را پاس کرد. Safe Resume اکنون `S07-MS09` و UI/
 گام بعد فقط F04 است.
 
 **F04 Progress / Planned-Actual-Variance / S-Curve Semantic Contract — Slice 07 Micro-Step 10
-Candidate:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1`، قرارداد
+Safe Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1`، قرارداد
 `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` پیشرفت فیزیکی Certified را به Planning configuration، یک
 Baseline رسمیِ مؤثر و evidence تأییدشده تا cutoff محدود می‌کند. پارامتر Client فقط `{}` است؛ انتخاب
 Baseline و grid Curve server-owned، Variance دقیقاً `Actual - Planned` و Curve حداکثر ۳۶۶ نقطه است.
 MeasurementWeights بدون Schedule معتبر می‌ماند و Forecast/EVM/Composite Health یا join F05 تا F10
 ممنوع است. سه Permission خواندنی Planning و Classification کامل لازم‌اند. قرارداد همچنین صریح می‌کند
 که lifecycle/target/profile جاری برای بازسازی تاریخی کافی نیست و Runtime بعدی باید projection
-cutoff-aware بسازد. این Candidate فقط DoR و Golden matrix بیست‌ودوسناریویی را می‌بندد؛ Runtime،
-Migration، Renderer، Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده و Full CI/
-Checkpoint این Micro-Step باز است.
+cutoff-aware بسازد. Candidate `f8829027c2ce073c207cd0e04a49c306b546c6a1` با tree
+`2b784f135894092ef55bf7c7df201b1f03e0c77f` در Run 158 (`35522512734`) هر هشت Job، `387/387`
+C#، `68/68` contract، `139/139` Web، پنج browser scenario و Restore ۴۵ Migration را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix بیست‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -756,3 +758,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.38.0` | ثبت Connected Candidate `S07-MS09` برای Migration/Catalog، strict API، permissionهای definition-aware، Worker dispatch و QA متصل F03؛ Full CI و Safe Checkpoint باز است |
 | `1.39.0` | ثبت Safe Checkpoint `S07-MS09` و Evidence سبز Run 156 برای اتصال End-to-End خانواده F03؛ F04 تا F10/UI/Production باز است |
 | `1.40.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F04 برای Baseline رسمی، Actual/Planned/Variance و S-Curve cutoff-aware؛ Runtime هنوز پیاده نشده است |
+| `1.41.0` | ثبت Safe Checkpoint `S07-MS10` و Evidence سبز Run 158 برای قرارداد معنایی F04؛ Runtime/Renderer/wiring باز است |

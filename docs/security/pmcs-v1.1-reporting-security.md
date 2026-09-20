@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.12.0`
-- وضعیت: F01/F02/F03 connected؛ F04 semantic security contract candidate؛ Runtime/Production disabled
+- نسخه: `1.12.1`
+- وضعیت: F01/F02/F03 connected؛ F04 semantic security contract passed in Run 158؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -140,7 +140,8 @@ Classification F04 بیشترین مقدار میان Definition، Project/confi
 واردشده و حداقل `Internal` است. Source بالاتر باید propagate شود یا کل Run deny شود. Narrative،
 Evidence Reference، Review Comment، نام Actor و Factهای غیرپیشرفت وارد Snapshot نمی‌شوند و Source ID
 یا عنوان حساس در filename/event/diagnostic ثبت نمی‌شود. این سیاست در `S07-MS10` فقط قرارداد است و
-هنوز Runtime، Catalog، Worker یا Renderer F04 را فعال نمی‌کند.
+Candidate `f8829027c2ce073c207cd0e04a49c306b546c6a1` آن را در Run 158 با هر هشت Job checkpoint کرد؛
+این گیت هنوز Runtime، Catalog، Worker یا Renderer F04 را فعال نمی‌کند.
 
 ## ۴. Threat model
 

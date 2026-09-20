@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.24.0`
-- وضعیت: F04 Semantic Contract Candidate؛ Runtime not implemented؛ Full CI و Checkpoint باز
+- نسخه: `1.25.0`
+- وضعیت: F04 Semantic Contract passed in Run 158؛ Runtime not implemented؛ F05-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -670,7 +670,14 @@ Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F0
 - Golden matrix بیست‌ودوسناریویی `F04-C01..CL01` برای cutoff/correction، lifecycle، status،
   calculation، curve، security، classification و determinism.
 
-Contract test باید وجود سند، هر ۲۲ fixture، شکاف صریح Runtime جاری، منع Runtime و هم‌راستایی معماری،
-API، Security، Roadmap و Canonical Reference را کنترل کند. در این Micro-Step هیچ C# Runtime،
-Migration، endpoint، Catalog/Template seed، Renderer، TestHarness یا UI اضافه نمی‌شود. Full CI و ثبت
-Checkpoint `S07-MS10` هنوز Gate باز Candidate است.
+Contract test وجود سند، هر ۲۲ fixture، شکاف صریح Runtime جاری، منع Runtime و هم‌راستایی معماری،
+API، Security، Roadmap و Canonical Reference را کنترل می‌کند. Candidate
+`f8829027c2ce073c207cd0e04a49c306b546c6a1` با tree
+`2b784f135894092ef55bf7c7df201b1f03e0c77f` در Run 158 (`35522512734`) هر هشت Job را پاس کرد:
+`387/387` تست C#، `68/68` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator
+`367` فایل و audit ثابت `274/204/5`. Restore Drill همان ۴۵ Migration و Qualification report هر
+`7/7` Suite و `12/12` Command را با صفر failure حفظ کرد.
+
+این Micro-Step فقط contract/readiness را qualify می‌کند. هیچ C# Runtime، Migration، endpoint،
+Catalog/Template seed، Renderer، TestHarness یا UI اضافه نشده و F04
+`Contract Ready / Runtime Not Implemented` است.

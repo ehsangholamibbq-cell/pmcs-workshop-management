@@ -1,13 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.23.0`
-- وضعیت: `S07-MS10 F04 semantic contract candidate | Runtime not implemented | F05-F10/UI/Production open`
+- نسخه: `1.23.1`
+- وضعیت: `S07-MS10 F04 semantic contract safe checkpoint in Run 158 | Runtime not implemented | F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `c59a2444f5d5dd70859441f27d05c23dea6c268e`
 - Parent checkpoint tree: `8a7926ac11abb529a3887d1e8a2091f7aeedecbd`
-- Candidate source: working tree؛ commit و Full CI در انتظار
-- Parent checkpoint evidence: Run 157 (`35516916383`) — `success`
+- Candidate source: `f8829027c2ce073c207cd0e04a49c306b546c6a1`
+- Candidate source tree: `2b784f135894092ef55bf7c7df201b1f03e0c77f`
+- PR validation merge: `80830a48ffd5b84ecdc97990b052f6d7037eda42`؛ همان tree
+- Contract evidence: Run 158 (`35522512734`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -545,6 +547,10 @@ Slice 07 Micro-Step 10 فقط DoR و قرارداد معنایی F04 را تعر
 `Actual - Planned` است. policy نمونه‌برداری Curve حداکثر ۳۶۶ نقطه، permissionهای سه‌گانه Planning،
 Classification propagation و Golden matrix بیست‌ودوسناریویی قطعی شده‌اند. endpoint زنده
 `GET /planning/progress`، DbContextها و `IProgressFactSource` منبع Certified نیستند و شکاف lifecycle
-فعلی صریحاً Runtime prerequisite باقی مانده است. این وضعیت Contract Candidate است و تا Full CI Safe
-Checkpoint نیست. هیچ Runtime، Migration، endpoint، Catalog/Template seed، Renderer، UI یا default
-Production تغییر نکرده است؛ F04 تا F10 و RPT1 باز هستند.
+فعلی صریحاً Runtime prerequisite باقی مانده است. Candidate
+`f8829027c2ce073c207cd0e04a49c306b546c6a1` با tree
+`2b784f135894092ef55bf7c7df201b1f03e0c77f` در Run 158 (`35522512734`) هر هشت Job، `387/387`
+تست C#، `68/68` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore ۴۵ Migration
+را پاس کرد. این Checkpoint فقط DoR/contract را می‌بندد؛ هیچ Runtime، Migration، endpoint،
+Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است و F04 تا F10 و RPT1 باز
+هستند.
