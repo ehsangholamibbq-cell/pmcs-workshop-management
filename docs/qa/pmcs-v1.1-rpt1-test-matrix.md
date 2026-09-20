@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.23.0`
-- وضعیت: F03 Connected Safe Checkpoint در Run 156؛ F04-F10/UI/Production باز
+- نسخه: `1.24.0`
+- وضعیت: F04 Semantic Contract Candidate؛ Runtime not implemented؛ Full CI و Checkpoint باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -644,3 +644,33 @@ Qualification artifact `10606892723` با digest
 
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1` اتصال End-to-End F03 را می‌بندد. F04 تا F10، UI و
 Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F02/F03 بدون Regression باقی مانده‌اند.
+
+## ۳۲. قرارداد Qualification خانواده F04 — Slice 07 Micro-Step 10
+
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` پیش از هر Runtime این Gateها را قطعی می‌کند:
+
+- پارامتر Client دقیقاً `{}` و منع `baselineId`، تاریخ/interval Curve، Planning Mode، forecast flag
+  یا Source دلخواه؛
+- انتخاب Planning configuration و Baseline رسمی با lifecycle مستقل
+  `approvedAt <= cutoff < supersededAt` و منع tie-break روی Baseline هم‌پوشان؛
+- Source فقط از Application Contract باریک Planning؛ بدون DbContext/SQL، endpoint زنده
+  `/planning/progress` یا `IProgressFactSource` بدون cutoff؛
+- انتخاب correction-safe نسخه رسمی Daily Report و Milestone تا cutoff و حذف Draft/Submitted/
+  Returned/Provisional؛
+- target/unit snapshot در Approval Baseline و منع استفاده از target/profile/status جاری برای تاریخچه؛
+- Actual وزن‌دار با cap صددرصد فقط در aggregate، Planned خطی/Milestone، و Variance دقیقاً
+  `Actual - Planned`؛
+- `MeasurementWeights` با Actual معتبر ولی Schedule/Curve برابر `NotConfigured`؛
+- S-Curve با horizon قطعی، grid روزانه یا یکنواخت و حداکثر ۳۶۶ نقطه؛ Actual آینده null و بدون
+  Forecast/EVM؛
+- جدایی `NotConfigured/NoData/InsufficientData/Available`، reason allowlist و failureهای lineage؛
+- هر سه Permission `planning.progress.read`، `planning.baselines.read` و
+  `planning.milestones.read`، propagation Classification و منع redaction خاموش؛
+- ordering/hash canonical، entry budget و عدم truncate؛
+- Golden matrix بیست‌ودوسناریویی `F04-C01..CL01` برای cutoff/correction، lifecycle، status،
+  calculation، curve، security، classification و determinism.
+
+Contract test باید وجود سند، هر ۲۲ fixture، شکاف صریح Runtime جاری، منع Runtime و هم‌راستایی معماری،
+API، Security، Roadmap و Canonical Reference را کنترل کند. در این Micro-Step هیچ C# Runtime،
+Migration، endpoint، Catalog/Template seed، Renderer، TestHarness یا UI اضافه نمی‌شود. Full CI و ثبت
+Checkpoint `S07-MS10` هنوز Gate باز Candidate است.

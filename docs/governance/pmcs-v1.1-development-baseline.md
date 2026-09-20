@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04–F10/UI باز |
+| Product runtime implementation | F01، F02 و F03 متصل و واجد Safe Checkpoint؛ F04 Contract Candidate بدون Runtime؛ F05–F10/UI باز |
 | Database migration | ۴۵ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -227,6 +227,14 @@ Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
 تست C#، `66/66` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F03 برابر `14/14`،
 Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
 `PMCS-V1.1-RPT1-S07-MS09-C1` است؛ گام بعد فقط F04 و Safe Resume اکنون MS09 است.
+
+Slice 07 Micro-Step 10 فقط قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` را روی Checkpoint
+`PMCS-V1.1-RPT1-S07-MS09-C1` تعریف می‌کند. F04 فقط یک Baseline رسمی مؤثر، Actual تأییدشده، Planned
+قطعی، Variance برابر `Actual - Planned` و S-Curve حداکثر ۳۶۶ نقطه را تا cutoff گزارش خواهد کرد؛
+Forecast/EVM، Composite Health و join پنهان F05 تا F10 ممنوع‌اند. قرارداد شکاف lifecycle مستقل
+Approval/Supersede، target snapshot و configuration تاریخی Runtime فعلی را نیز صریح ثبت می‌کند. این
+Candidate هیچ Runtime، Migration، API، Catalog seed، Renderer، UI یا default Production را تغییر
+نمی‌دهد و تا Full CI و Checkpoint مستقل، F04 همچنان `Required / Not Implemented` است.
 
 ## ۳. قرارداد شاخه و ادغام
 

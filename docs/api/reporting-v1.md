@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02/F03 connected safe checkpoints؛ Safe Resume S07-MS09؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02/F03 connected؛ F04 semantic contract candidate بدون Runtime؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -88,6 +88,19 @@ Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
 `ae06285bf1a68fe2592dacc76c7d31cb291ab924` در Run 156 (`35515989200`) هر هشت Job، هارنس F03
 برابر `14/14` و Restore Drill کامل ۴۵ Migration را پاس کرد. Safe Resume اکنون `S07-MS09` است و
 همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
+
+### ۱.۷ قرارداد آینده F04 بدون تغییر API
+
+Micro-Step `S07-MS10` route تازه‌ای اضافه نمی‌کند. قرارداد
+`PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
+و `sourceCutoffUtc` از `asOfUtc` پین‌شدهٔ Run می‌آیند. Client اجازه ارسال `baselineId`، تاریخ، interval
+Curve، Planning Mode، include/forecast flag یا انتخاب Source را ندارد.
+
+Runtime آینده فقط از Application Contract خواندنی و cutoff-aware Planning استفاده می‌کند؛ endpoint
+زنده `GET /planning/progress`، `IProgressFactSource` و DbContextهای Planning/FieldOperations Source
+مستقیم Reporting نیستند. Baseline رسمی، Actual تأییدشده، Planned، `Actual - Planned` و S-Curve
+حداکثر ۳۶۶ نقطه‌ای بدون Forecast/EVM ساخته می‌شوند. Definition، Template، schema ID، Catalog/API
+dispatch، Worker و Renderer F04 در این Micro-Step هنوز وجود ندارند.
 
 ## ۲. Catalog
 

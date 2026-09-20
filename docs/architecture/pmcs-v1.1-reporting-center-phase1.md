@@ -1,15 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.22.0`
-- وضعیت: `S07-MS09 connected safe checkpoint in Run 156 | F04-F10/UI/Production open`
+- نسخه: `1.23.0`
+- وضعیت: `S07-MS10 F04 semantic contract candidate | Runtime not implemented | F05-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent commit/checkpoint: `de76a91ec9047205fceba1321bae7187bf787fec`
-- Parent checkpoint tree: `161482109ded126a7bf04dbaf8880bf698a2dd32`
-- Qualification candidate: `40afeb37d7bf90e97a988cae141901e28d336516`
-- Source tree: `ae06285bf1a68fe2592dacc76c7d31cb291ab924`
-- PR validation merge: `4944731391c2b649cd401fc9095619cb19d41f72`؛ همان tree
-- Connected evidence: Run 156 (`35515989200`) — `success`
+- Parent checkpoint commit: `c59a2444f5d5dd70859441f27d05c23dea6c268e`
+- Parent checkpoint tree: `8a7926ac11abb529a3887d1e8a2091f7aeedecbd`
+- Candidate source: working tree؛ commit و Full CI در انتظار
+- Parent checkpoint evidence: Run 157 (`35516916383`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -50,6 +48,13 @@ builder را دارد و Renderer مستقل نیز Template/Renderer/Layout ide
 PDF/XLSX قطعی را checkpoint کرده است. Checkpoint جاری Catalog/Template، strict API، permissionهای
 definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
 qualification متصل را روی همان قراردادها بسته است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
+
+قرارداد `PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` در
+`pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md` گزارش پیشرفت را فقط از Planning
+configuration، Baseline و evidence رسمیِ مؤثر در cutoff می‌سازد. پارامتر Client خالی، انتخاب
+Baseline server-owned و correction-safe، Actual/Planned/Variance صریح و S-Curve حداکثر ۳۶۶ نقطه
+است. MeasurementWeights بدون Schedule معتبر باقی می‌ماند و هیچ Forecast، EVM، Composite Health یا
+join پنهان F05 تا F10 مجاز نیست. Runtime F04 هنوز پیاده نشده است.
 
 ## ۲. Non-Scope
 
@@ -533,3 +538,13 @@ permission Source هر Definition را از allowlist ثابت resolve می‌ک
 Qualification هر `7/7` Suite و `12/12` Command را با صفر failure تأیید کرد. Checkpoint
 `PMCS-V1.1-RPT1-S07-MS09-C1` اتصال F03 را می‌بندد؛ feature flagها، PDF license، UI و Production
 defaults همچنان خاموش/Unconfigured هستند و Micro-Slice بعدی فقط F04 است.
+
+Slice 07 Micro-Step 10 فقط DoR و قرارداد معنایی F04 را تعریف می‌کند. configuration و Baseline مؤثر
+با lifecycle مستقل `approvedAt/supersededAt` تا cutoff انتخاب می‌شوند؛ target قلم در زمان Approval
+باید pin شود، Actual فقط از نسخه رسمی Daily Report/Milestone می‌آید و Variance دقیقاً
+`Actual - Planned` است. policy نمونه‌برداری Curve حداکثر ۳۶۶ نقطه، permissionهای سه‌گانه Planning،
+Classification propagation و Golden matrix بیست‌ودوسناریویی قطعی شده‌اند. endpoint زنده
+`GET /planning/progress`، DbContextها و `IProgressFactSource` منبع Certified نیستند و شکاف lifecycle
+فعلی صریحاً Runtime prerequisite باقی مانده است. این وضعیت Contract Candidate است و تا Full CI Safe
+Checkpoint نیست. هیچ Runtime، Migration، endpoint، Catalog/Template seed، Renderer، UI یا default
+Production تغییر نکرده است؛ F04 تا F10 و RPT1 باز هستند.

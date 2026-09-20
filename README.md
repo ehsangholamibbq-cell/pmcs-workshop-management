@@ -7,11 +7,11 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1` در Run 156، Catalog/Template seed، API سخت‌گیرانه،
-permissionهای definition-aware و Worker/Renderer dispatch گزارش Executive Project State را با
-Qualification متصل پاس کرده است. F01، F02 و F03 checkpoint متصل دارند؛ گام بعد فقط قرارداد
-معنایی/DoR مستقل `RPT1-F04` است. F04 تا F10 باز هستند و همهٔ feature flagها، license و remediation
-در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1` در Runهای 156 و 157، Catalog/API/Worker گزارش
+Executive Project State را با Qualification متصل پاس کرده است. F01، F02 و F03 checkpoint متصل
+دارند؛ Micro-Step 10 فقط قرارداد معنایی/DoR مستقل `RPT1-F04` برای پیشرفت، Planned/Actual/Variance و
+S-Curve را تثبیت می‌کند و هنوز Runtime ندارد. F05 تا F10 باز هستند و همهٔ feature flagها، license و
+remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -144,6 +144,8 @@ Qualification متصل پاس کرده است. F01، F02 و F03 checkpoint مت�
 - F03 متصل و checkpointed برای Executive Project State: فقط Snapshot رسمی و immutable،
   cutoff-aware، بدون Recalculate، Composite Health یا join پنهان F04 تا F10؛ Runtime Core و
   Renderer/Golden PDF/XLSX و Catalog/API/Worker دارای qualification متصل
+- قرارداد معنایی F04 برای پیشرفت فیزیکی و S-Curve: Baseline و evidence رسمیِ cutoff-aware،
+  Actual/Planned/Variance قطعی، بدون Forecast/EVM و بدون Runtime در این Micro-Step
 
 ## تصمیم‌های بنیادین
 

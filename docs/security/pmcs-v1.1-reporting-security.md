@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.11.0`
-- وضعیت: F01/F02/F03 connected safe checkpoints؛ Safe Resume S07-MS09؛ Production disabled
+- نسخه: `1.12.0`
+- وضعیت: F01/F02/F03 connected؛ F04 semantic security contract candidate؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -120,6 +120,27 @@ Worker هنگام ساخت Snapshot و دوباره
 Source `40afeb37d7bf90e97a988cae141901e28d336516` در Run 156 هر هشت Job و `14/14` assertion امنیتی/
 یکپارچگی F03 را پاس کرد. این اتصال Safe Checkpoint است و feature flag، license و Production defaults
 خاموش می‌مانند.
+
+### ۳.۳ سیاست ثابت F04
+
+F04 فقط Source رسمی پیشرفت را با هر سه Permission `planning.progress.read`،
+`planning.baselines.read` و `planning.milestones.read` مصرف می‌کند. نبود هرکدام کل Definition/Run/
+Output را deny می‌کند؛ حذف خاموش entry، milestone یا curve point مجاز نیست. Create/Retry به
+`reporting.run.create` و Download/Verify به `reporting.output.download` نیز نیاز دارند و هر سه نقطه
+request، processing و download دوباره ارزیابی می‌شوند. Permissionهای write/review/configure برای
+این گزارش read-only لازم نیستند و Reporting هیچ Command Planning را فراخوانی نمی‌کند.
+
+Client فقط `{}` می‌فرستد و نمی‌تواند Baseline، cutoff محلی یا grid مطلوب را انتخاب کند. Source با
+Tenant/Project/cutoff محدود و lifecycle Approval/Supersede مستقل ارزیابی می‌شود. status/target جاری،
+endpoint `GET /planning/progress`، SQL یا DbContext مستقیم و `IProgressFactSource` بدون cutoff برای
+F04 مجاز نیستند. lineage مبهم، target pin گمشده، Baseline هم‌پوشان، contract version یا
+Classification ناشناخته failure امن‌اند و به NoData تبدیل نمی‌شوند.
+
+Classification F04 بیشترین مقدار میان Definition، Project/configuration، Baseline و evidenceهای
+واردشده و حداقل `Internal` است. Source بالاتر باید propagate شود یا کل Run deny شود. Narrative،
+Evidence Reference، Review Comment، نام Actor و Factهای غیرپیشرفت وارد Snapshot نمی‌شوند و Source ID
+یا عنوان حساس در filename/event/diagnostic ثبت نمی‌شود. این سیاست در `S07-MS10` فقط قرارداد است و
+هنوز Runtime، Catalog، Worker یا Renderer F04 را فعال نمی‌کند.
 
 ## ۴. Threat model
 
