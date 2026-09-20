@@ -148,7 +148,7 @@ public sealed class ProjectProgressReportRenderingTests
         WriteQualificationArtifacts("project-progress-golden.xlsx", first.Bytes);
         Assert.True(
             string.Equals(
-                new string('0', 64),
+                "8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F04_XLSX_GOLDEN_SHA256={first.Sha256}");
