@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Contract Candidate بدون Runtime؛ F04–F10/UI باز |
-| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 144 پاس شده است |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Contract Ready بدون Runtime؛ F04–F10/UI باز |
+| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 146 پاس شده است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -189,12 +189,15 @@ API، Project profile pin، Worker dispatch و QA متصل PDF/XLSX را اضا�
 Restore کامل ۴۴ Migration را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است؛ UI و
 defaultهای Production تغییر نکرده‌اند و F03 تا F10 همچنان باز هستند.
 
-Slice 07 Micro-Step 06 فقط قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` را روی Checkpoint
-`PMCS-V1.1-RPT1-S07-MS05-C1` تعریف می‌کند. F03 فقط Snapshot رسمی Project State را تا cutoff، با
+Slice 07 Micro-Step 06 قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` را روی Checkpoint
+`PMCS-V1.1-RPT1-S07-MS05-C1` تعریف کرد. F03 فقط Snapshot رسمی Project State را تا cutoff، با
 partial scope، کیفیت داده، currency، lineage و trend canonical گزارش خواهد کرد؛ Recalculate،
-Composite Health، AI summary و join پنهان F04 تا F10 ممنوع‌اند. این Candidate هیچ Runtime،
-Migration، API، Catalog seed، Renderer، UI یا default Production را تغییر نمی‌دهد و تا Full CI و
-Checkpoint مستقل، F03 همچنان `Required / Not Implemented` است.
+Composite Health، AI summary و join پنهان F04 تا F10 ممنوع‌اند. Candidate
+`e3218555a38f7ba460558e51b4db3f8bc17fcd9c` با tree
+`1fe4cc804fdd078a71ff2633201c8c690447900e` در Run 146 (`35500809115`) هر هشت Job، `355/355`
+تست C#، `63/63` تست قراردادی Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration
+را پاس کرد. هیچ Runtime، Migration، API، Catalog seed، Renderer، UI یا default Production تغییر
+نکرد؛ F03 اکنون `Contract Ready / Runtime Not Implemented` و RPT1 فعال است.
 
 ## ۳. قرارداد شاخه و ادغام
 

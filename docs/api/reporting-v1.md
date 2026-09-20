@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02 connected؛ F03 semantic contract candidate بدون Runtime؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02 connected؛ F03 semantic contract passed in Run 146 بدون Runtime؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -65,7 +65,7 @@ Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
 `d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد؛
 هارنس متصل F02 هر `13/13` assertion و Restore Drill هر ۴۴ Migration را تأیید کردند.
 
-### ۱.۶ قرارداد آینده F03 بدون تغییر API
+### ۱.۶ قرارداد checkpointed F03 بدون تغییر API
 
 Micro-Step `S07-MS06` route تازه‌ای اضافه نمی‌کند. قرارداد
 `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
@@ -77,6 +77,10 @@ Runtime آینده فقط از Application Contract خواندنی ProjectIntell
 فراخوانی نمی‌کند. Project State عملیاتی، Coverage/Freshness/Confidence و partial scope بدون join
 Finance/Commercial/Planning/Quality/HSE/Action حمل می‌شوند. Definition، Template، schema ID،
 Catalog/API dispatch، Worker و Renderer F03 در این Micro-Step هنوز وجود ندارند.
+
+Candidate `e3218555a38f7ba460558e51b4db3f8bc17fcd9c` با tree
+`1fe4cc804fdd078a71ff2633201c8c690447900e` در Run 146 (`35500809115`) هر هشت Job را پاس کرد.
+این Evidence فقط قرارداد را checkpoint می‌کند و route یا Runtime تازه‌ای فعال نمی‌کند.
 
 ## ۲. Catalog
 

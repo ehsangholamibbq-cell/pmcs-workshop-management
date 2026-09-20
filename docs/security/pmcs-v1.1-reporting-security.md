@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.8.0`
-- وضعیت: F01/F02 connected؛ F03 semantic security contract candidate؛ Runtime/Production disabled
+- نسخه: `1.8.1`
+- وضعیت: F01/F02 connected؛ F03 semantic security contract passed in Run 146؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -101,8 +101,9 @@ Finance/Commercial و dispositionهای mutable وارد F03 نمی‌شوند. 
 Classification F03 بیشترین مقدار میان Definition، Project/source configuration و Snapshotهای
 واردشده و حداقل `Internal` است. Source contract باید classification را صریح صادر کند؛ نبود آن یا
 Permission طبقه بالاتر کل Run را fail-closed می‌کند. متن Attention، Location و Source IDs در
-filename، event یا diagnostic ثبت نمی‌شوند. این سیاست در `S07-MS06` فقط قرارداد است و هنوز Runtime،
-Catalog، Worker یا Renderer F03 را فعال نمی‌کند.
+filename، event یا diagnostic ثبت نمی‌شوند. Candidate
+`e3218555a38f7ba460558e51b4db3f8bc17fcd9c` این سیاست را در Run 146 با هر هشت Job checkpoint کرد؛
+این گیت هنوز Runtime، Catalog، Worker یا Renderer F03 را فعال نمی‌کند.
 
 ## ۴. Threat model
 

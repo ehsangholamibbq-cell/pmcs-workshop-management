@@ -1,14 +1,16 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.17.0`
-- وضعیت: `S07-MS06 F03 semantic contract candidate | Runtime not implemented | F04-F10/UI/Production open`
+- نسخه: `1.17.1`
+- وضعیت: `S07-MS06 complete in Run 146 | F03 Contract Ready / Runtime not implemented | F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
 - Parent checkpoint commit: `a7b7e885c1e59de894100ade96444184692ab5d3`
 - Parent checkpoint tree: `5a476abb23ad650cb7334f537583ee4fa7b3c628`
-- Candidate source: working tree؛ commit و Full CI در انتظار
-- Parent checkpoint evidence: Run 145 (`35499768898`) — `success`
+- Qualification candidate: `e3218555a38f7ba460558e51b4db3f8bc17fcd9c`
+- Source tree: `1fe4cc804fdd078a71ff2633201c8c690447900e`
+- PR validation merge: `a6987cd47bb1be917d34a94fb064aa72ec6b89c2`؛ همان tree
+- Connected evidence: Run 146 (`35500809115`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -474,11 +476,13 @@ Run 143 تنها به‌دلیل تقدم عملگر JSON در query شواهد 
 را پرانتزبندی کرد. Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` اتصال F02 را می‌بندد؛ UI و سه default
 production همچنان بدون تغییر و خاموش‌اند و F03 تا F10 باز هستند.
 
-Slice 07 Micro-Step 06 فقط DoR و قرارداد معنایی F03 را تعریف می‌کند. انتخاب Snapshot براساس
+Slice 07 Micro-Step 06 فقط DoR و قرارداد معنایی F03 را تعریف و در Run 146 qualify کرده است. انتخاب Snapshot براساس
 `asOfDate → calculatedAt → snapshotId` تا cutoff، trend چهارده‌تاریخی بدون duplicate، currency
 برپایه Project revision و آخرین Source رسمی، partial-scope warning، permission/classification و
 Golden matrix هفده‌سناریویی قطعی شده‌اند. Command Center response، Finance/Commercial، disposition
 جاری و ProjectIntelligence persistence مستقیماً مصرف نمی‌شوند؛ Runtime آینده فقط از Application
-Contract باریک استفاده خواهد کرد. این وضعیت Contract Candidate است و تا Full CI Safe Checkpoint
-نیست. هیچ Runtime، Migration، endpoint، Catalog/Template seed، Renderer، UI یا default Production
-تغییر نکرده است؛ F03 تا F10 و RPT1 باز هستند.
+Contract باریک استفاده خواهد کرد. Candidate `e3218555a38f7ba460558e51b4db3f8bc17fcd9c`
+با tree `1fe4cc804fdd078a71ff2633201c8c690447900e` هر هشت Job Run 146 (`35500809115`) را پاس کرد.
+F03 اکنون `Contract Ready / Runtime Not Implemented` است. هیچ Runtime، Migration، endpoint،
+Catalog/Template seed، Renderer، UI یا default Production تغییر نکرده است؛ F04 تا F10 و RPT1 باز
+هستند.

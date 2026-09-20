@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.32.0`
+- نسخه سند: `1.33.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -415,15 +415,18 @@ idempotency و database evidence را می‌سنجد. Source
 پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است. UI و Production defaults عمداً
 تغییر نکرده‌اند؛ گام بعد فقط DoR/semantic contract مستقل F03 است و F03 تا F10 باز می‌مانند.
 
-**F03 Executive Project State Semantic Contract — Slice 07 Micro-Step 06 Candidate:** روی Safe
+**F03 Executive Project State Semantic Contract — Slice 07 Micro-Step 06 Safe Checkpoint:** روی Safe
 Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1`، قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` گزارش
 مدیریتی را به Snapshot رسمی و immutable Project State محدود می‌کند. پارامتر Client فقط `{}` است؛
 انتخاب Source تا cutoff و server-owned، trend چهارده‌تاریخی canonical و currency براساس Project
 revision و آخرین Approved Source است. Operational Status با Coverage/Freshness/Confidence و
 `dataStatus` یکی نمی‌شود، `isPartial` صریح می‌ماند و `Stable` سلامت کل پروژه نیست. Recalculate،
-Composite Health، AI summary و join Finance/Commercial/F04 تا F10 ممنوع‌اند. این Candidate فقط DoR
-و Golden matrix هفده‌سناریویی را می‌بندد؛ Runtime identity/source/builder، Renderer، Catalog/API/
-Worker، UI و Production enablement هنوز پیاده نشده و Full CI/Checkpoint این Micro-Step باز است.
+Composite Health، AI summary و join Finance/Commercial/F04 تا F10 ممنوع‌اند. Candidate
+`e3218555a38f7ba460558e51b4db3f8bc17fcd9c` با tree
+`1fe4cc804fdd078a71ff2633201c8c690447900e` در Run 146 (`35500809115`) هر هشت Job، `355/355`
+C#، `63/63` contract، `139/139` Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix هفده‌سناریویی را می‌بندد؛ Runtime identity/source/builder،
+Renderer، Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -699,3 +702,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.30.0` | ثبت Source Candidate محدود `S07-MS05` برای Migration/Catalog/API/Worker و QA متصل F02؛ Full CI و Safe Checkpoint باز است |
 | `1.31.0` | ثبت Safe Checkpoint `S07-MS05` و Evidence سبز Run 144 برای اتصال Catalog/API/Worker خانواده F02؛ F03 تا F10/UI/Production باز است |
 | `1.32.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F03 برای Executive Project State رسمی، cutoff-aware و بدون Composite Health؛ Runtime هنوز پیاده نشده است |
+| `1.33.0` | ثبت Safe Checkpoint `S07-MS06` و Evidence سبز Run 146 برای قرارداد معنایی F03؛ Runtime/Renderer/wiring باز است |

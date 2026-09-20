@@ -7,11 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1` در Runهای 144 و 145، Catalog/API/Worker و PDF/XLSX
-متصل گزارش هفتگی/ماهانه F02 را قطعی پاس کرده است. F01 و F02 اکنون checkpoint متصل دارند؛ F03 در
-Micro-Step 06 فقط قرارداد معنایی Executive Project State را تثبیت می‌کند و هنوز Runtime ندارد.
-F04 تا F10 نیز باز هستند. RPT1 فعال و همهٔ feature flagها، license و remediation در defaults خاموش
-یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS06-C1` در Run 146، DoR و قرارداد معنایی Executive Project
+State را قطعی پاس کرده است. F01 و F02 checkpoint متصل دارند؛ F03 اکنون
+`Contract Ready / Runtime Not Implemented` است و F04 تا F10 باز هستند. RPT1 فعال و همهٔ feature
+flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -141,8 +140,8 @@ F04 تا F10 نیز باز هستند. RPT1 فعال و همهٔ feature flagه�
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
 - گزارش هفتگی/ماهانه F02 متصل: Source رسمی correction-safe، مرز شمسی و شنبه‌محور، Snapshot/hash
   قطعی، PDF/XLSX deterministic و Catalog/API/Worker دارای qualification متصل
-- قرارداد معنایی F03 برای Executive Project State: فقط Snapshot رسمی و immutable، cutoff-aware،
-  بدون Recalculate، Composite Health، join پنهان F04 تا F10 یا Runtime در این Micro-Step
+- قرارداد checkpointed F03 برای Executive Project State: فقط Snapshot رسمی و immutable،
+  cutoff-aware، بدون Recalculate، Composite Health، join پنهان F04 تا F10 یا Runtime
 
 ## تصمیم‌های بنیادین
 
