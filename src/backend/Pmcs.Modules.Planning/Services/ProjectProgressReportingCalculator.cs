@@ -439,7 +439,7 @@ internal static class ProjectProgressReportingCalculator
         }).ToArray();
         var missingCount = includeActual
             ? calculations.Count(item => !item.ActualPercent.HasValue)
-            : entries.Count;
+            : entries.Length;
         var overallActual = includeActual && missingCount == 0
             ? decimal.Round(
                 calculations.Sum(item =>

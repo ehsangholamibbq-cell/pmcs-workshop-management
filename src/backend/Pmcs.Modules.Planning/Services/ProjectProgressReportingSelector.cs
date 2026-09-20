@@ -330,12 +330,12 @@ internal static class ProjectProgressReportingSelector
             while (cursor.ParentEntryId.HasValue)
             {
                 if (!seen.Add(cursor.EntryId) ||
-                    !byId.TryGetValue(cursor.ParentEntryId.Value, out var parent))
+                    !byId.TryGetValue(cursor.ParentEntryId.Value, out var ancestor))
                 {
                     throw Invalid("baseline.hierarchy.cycle", "A baseline hierarchy contains a cycle.");
                 }
 
-                cursor = parent;
+                cursor = ancestor;
             }
         }
     }
