@@ -134,7 +134,7 @@ public sealed class ExecutiveProjectStateReportRenderingTests
         WriteQualificationArtifacts("executive-project-state-golden.xlsx", first.Bytes);
         Assert.True(
             string.Equals(
-                "F03_XLSX_GOLDEN_SHA256_PENDING",
+                "e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F03_XLSX_GOLDEN_SHA256={first.Sha256}");
@@ -193,13 +193,17 @@ public sealed class ExecutiveProjectStateReportRenderingTests
 
         Assert.True(
             string.Equals(
-                "F03_PDF_GOLDEN_SHA256_PENDING",
+                "d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F03_PDF_GOLDEN_SHA256={first.Sha256}; " +
             $"F03_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
         Assert.True(
-            new[] { "F03_PDF_VISUAL_SHA256_PENDING" }.SequenceEqual(visualDigests),
+            new[]
+            {
+                "6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba",
+                "252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205"
+            }.SequenceEqual(visualDigests),
             $"F03_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
 
