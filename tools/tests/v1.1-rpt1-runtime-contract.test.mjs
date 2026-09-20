@@ -1445,6 +1445,90 @@ test("RPT1-F05 fixes the certified financial position contract before Runtime im
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
+test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from API Worker and renderer", () => {
+  const financeContract = read(
+    "src/backend/Pmcs.Modules.Finance/Contracts/IProjectFinancialPositionReportingSource.cs",
+  );
+  const selector = read(
+    "src/backend/Pmcs.Modules.Finance/Services/ProjectFinancialPositionReportingSelector.cs",
+  );
+  const calculator = read(
+    "src/backend/Pmcs.Modules.Finance/Services/ProjectFinancialPositionReportingCalculator.cs",
+  );
+  const compatibility = read(
+    "src/backend/Pmcs.Modules.Finance/Services/ProjectFinancialPositionReportingSource.cs",
+  );
+  const financeModule = read("src/backend/Pmcs.Modules.Finance/FinanceModule.cs");
+  const identity = read(
+    `${moduleRoot}/Domain/ProjectFinancialPositionReportRuntimeContract.cs`,
+  );
+  const semantic = read(
+    `${moduleRoot}/Domain/ProjectFinancialPositionReportSemanticModels.cs`,
+  );
+  const builder = read(
+    `${moduleRoot}/Services/ProjectFinancialPositionReportSnapshotBuilder.cs`,
+  );
+  const reportingProject = read(`${moduleRoot}/Pmcs.Modules.Reporting.csproj`);
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const tests = read("tests/Pmcs.Domain.Tests/ProjectFinancialPositionReportingTests.cs");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(financeContract, /pmcs\.finance\.project-financial-position-reporting\/v1/u);
+  assert.match(financeContract, /pmcs\.finance\.project-financial-position-manifest\/v1/u);
+  assert.match(financeContract, /MaximumFinancialRecords = 100_000/u);
+  assert.match(financeContract, /MaximumObligations = 20_000/u);
+  assert.match(financeContract, /MaximumSettlements = 100_000/u);
+  assert.match(financeContract, /LedgerCompleteness/u);
+  assert.match(financeContract, /SettlementLineageCompleteness/u);
+  assert.match(selector, /item\.PostedAt!\.Value <= cutoff/u);
+  assert.match(selector, /item\.TransactionDate <= cutoffLocalDate/u);
+  assert.match(selector, /cutoff < item\.SupersededAt\.Value/u);
+  assert.match(selector, /budget\.overlap/u);
+  assert.match(selector, /record\.currency_mismatch/u);
+  assert.match(selector, /settlement\.overallocated/u);
+  assert.match(selector, /ProjectFinancialPositionCanonicalJson\.Sha256/u);
+  assert.match(calculator, /receipts - payments - funding/u);
+  assert.match(calculator, /payments \+ expenses/u);
+  assert.match(calculator, /cutoffLocalDate\.DayNumber - dueDate\.DayNumber/u);
+  assert.match(calculator, /MidpointRounding\.AwayFromZero/u);
+  assert.match(calculator, /FinancialObligationType\.Payable/u);
+  assert.match(calculator, /FinancialObligationType\.Receivable/u);
+  assert.doesNotMatch(calculator, /Forecast|GeneralLedger|ManagementFee|CompositeHealth/u);
+  assert.match(compatibility, /configuration_history\.unavailable/u);
+  assert.match(compatibility, /budget_history\.unavailable/u);
+  assert.match(compatibility, /record_history\.unavailable/u);
+  assert.match(compatibility, /obligation_history\.unavailable/u);
+  assert.match(financeModule, /IProjectFinancialPositionReportingSource, ProjectFinancialPositionReportingSource/u);
+  assert.match(identity, /project-financial-position-certified/u);
+  assert.match(identity, /pmcs\.reporting\.project-financial-position\.parameters\/v1/u);
+  assert.match(identity, /pmcs\.reporting\.project-financial-position\.snapshot\/v1/u);
+  assert.match(identity, /pmcs\.reporting\.project-financial-position\.project-profile\/v1/u);
+  assert.match(identity, /CapturedAtUtc/u);
+  assert.match(semantic, /ProjectFinancialPositionReportSemanticSnapshot/u);
+  assert.match(semantic, /PayableSummary/u);
+  assert.match(semantic, /ReceivableSummary/u);
+  assert.match(builder, /ProjectFinancialPositionReportingContract\.Version/u);
+  assert.match(builder, /CanonicalJson\.Sha256/u);
+  assert.doesNotMatch(
+    builder,
+    /FinanceDbContext|ProjectsDbContext|IFinancialStateSource|IFinanceControlReadService|ExecuteSql/u,
+  );
+  assert.match(reportingProject, /Pmcs\.Modules\.Finance\/Pmcs\.Modules\.Finance\.csproj/u);
+  assert.match(tests, /PostedAndTransactionDatesBothBoundOfficialCashSelection/u);
+  assert.match(tests, /AgingBoundaryDaysMapToExactlyOneCanonicalBucket/u);
+  assert.match(tests, /TwinRunsIgnoreQueryOrderRunIdentityAndBuildTime/u);
+  assert.match(tests, /CompatibilityProjectionRejectsLegacySupersededBudgetHistory/u);
+
+  for (const source of [module, worker, endpoints]) {
+    assert.doesNotMatch(source, /ProjectFinancialPositionReport|project-financial-position-certified/u);
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+});
+
 test("RPT1-F05 semantic contract records the S07-MS14 safe checkpoint without claiming Runtime", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms14-candidate.md");
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");

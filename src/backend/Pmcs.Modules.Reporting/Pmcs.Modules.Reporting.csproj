@@ -3,6 +3,7 @@
     <ProjectReference Include="../Pmcs.BuildingBlocks/Pmcs.BuildingBlocks.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Documents/Pmcs.Modules.Documents.csproj" />
     <ProjectReference Include="../Pmcs.Modules.FieldOperations/Pmcs.Modules.FieldOperations.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Planning/Pmcs.Modules.Planning.csproj" />
     <ProjectReference Include="../Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Projects/Pmcs.Modules.Projects.csproj" />
