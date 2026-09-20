@@ -163,12 +163,14 @@ permission/classification و Golden matrix گزارش هفتگی/ماهانه ث
 Restore ۴۳ Migration را پاس کرد. هیچ Runtime، API، Migration، Renderer یا default Production تغییر
 نکرد؛ F02 اکنون Contract Ready ولی Runtime Not Implemented و RPT1 Active است.
 
-Slice 07 Micro-Step 03 Candidate، Runtime Core محدود F02 را روی همان Checkpoint آغاز می‌کند:
+Slice 07 Micro-Step 03، Runtime Core محدود F02 را روی همان Checkpoint بست:
 Definition/schema identity نسخه‌دار، Project configuration pin، period-read Application Contract در
-FieldOperations، resolver مرز هفتگی/ماه شمسی و semantic Snapshot builder. پوشش محلی `346/346` تست
-C# و `27/27` contract test مرتبط سبز است. این Candidate هیچ API، Migration، Catalog/Template seed،
-Worker dispatch، Renderer، UI یا default Production را تغییر نمی‌دهد؛ Evidence نهایی و Safe
-Checkpoint فقط پس از CI کامل همان commit ثبت می‌شود.
+FieldOperations، resolver مرز هفتگی/ماه شمسی و semantic Snapshot builder. Source commit
+`6fc28cf54a6df820c49a2365eab76e3550ae421a` با tree
+`5188dac79fe5187b319e6aa727da89163fa37c1b` در Run 139 (`35477179493`) هر هشت Job، `346/346`
+تست C#، `58/58` تست Node، `139/139` تست Web، پنج browser scenario و Restore کامل ۴۳ Migration را
+پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. این Slice هیچ API، Migration،
+Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production را تغییر نمی‌دهد.
 
 ## ۳. قرارداد شاخه و ادغام
 

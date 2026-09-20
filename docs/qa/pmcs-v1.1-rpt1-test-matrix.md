@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.11.0`
-- وضعیت: F02 Runtime Core Candidate با Unit/contract محلی سبز؛ CI/Renderer و F03-F10/UI open
+- نسخه: `1.12.0`
+- وضعیت: F02 Runtime Core passed in Run 139؛ Renderer و F03-F10/UI open
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -444,6 +444,9 @@ Candidate باید بدون ادعای API یا Renderer این Gateها را پ
 - اثبات عدم تغییر Migration count، endpoint، Catalog/Template seed، Worker dispatch، Renderer، UI و
   Production flags.
 
-پوشش محلی Candidate: `346/346` تست C# بدون warning؛ ۱۶ case جدید F02 در
-`ProjectPeriodicReportingTests` و `27/27` contract test مرتبط سبز است. CI کامل هشت‌Job و Checkpoint
-فقط پس از انتشار commit منبع ثبت می‌شود؛ تا آن زمان این وضعیت `Candidate` است، نه Qualified.
+Source commit `6fc28cf54a6df820c49a2365eab76e3550ae421a` با tree
+`5188dac79fe5187b319e6aa727da89163fa37c1b` در Run 139 (`35477179493`) هر هشت Job را پاس کرد:
+`346/346` تست C# بدون warning، شامل ۱۶ case جدید F02 در `ProjectPeriodicReportingTests`؛ `58/58`
+تست Node که `27/27` مورد آن در contract مرتبط RPT1 است؛ `139/139` تست Web؛ پنج browser scenario؛
+validator روی ۳۵۰ فایل ماژولی و Restore کامل ۴۳ Migration. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS03-C1` فقط Runtime Core را می‌بندد، نه Qualification انتهابه‌انتهای F02.

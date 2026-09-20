@@ -1,12 +1,13 @@
 # PMCS V1.1 — قرارداد معنایی گزارش هفتگی و ماهانه پروژه
 
 - شناسه: `PMCS-RPT1-F02-SEMANTIC-001`
-- نسخه: `1.1.0`
+- نسخه: `1.1.1`
 - خانواده: `RPT1-F02`
-- وضعیت: `Runtime Core Candidate | API/Worker/Catalog/Renderer Not Implemented`
+- وضعیت: `Runtime Core Safe Checkpoint | API/Worker/Catalog/Renderer Not Implemented`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS02-C1`
 - Runtime change: bounded semantic Core only
 - Migration / API / Renderer / Template change: None
+- Runtime evidence: source `6fc28cf54a6df820c49a2365eab76e3550ae421a`؛ Run 139
 
 ## ۱. هدف و مرز خانواده
 
@@ -192,7 +193,7 @@ Source manifest را با query مستقل بررسی کند. Golden متن/PDF/
 
 ## ۹. نگاشت Runtime Core
 
-Candidate محدود این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
+Runtime Core این قرارداد را بدون بازکردن API یا Renderer به کد نگاشت می‌کند:
 
 - `ProjectControlProfile` اکنون Project revision، Configuration version/change time، cadence،
   workflow، cutoff روزانه، Calendar و Time Zone pin‌شده را یکجا حمل می‌کند؛
@@ -210,7 +211,8 @@ Candidate محدود این قرارداد را بدون بازکردن API یا
   unit ordinal، classification، correction cutoff، hash twin و duplicate invariant را پوشش می‌دهد.
 
 این Core هنوز توسط endpoint/worker فراخوانی نمی‌شود و Definition/Template seed، Migration،
-PDF/XLSX، Golden binary، UI و feature flag جدید ندارد.
+PDF/XLSX، Golden binary، UI و feature flag جدید ندارد. Source آن در Run 139 هر هشت Job CI را پاس
+کرده و Checkpoint `PMCS-V1.1-RPT1-S07-MS03-C1` مرز ادامه را ثبت می‌کند.
 
 ## ۱۰. Definition of Ready و وضعیت پیاده‌سازی
 
@@ -222,19 +224,19 @@ PDF/XLSX، Golden binary، UI و feature flag جدید ندارد.
 | Data status و coverage | بسته |
 | Permission/classification | بسته |
 | Golden matrix | بسته |
-| Runtime Definition/parameter/snapshot IDs | Candidate implemented |
-| Period source contract/resolver/Snapshot builder | Candidate implemented |
-| Unit/contract tests | `346/346` C# محلی و contract test سبز |
+| Runtime Definition/parameter/snapshot IDs | Checkpointed in S07-MS03 |
+| Period source contract/resolver/Snapshot builder | Checkpointed in S07-MS03 |
+| Unit/contract tests | `346/346` C# و `58/58` Node در Run 139 |
 | Catalog/Template seed و Worker/API wiring | Not Implemented |
 | PDF/XLSX/visual/performance | Not Implemented |
 
-Micro-Step بعدی فقط پس از CI سبز این Candidate می‌تواند Renderer contract و Golden قطعی F02 را روی
-همین Snapshot اضافه کند. Catalog/API/Worker wiring، UI و فعال‌سازی Production باید در Sliceهای
-مستقل بعدی باقی بمانند.
+Micro-Step بعدی فقط Renderer contract و Golden قطعی F02 را روی همین Snapshot اضافه می‌کند.
+Catalog/API/Worker wiring، UI و فعال‌سازی Production باید در Sliceهای مستقل بعدی باقی بمانند.
 
 ## ۱۱. Gate statement
 
-این نسخه F02 را به `Runtime Core Candidate` می‌رساند، نه `End-to-End Implemented` یا `Qualified`.
+این نسخه F02 را به `Runtime Core Safe Checkpoint` می‌رساند، نه `End-to-End Implemented` یا
+Qualification کامل خانواده.
 هیچ API، Migration، Catalog/Template seed، Worker dispatch، Renderer، feature flag یا Production
 setting در این Micro-Step تغییر نکرده است. F02 تا پایان Renderer، Golden و integration متصل باز
 می‌ماند؛ F03 تا F10 و RPT1 نیز باز هستند.

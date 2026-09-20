@@ -1,9 +1,9 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.26.0`
+- نسخه سند: `1.27.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
-- تاریخ ثبت: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
+- تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -378,15 +378,18 @@ fail-closed و Golden matrix چهارده‌سناریویی تثبیت شده�
 یا feature flag ایجاد نشد؛ F02 اکنون `Contract Ready / Runtime Not Implemented` است و RPT1 فعال
 می‌ماند.
 
-**F02 Runtime Core Candidate — Slice 07 Micro-Step 03:** قرارداد معنایی
-`PMCS-RPT1-F02-SEMANTIC-001 v1.1.0` به identity داخلی `project-periodic-certified/1.0.0`،
+**F02 Runtime Core Safe Checkpoint — Slice 07 Micro-Step 03:** قرارداد معنایی
+`PMCS-RPT1-F02-SEMANTIC-001 v1.1.1` به identity داخلی `project-periodic-certified/1.0.0`،
 schemaهای parameter/snapshot، Project configuration pin، period-read contract نسخه‌دار در
 FieldOperations، resolver شنبه/ماه شمسی و semantic Snapshot builder نگاشت شد. Core، سه cadence،
 چهار data status، reason allowlist، lineage/hash قطعی، aggregation بدون conversion و classification
-propagation را با ۱۶ case جدید پوشش می‌دهد. `346/346` تست C# و `27/27` contract test مرتبط محلی
-سبز است؛ CI منبع هنوز Gate Candidate است. API، Migration، Catalog/Template seed، Worker dispatch،
-Renderer، UI و Production defaults دست‌نخورده‌اند؛ بنابراین F02 هنوز End-to-End Done نیست و RPT1
-فعال می‌ماند.
+propagation را با ۱۶ case جدید پوشش می‌دهد. Source commit
+`6fc28cf54a6df820c49a2365eab76e3550ae421a` و tree
+`5188dac79fe5187b319e6aa727da89163fa37c1b` در Run 139 هر هشت Job، `346/346` تست C#، `58/58`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. API، Migration، Catalog/Template seed، Worker
+dispatch، Renderer، UI و Production defaults دست‌نخورده‌اند؛ بنابراین F02 هنوز End-to-End Done
+نیست و RPT1 فعال می‌ماند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -656,3 +659,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.24.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F02 برای گزارش هفتگی و ماهانه؛ Runtime/Renderer هنوز پیاده نشده‌اند |
 | `1.25.0` | ثبت Safe Checkpoint `S07-MS02` و Evidence سبز Run 137 برای قرارداد معنایی F02؛ Runtime/Renderer باز است |
 | `1.26.0` | ثبت Candidate محدود Runtime Core F02 برای identity/source/resolver/Snapshot و Unit/contract؛ API/Renderer و Qualification متصل باز است |
+| `1.27.0` | ثبت Safe Checkpoint `S07-MS03` و Evidence سبز Run 139 برای Runtime Core F02؛ Renderer/Golden و wiring متصل باز است |

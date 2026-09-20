@@ -7,11 +7,11 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS02-C1` در Run 137، DoR و قرارداد معنایی گزارش
-هفتگی/ماهانه F02 را پاس کرده است. فقط F01 گزارش روزانه Runtime/Renderer واجد Qualification دارد؛
-F02 اکنون Runtime Core Candidate شامل identity، period source/resolver و semantic Snapshot builder
-دارد، اما هنوز از API/Worker قابل اجرا یا با Renderer قابل دانلود نیست؛ F03 تا F10 باز هستند. RPT1
-فعال و همهٔ feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS03-C1` در Run 139، Runtime Core گزارش هفتگی/ماهانه F02 را
+با identity، period source/resolver و semantic Snapshot builder قطعی پاس کرده است. فقط F01 گزارش
+روزانه Runtime/Renderer واجد Qualification انتهابه‌انتها دارد؛ F02 هنوز از API/Worker قابل اجرا یا
+با Renderer قابل دانلود نیست و F03 تا F10 باز هستند. RPT1 فعال و همهٔ feature flagها، license و
+remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
