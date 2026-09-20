@@ -81,7 +81,7 @@ internal static class ProgressEvidenceReportingSelector
         ProgressEvidenceReportingClassification classification)
     {
         if (rootReportId == Guid.Empty || versions.Select(version => version.ReportDate).Distinct().Count() != 1 ||
-            versions.Select(version => version.VersionNumber).Distinct().Count() != versions.Count)
+            versions.Select(version => version.VersionNumber).Distinct().Count() != versions.Length)
         {
             throw new DomainRuleException(
                 "field.progress_reporting.root.invalid",

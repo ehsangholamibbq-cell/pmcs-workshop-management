@@ -287,7 +287,7 @@ internal static class ProjectProgressReportingCalculator
 
     private static ProjectProgressMilestoneResult[] BuildMilestones(
         ProjectProgressBaselineVersion baseline,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> updates,
+        ProjectProgressMilestoneUpdateVersion[] updates,
         DateOnly cutoffLocalDate) =>
         baseline.Entries
             .Where(entry => entry.Kind == PlanningEntryKind.Milestone)
@@ -314,9 +314,9 @@ internal static class ProjectProgressReportingCalculator
 
     private static CurveCalculation BuildCurve(
         ProjectProgressReportingSelection selection,
-        IReadOnlyCollection<ProjectProgressBaselineEntry> entries,
-        IReadOnlyCollection<OfficialProgressFact> facts,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> milestoneUpdates)
+        ProjectProgressBaselineEntry[] entries,
+        OfficialProgressFact[] facts,
+        ProjectProgressMilestoneUpdateVersion[] milestoneUpdates)
     {
         var dates = BuildCurveDates(entries, selection.CutoffLocalDate);
         var kind = dates.IsSampled
@@ -355,7 +355,7 @@ internal static class ProjectProgressReportingCalculator
     }
 
     private static CurveDates BuildCurveDates(
-        IReadOnlyCollection<ProjectProgressBaselineEntry> entries,
+        ProjectProgressBaselineEntry[] entries,
         DateOnly cutoffLocalDate)
     {
         var earliest = entries.Min(entry => entry.PlannedStart!.Value);
@@ -385,9 +385,9 @@ internal static class ProjectProgressReportingCalculator
     }
 
     private static PointCalculation CalculateAt(
-        IReadOnlyCollection<ProjectProgressBaselineEntry> entries,
-        IReadOnlyCollection<OfficialProgressFact> facts,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> milestoneUpdates,
+        ProjectProgressBaselineEntry[] entries,
+        OfficialProgressFact[] facts,
+        ProjectProgressMilestoneUpdateVersion[] milestoneUpdates,
         DateOnly pointDate,
         bool includeActual,
         bool scheduled,
@@ -520,7 +520,7 @@ internal static class ProjectProgressReportingCalculator
         Guid? baselineId,
         Guid entryId,
         DateOnly pointDate,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> updates) =>
+        ProjectProgressMilestoneUpdateVersion[] updates) =>
         updates
             .Where(update => (!baselineId.HasValue || update.BaselineId == baselineId.Value) &&
                 update.BaselineEntryId == entryId && update.StatusDate <= pointDate)
@@ -548,8 +548,8 @@ internal static class ProjectProgressReportingCalculator
             .ToArray();
 
     private static int CountOutsideBaseline(
-        IReadOnlyCollection<ProjectProgressBaselineEntry> entries,
-        IReadOnlyCollection<OfficialProgressFact> facts)
+        ProjectProgressBaselineEntry[] entries,
+        OfficialProgressFact[] facts)
     {
         var mapped = entries
             .Where(entry => entry.MeasurementMethod == ProgressMeasurementMethod.QuantityBased &&

@@ -184,7 +184,7 @@ internal static class ProjectProgressReportSnapshotBuilder
 
     private static void ValidateStatus(
         ProjectProgressReportingResult source,
-        IReadOnlyCollection<ProjectProgressReportingReasonCode> reasons)
+        ProjectProgressReportingReasonCode[] reasons)
     {
         var valid = source.DataStatus switch
         {
@@ -328,7 +328,7 @@ internal static class ProjectProgressReportSnapshotBuilder
 
     private static void ValidateSummary(
         ProjectProgressReportingResult source,
-        IReadOnlyCollection<ProjectProgressCurvePoint> curve)
+        ProjectProgressCurvePoint[] curve)
     {
         if (source.Summary is null)
         {

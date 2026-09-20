@@ -314,7 +314,7 @@ internal static class ProjectProgressReportingSelector
         }
     }
 
-    private static void ValidateHierarchy(IReadOnlyCollection<ProjectProgressBaselineEntry> entries)
+    private static void ValidateHierarchy(ProjectProgressBaselineEntry[] entries)
     {
         var byId = entries.ToDictionary(entry => entry.EntryId);
         foreach (var entry in entries.Where(entry => entry.ParentEntryId.HasValue))
@@ -360,8 +360,8 @@ internal static class ProjectProgressReportingSelector
     }
 
     private static void ValidateMilestoneLineage(
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> updates,
-        IReadOnlyCollection<ProjectProgressBaselineVersion> baselines)
+        ProjectProgressMilestoneUpdateVersion[] updates,
+        ProjectProgressBaselineVersion[] baselines)
     {
         var baselineEntries = baselines.ToDictionary(
             baseline => baseline.BaselineId,
@@ -498,8 +498,8 @@ internal static class ProjectProgressReportingSelector
 
     private static ProjectProgressReportingClassification ResolveClassification(
         ProjectProgressConfigurationVersion? configuration,
-        IReadOnlyCollection<ProjectProgressBaselineVersion> baselines,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> milestones,
+        ProjectProgressBaselineVersion[] baselines,
+        ProjectProgressMilestoneUpdateVersion[] milestones,
         ProgressEvidenceReportingProjection evidence)
     {
         var values = new List<ProjectProgressReportingClassification>
@@ -528,8 +528,8 @@ internal static class ProjectProgressReportingSelector
 
     private static DateTimeOffset? ResolveSourceMaxChangedAt(
         ProjectProgressConfigurationVersion? configuration,
-        IReadOnlyCollection<ProjectProgressBaselineVersion> baselines,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> milestones,
+        ProjectProgressBaselineVersion[] baselines,
+        ProjectProgressMilestoneUpdateVersion[] milestones,
         ProgressEvidenceReportingProjection evidence,
         DateTimeOffset cutoff)
     {
@@ -560,7 +560,7 @@ internal static class ProjectProgressReportingSelector
     }
 
     private static void AddAtOrBefore(
-        ICollection<DateTimeOffset> values,
+        List<DateTimeOffset> values,
         DateTimeOffset? candidate,
         DateTimeOffset cutoff)
     {
@@ -574,8 +574,8 @@ internal static class ProjectProgressReportingSelector
         ProjectProgressReportingProjection projection,
         DateTimeOffset cutoff,
         ProjectProgressConfigurationVersion? configuration,
-        IReadOnlyCollection<ProjectProgressBaselineVersion> baselines,
-        IReadOnlyCollection<ProjectProgressMilestoneUpdateVersion> milestones,
+        ProjectProgressBaselineVersion[] baselines,
+        ProjectProgressMilestoneUpdateVersion[] milestones,
         ProgressEvidenceReportingProjection evidence) => new(
         ProjectProgressReportingContract.SourceManifestVersion,
         ProjectProgressReportingContract.Version,

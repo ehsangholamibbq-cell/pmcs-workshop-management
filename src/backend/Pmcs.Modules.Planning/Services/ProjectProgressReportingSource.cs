@@ -126,7 +126,7 @@ internal sealed class ProjectProgressReportingSource(
 
     private static ProjectProgressBaselineVersion Map(
         PlanningBaseline baseline,
-        IReadOnlyDictionary<Guid, MeasurementItem> measurementItems)
+        Dictionary<Guid, MeasurementItem> measurementItems)
     {
         var approvedAt = baseline.ReviewedAt?.ToUniversalTime()
             ?? throw new DomainRuleException(
@@ -149,7 +149,7 @@ internal sealed class ProjectProgressReportingSource(
     private static ProjectProgressBaselineEntry Map(
         PlanningBaselineEntry entry,
         DateTimeOffset approvedAt,
-        IReadOnlyDictionary<Guid, MeasurementItem> measurementItems)
+        Dictionary<Guid, MeasurementItem> measurementItems)
     {
         ProjectProgressPinnedMeasurementTarget? target = null;
         if (entry.MeasurementMethod == ProgressMeasurementMethod.QuantityBased)
