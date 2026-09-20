@@ -1,16 +1,13 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.20.0`
-- وضعیت: `S07-MS08 complete in Run 154 | F03 Renderer/Golden checkpointed | Wiring/F04-F10/UI/Production open`
+- نسخه: `1.21.0`
+- وضعیت: `S07-MS09 connected candidate | Safe Resume S07-MS08 | Full CI pending | F04-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent commit: `720de8869e251f5a4c39a6940a76e9929232706b`
-- Parent checkpoint commit: `7b7222ef70f32fb882690b1c6465771067dbf3dc`
-- Parent checkpoint tree: `922532668ccc4c47678b35b438c589878e5d434b`
-- Qualification candidate: `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f`
-- Source tree: `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434`
-- PR validation merge: `235e0a0f12b560bba06792c3290724d739117b73`؛ همان tree
-- Connected evidence: Run 154 (`35512969648`) — `success`
+- Parent commit/checkpoint: `de76a91ec9047205fceba1321bae7187bf787fec`
+- Parent checkpoint tree: `161482109ded126a7bf04dbaf8880bf698a2dd32`
+- Qualification candidate/source tree: `pending source commit`
+- PR validation merge / Connected evidence: `Full CI pending`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -40,15 +37,17 @@ schemaهای نسخه‌دار، period-read contract، resolver و semantic Sna
 فعلی قرارداد Renderer مستقل، مدل canonical و PDF/XLSX قطعی را با Catalog، strict API، Project
 profile pin و Worker dispatch متصل کرده است؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.2.1` در
+قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.3.1` در
 `pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md` گزارش مدیریتی را فقط به Snapshot
 immutable و رسمی Project State محدود می‌کند. Client پارامتر ندارد، انتخاب Snapshot cutoff-aware و
 server-owned است، وضعیت داده از Operational Status جدا می‌ماند و هیچ Composite Health، Recalculate،
-AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime Core checkpointed فقط
+AI summary یا join پنهان به خانواده‌های F04 تا F10 مجاز نیست. Runtime Core checkpointed
 identity/schema نسخه‌دار، Project profile pin، Application Contract
 `pmcs.project-intelligence.project-state-reporting/v1`، selector cutoff-aware و semantic Snapshot
-builder را اضافه کرده است. Renderer مستقل نیز Template/Renderer/Layout identity، render model
-canonical و PDF/XLSX قطعی را checkpoint کرده، اما Catalog/API/Worker wiring هنوز باز است.
+builder را دارد و Renderer مستقل نیز Template/Renderer/Layout identity، render model canonical و
+PDF/XLSX قطعی را checkpoint کرده است. Candidate جاری Catalog/Template، strict API، permissionهای
+definition-aware در HTTP و `IReportingReadService`، Project profile pin، Worker dispatch و
+qualification متصل را روی همان قراردادها اضافه می‌کند؛ UI و Production defaults همچنان جدا و خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -157,11 +156,11 @@ Schema مالک: `reporting`.
 | `report_outputs` | output manifest و Document reference |
 
 Migration اولیه با order بعد از ۱۱۰۰ Documents و شمارهٔ ۴۲ ثبت شده است. Migration forward شمارهٔ
-۴۳ قید unique قدیمی `verification_code` را به index غیر unique تبدیل می‌کند، زیرا دو Run با
-Manifest معنایی یکسان می‌توانند کد راستی‌آزمایی یکسان ولی Output identity مستقل داشته باشند.
-هر دو Migration فقط Expand/forward-compatible هستند و هیچ جدول V1/V1.1 موجود را تغییر معنا
-نمی‌دهند. Restore drill بعدی باید inventory کامل ۴۳ Migration را نگه دارد. QA reset inventory
-Schema جدید را دقیقاً شامل می‌شود.
+۴۳ قید unique قدیمی `verification_code` را به index غیر unique تبدیل می‌کند. Migration 44 ستون‌های
+نسخه را برای قراردادهای F02 توسعه می‌دهد، `pinned_project_profile` را اضافه و Catalog/Template F02
+را seed می‌کند. Migration forward شمارهٔ 45 نیز فقط Definition/Template قطعی F03 را به همان Catalog
+allowlist اضافه می‌کند. همهٔ Migrationها forward-compatible هستند و هیچ جدول V1/V1.1 موجود را حذف
+یا بازتفسیر نمی‌کنند. Restore drill Candidate باید inventory کامل ۴۵ Migration را نگه دارد.
 
 ## ۷. Application Contract منبع گزارش روزانه
 
@@ -515,3 +514,15 @@ zero fabrication یا truncate خاموش تولید نمی‌شود. Source
 Migration. Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` Renderer/Golden را می‌بندد. Registry F03 در
 DI/Worker ثبت نشده و هیچ endpoint، Migration، Catalog/Template seed، UI یا Production default
 تغییر نکرده است؛ F03 هنوز End-to-End قابل اجرا/دانلود نیست.
+
+Slice 07 Micro-Step 09 Candidate روی Safe Checkpoint `S07-MS08`، Migration forward شمارهٔ 45 و
+Catalog/Template قطعی F03 را اضافه می‌کند. parser فقط object خالی `{}` را می‌پذیرد؛ Project profile
+نسخه‌دار سروری در پذیرش Run pin می‌شود و Client هیچ Snapshot ID یا Source selector نمی‌فرستد.
+Catalog/List/Get، Run read/mutation، Download/Verify و Worker به‌جای permission مشترک F01/F02،
+permission Source هر Definition را از allowlist ثابت resolve می‌کنند؛ بنابراین F03 فقط با
+`project-state.read` و F01/F02 فقط با `field.daily-reports.read` دیده و اجرا می‌شوند. Worker از
+`IProjectStateReportingSource`، Snapshot builder checkpointed و registry اختصاصی PDF/XLSX استفاده
+می‌کند و پیش از Snapshot و پیش از Storage همان permissionها را دوباره ارزیابی می‌کند. هارنس متصل
+جداسازی Catalog/Run، strict parameters، create/replay/conflict، `NoData` و integrity/verify هر دو
+فرمت را می‌سنجد. این وضعیت تا سبزشدن Full CI یک Candidate است؛ Safe Resume همان `S07-MS08` و
+feature flagها، PDF license، UI و Production defaults همچنان خاموش/Unconfigured هستند.

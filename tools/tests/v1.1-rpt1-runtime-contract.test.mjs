@@ -10,10 +10,12 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/ReportingModule.cs`,
     `${moduleRoot}/Domain/ReportRun.cs`,
     `${moduleRoot}/Domain/ReportSnapshot.cs`,
+    `${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`,
     `${moduleRoot}/Contracts/IReportingReadService.cs`,
     `${moduleRoot}/Endpoints/ReportingEndpoints.cs`,
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
     `${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
@@ -26,6 +28,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingPdfGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingExecutiveProjectStateVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -67,10 +70,13 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migrations 42 through 44 own reporting schema verification and F02 catalog", () => {
+test("migrations 42 through 45 own reporting schema and the connected F02/F03 catalogs", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
   const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
+  const executiveMigration = read(
+    `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
+  );
   const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
   assert.match(migration, /public string Version => "20260918-001"/u);
@@ -92,9 +98,15 @@ test("migrations 42 through 44 own reporting schema verification and F02 catalog
   assert.match(periodicMigration, /project-periodic-certified/u);
   assert.match(periodicMigration, /pmcs\.reporting\.project-periodic\.parameters\/v1/u);
   assert.match(periodicMigration, /pinned_project_profile jsonb/u);
+  assert.match(executiveMigration, /public long Order => 1203/u);
+  assert.match(executiveMigration, /public string Version => "20260920-004"/u);
+  assert.match(executiveMigration, /executive-project-state-certified/u);
+  assert.match(executiveMigration, /pmcs\.reporting\.executive-project-state\.parameters\/v1/u);
+  assert.match(executiveMigration, /pmcs\.reporting\.executive-project-state\.renderer\/v1/u);
+  assert.match(executiveMigration, /project-state\.read/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"44"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"45"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -763,7 +775,7 @@ test("RPT1-F02 keeps the weekly/monthly semantic contract aligned with its conne
   assert.match(canonical, /`RPT1-F01` و `RPT1-F02` checkpoint متصل دارند/u);
 });
 
-test("RPT1-F03 keeps its semantic contract through the independent Renderer and Golden", () => {
+test("RPT1-F03 connects its checkpointed semantic runtime and renderers without production enablement", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   );
@@ -778,7 +790,11 @@ test("RPT1-F03 keeps its semantic contract through the independent Renderer and 
   const module = read(`${moduleRoot}/ReportingModule.cs`);
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
-  const migration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
+  const readService = read(`${moduleRoot}/Services/ReportingReadService.cs`);
+  const migration = read(
+    `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
+  );
+  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
   const sourceContract = read(
     "src/backend/Pmcs.Modules.ProjectIntelligence/Contracts/IProjectStateReportingSource.cs",
   );
@@ -811,11 +827,17 @@ test("RPT1-F03 keeps its semantic contract through the independent Renderer and 
   const renderingTests = read(
     "tests/Pmcs.Domain.Tests/ExecutiveProjectStateReportRenderingTests.cs",
   );
+  const harness = read(
+    "src/backend/Pmcs.TestHarness/ReportingExecutiveProjectStateVerification.cs",
+  );
+  const harnessProgram = read("src/backend/Pmcs.TestHarness/Program.cs");
+  const diagnostics = read("tools/qa/seed-diagnostics.sh");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
 
   assert.match(contract, /PMCS-RPT1-F03-SEMANTIC-001/u);
-  assert.match(contract, /نسخه: `1\.2\.1`/u);
-  assert.match(contract, /Renderer\/Golden Safe Checkpoint \| Catalog\/API\/Worker Not Implemented/u);
-  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS07-C1`/u);
+  assert.match(contract, /نسخه: `1\.3\.1`/u);
+  assert.match(contract, /Connected Candidate \| Safe Resume S07-MS08/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
   assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
   assert.match(contract, /Client نمی‌تواند Snapshot مطلوب خود را[\s\S]*انتخاب کند/u);
   assert.match(contract, /`calculatedAt <= sourceCutoffUtc`/u);
@@ -834,17 +856,18 @@ test("RPT1-F03 keeps its semantic contract through the independent Renderer and 
   assert.match(contract, /`project-state\.recalculate` برای F03 لازم نیست/u);
   assert.match(contract, /حداقل `Internal`/u);
   assert.equal((contract.match(/\| `F03-[A-Z]\d{2}` \|/gu) ?? []).length, 17);
-  assert.match(contract, /هیچ API، Migration، Catalog\/Template seed، Worker dispatch، DI registration/u);
+  assert.match(contract, /Migration forward شمارهٔ 45[\s\S]*strict empty-object parser[\s\S]*definition-aware/u);
 
-  assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.2\.1/u);
-  assert.match(api, /Runtime Core و Renderer\/Golden checkpointed F03 بدون تغییر API/u);
+  assert.match(architecture, /PMCS-RPT1-F03-SEMANTIC-001 v1\.3\.1/u);
+  assert.match(api, /خانواده F03 روی API متصل/u);
   assert.match(security, /سیاست ثابت F03/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
   assert.match(matrix, /## ۳۰\.[\s\S]*Renderer\/Golden خانواده F03/u);
-  assert.match(roadmap, /نسخه سند: `1\.37\.0`/u);
+  assert.match(matrix, /## ۳۱\.[\s\S]*Catalog\/API\/Worker wiring متصل خانواده F03/u);
+  assert.match(roadmap, /نسخه سند: `1\.38\.0`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*Run 146[\s\S]*Runtime not implemented/u);
-  assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.2\.1[\s\S]*Run 154/u);
-  assert.match(rootReadme, /قرارداد checkpointed F03 برای Executive Project State/u);
+  assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.3\.1/u);
+  assert.match(rootReadme, /F03 Connected Candidate/u);
 
   assert.match(sourceContract, /pmcs\.project-intelligence\.project-state-reporting\/v1/u);
   assert.match(sourceContract, /MaximumTrendDates = 14/u);
@@ -885,10 +908,35 @@ test("RPT1-F03 keeps its semantic contract through the independent Renderer and 
   assert.match(renderingTests, /d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1/u);
   assert.match(renderingTests, /6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba/u);
   assert.match(renderingTests, /252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205/u);
-
-  for (const source of [module, worker, endpoints, migration]) {
-    assert.doesNotMatch(source, /ExecutiveProjectState|executive-project-state|RPT1-F03/u);
-  }
+  assert.match(policy, /ProjectStateSourcePermission = "project-state\.read"/u);
+  assert.match(
+    policy,
+    /ExecutiveProjectStateReportRuntimeContract\.DefinitionCode => ProjectStateSourcePermission/u,
+  );
+  assert.match(migration, /public long Order => 1203/u);
+  assert.match(migration, /pmcs\.reporting\.executive-project-state\.renderer\/v1/u);
+  assert.match(module, /IExecutiveProjectStateReportRenderer, ExecutiveProjectStateReportPdfRenderer/u);
+  assert.match(module, /IExecutiveProjectStateReportRenderer, ExecutiveProjectStateReportXlsxRenderer/u);
+  assert.match(module, /ExecutiveProjectStateReportCatalogMigration/u);
+  assert.match(worker, /IProjectStateReportingSource/u);
+  assert.match(worker, /ExecutiveProjectStateReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ExecutiveProjectStateReportRendererRegistry/u);
+  assert.match(worker, /ExecutiveProjectStateReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /ExecutiveProjectStateReportRenderRequest/u);
+  assert.match(endpoints, /ExecutiveProjectStateReportRuntimeContract\.DefinitionCode/u);
+  assert.match(endpoints, /ParseExecutiveProjectStateParameters/u);
+  assert.match(endpoints, /PermittedDefinitionCodesAsync/u);
+  assert.match(readService, /ReportDefinitionRuntimePolicy\.SupportedDefinitionCodes/u);
+  assert.match(readService, /PermittedDefinitionCodesAsync/u);
+  assert.match(readService, /HasSourcePermissionAsync/u);
+  assert.doesNotMatch(readService, /const string DailyReportSourcePermission/u);
+  assert.match(harness, /VerifyReportingExecutiveProjectStateAsync/u);
+  assert.match(harness, /permission-isolated/u);
+  assert.match(harnessProgram, /verify-reporting-executive-state/u);
+  assert.match(diagnostics, /verify-reporting-executive-state/u);
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
 test("RPT1-F03 semantic contract records the S07-MS06 safe checkpoint without claiming Runtime", () => {
@@ -926,11 +974,11 @@ test("RPT1-F03 semantic contract records the S07-MS06 safe checkpoint without cl
   assert.match(registry, /Slice 07 MS06[\s\S]*e3218555a38f7ba460558e51b4db3f8bc17fcd9c/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS06-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Runtime identity/u);
-  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 146/u);
+  assert.match(architecture, /نسخه: `1\.21\.0`[\s\S]*Run 146/u);
   assert.match(baseline, /Slice 07 Micro-Step 06[\s\S]*Run 146/u);
   assert.match(matrix, /## ۲۸\.[\s\S]*Run 146/u);
-  assert.match(matrix, /نسخه: `1\.21\.0`/u);
-  assert.match(security, /نسخه: `1\.9\.0`[\s\S]*Run 154/u);
+  assert.match(matrix, /نسخه: `1\.22\.0`/u);
+  assert.match(security, /نسخه: `1\.10\.0`[\s\S]*Run 154/u);
 });
 
 test("RPT1-F03 Runtime Core records the S07-MS07 safe checkpoint without opening renderer or wiring", () => {
@@ -969,11 +1017,11 @@ test("RPT1-F03 Runtime Core records the S07-MS07 safe checkpoint without opening
   assert.match(registry, /Slice 07 MS07[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
   assert.match(canonical, /F03 Runtime Core Source:[\s\S]*22d5b0f91edf8d733192fae0ba946c8538c63bca[\s\S]*Run 148/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
-  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 148/u);
+  assert.match(architecture, /نسخه: `1\.21\.0`[\s\S]*Run 148/u);
   assert.match(baseline, /Slice 07 Micro-Step 07[\s\S]*Run 148/u);
   assert.match(matrix, /## ۲۹\.[\s\S]*Run 148/u);
-  assert.match(matrix, /نسخه: `1\.21\.0`/u);
-  assert.match(api, /هیچ گزارش F03 هنوز از API قابل ایجاد[\s\S]*دانلود نیست/u);
+  assert.match(matrix, /نسخه: `1\.22\.0`/u);
+  assert.match(api, /خانواده F03 روی API متصل — Candidate/u);
 });
 
 test("RPT1-F03 Renderer and Golden record the S07-MS08 safe checkpoint without opening wiring", () => {
@@ -1015,13 +1063,13 @@ test("RPT1-F03 Renderer and Golden record the S07-MS08 safe checkpoint without o
   assert.match(roadmap, /\| `1\.37\.0` \| ثبت Safe Checkpoint `S07-MS08`/u);
   assert.match(registry, /Slice 07 MS08[\s\S]*d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f[\s\S]*Run 154/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS08-C1`/u);
-  assert.match(canonical, /Micro-Step بعدی فقط Catalog\/Template seed/u);
-  assert.match(architecture, /نسخه: `1\.20\.0`[\s\S]*Run 154/u);
+  assert.match(canonical, /Micro-Step جاری فقط Qualification متصل Connected Candidate خانواده F03/u);
+  assert.match(architecture, /نسخه: `1\.21\.0`[\s\S]*Run 154/u);
   assert.match(baseline, /Slice 07 Micro-Step 08[\s\S]*Run 154/u);
   assert.match(matrix, /## ۳۰\.[\s\S]*Run 154/u);
-  assert.match(matrix, /نسخه: `1\.21\.0`/u);
-  assert.match(api, /هیچ گزارش F03 هنوز از API قابل ایجاد[\s\S]*دانلود نیست/u);
-  assert.match(security, /نسخه: `1\.9\.0`[\s\S]*Run 154/u);
+  assert.match(matrix, /نسخه: `1\.22\.0`/u);
+  assert.match(api, /خانواده F03 روی API متصل — Candidate/u);
+  assert.match(security, /نسخه: `1\.10\.0`[\s\S]*Run 154/u);
 });
 
 test("RPT1-F02 runtime core stays bounded to identity period source resolver and semantic snapshot", () => {

@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.9.0`
-- وضعیت: F01/F02 connected؛ F03 bounded Runtime Core + Renderer/Golden passed in Run 154؛ wiring/Production disabled
+- نسخه: `1.10.0`
+- وضعیت: F01/F02 connected؛ F03 Connected Candidate روی Safe Resume S07-MS08؛ Full CI pending؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -108,8 +108,16 @@ XLSX فقط cellهای text/number کنترل‌شده دارد، prefixهای `
 نمی‌سازد. PDF هیچ HTML/JS یا template code اجرا نمی‌کند و فقط از QuestPDF/font/image contract
 پین‌شده استفاده می‌کند. Attention یا trend silently truncate نمی‌شوند؛ متن/row/page budget
 non-transient و fail-closed است. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` این سیاست را در
-Run 154 با هر هشت Job checkpoint کرد؛ این گیت هنوز Catalog یا API/Worker dispatch F03 را فعال
-نمی‌کند و Renderer Registry در DI ثبت نشده است.
+Run 154 با هر هشت Job، Runtime/Renderer پایه را checkpoint کرد. Candidate متصل اکنون Source
+permission را از allowlist ثابت هر Definition resolve می‌کند: F03 فقط `project-state.read` و F01/F02
+فقط `field.daily-reports.read`. Catalog و فهرست Runها Definitionهای غیرمجاز را حذف می‌کنند؛
+Get/Retry/Cancel/Download/Verify برای Run موجود permission جاری همان Source را دوباره بررسی می‌کنند و
+سرویس read-only ابزارهای Reporting نیز Catalog/Run/Output metadata را با همین policy فیلتر و Definition
+ناشناخته را fail-closed می‌کند. idempotent replay نیز پیش از این re-evaluation برگردانده نمی‌شود.
+Worker هنگام ساخت Snapshot و دوباره
+پیش از Storage، `reporting.run.create + project-state.read` را ارزیابی می‌کند. هارنس با Finance Manager
+دارای Project State و فاقد Daily Report permission، عدم نشت F01/F02 و اجرای کامل F03 را می‌سنجد.
+این اتصال تا Full CI یک Candidate است و feature flag، license و Production defaults خاموش می‌مانند.
 
 ## ۴. Threat model
 

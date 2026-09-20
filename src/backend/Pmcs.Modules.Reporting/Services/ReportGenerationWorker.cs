@@ -11,6 +11,7 @@ using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.Documents.Contracts;
 using Pmcs.Modules.Documents.Domain;
 using Pmcs.Modules.FieldOperations.Contracts;
+using Pmcs.Modules.ProjectIntelligence.Contracts;
 using Pmcs.Modules.Projects.Contracts;
 using Pmcs.Modules.Projects.Domain;
 using Pmcs.Modules.Reporting.Domain;
@@ -28,7 +29,6 @@ internal sealed partial class ReportGenerationWorker(
     ReportingWorkerTelemetry telemetry,
     ILogger<ReportGenerationWorker> logger) : BackgroundService
 {
-    private const string DailyDefinitionCode = "daily-report-certified";
     private static readonly Guid SystemActorId =
         Guid.Parse("00000000-0000-0000-0000-000000000001");
 
@@ -231,10 +231,6 @@ internal sealed partial class ReportGenerationWorker(
         var clock = services.GetRequiredService<IClock>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
 
-        var permissionSnapshotJson = await RequireProcessingPermissionsAsync(
-            permissionService,
-            claimed,
-            cancellationToken);
         var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
             item.Id == claimed.Id &&
             item.TenantId == claimed.TenantId &&
@@ -246,8 +242,13 @@ internal sealed partial class ReportGenerationWorker(
             throw new ReportProcessingException(
                 "reporting.run.claim_lost",
                 transient: false,
-                permissionSnapshotJson: permissionSnapshotJson);
+                permissionSnapshotJson: null);
         }
+        var permissionSnapshotJson = await RequireProcessingPermissionsAsync(
+            permissionService,
+            claimed,
+            run.DefinitionCode,
+            cancellationToken);
         run.RecordProcessingPermissionSnapshot(permissionSnapshotJson);
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -258,7 +259,10 @@ internal sealed partial class ReportGenerationWorker(
             cancellationToken);
         var builtAt = clock.UtcNow;
         ReportSnapshot snapshot;
-        if (string.Equals(run.DefinitionCode, DailyDefinitionCode, StringComparison.Ordinal))
+        if (string.Equals(
+                run.DefinitionCode,
+                ReportDefinitionRuntimePolicy.DailyDefinitionCode,
+                StringComparison.Ordinal))
         {
             if (run.PinnedProjectProfileJson is not null)
             {
@@ -327,6 +331,41 @@ internal sealed partial class ReportGenerationWorker(
                 run.CreatedAt,
                 builtAt);
         }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            _ = DeserializeStored<ExecutiveProjectStateReportParameters>(
+                run.ParametersJson,
+                "reporting.parameters.invalid",
+                permissionSnapshotJson);
+            var pinnedProject = DeserializeStored<ExecutiveProjectStatePinnedProjectProfile>(
+                run.PinnedProjectProfileJson,
+                "reporting.executive_state.project_scope.invalid",
+                permissionSnapshotJson);
+            var timeZone = pinnedProject.ValidateForRun(
+                run.TenantId,
+                run.ProjectId,
+                run.AsOfUtc,
+                run.CreatedAt);
+            var cutoffLocalDate = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
+            var source = await services.GetRequiredService<IProjectStateReportingSource>().LoadAsync(
+                run.TenantId,
+                run.ProjectId,
+                cutoffLocalDate,
+                run.AsOfUtc,
+                cancellationToken);
+            snapshot = ExecutiveProjectStateReportSnapshotBuilder.Build(
+                run.Id,
+                run.TenantId,
+                pinnedProject,
+                run.AsOfUtc,
+                source,
+                run.CreatedAt,
+                builtAt);
+        }
         else
         {
             throw new ReportProcessingException(
@@ -377,19 +416,11 @@ internal sealed partial class ReportGenerationWorker(
         var dbContext = services.GetRequiredService<ReportingDbContext>();
         var rendererRegistry = services.GetRequiredService<ReportRendererRegistry>();
         var periodicRendererRegistry = services.GetRequiredService<ProjectPeriodicReportRendererRegistry>();
+        var executiveRendererRegistry =
+            services.GetRequiredService<ExecutiveProjectStateReportRendererRegistry>();
         var publisher = services.GetRequiredService<IGeneratedDocumentPublisher>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
         var clock = services.GetRequiredService<IClock>();
-
-        var permissionSnapshotJson = await RequireProcessingPermissionsAsync(
-            permissionService,
-            claimed,
-            cancellationToken);
-        _ = await RequireActiveProjectAsync(
-            projectDirectory,
-            claimed,
-            permissionSnapshotJson,
-            cancellationToken);
 
         var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
             item.Id == claimed.Id &&
@@ -402,8 +433,18 @@ internal sealed partial class ReportGenerationWorker(
             throw new ReportProcessingException(
                 "reporting.run.claim_lost",
                 transient: false,
-                permissionSnapshotJson: permissionSnapshotJson);
+                permissionSnapshotJson: null);
         }
+        var permissionSnapshotJson = await RequireProcessingPermissionsAsync(
+            permissionService,
+            claimed,
+            run.DefinitionCode,
+            cancellationToken);
+        _ = await RequireActiveProjectAsync(
+            projectDirectory,
+            claimed,
+            permissionSnapshotJson,
+            cancellationToken);
 
         var snapshot = await dbContext.Snapshots.SingleOrDefaultAsync(item =>
             item.Id == run.SnapshotId.Value &&
@@ -417,7 +458,11 @@ internal sealed partial class ReportGenerationWorker(
         VerifySnapshot(snapshot, run);
         DailyReportRenderSnapshot? dailyRenderSnapshot = null;
         ProjectPeriodicReportSemanticSnapshot? periodicRenderSnapshot = null;
-        if (string.Equals(run.DefinitionCode, DailyDefinitionCode, StringComparison.Ordinal))
+        ExecutiveProjectStateReportSemanticSnapshot? executiveRenderSnapshot = null;
+        if (string.Equals(
+                run.DefinitionCode,
+                ReportDefinitionRuntimePolicy.DailyDefinitionCode,
+                StringComparison.Ordinal))
         {
             dailyRenderSnapshot = DailyReportRenderSnapshot.Parse(snapshot.PayloadJson);
             VerifyRenderSnapshot(dailyRenderSnapshot, snapshot, run);
@@ -429,6 +474,14 @@ internal sealed partial class ReportGenerationWorker(
         {
             periodicRenderSnapshot = ProjectPeriodicReportRenderSnapshot.Parse(snapshot.PayloadJson);
             VerifyRenderSnapshot(periodicRenderSnapshot, snapshot, run);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            executiveRenderSnapshot = ExecutiveProjectStateReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(executiveRenderSnapshot, snapshot, run);
         }
         else
         {
@@ -507,7 +560,9 @@ internal sealed partial class ReportGenerationWorker(
             var manifest = ReportArtifactIdentity.CreateManifest(run, snapshot, template, format);
             var fileName = dailyRenderSnapshot is not null
                 ? ReportArtifactIdentity.FileName(dailyRenderSnapshot, format)
-                : ReportArtifactIdentity.FileName(periodicRenderSnapshot!, format);
+                : periodicRenderSnapshot is not null
+                    ? ReportArtifactIdentity.FileName(periodicRenderSnapshot, format)
+                    : ReportArtifactIdentity.FileName(executiveRenderSnapshot!, format);
             RenderedReportArtifact artifact;
             if (dailyRenderSnapshot is not null)
             {
@@ -530,7 +585,7 @@ internal sealed partial class ReportGenerationWorker(
                     snapshot.SourceCutoffUtc,
                     dailyRenderSnapshot));
             }
-            else
+            else if (periodicRenderSnapshot is not null)
             {
                 artifact = periodicRendererRegistry.Require(format).Render(
                     new ProjectPeriodicReportRenderRequest(
@@ -553,6 +608,29 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.SourceCutoffUtc,
                         periodicRenderSnapshot!));
             }
+            else
+            {
+                artifact = executiveRendererRegistry.Require(format).Render(
+                    new ExecutiveProjectStateReportRenderRequest(
+                        run.Id,
+                        outputId,
+                        snapshot.Id,
+                        template.Id,
+                        run.DefinitionCode,
+                        ExecutiveProjectStateReportRuntimeContract.DefinitionVersion,
+                        run.TemplateVersion,
+                        template.ContentDigest,
+                        template.RendererContractVersion,
+                        template.LayoutContractVersion,
+                        format,
+                        fileName,
+                        manifest.VerificationCode,
+                        manifest.Sha256,
+                        snapshot.Sha256,
+                        snapshot.SourceManifestSha256,
+                        snapshot.SourceCutoffUtc,
+                        executiveRenderSnapshot!));
+            }
             VerifyRenderedArtifact(artifact, manifest, fileName, format);
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
         }
@@ -564,6 +642,7 @@ internal sealed partial class ReportGenerationWorker(
         permissionSnapshotJson = await RequireProcessingPermissionsAsync(
             permissionService,
             claimed,
+            run.DefinitionCode,
             cancellationToken);
         run.RecordRenderingPermissionSnapshot(permissionSnapshotJson);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -1059,13 +1138,24 @@ internal sealed partial class ReportGenerationWorker(
     private static async Task<string> RequireProcessingPermissionsAsync(
         IProjectPermissionService permissionService,
         ClaimedRun claimed,
+        string definitionCode,
         CancellationToken cancellationToken)
     {
+        if (!ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+                definitionCode,
+                out var sourcePermission))
+        {
+            throw new ReportProcessingException(
+                "reporting.definition.invalid",
+                transient: false,
+                permissionSnapshotJson: null);
+        }
+
         var preview = await permissionService.PreviewProjectPermissionsAsync(
             claimed.TenantId,
             claimed.RequestedBy,
             claimed.ProjectId,
-            operations: ["reporting.run.create", "field.daily-reports.read"],
+            operations: ["reporting.run.create", sourcePermission],
             cancellationToken: cancellationToken);
         var permissionSnapshotJson = ReportingEndpoints.SerializePermissionSnapshot(preview);
         if (preview.Decisions.Any(decision => !decision.Allowed))
@@ -1148,6 +1238,32 @@ internal sealed partial class ReportGenerationWorker(
             renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Period.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
+            !string.Equals(
+                renderSnapshot.SourceManifestSha256,
+                snapshot.SourceManifestSha256,
+                StringComparison.Ordinal))
+        {
+            throw new ReportProcessingException(
+                "reporting.snapshot.integrity_failed",
+                transient: false,
+                permissionSnapshotJson: null);
+        }
+    }
+
+    private static void VerifyRenderSnapshot(
+        ExecutiveProjectStateReportSemanticSnapshot renderSnapshot,
+        ReportSnapshot snapshot,
+        ReportRun run)
+    {
+        if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
+            !string.Equals(
+                renderSnapshot.DefinitionVersion,
+                ExecutiveProjectStateReportRuntimeContract.DefinitionVersion,
+                StringComparison.Ordinal) ||
+            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
                 renderSnapshot.SourceManifestSha256,
                 snapshot.SourceManifestSha256,

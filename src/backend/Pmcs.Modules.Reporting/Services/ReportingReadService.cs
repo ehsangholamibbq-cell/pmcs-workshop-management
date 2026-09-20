@@ -14,9 +14,6 @@ internal sealed class ReportingReadService(
 {
     private const string CatalogPermission = "reporting.catalog.read";
     private const string OutputPermission = "reporting.output.download";
-    private const string DailyReportSourcePermission = "field.daily-reports.read";
-    private static readonly string[] SupportedDefinitions =
-        ["daily-report-certified", ProjectPeriodicReportRuntimeContract.DefinitionCode];
 
     public async Task<IReadOnlyCollection<ReportingCatalogEntry>> ListCatalogAsync(
         Guid tenantId,
@@ -24,18 +21,28 @@ internal sealed class ReportingReadService(
         Guid projectId,
         CancellationToken cancellationToken = default)
     {
-        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionAsync(
                 tenantId,
                 actorUserId,
                 projectId,
-                [CatalogPermission, DailyReportSourcePermission],
+                CatalogPermission,
                 cancellationToken))
         {
             return [];
         }
 
+        var permittedDefinitionCodes = await PermittedDefinitionCodesAsync(
+            tenantId,
+            actorUserId,
+            projectId,
+            cancellationToken);
+        if (permittedDefinitionCodes.Length == 0)
+        {
+            return [];
+        }
+
         var definitions = await dbContext.Definitions.AsNoTracking()
-            .Where(item => SupportedDefinitions.Contains(item.Code) &&
+            .Where(item => permittedDefinitionCodes.Contains(item.Code) &&
                 item.Status == ReportDefinitionStatus.Active)
             .OrderBy(item => item.Code)
             .ToArrayAsync(cancellationToken);
@@ -69,18 +76,30 @@ internal sealed class ReportingReadService(
         int limit = 50,
         CancellationToken cancellationToken = default)
     {
-        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionAsync(
                 tenantId,
                 actorUserId,
                 projectId,
-                [CatalogPermission, DailyReportSourcePermission],
+                CatalogPermission,
                 cancellationToken))
         {
             return [];
         }
 
+        var permittedDefinitionCodes = await PermittedDefinitionCodesAsync(
+            tenantId,
+            actorUserId,
+            projectId,
+            cancellationToken);
+        if (permittedDefinitionCodes.Length == 0)
+        {
+            return [];
+        }
+
         var query = dbContext.Runs.AsNoTracking()
-            .Where(item => item.TenantId == tenantId && item.ProjectId == projectId);
+            .Where(item => item.TenantId == tenantId &&
+                item.ProjectId == projectId &&
+                permittedDefinitionCodes.Contains(item.DefinitionCode));
         if (status.HasValue)
         {
             query = query.Where(item => item.Status == status.Value);
@@ -112,11 +131,11 @@ internal sealed class ReportingReadService(
         Guid runId,
         CancellationToken cancellationToken = default)
     {
-        if (!runtime.Phase1Enabled || !await HasPermissionsAsync(
+        if (!runtime.Phase1Enabled || !await HasPermissionAsync(
                 tenantId,
                 actorUserId,
                 projectId,
-                [CatalogPermission, DailyReportSourcePermission],
+                CatalogPermission,
                 cancellationToken))
         {
             return null;
@@ -125,7 +144,14 @@ internal sealed class ReportingReadService(
         var run = await dbContext.Runs.AsNoTracking().SingleOrDefaultAsync(item =>
             item.Id == runId && item.TenantId == tenantId && item.ProjectId == projectId,
             cancellationToken);
-        return run is null ? null : await MapRunAsync(run, cancellationToken);
+        return run is null || !await HasSourcePermissionAsync(
+                tenantId,
+                actorUserId,
+                projectId,
+                run.DefinitionCode,
+                cancellationToken)
+            ? null
+            : await MapRunAsync(run, cancellationToken);
     }
 
     public async Task<ReportingOutputMetadataRecord?> FindOutputAsync(
@@ -135,31 +161,37 @@ internal sealed class ReportingReadService(
         Guid outputId,
         CancellationToken cancellationToken = default)
     {
-        if (!runtime.OutputAccessEnabled || !await HasPermissionsAsync(
+        if (!runtime.OutputAccessEnabled || !await HasPermissionAsync(
                 tenantId,
                 actorUserId,
                 projectId,
-                [OutputPermission, DailyReportSourcePermission],
+                OutputPermission,
                 cancellationToken))
         {
             return null;
         }
 
-        return await dbContext.Outputs.AsNoTracking()
-            .Where(item => item.Id == outputId && item.TenantId == tenantId && item.ProjectId == projectId)
-            .Select(item => new ReportingOutputMetadataRecord(
-                item.Id,
-                item.RunId,
-                item.ProjectId,
-                item.Format,
-                item.FileName,
-                item.ContentType,
-                item.SizeBytes,
-                item.Sha256,
-                item.VerificationCode,
-                item.Classification,
-                item.ArchiveState))
+        var context = await (
+            from output in dbContext.Outputs.AsNoTracking()
+            join run in dbContext.Runs.AsNoTracking() on output.RunId equals run.Id
+            where output.Id == outputId &&
+                output.TenantId == tenantId &&
+                output.ProjectId == projectId &&
+                run.TenantId == tenantId &&
+                run.ProjectId == projectId
+            select new { Output = output, run.DefinitionCode })
             .SingleOrDefaultAsync(cancellationToken);
+        if (context is null || !await HasSourcePermissionAsync(
+                tenantId,
+                actorUserId,
+                projectId,
+                context.DefinitionCode,
+                cancellationToken))
+        {
+            return null;
+        }
+
+        return MapOutput(context.Output);
     }
 
     private async Task<ReportingRunStatusRecord> MapRunAsync(
@@ -210,28 +242,74 @@ internal sealed class ReportingReadService(
             outputs);
     }
 
-    private async Task<bool> HasPermissionsAsync(
+    private async Task<string[]> PermittedDefinitionCodesAsync(
         Guid tenantId,
         Guid actorUserId,
         Guid projectId,
-        IReadOnlyCollection<string> permissions,
         CancellationToken cancellationToken)
     {
-        foreach (var permission in permissions)
+        var permitted = new List<string>(ReportDefinitionRuntimePolicy.SupportedDefinitionCodes.Length);
+        var permissionDecisions = new Dictionary<string, bool>(StringComparer.Ordinal);
+        foreach (var definitionCode in ReportDefinitionRuntimePolicy.SupportedDefinitionCodes)
         {
-            if (!await permissionService.HasProjectPermissionAsync(
+            var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
+            if (!permissionDecisions.TryGetValue(sourcePermission, out var allowed))
+            {
+                allowed = await HasPermissionAsync(
                     tenantId,
                     actorUserId,
                     projectId,
-                    permission,
-                    cancellationToken))
+                    sourcePermission,
+                    cancellationToken);
+                permissionDecisions.Add(sourcePermission, allowed);
+            }
+            if (allowed)
             {
-                return false;
+                permitted.Add(definitionCode);
             }
         }
-
-        return true;
+        return permitted.ToArray();
     }
+
+    private async Task<bool> HasSourcePermissionAsync(
+        Guid tenantId,
+        Guid actorUserId,
+        Guid projectId,
+        string definitionCode,
+        CancellationToken cancellationToken) =>
+        ReportDefinitionRuntimePolicy.TryGetSourcePermission(definitionCode, out var permission) &&
+        await HasPermissionAsync(
+            tenantId,
+            actorUserId,
+            projectId,
+            permission,
+            cancellationToken);
+
+    private Task<bool> HasPermissionAsync(
+        Guid tenantId,
+        Guid actorUserId,
+        Guid projectId,
+        string permission,
+        CancellationToken cancellationToken) =>
+        permissionService.HasProjectPermissionAsync(
+            tenantId,
+            actorUserId,
+            projectId,
+            permission,
+            cancellationToken);
+
+    private static ReportingOutputMetadataRecord MapOutput(ReportOutput output) => new(
+        output.Id,
+        output.RunId,
+        output.ProjectId,
+        output.Format,
+        output.FileName,
+        output.ContentType,
+        output.SizeBytes,
+        output.Sha256,
+        output.VerificationCode,
+        output.Classification,
+        output.ArchiveState);
 
     private static T Deserialize<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, CanonicalJson.SerializerOptions)

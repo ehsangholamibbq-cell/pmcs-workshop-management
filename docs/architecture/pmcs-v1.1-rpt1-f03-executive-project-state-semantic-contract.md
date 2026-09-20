@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش مدیریتی / Executive Project State
 
 - شناسه: `PMCS-RPT1-F03-SEMANTIC-001`
-- نسخه: `1.2.1`
+- نسخه: `1.3.1`
 - خانواده: `RPT1-F03`
-- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS07-C1`
-- Runtime change: `Deterministic PDF/XLSX Renderer contract checkpointed in Run 154`
-- Migration / API / Catalog / Worker change: None
+- وضعیت: `Connected Candidate | Safe Resume S07-MS08 | Full CI pending`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS08-C1`
+- Runtime change: `Catalog/API/Worker wiring implemented on checkpointed Runtime + Renderer`
+- Migration / API / Catalog / Worker change: `Candidate; Production defaults unchanged`
 
 ## ۱. هدف و مرز خانواده
 
@@ -51,8 +51,9 @@ Runtime identity داخلی `executive-project-state-certified/1.0.0`، paramete
 تخصیص یافته‌اند. Checkpoint `S07-MS08` نیز Template `1.0.0` با content digest
 `4bf4f1f5de92eda854ab16702fc87aaebae951eea17ef023569cc338a5ce7d7a`، قرارداد Renderer
 `pmcs.reporting.executive-project-state.renderer/v1` و Layout
-`pmcs.reporting.executive-project-state.layout/v1` را pin کرده است. Migration و Catalog/Template
-seed همچنان اضافه نشده‌اند.
+`pmcs.reporting.executive-project-state.layout/v1` را pin کرده است. Candidate متصل جاری همان identityها
+را با Catalog/Template seed و pipeline مشترک منتشر می‌کند و هیچ contract یا digest قبلی را بازنویسی
+نمی‌کند.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -178,7 +179,8 @@ tie-break غیرقطعی، hash mismatch یا corruption باید Run را fail-
 
 ## ۸. Permission و Classification
 
-- Catalog/View به `reporting.catalog.read` و `project-state.read` در همان Project نیاز دارد؛
+- Catalog/View در HTTP و سرویس read-only ابزارها به `reporting.catalog.read` و
+  `project-state.read` در همان Project نیاز دارد؛
 - Create/Retry علاوه بر Source permission به `reporting.run.create` نیاز دارد؛
 - Download/Verify علاوه بر Source permission به `reporting.output.download` و Classification جاری
   نیاز دارد؛
@@ -188,6 +190,9 @@ tie-break غیرقطعی، hash mismatch یا corruption باید Run را fail-
 - نبود `financial-state.read`، `commercial-state.read` یا Permissionهای F04 تا F10 موجب حذف بخشی از
   F03 نمی‌شود، چون آن داده‌ها اصولاً Source این خانواده نیستند؛
 - نبود `project-state.read` کل گزارش را deny می‌کند؛ حذف خاموش Attention Item یا trend point مجاز نیست.
+
+Catalog، فهرست/جزئیات Run و metadata خروجی در `IReportingReadService` نیز باید همان policy
+definition-aware را اعمال کنند؛ gate ثابت Daily برای F03 و نمایش metadata میان خانواده‌ها ممنوع است.
 
 Classification خروجی بیشترین مقدار میان Definition، Project/source configuration و Snapshotهای
 واردشده است و حداقل `Internal` باقی می‌ماند. Source contract باید Classification را صریح برگرداند؛
@@ -253,19 +258,29 @@ parse و عدم join مالی/تجاری/Action را اثبات کند. Golden P
 | Template/Renderer/Layout identity | Checkpointed in Run 154 |
 | Source contract/selector/Snapshot builder | Checkpointed in Run 148 |
 | PDF/XLSX/visual/performance | Checkpointed in Run 154 |
-| Catalog/API/Worker wiring | Not Implemented |
+| Catalog/API/Worker wiring | Connected Candidate؛ Full CI pending |
 
 Checkpoint `S07-MS08` روی Runtime Core نسخه‌دار، parser/request/model fail-closed، PDF فارسی A4 با
 وضعیت‌های مستقل و هشدار scope، و XLSX هشت‌Sheet با RTL/freeze، text escaping و صفر Formula را اضافه
-کرده است. Registry Renderer مستقل است و عمداً به DI/Worker وصل نشده است. Source
+کرده است. Source
 `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
 `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job، `383/383`
 تست C#، `65/65` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس
-کرد. Catalog/API/Worker wiring، UI و Production enablement باید در Sliceهای بعدی باقی بمانند.
+کرد.
+
+Candidate جاری Migration forward شمارهٔ 45 را برای Definition/Template قطعی F03 اضافه می‌کند،
+strict empty-object parser را روی همان endpoint مشترک اعمال می‌کند و gateهای Catalog/Run/Retry/Cancel/
+Download/Verify و Worker را definition-aware می‌سازد. Worker فقط از `IProjectStateReportingSource`
+برای selection cutoff-aware استفاده می‌کند، Project profile سروری را هنگام پذیرش pin می‌کند و
+Renderer Registry اختصاصی F03 را dispatch می‌کند. هارنس متصل با Actor دارای `project-state.read` ولی
+فاقد `field.daily-reports.read`، isolation کاتالوگ، ایجاد/Replay/Conflict، Run visibility و هر دو خروجی
+PDF/XLSX را کنترل می‌کند. تا سبزشدن Full CI، Safe Resume همان `S07-MS08` است؛ UI و Production
+enablement همچنان جدا و خاموش‌اند.
 
 ## ۱۲. Gate statement
 
-این نسخه Renderer/Golden مستقل را checkpoint می‌کند، نه گزارش متصل یا F03 End-to-End.
-هیچ API، Migration، Catalog/Template seed، Worker dispatch، DI registration، feature flag یا
-Production setting در این Micro-Step تغییر نکرده است. Micro-Step بعدی فقط Catalog/API/Worker wiring
-متصل F03 است؛ F03 تا پایان آن کامل نمی‌شود و F04 تا F10 و RPT1 نیز باز هستند.
+این نسخه Candidate اتصال End-to-End خانواده F03 است، نه Safe Checkpoint نهایی آن. Migration،
+Catalog/Template seed، strict API، Project profile pin، permissionهای definition-aware، Worker dispatch،
+DI registration و qualification متصل اضافه شده‌اند؛ feature flag، license، UI و Production setting
+تغییر نکرده‌اند. تنها پس از Full CI سبز، `S07-MS09` می‌تواند Safe Checkpoint شود؛ F04 تا F10 و RPT1
+همچنان باز هستند.

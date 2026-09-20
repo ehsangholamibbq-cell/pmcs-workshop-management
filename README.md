@@ -7,11 +7,11 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` در Run 154، Renderer/Golden قطعی PDF/XLSX گزارش
-Executive Project State را روی Runtime Core نسخه‌دار پاس کرده است. F01 و F02 checkpoint متصل دارند؛
-F03 Runtime Core و Renderer/Golden checkpointed است، اما Catalog/API/Worker wiring آن هنوز باز است
-و F04 تا F10 نیز باز هستند. RPT1 فعال و همهٔ feature flagها، license و remediation در defaults خاموش
-یا `Unconfigured` باقی مانده‌اند.
+Safe Resume همچنان `PMCS-V1.1-RPT1-S07-MS08-C1` و Run 154 است. روی آن، Micro-Step بعدی با وضعیت
+`F03 Connected Candidate`، Catalog/Template seed، API سخت‌گیرانه و Worker/Renderer dispatch گزارش
+Executive Project State را برای Qualification متصل کرده است؛ این Candidate تا سبزشدن Full CI،
+Safe Checkpoint محسوب نمی‌شود. F01 و F02 checkpoint متصل دارند، F04 تا F10 باز هستند و همهٔ feature
+flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -141,9 +141,9 @@ F03 Runtime Core و Renderer/Golden checkpointed است، اما Catalog/API/Wor
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
 - گزارش هفتگی/ماهانه F02 متصل: Source رسمی correction-safe، مرز شمسی و شنبه‌محور، Snapshot/hash
   قطعی، PDF/XLSX deterministic و Catalog/API/Worker دارای qualification متصل
-- قرارداد checkpointed F03 برای Executive Project State: فقط Snapshot رسمی و immutable،
+- F03 Connected Candidate برای Executive Project State: فقط Snapshot رسمی و immutable،
   cutoff-aware، بدون Recalculate، Composite Health یا join پنهان F04 تا F10؛ Runtime Core و
-  Renderer/Golden PDF/XLSX قطعی، بدون Catalog/API/Worker wiring
+  Renderer/Golden PDF/XLSX checkpointed و Catalog/API/Worker wiring در انتظار Full CI
 
 ## تصمیم‌های بنیادین
 

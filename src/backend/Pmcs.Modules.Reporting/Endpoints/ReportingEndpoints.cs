@@ -21,11 +21,7 @@ namespace Pmcs.Modules.Reporting.Endpoints;
 
 internal static class ReportingEndpoints
 {
-    private const string DailyDefinitionCode = "daily-report-certified";
-    private const string SourcePermission = "field.daily-reports.read";
     private const string CreateOperation = "reporting.run.create";
-    private static readonly string[] SupportedDefinitionCodes =
-        [DailyDefinitionCode, ProjectPeriodicReportRuntimeContract.DefinitionCode];
     private static readonly HashSet<string> DailyParameterNames =
         new(StringComparer.Ordinal) { "dailyReportId", "includeRevisionChain" };
     private static readonly HashSet<string> PeriodicParameterNames =
@@ -62,25 +58,28 @@ internal static class ReportingEndpoints
             permissionService,
             projectDirectory,
             cancellationToken);
-        if (gate.Result is not null)
+        if (gate is not null)
         {
-            return gate.Result;
-        }
-
-        if (!gate.SourceAllowed)
-        {
-            return Results.Ok(Array.Empty<ReportCatalogDefinitionResponse>());
+            return gate;
         }
 
         var definitions = await dbContext.Definitions.AsNoTracking()
             .Where(item => item.Status == ReportDefinitionStatus.Active &&
-                SupportedDefinitionCodes.Contains(item.Code))
+                ReportDefinitionRuntimePolicy.SupportedDefinitionCodes.Contains(item.Code))
             .OrderBy(item => item.Code)
             .ToArrayAsync(cancellationToken);
+        var permittedDefinitionCodes = await PermittedDefinitionCodesAsync(
+            actor,
+            projectId,
+            permissionService,
+            cancellationToken);
         var responses = new List<ReportCatalogDefinitionResponse>(definitions.Length);
         foreach (var definition in definitions)
         {
-            responses.Add(await ToCatalogResponseAsync(definition, dbContext, cancellationToken));
+            if (permittedDefinitionCodes.Contains(definition.Code, StringComparer.Ordinal))
+            {
+                responses.Add(await ToCatalogResponseAsync(definition, dbContext, cancellationToken));
+            }
         }
 
         return Results.Ok(responses);
@@ -103,12 +102,20 @@ internal static class ReportingEndpoints
             permissionService,
             projectDirectory,
             cancellationToken);
-        if (gate.Result is not null)
+        if (gate is not null)
         {
-            return gate.Result;
+            return gate;
         }
 
-        if (!gate.SourceAllowed || !SupportedDefinitionCodes.Contains(definitionCode, StringComparer.Ordinal))
+        if (!ReportDefinitionRuntimePolicy.SupportedDefinitionCodes.Contains(
+                definitionCode,
+                StringComparer.Ordinal) ||
+            !await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                definitionCode,
+                permissionService,
+                cancellationToken))
         {
             return Results.NotFound(new { code = "reporting.definition.not_found" });
         }
@@ -166,28 +173,31 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status409Conflict, "project.not_operational", "Project is not active.");
         }
 
-        if (!await permissionService.HasProjectPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
-                projectId,
-                SourcePermission,
-                cancellationToken))
-        {
-            return Problem(
-                StatusCodes.Status403Forbidden,
-                "reporting.source_permission.denied",
-                "The report source is not permitted.");
-        }
-
         if (request.ClientGeneratedId == Guid.Empty)
         {
             return Problem(StatusCodes.Status400BadRequest, "reporting.run.identity.invalid", "Client-generated run id is required.");
         }
 
         var definitionCode = request.DefinitionCode?.Trim() ?? string.Empty;
-        if (!SupportedDefinitionCodes.Contains(definitionCode, StringComparer.Ordinal))
+        if (!ReportDefinitionRuntimePolicy.SupportedDefinitionCodes.Contains(
+                definitionCode,
+                StringComparer.Ordinal))
         {
             return Problem(StatusCodes.Status400BadRequest, "reporting.definition.invalid", "Report definition is invalid.");
+        }
+
+        var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
+        if (!await permissionService.HasProjectPermissionAsync(
+                actor.TenantId,
+                actor.UserId,
+                projectId,
+                sourcePermission,
+                cancellationToken))
+        {
+            return Problem(
+                StatusCodes.Status403Forbidden,
+                "reporting.source_permission.denied",
+                "The report source is not permitted.");
         }
 
         var definition = await dbContext.Definitions.AsNoTracking().SingleOrDefaultAsync(
@@ -228,7 +238,7 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status400BadRequest, "reporting.as_of.future", "Report cutoff cannot be in the future.");
         }
 
-        ProjectPeriodicPinnedProjectProfile? pinnedProjectProfile = null;
+        string? pinnedProjectProfileJson = null;
         if (parameters is ProjectPeriodicReportParameters periodicParameters)
         {
             try
@@ -246,12 +256,30 @@ internal static class ReportingEndpoints
 
             try
             {
-                pinnedProjectProfile = ProjectPeriodicPinnedProjectProfile.Capture(project);
-                pinnedProjectProfile.ValidateForRun(
+                var periodicProfile = ProjectPeriodicPinnedProjectProfile.Capture(project);
+                periodicProfile.ValidateForRun(
                     actor.TenantId,
                     projectId,
                     project.TimeZone,
                     now);
+                pinnedProjectProfileJson = CanonicalJson.Serialize(periodicProfile);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
+            }
+        }
+        else if (parameters is ExecutiveProjectStateReportParameters)
+        {
+            try
+            {
+                var executiveProfile = ExecutiveProjectStatePinnedProjectProfile.Capture(project);
+                executiveProfile.ValidateForRun(
+                    actor.TenantId,
+                    projectId,
+                    asOfUtc,
+                    now);
+                pinnedProjectProfileJson = CanonicalJson.Serialize(executiveProfile);
             }
             catch (DomainRuleException exception)
             {
@@ -263,7 +291,7 @@ internal static class ReportingEndpoints
             actor.TenantId,
             actor.UserId,
             projectId,
-            operations: [CreateOperation, SourcePermission],
+            operations: [CreateOperation, sourcePermission],
             cancellationToken: cancellationToken);
         if (permissionPreview.Decisions.Any(decision => !decision.Allowed))
         {
@@ -312,7 +340,7 @@ internal static class ReportingEndpoints
             requestedFormatsJson,
             asOfUtc,
             project.TimeZone,
-            pinnedProjectProfile is null ? null : CanonicalJson.Serialize(pinnedProjectProfile),
+            pinnedProjectProfileJson,
             actor.UserId,
             permissionSnapshotJson,
             httpContext.TraceIdentifier,
@@ -391,9 +419,21 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status400BadRequest, "reporting.status.invalid", "Run status is invalid.");
         }
 
+        var permittedDefinitionCodes = await PermittedDefinitionCodesAsync(
+            actor,
+            projectId,
+            permissionService,
+            cancellationToken);
+        if (permittedDefinitionCodes.Length == 0)
+        {
+            return Results.Ok(Array.Empty<ReportRunResponse>());
+        }
+
         var take = Math.Clamp(limit ?? 50, 1, 100);
         var query = dbContext.Runs.AsNoTracking()
-            .Where(run => run.TenantId == actor.TenantId && run.ProjectId == projectId);
+            .Where(run => run.TenantId == actor.TenantId &&
+                run.ProjectId == projectId &&
+                permittedDefinitionCodes.Contains(run.DefinitionCode));
         if (status.HasValue)
         {
             query = query.Where(run => run.Status == status.Value);
@@ -437,9 +477,20 @@ internal static class ReportingEndpoints
         var run = await dbContext.Runs.AsNoTracking().SingleOrDefaultAsync(item =>
             item.Id == runId && item.TenantId == actor.TenantId && item.ProjectId == projectId,
             cancellationToken);
-        return run is null
-            ? Results.NotFound(new { code = "reporting.run.not_found" })
-            : Results.Ok(await LoadRunResponseAsync(run, dbContext, cancellationToken));
+        if (run is null)
+        {
+            return Results.NotFound(new { code = "reporting.run.not_found" });
+        }
+        if (!await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                run.DefinitionCode,
+                permissionService,
+                cancellationToken))
+        {
+            return SourcePermissionDenied();
+        }
+        return Results.Ok(await LoadRunResponseAsync(run, dbContext, cancellationToken));
     }
 
     private static async Task<IResult> RetryRunAsync(
@@ -470,6 +521,25 @@ internal static class ReportingEndpoints
             return gate;
         }
 
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await ReportRunAdvisoryLock.AcquireAsync(dbContext, runId, cancellationToken);
+        var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
+            item.Id == runId && item.TenantId == actor.TenantId && item.ProjectId == projectId,
+            cancellationToken);
+        if (run is null)
+        {
+            return Results.NotFound(new { code = "reporting.run.not_found" });
+        }
+        if (!await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                run.DefinitionCode,
+                permissionService,
+                cancellationToken))
+        {
+            return SourcePermissionDenied();
+        }
+
         var idempotency = await FindMutationReplayAsync(
             httpContext,
             actor.TenantId,
@@ -480,16 +550,6 @@ internal static class ReportingEndpoints
         if (idempotency.Replay is not null)
         {
             return idempotency.Replay;
-        }
-
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-        await ReportRunAdvisoryLock.AcquireAsync(dbContext, runId, cancellationToken);
-        var run = await dbContext.Runs.SingleOrDefaultAsync(item =>
-            item.Id == runId && item.TenantId == actor.TenantId && item.ProjectId == projectId,
-            cancellationToken);
-        if (run is null)
-        {
-            return Results.NotFound(new { code = "reporting.run.not_found" });
         }
 
         var previousDiagnostic = run.DiagnosticCode;
@@ -583,6 +643,15 @@ internal static class ReportingEndpoints
         if (run is null)
         {
             return Results.NotFound(new { code = "reporting.run.not_found" });
+        }
+        if (!await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                run.DefinitionCode,
+                permissionService,
+                cancellationToken))
+        {
+            return SourcePermissionDenied();
         }
 
         var idempotency = await FindMutationReplayAsync(
@@ -687,6 +756,15 @@ internal static class ReportingEndpoints
         {
             return Results.NotFound(new { code = "reporting.output.not_found" });
         }
+        if (!await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                context.Run.DefinitionCode,
+                permissionService,
+                cancellationToken))
+        {
+            return SourcePermissionDenied();
+        }
 
         var content = await ReadVerifiedOutputAsync(context, documentDirectory, cancellationToken);
         if (content is null)
@@ -767,6 +845,15 @@ internal static class ReportingEndpoints
         {
             return Results.NotFound(new { code = "reporting.output.not_found" });
         }
+        if (!await HasSourcePermissionAsync(
+                actor,
+                projectId,
+                context.Run.DefinitionCode,
+                permissionService,
+                cancellationToken))
+        {
+            return SourcePermissionDenied();
+        }
 
         var content = await ReadVerifiedOutputAsync(context, documentDirectory, cancellationToken);
         if (content is null)
@@ -812,7 +899,7 @@ internal static class ReportingEndpoints
             context.Output.ArchiveState == ReportOutputArchiveState.Archived));
     }
 
-    private static async Task<CatalogGate> GateCatalogAsync(
+    private static async Task<IResult?> GateCatalogAsync(
         Guid projectId,
         ReportingRuntimeOptions runtime,
         ICurrentActor actor,
@@ -822,12 +909,12 @@ internal static class ReportingEndpoints
     {
         if (!runtime.Phase1Enabled)
         {
-            return new CatalogGate(Results.NotFound(), false);
+            return Results.NotFound();
         }
 
         if (!actor.IsAuthenticated)
         {
-            return new CatalogGate(Results.Unauthorized(), false);
+            return Results.Unauthorized();
         }
 
         if (!await permissionService.HasProjectPermissionAsync(
@@ -837,23 +924,17 @@ internal static class ReportingEndpoints
                 "reporting.catalog.read",
                 cancellationToken))
         {
-            return new CatalogGate(
-                Problem(StatusCodes.Status403Forbidden, "reporting.permission.denied", "Report catalog is not permitted."),
-                false);
+            return Problem(
+                StatusCodes.Status403Forbidden,
+                "reporting.permission.denied",
+                "Report catalog is not permitted.");
         }
 
         if (!await projectDirectory.ExistsAsync(actor.TenantId, projectId, cancellationToken))
         {
-            return new CatalogGate(Results.NotFound(new { code = "project.not_found" }), false);
+            return Results.NotFound(new { code = "project.not_found" });
         }
-
-        var sourceAllowed = await permissionService.HasProjectPermissionAsync(
-            actor.TenantId,
-            actor.UserId,
-            projectId,
-            SourcePermission,
-            cancellationToken);
-        return new CatalogGate(null, sourceAllowed);
+        return null;
     }
 
     private static async Task<IResult?> GateRunMutationAsync(
@@ -885,19 +966,6 @@ internal static class ReportingEndpoints
                 "reporting.permission.denied",
                 "Report run mutation is not permitted.");
         }
-        if (!await permissionService.HasProjectPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
-                projectId,
-                SourcePermission,
-                cancellationToken))
-        {
-            return Problem(
-                StatusCodes.Status403Forbidden,
-                "reporting.source_permission.denied",
-                "The report source is not permitted.");
-        }
-
         var project = await projectDirectory.FindProfileAsync(actor.TenantId, projectId, cancellationToken);
         if (project is null)
         {
@@ -939,18 +1007,6 @@ internal static class ReportingEndpoints
                 StatusCodes.Status403Forbidden,
                 "reporting.permission.denied",
                 "Report output access is not permitted.");
-        }
-        if (!await permissionService.HasProjectPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
-                projectId,
-                SourcePermission,
-                cancellationToken))
-        {
-            return Problem(
-                StatusCodes.Status403Forbidden,
-                "reporting.source_permission.denied",
-                "The report source is not permitted.");
         }
         return null;
     }
@@ -1155,19 +1211,6 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status403Forbidden, "reporting.permission.denied", "Report runs are not permitted.");
         }
 
-        if (!await permissionService.HasProjectPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
-                projectId,
-                SourcePermission,
-                cancellationToken))
-        {
-            return Problem(
-                StatusCodes.Status403Forbidden,
-                "reporting.source_permission.denied",
-                "The report source is not permitted.");
-        }
-
         return null;
     }
 
@@ -1189,7 +1232,8 @@ internal static class ReportingEndpoints
             template.Version,
             Deserialize<ReportFormat[]>(definition.SupportedFormatsJson),
             Deserialize<string[]>(definition.RequiredPermissionsJson),
-            definition.Code == ProjectPeriodicReportRuntimeContract.DefinitionCode
+            definition.Code == ProjectPeriodicReportRuntimeContract.DefinitionCode ||
+                definition.Code == ExecutiveProjectStateReportRuntimeContract.DefinitionCode
                 ? [
                     ReportDataStatus.Available,
                     ReportDataStatus.NoData,
@@ -1281,6 +1325,57 @@ internal static class ReportingEndpoints
                 : null;
     }
 
+    private static async Task<string[]> PermittedDefinitionCodesAsync(
+        ICurrentActor actor,
+        Guid projectId,
+        IProjectPermissionService permissionService,
+        CancellationToken cancellationToken)
+    {
+        var permitted = new List<string>(ReportDefinitionRuntimePolicy.SupportedDefinitionCodes.Length);
+        var permissionDecisions = new Dictionary<string, bool>(StringComparer.Ordinal);
+        foreach (var definitionCode in ReportDefinitionRuntimePolicy.SupportedDefinitionCodes)
+        {
+            var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
+            if (!permissionDecisions.TryGetValue(sourcePermission, out var allowed))
+            {
+                allowed = await permissionService.HasProjectPermissionAsync(
+                    actor.TenantId,
+                    actor.UserId,
+                    projectId,
+                    sourcePermission,
+                    cancellationToken);
+                permissionDecisions.Add(sourcePermission, allowed);
+            }
+            if (allowed)
+            {
+                permitted.Add(definitionCode);
+            }
+        }
+        return permitted.ToArray();
+    }
+
+    private static async Task<bool> HasSourcePermissionAsync(
+        ICurrentActor actor,
+        Guid projectId,
+        string definitionCode,
+        IProjectPermissionService permissionService,
+        CancellationToken cancellationToken)
+    {
+        if (!ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+                definitionCode,
+                out var sourcePermission))
+        {
+            return false;
+        }
+
+        return await permissionService.HasProjectPermissionAsync(
+            actor.TenantId,
+            actor.UserId,
+            projectId,
+            sourcePermission,
+            cancellationToken);
+    }
+
     private static DailyReportReportParameters? ParseDailyParameters(JsonElement parameters)
     {
         if (parameters.ValueKind != JsonValueKind.Object ||
@@ -1310,10 +1405,18 @@ internal static class ReportingEndpoints
     private static object? ParseParameters(string definitionCode, JsonElement parameters) =>
         definitionCode switch
         {
-            DailyDefinitionCode => ParseDailyParameters(parameters),
+            ReportDefinitionRuntimePolicy.DailyDefinitionCode => ParseDailyParameters(parameters),
             ProjectPeriodicReportRuntimeContract.DefinitionCode => ParsePeriodicParameters(parameters),
+            ExecutiveProjectStateReportRuntimeContract.DefinitionCode =>
+                ParseExecutiveProjectStateParameters(parameters),
             _ => null
         };
+
+    private static ExecutiveProjectStateReportParameters? ParseExecutiveProjectStateParameters(
+        JsonElement parameters) =>
+        parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
+            ? new ExecutiveProjectStateReportParameters()
+            : null;
 
     private static ProjectPeriodicReportParameters? ParsePeriodicParameters(JsonElement parameters)
     {
@@ -1349,6 +1452,7 @@ internal static class ReportingEndpoints
     {
         DailyReportReportParameters daily => CanonicalJson.Serialize(daily),
         ProjectPeriodicReportParameters periodic => CanonicalJson.Serialize(periodic),
+        ExecutiveProjectStateReportParameters executive => CanonicalJson.Serialize(executive),
         _ => throw new InvalidOperationException("Unsupported reporting parameters.")
     };
 
@@ -1362,7 +1466,10 @@ internal static class ReportingEndpoints
             title: title,
             extensions: new Dictionary<string, object?> { ["code"] = code });
 
-    private sealed record CatalogGate(IResult? Result, bool SourceAllowed);
+    private static IResult SourcePermissionDenied() => Problem(
+        StatusCodes.Status403Forbidden,
+        "reporting.source_permission.denied",
+        "The report source is not permitted.");
 
     private sealed record MutationIdempotency(
         string Key,

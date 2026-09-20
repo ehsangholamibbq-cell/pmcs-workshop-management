@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.21.0`
-- وضعیت: F03 deterministic Renderer/Golden passed in Run 154؛ Wiring و F04-F10/UI/Production باز
+- نسخه: `1.22.0`
+- وضعیت: F03 Connected Candidate روی Safe Resume S07-MS08؛ Full CI pending؛ F04-F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -604,3 +604,33 @@ Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` فقط Renderer/Golden را می‌بندد. Catalog/API/Worker
 wiring، UI و Production enablement بازند و تمام Suiteها و Goldenهای V1/F01/F02 بدون Regression
 باقی مانده‌اند.
+
+## ۳۱. Catalog/API/Worker wiring متصل خانواده F03 — Slice 07 Micro-Step 09 Candidate
+
+Candidate باید بدون endpoint جدید و بدون فعال‌سازی Production این Gateها را پاس کند:
+
+- Migration forward شمارهٔ 45، Definition/Template قطعی، digest و permission برابر
+  `project-state.read`؛
+- strict parser که فقط `{}` را می‌پذیرد و property اضافه، array/null، Snapshot ID و selector را رد
+  می‌کند؛
+- pin شدن Project profile نسخه‌دار در پذیرش Run و validate دوباره Tenant/Project/cutoff/accepted-at؛
+- allowlist سه‌خانواده‌ای با Source permission مستقل؛ F01/F02 برابر `field.daily-reports.read` و F03
+  برابر `project-state.read`؛
+- فیلتر per-definition در Catalog و List Runs و re-evaluation در Get/Retry/Cancel/Download/Verify؛
+- همگرایی `IReportingReadService` برای Catalog/Run/Output metadata با همان policy و منع نشت میان F01/F02/F03؛
+- جلوگیری از bypass مجوز در idempotent replay Retry؛
+- Worker dispatch فقط از `IProjectStateReportingSource`، Snapshot builder و Registry اختصاصی F03؛
+- re-evaluation `reporting.run.create + project-state.read` پیش از Snapshot و پیش از Storage؛
+- parse و integrity check دوباره semantic Snapshot پیش از render؛
+- TestHarness با Finance Manager دارای `project-state.read` و فاقد Daily source permission؛ Catalog
+  فقط F03، strict rejection، Observer deny، create/replay/conflict و Run filtering؛
+- Run کامل `Queued → BuildingSnapshot → SnapshotReady → Rendering → Complete` با `NoData` صریح؛
+- دو Output PDF/XLSX، filename امن، SHA-256/ETag/content type، verification و object ownership؛
+- عدم تغییر `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` و PDF license `Unconfigured`؛
+- عدم Regression Goldenهای F01/F02/F03، security/recovery/capacity/observability و UI/E2E.
+
+هارنس متصل F03 دارای `14/14` assertion است. انتظار Candidate برای Source CI برابر `387` تست C#،
+`66` تست قراردادی Node، `139` تست Web، پنج browser scenario، validator روی `367` فایل ماژولی،
+system audit ثابت `274/204/5`، Restore Drill کامل `45` Migration و Qualification `7/7` است. این
+اعداد تا مشاهدهٔ artifactهای همان source commit Evidence محسوب نمی‌شوند و Safe Resume همچنان
+`PMCS-V1.1-RPT1-S07-MS08-C1` است.

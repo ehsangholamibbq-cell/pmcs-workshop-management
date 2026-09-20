@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.16.0`
+- نسخه: `1.17.0`
 - آخرین کنترل: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 Development / RPT1 Active`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F03 Connected Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -26,7 +26,8 @@
 | آخرین Source Candidate واجد Evidence | `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f`؛ tree `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` |
 | Current evidence-bearing source checkpoint | `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f`؛ tree `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434`؛ Run 154 سبز |
 | Source lineage | Source S07-MS08 در lineage مستقیم پس از Checkpoint commit `7b7222ef70f32fb882690b1c6465771067dbf3dc` است؛ هیچ rebase یا baseline reset انجام نشد |
-| Migration count | `44`؛ Restore Drill متصل پاس شده است |
+| Current connected candidate | parent `de76a91ec9047205fceba1321bae7187bf787fec`؛ S07-MS09 شامل F03 Catalog/API/Worker wiring؛ Full CI pending |
+| Migration count | Safe Resume: `44` و Restore Drill سبز؛ Candidate: `45` و Restore Drill pending |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
 نیست. Baseline قفل‌شده V1 نیز باز نشده است.
@@ -35,7 +36,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.37.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.38.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -48,7 +49,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.36.0` | Superseded؛ `v1.37.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.37.0` | Superseded؛ `v1.38.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS08` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -116,13 +117,15 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 `V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS08-C1` است. روی این
 Checkpoint، Catalog/API/Worker و qualification متصل F02 و Runtime Core و Renderer/Golden محدود F03
-بسته شده‌اند. تصمیم
+بسته شده‌اند. S07-MS09 اکنون `Connected Candidate` است: Migration 45، Definition/Template seed،
+strict empty-object API، Project profile pin، مجوز منبع definition-aware و Worker/Renderer dispatch
+برای F03 پیاده شده‌اند، اما تا Full CI سبز Safe Checkpoint نیستند. تصمیم
 `QuestPDF Community` در ADR 0030 ثبت و package/image/font digestها، PDF Golden متصل QA-only، visual
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است:
 `RPT1-F01` و `RPT1-F02` checkpoint متصل دارند؛ F03 دارای Runtime Core و Renderer/Golden
-checkpointed و فاقد wiring است و F04 تا F10 `Required / Not Implemented` هستند. قرارداد
+checkpointed و wiring کاندید است و F04 تا F10 `Required / Not Implemented` هستند. قرارداد
 `PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` Runtime Core، Renderer/Golden و wiring checkpointed دارد:
 identity/schema نسخه‌دار، Project configuration pin، period source/resolver، semantic Snapshot،
 render request/model fail-closed و PDF/XLSX قطعی. Migration 44، Definition/Template seed، strict
@@ -134,14 +137,15 @@ Run 146 هر هشت Job را سبز کرد. نسخه `PMCS-RPT1-F03-SEMANTIC-001
 identity/schema نسخه‌دار، Project profile pin، Source contract و selector cutoff-aware در
 ProjectIntelligence و semantic Snapshot builder را با Unit/contract test بست و Run 148 هر هشت Job را
 سبز کرد. نسخه `PMCS-RPT1-F03-SEMANTIC-001 v1.2.1` در Checkpoint `S07-MS08`، Template/Renderer/Layout
-identity، render model canonical و PDF/XLSX قطعی را بست و Run 154 هر هشت Job را سبز کرد. هیچ
-Migration، API، Catalog/Template seed، Worker dispatch یا DI registration برای F03 وجود ندارد.
+identity، render model canonical و PDF/XLSX قطعی را بست و Run 154 هر هشت Job را سبز کرد. نسخهٔ
+Candidate `PMCS-RPT1-F03-SEMANTIC-001 v1.3.1` این Runtime و Rendererها را از مسیر Catalog/API/Worker
+متصل می‌کند؛ UI، feature flag تازه و Production enablement ندارد و Evidence کامل آن هنوز pending است.
 
 ## Remaining Work
 
-1. Catalog/Template seed، strict API و Worker wiring متصل F03 روی Runtime و Golden checkpointed؛
+1. Full CI، Restore Drill و هارنس متصل S07-MS09 را qualify و سپس Checkpoint امن F03 را ثبت کند؛
    UI و Production enablement وارد این Micro-Step نشوند.
-2. سپس `RPT1-F04` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛
+2. پس از Checkpoint، `RPT1-F04` تا `RPT1-F10` با Micro-Slice و Qualification مستقل؛
    Scope ده‌گانه طبق ADR 0031 حفظ شده است.
 3. UI اختصاصی Reporting و visual regression در UX2؛ سپس تکمیل COL1/UX2/INT1/QA1 طبق ترتیب مصوب.
 4. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
@@ -150,7 +154,7 @@ Migration، API، Catalog/Template seed، Worker dispatch یا DI registration �
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | F01 و F02 واجد Safe Checkpoint متصل‌اند؛ F03 Runtime Core و Renderer/Golden checkpointed ولی بدون wiring و F04 تا F10 پیاده‌نشده‌اند | wiring مستقل F03؛ بعد Micro-Sliceهای F04 تا F10 |
+| Implementation | F01 و F02 واجد Safe Checkpoint متصل‌اند؛ F03 wiring در Connected Candidate و منتظر Full CI است؛ F04 تا F10 پیاده‌نشده‌اند | Qualification و Checkpoint مستقل F03؛ بعد Micro-Sliceهای F04 تا F10 |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -203,6 +207,9 @@ Migration، API، Catalog/Template seed، Worker dispatch یا DI registration �
   `235e0a0f12b560bba06792c3290724d739117b73` با همان tree؛ Run 154 (`35512969648`) هر هشت Job
   موفق، `383/383` تست C#، `65/65` تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴
   Migration.
+- F03 Connected Candidate MS09 از parent `de76a91ec9047205fceba1321bae7187bf787fec`، Migration 45،
+  strict API و Worker/renderer dispatch را اضافه کرده است؛ source/tree و CI evidence پس از انتشار
+  کاندید ثبت می‌شوند و تا آن زمان Safe Resume همان MS08 است.
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
@@ -225,9 +232,9 @@ Migration، API، Catalog/Template seed، Worker dispatch یا DI registration �
 
 ## Exact Next Micro-Step
 
-**Micro-Step بعدی فقط Catalog/Template seed، strict API و Worker wiring متصل خانواده F03 را روی
-Runtime و Golden نسخه‌دار `S07-MS08` اضافه می‌کند.** UI و Production enablement همچنان جدا و خاموش
-بمانند.
+**Micro-Step جاری فقط Qualification متصل Connected Candidate خانواده F03، Restore Drill 45 و ثبت
+Safe Checkpoint `S07-MS09` پس از Full CI سبز است.** UI و Production enablement همچنان جدا و خاموش
+می‌مانند؛ پس از آن Micro-Slice مستقل F04 آغاز می‌شود.
 
 ## Resume Rule
 

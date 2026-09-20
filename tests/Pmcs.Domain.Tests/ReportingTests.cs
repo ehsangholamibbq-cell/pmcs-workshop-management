@@ -47,6 +47,32 @@ public sealed class ReportingTests
             item.Name == "reporting.report.completed" && item.Version == 1);
     }
 
+    [Theory]
+    [InlineData("daily-report-certified", "field.daily-reports.read")]
+    [InlineData("project-periodic-certified", "field.daily-reports.read")]
+    [InlineData("executive-project-state-certified", "project-state.read")]
+    public void RuntimePolicyPinsSourcePermissionPerDefinition(
+        string definitionCode,
+        string expectedPermission)
+    {
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+            definitionCode,
+            out var permission));
+        Assert.Equal(expectedPermission, permission);
+        Assert.Equal(expectedPermission, ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode));
+    }
+
+    [Fact]
+    public void RuntimePolicyRejectsUnknownDefinition()
+    {
+        Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+            "unknown-report",
+            out var permission));
+        Assert.Equal(string.Empty, permission);
+        Assert.Throws<InvalidOperationException>(() =>
+            ReportDefinitionRuntimePolicy.RequireSourcePermission("unknown-report"));
+    }
+
     [Fact]
     public void CanonicalJsonSortsObjectPropertiesAndProducesStableLowercaseHash()
     {

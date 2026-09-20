@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Runtime Core و Renderer/Golden checkpointed و wiring باز؛ F04–F10/UI باز |
-| Database migration | ۴۴ Migration؛ Restore Drill متصلِ ۴۴ Migration در Run 154 پاس شده است |
+| Product runtime implementation | F01 و F02 متصل و واجد Safe Checkpoint؛ F03 Connected Candidate روی Safe Resume MS08 و در انتظار Full CI؛ F04–F10/UI باز |
+| Database migration | ۴۴ Migration در Safe Resume؛ Migration 45 در Candidate و در انتظار Restore Drill متصل است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -216,6 +216,13 @@ Slice 07 Micro-Step 08 فقط Renderer contract مستقل، render model canoni
 را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS08-C1` است. هیچ endpoint، Migration،
 Catalog/Template seed، Worker dispatch، DI registration، UI یا default Production تغییر نکرد؛ F03
 هنوز End-to-End Done نیست و RPT1 فعال است.
+
+Slice 07 Micro-Step 09 Candidate از Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS08-C1` شروع شده و فقط
+Migration forward شمارهٔ 45، Definition/Template seed ثابت F03، پارامتر دقیقاً خالی `{}`، pin پروفایل
+پروژه، مجوز منبع `project-state.read` به‌صورت definition-aware، Worker snapshot/renderer dispatch و
+هارنس متصل PDF/XLSX را اضافه می‌کند. این تغییر هیچ UI یا Production enablement ندارد و defaultهای
+`Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` و `PdfLicense=Unconfigured` را تغییر نمی‌دهد.
+تا پیش از Full CI سبز، این کار فقط Connected Candidate است و Safe Resume همان MS08 باقی می‌ماند.
 
 ## ۳. قرارداد شاخه و ادغام
 

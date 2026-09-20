@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02 connected؛ F03 Runtime Core + Renderer/Golden passed in Run 154 بدون Catalog/API/Worker؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02 connected؛ F03 Connected Candidate روی Safe Resume S07-MS08 و در انتظار Full CI؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -65,10 +65,11 @@ Source `7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
 `d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 (`35498990050`) هر هشت Job را پاس کرد؛
 هارنس متصل F02 هر `13/13` assertion و Restore Drill هر ۴۴ Migration را تأیید کردند.
 
-### ۱.۶ Runtime Core و Renderer/Golden checkpointed F03 بدون تغییر API
+### ۱.۶ خانواده F03 روی API متصل — Candidate
 
-Micro-Stepهای `S07-MS06/MS07/MS08` route تازه‌ای اضافه نمی‌کنند. قرارداد
-`PMCS-RPT1-F03-SEMANTIC-001 v1.2.1` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
+Micro-Stepهای `S07-MS06/MS07/MS08` قرارداد، Runtime Core و Renderer/Golden را مستقل checkpoint
+کردند. Candidate `S07-MS09` همان routeهای موجود را برای Definition سوم فعال می‌کند. قرارداد
+`PMCS-RPT1-F03-SEMANTIC-001 v1.3.1` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
 و `sourceCutoffUtc` از `asOfUtc` پین‌شدهٔ Run می‌آیند. Client اجازه ارسال `snapshotId`، تاریخ، status،
 include flag یا انتخاب Source را ندارد.
 
@@ -76,14 +77,17 @@ Runtime Core فقط از Application Contract خواندنی ProjectIntelligence
 تا cutoff را انتخاب می‌کند و هرگز `project-state.recalculate` یا endpoint Command Center را
 فراخوانی نمی‌کند. Project State عملیاتی، Coverage/Freshness/Confidence و partial scope بدون join
 Finance/Commercial/Planning/Quality/HSE/Action حمل می‌شوند. Runtime identity و parameter/snapshot/
-profile schemaها داخلی‌اند. Template/Renderer/Layout identity و PDF/XLSX قطعی در Registry مستقل
-وجود دارند، اما Definition/Template Catalog، API dispatch و Worker F03 هنوز وجود ندارند و Registry
-در DI ثبت نشده است.
+profile schemaها داخلی‌اند. Migration forward شمارهٔ 45، Definition/Template با permission
+`project-state.read` را seed می‌کند. API parser فقط object خالی را می‌پذیرد، profile سروری را pin
+می‌کند و Catalog/Run/Retry/Cancel/Download/Verify را براساس Source permission همان Definition فیلتر
+یا deny می‌کند. سرویس read-only ابزارهای Reporting نیز Catalog/Run/Output metadata را با همین policy
+فیلتر می‌کند. Worker Registry اختصاصی F03 را dispatch و permissionها را پیش از Snapshot و Storage
+دوباره ارزیابی می‌کند.
 
 Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
 `58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 (`35512969648`) هر هشت Job را پاس کرد.
-این Evidence Runtime Core و Renderer/Golden داخلی را checkpoint می‌کند، اما route، Catalog یا Worker
-تازه‌ای فعال نمی‌کند و هیچ گزارش F03 هنوز از API قابل ایجاد، retry، verify یا دانلود نیست.
+این Evidence مبنای Runtime Core و Renderer/Golden است. اتصال جاری تا سبزشدن Full CI یک Candidate است؛
+Safe Resume همچنان `S07-MS08` و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
 ## ۲. Catalog
 
@@ -116,6 +120,12 @@ Catalog فقط Definitionهایی را برمی‌گرداند که Actor در �
 Definition دوم `project-periodic-certified` با schema
 `pmcs.reporting.project-periodic.parameters/v1`، Template `1.0.0`، فرمت‌های `Pdf/Xlsx` و چهار وضعیت
 `Available/NoData/InsufficientData/NotConfigured` منتشر می‌شود.
+
+Definition سوم `executive-project-state-certified` با schema
+`pmcs.reporting.executive-project-state.parameters/v1`، Template `1.0.0`، permission
+`project-state.read`، فرمت‌های `Pdf/Xlsx` و همان چهار وضعیت داده منتشر می‌شود. Catalog هر Definition
+را مستقل از دیگری براساس permission منبع فیلتر می‌کند؛ داشتن `project-state.read` مجوز دیدن F01/F02
+را تولید نمی‌کند.
 
 ## ۳. ایجاد Run
 
@@ -155,6 +165,19 @@ Content-Type: application/json
 }
 ```
 
+نمونهٔ F03 روی همان endpoint؛ object باید دقیقاً خالی باشد:
+
+```json
+{
+  "clientGeneratedId": "11111111-1111-1111-8111-111111111113",
+  "definitionCode": "executive-project-state-certified",
+  "templateVersion": "1.0.0",
+  "asOfUtc": "2026-09-20T12:00:00Z",
+  "formats": ["Pdf", "Xlsx"],
+  "parameters": {}
+}
+```
+
 Permission:
 
 - `reporting.run.create`؛
@@ -191,7 +214,8 @@ GET /api/v1/projects/{projectId}/reports/runs?status=Succeeded&definitionCode=da
 GET /api/v1/projects/{projectId}/reports/runs/{runId}
 ```
 
-Permission: `reporting.catalog.read` و Source permission جاری.
+Permission: `reporting.catalog.read` و Source permission جاری همان Definition. فهرست Runها نیز فقط
+Definitionهای مجاز را برمی‌گرداند؛ دسترسی F03 به metadata گزارش‌های F01/F02 گسترش نمی‌یابد.
 
 پاسخ Run موفق شامل metadata است، نه Snapshot payload کامل:
 

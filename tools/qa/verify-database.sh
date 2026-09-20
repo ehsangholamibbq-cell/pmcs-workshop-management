@@ -78,7 +78,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "44" \
+  "45" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
