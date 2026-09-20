@@ -38,6 +38,7 @@ reporting_golden_before_twin_run_id="75000000-0000-4000-8000-000000000002"
 reporting_golden_after_run_id="75000000-0000-4000-8000-000000000003"
 reporting_golden_after_twin_run_id="75000000-0000-4000-8000-000000000004"
 reporting_periodic_run_id="77000000-0000-4000-8000-000000000001"
+reporting_project_progress_run_id="79000000-0000-4000-8000-000000000001"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -78,7 +79,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "45" \
+  "46" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -97,6 +98,11 @@ expect_equal \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260920-003';"
 
 expect_equal \
+  "project-progress reporting catalog migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260920-005';"
+
+expect_equal \
   "project-periodic certified definition and immutable template are published" \
   "Active|pmcs.reporting.project-periodic.parameters/v1|1.0.0|pmcs.reporting.project-periodic.renderer/v1|pmcs.reporting.project-periodic.layout/v1|eca353e00f07fbdb054613768399496e137ab0deda731c5d319d5cd4ebd3be6b" \
   "select definition.status || '|' || definition.parameter_schema_version || '|' || template.version || '|' || template.renderer_contract_version || '|' || template.layout_contract_version || '|' || template.content_digest from reporting.report_definitions definition join reporting.report_template_versions template on template.id = definition.current_template_version_id and template.definition_id = definition.id where definition.code = 'project-periodic-certified' and template.retired_at is null;"
@@ -105,6 +111,11 @@ expect_equal \
   "project-periodic pinned profile storage is constrained JSON" \
   "jsonb|YES|1" \
   "select column_state.data_type || '|' || column_state.is_nullable || '|' || (select count(*) from pg_constraint where conrelid = 'reporting.report_runs'::regclass and conname = 'ck_reporting_run_pinned_project_profile')::text from information_schema.columns column_state where column_state.table_schema = 'reporting' and column_state.table_name = 'report_runs' and column_state.column_name = 'pinned_project_profile';"
+
+expect_equal \
+  "project-progress certified definition and immutable template are published" \
+  "Active|pmcs.reporting.project-progress.parameters/v1|true|1.0.0|pmcs.reporting.project-progress.renderer/v1|pmcs.reporting.project-progress.layout/v1|3f19d880a7790854fcc0d79d4822c5653cb6bb888294eadf8eaeeee8b5857816|Landscape" \
+  "select definition.status || '|' || definition.parameter_schema_version || '|' || (jsonb_array_length(definition.required_permissions) = 3 and definition.required_permissions @> '[\"planning.progress.read\"]'::jsonb and definition.required_permissions @> '[\"planning.baselines.read\"]'::jsonb and definition.required_permissions @> '[\"planning.milestones.read\"]'::jsonb)::text || '|' || template.version || '|' || template.renderer_contract_version || '|' || template.layout_contract_version || '|' || template.content_digest || '|' || template.orientation from reporting.report_definitions definition join reporting.report_template_versions template on template.id = definition.current_template_version_id and template.definition_id = definition.id where definition.code = 'project-progress-certified' and template.retired_at is null;"
 
 expect_equal \
   "legacy unique reporting verification-code constraint removed" \
@@ -285,6 +296,31 @@ expect_equal \
   "project-periodic run has singular queue snapshot completion and idempotency evidence" \
   "1|1|1|1|1" \
   "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportSnapshotBuilt')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCompleted')::text || '|' || (select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and project_id = '${project_id}' and event_type = 'reporting.report.completed.v1' and payload->>'runId' = '${reporting_periodic_run_id}')::text || '|' || (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key = 'qa-rpt1-periodic-create')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and resource_type = 'ReportRun' and resource_id = '${reporting_periodic_run_id}';"
+
+expect_equal \
+  "project-progress run completed from a pinned project profile" \
+  "Succeeded|Complete|1|2|project-progress-certified|pmcs.reporting.project-progress.project-profile/v1|true" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || (pinned_project_profile->>'schemaVersion') || '|' || ((pinned_project_profile->>'id') = project_id::text and (pinned_project_profile->>'tenantId') = tenant_id::text and (pinned_project_profile->>'timeZone') = project_time_zone)::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_project_progress_run_id}';"
+
+expect_equal \
+  "project-progress permission snapshots require reporting and all three Planning reads" \
+  "4|4|true|4|4|true" \
+  "select jsonb_array_length(request_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(request_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','planning.progress.read','planning.baselines.read','planning.milestones.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(request_permission_snapshot->'decisions') decision)::text || '|' || jsonb_array_length(processing_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(processing_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','planning.progress.read','planning.baselines.read','planning.milestones.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(processing_permission_snapshot->'decisions') decision)::text from reporting.report_runs where id = '${reporting_project_progress_run_id}';"
+
+expect_equal \
+  "project-progress semantic snapshot is bounded and explicit when Planning Mode is None" \
+  "pmcs.reporting.project-progress.snapshot/v1|NotConfigured|project-progress-certified|None|1|0|0|0|true" \
+  "select schema_version || '|' || data_status || '|' || (payload_json->>'definitionCode') || '|' || (payload_json#>>'{configuration,planningMode}') || '|' || jsonb_array_length(payload_json->'reasonCodes')::text || '|' || jsonb_array_length(payload_json->'entries')::text || '|' || jsonb_array_length(payload_json->'milestones')::text || '|' || jsonb_array_length(payload_json->'curve')::text || '|' || (payload_json::text !~* 'forecast|earned.?value|composite.?health|finance|commercial')::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_progress_run_id}';"
+
+expect_equal \
+  "project-progress PDF and XLSX outputs are governed and complete" \
+  "2|Pdf,Xlsx|2|0" \
+  "select count(*)::text || '|' || string_agg(format, ',' order by format) || '|' || count(*) filter (where retention_policy = 'LongTerm' and archive_state = 'Active')::text || '|' || count(*) filter (where size_bytes <= 0 or sha256 !~ '^[0-9a-f]{64}$' or manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_progress_run_id}';"
+
+expect_equal \
+  "project-progress run has singular queue snapshot completion and idempotency evidence" \
+  "1|1|1|1|1" \
+  "select count(*) filter (where event_type = 'CertifiedReportRunQueued')::text || '|' || count(*) filter (where event_type = 'CertifiedReportSnapshotBuilt')::text || '|' || count(*) filter (where event_type = 'CertifiedReportRunCompleted')::text || '|' || (select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and project_id = '${project_id}' and event_type = 'reporting.report.completed.v1' and payload->>'runId' = '${reporting_project_progress_run_id}')::text || '|' || (select count(*) from foundation.idempotency_records where tenant_id = '${tenant_id}' and key = 'qa-rpt1-project-progress-create')::text from foundation.audit_events where tenant_id = '${tenant_id}' and project_id = '${project_id}' and resource_type = 'ReportRun' and resource_id = '${reporting_project_progress_run_id}';"
 
 expect_equal \
   "queued report cancellation is final and unclaimed" \

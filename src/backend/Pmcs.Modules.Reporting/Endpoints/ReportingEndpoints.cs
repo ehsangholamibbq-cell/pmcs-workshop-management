@@ -186,12 +186,12 @@ internal static class ReportingEndpoints
             return Problem(StatusCodes.Status400BadRequest, "reporting.definition.invalid", "Report definition is invalid.");
         }
 
-        var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
-        if (!await permissionService.HasProjectPermissionAsync(
-                actor.TenantId,
-                actor.UserId,
+        var sourcePermissions = ReportDefinitionRuntimePolicy.RequireSourcePermissions(definitionCode);
+        if (!await HasAllPermissionsAsync(
+                actor,
                 projectId,
-                sourcePermission,
+                sourcePermissions,
+                permissionService,
                 cancellationToken))
         {
             return Problem(
@@ -286,12 +286,29 @@ internal static class ReportingEndpoints
                 return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
             }
         }
+        else if (parameters is ProjectProgressReportParameters)
+        {
+            try
+            {
+                var progressProfile = ProjectProgressPinnedProjectProfile.Capture(project);
+                _ = progressProfile.ValidateForRun(
+                    actor.TenantId,
+                    projectId,
+                    asOfUtc,
+                    now);
+                pinnedProjectProfileJson = CanonicalJson.Serialize(progressProfile);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
+            }
+        }
 
         var permissionPreview = await permissionService.PreviewProjectPermissionsAsync(
             actor.TenantId,
             actor.UserId,
             projectId,
-            operations: [CreateOperation, sourcePermission],
+            operations: [CreateOperation, .. sourcePermissions],
             cancellationToken: cancellationToken);
         if (permissionPreview.Decisions.Any(decision => !decision.Allowed))
         {
@@ -1233,7 +1250,8 @@ internal static class ReportingEndpoints
             Deserialize<ReportFormat[]>(definition.SupportedFormatsJson),
             Deserialize<string[]>(definition.RequiredPermissionsJson),
             definition.Code == ProjectPeriodicReportRuntimeContract.DefinitionCode ||
-                definition.Code == ExecutiveProjectStateReportRuntimeContract.DefinitionCode
+                definition.Code == ExecutiveProjectStateReportRuntimeContract.DefinitionCode ||
+                definition.Code == ProjectProgressReportRuntimeContract.DefinitionCode
                 ? [
                     ReportDataStatus.Available,
                     ReportDataStatus.NoData,
@@ -1335,16 +1353,21 @@ internal static class ReportingEndpoints
         var permissionDecisions = new Dictionary<string, bool>(StringComparer.Ordinal);
         foreach (var definitionCode in ReportDefinitionRuntimePolicy.SupportedDefinitionCodes)
         {
-            var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
-            if (!permissionDecisions.TryGetValue(sourcePermission, out var allowed))
+            var allowed = true;
+            foreach (var sourcePermission in
+                     ReportDefinitionRuntimePolicy.RequireSourcePermissions(definitionCode))
             {
-                allowed = await permissionService.HasProjectPermissionAsync(
-                    actor.TenantId,
-                    actor.UserId,
-                    projectId,
-                    sourcePermission,
-                    cancellationToken);
-                permissionDecisions.Add(sourcePermission, allowed);
+                if (!permissionDecisions.TryGetValue(sourcePermission, out var permissionAllowed))
+                {
+                    permissionAllowed = await permissionService.HasProjectPermissionAsync(
+                        actor.TenantId,
+                        actor.UserId,
+                        projectId,
+                        sourcePermission,
+                        cancellationToken);
+                    permissionDecisions.Add(sourcePermission, permissionAllowed);
+                }
+                allowed &= permissionAllowed;
             }
             if (allowed)
             {
@@ -1361,19 +1384,41 @@ internal static class ReportingEndpoints
         IProjectPermissionService permissionService,
         CancellationToken cancellationToken)
     {
-        if (!ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+        if (!ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
                 definitionCode,
-                out var sourcePermission))
+                out var sourcePermissions))
         {
             return false;
         }
 
-        return await permissionService.HasProjectPermissionAsync(
-            actor.TenantId,
-            actor.UserId,
+        return await HasAllPermissionsAsync(
+            actor,
             projectId,
-            sourcePermission,
+            sourcePermissions,
+            permissionService,
             cancellationToken);
+    }
+
+    private static async Task<bool> HasAllPermissionsAsync(
+        ICurrentActor actor,
+        Guid projectId,
+        IReadOnlyList<string> permissions,
+        IProjectPermissionService permissionService,
+        CancellationToken cancellationToken)
+    {
+        foreach (var permission in permissions)
+        {
+            if (!await permissionService.HasProjectPermissionAsync(
+                    actor.TenantId,
+                    actor.UserId,
+                    projectId,
+                    permission,
+                    cancellationToken))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static DailyReportReportParameters? ParseDailyParameters(JsonElement parameters)
@@ -1409,6 +1454,8 @@ internal static class ReportingEndpoints
             ProjectPeriodicReportRuntimeContract.DefinitionCode => ParsePeriodicParameters(parameters),
             ExecutiveProjectStateReportRuntimeContract.DefinitionCode =>
                 ParseExecutiveProjectStateParameters(parameters),
+            ProjectProgressReportRuntimeContract.DefinitionCode =>
+                ParseProjectProgressParameters(parameters),
             _ => null
         };
 
@@ -1416,6 +1463,12 @@ internal static class ReportingEndpoints
         JsonElement parameters) =>
         parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
             ? new ExecutiveProjectStateReportParameters()
+            : null;
+
+    private static ProjectProgressReportParameters? ParseProjectProgressParameters(
+        JsonElement parameters) =>
+        parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
+            ? new ProjectProgressReportParameters()
             : null;
 
     private static ProjectPeriodicReportParameters? ParsePeriodicParameters(JsonElement parameters)
@@ -1453,6 +1506,7 @@ internal static class ReportingEndpoints
         DailyReportReportParameters daily => CanonicalJson.Serialize(daily),
         ProjectPeriodicReportParameters periodic => CanonicalJson.Serialize(periodic),
         ExecutiveProjectStateReportParameters executive => CanonicalJson.Serialize(executive),
+        ProjectProgressReportParameters progress => CanonicalJson.Serialize(progress),
         _ => throw new InvalidOperationException("Unsupported reporting parameters.")
     };
 

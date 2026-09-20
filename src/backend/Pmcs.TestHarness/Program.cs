@@ -64,6 +64,8 @@ internal static partial class Program
                 "verify-reporting-periodic" => await VerifyReportingPeriodicAsync(),
                 "verify-reporting-executive-state" =>
                     await VerifyReportingExecutiveProjectStateAsync(),
+                "verify-reporting-project-progress" =>
+                    await VerifyReportingProjectProgressAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
@@ -491,6 +493,7 @@ internal static partial class Program
             "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
             "verify-reporting-golden|verify-reporting-pdf-golden|verify-reporting-periodic|" +
             "verify-reporting-executive-state|" +
+            "verify-reporting-project-progress|" +
             "verify-reporting-cancellation|" +
             "verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +

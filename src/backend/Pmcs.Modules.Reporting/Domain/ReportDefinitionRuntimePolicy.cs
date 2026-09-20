@@ -5,28 +5,46 @@ internal static class ReportDefinitionRuntimePolicy
     public const string DailyDefinitionCode = "daily-report-certified";
     public const string DailyReportSourcePermission = "field.daily-reports.read";
     public const string ProjectStateSourcePermission = "project-state.read";
+    public const string ProjectProgressSourcePermission = "planning.progress.read";
+    public const string ProjectBaselineSourcePermission = "planning.baselines.read";
+    public const string ProjectMilestoneSourcePermission = "planning.milestones.read";
+
+    private static readonly string[] DailyReportSourcePermissions =
+        [DailyReportSourcePermission];
+    private static readonly string[] ProjectStateSourcePermissions =
+        [ProjectStateSourcePermission];
+    private static readonly string[] ProjectProgressSourcePermissions =
+    [
+        ProjectProgressSourcePermission,
+        ProjectBaselineSourcePermission,
+        ProjectMilestoneSourcePermission
+    ];
 
     public static readonly string[] SupportedDefinitionCodes =
     [
         DailyDefinitionCode,
         ProjectPeriodicReportRuntimeContract.DefinitionCode,
-        ExecutiveProjectStateReportRuntimeContract.DefinitionCode
+        ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
+        ProjectProgressReportRuntimeContract.DefinitionCode
     ];
 
-    public static bool TryGetSourcePermission(string definitionCode, out string permission)
+    public static bool TryGetSourcePermissions(
+        string definitionCode,
+        out IReadOnlyList<string> permissions)
     {
-        permission = definitionCode switch
+        permissions = definitionCode switch
         {
-            DailyDefinitionCode => DailyReportSourcePermission,
-            ProjectPeriodicReportRuntimeContract.DefinitionCode => DailyReportSourcePermission,
-            ExecutiveProjectStateReportRuntimeContract.DefinitionCode => ProjectStateSourcePermission,
-            _ => string.Empty
+            DailyDefinitionCode => DailyReportSourcePermissions,
+            ProjectPeriodicReportRuntimeContract.DefinitionCode => DailyReportSourcePermissions,
+            ExecutiveProjectStateReportRuntimeContract.DefinitionCode => ProjectStateSourcePermissions,
+            ProjectProgressReportRuntimeContract.DefinitionCode => ProjectProgressSourcePermissions,
+            _ => Array.Empty<string>()
         };
-        return permission.Length > 0;
+        return permissions.Count > 0;
     }
 
-    public static string RequireSourcePermission(string definitionCode) =>
-        TryGetSourcePermission(definitionCode, out var permission)
-            ? permission
+    public static IReadOnlyList<string> RequireSourcePermissions(string definitionCode) =>
+        TryGetSourcePermissions(definitionCode, out var permissions)
+            ? permissions
             : throw new InvalidOperationException("Unsupported report definition.");
 }

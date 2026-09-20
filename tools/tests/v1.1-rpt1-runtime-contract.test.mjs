@@ -16,6 +16,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Migrations/ReportingInitialMigration.cs`,
     `${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`,
     `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
@@ -29,6 +30,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingPdfGoldenVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingExecutiveProjectStateVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingProjectProgressVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -70,12 +72,15 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migrations 42 through 45 own reporting schema and the connected F02/F03 catalogs", () => {
+test("migrations 42 through 46 own reporting schema and the connected F02/F03/F04 catalogs", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
   const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
   const executiveMigration = read(
     `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
+  );
+  const progressMigration = read(
+    `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
   );
   const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
@@ -104,9 +109,18 @@ test("migrations 42 through 45 own reporting schema and the connected F02/F03 ca
   assert.match(executiveMigration, /pmcs\.reporting\.executive-project-state\.parameters\/v1/u);
   assert.match(executiveMigration, /pmcs\.reporting\.executive-project-state\.renderer\/v1/u);
   assert.match(executiveMigration, /project-state\.read/u);
+  assert.match(progressMigration, /public long Order => 1204/u);
+  assert.match(progressMigration, /public string Version => "20260920-005"/u);
+  assert.match(progressMigration, /project-progress-certified/u);
+  assert.match(progressMigration, /pmcs\.reporting\.project-progress\.parameters\/v1/u);
+  assert.match(progressMigration, /pmcs\.reporting\.project-progress\.renderer\/v1/u);
+  assert.match(progressMigration, /"planning\.progress\.read"/u);
+  assert.match(progressMigration, /"planning\.baselines\.read"/u);
+  assert.match(progressMigration, /"planning\.milestones\.read"/u);
+  assert.match(progressMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"45"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"46"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -985,7 +999,7 @@ test("RPT1-F03 Catalog API and Worker record the S07-MS09 connected safe checkpo
   assert.match(security, /نسخه: `1\.13\.0`[\s\S]*Run 156/u);
 });
 
-test("RPT1-F04 keeps its semantic and renderer contracts bounded from production wiring", () => {
+test("RPT1-F04 keeps bounded semantics while its connected wiring remains default-off", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md",
   );
@@ -1001,8 +1015,15 @@ test("RPT1-F04 keeps its semantic and renderer contracts bounded from production
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
   const migration = read(
-    `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
   );
+  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
+  const readService = read(`${moduleRoot}/Services/ReportingReadService.cs`);
+  const harness = read(
+    "src/backend/Pmcs.TestHarness/ReportingProjectProgressVerification.cs",
+  );
+  const harnessProgram = read("src/backend/Pmcs.TestHarness/Program.cs");
+  const diagnostics = read("tools/qa/seed-diagnostics.sh");
   const evidenceContract = read(
     "src/backend/Pmcs.Modules.FieldOperations/Contracts/IProgressEvidenceReportingSource.cs",
   );
@@ -1139,9 +1160,36 @@ test("RPT1-F04 keeps its semantic and renderer contracts bounded from production
   assert.match(renderingTests, /NoDataWorkbookKeepsSemanticSheetsHeaderOnly/u);
   assert.match(renderingTests, /RendererRejectsOversizedTextAndFutureActual/u);
 
-  for (const source of [module, worker, endpoints, migration]) {
-    assert.doesNotMatch(source, /ProjectProgressReport|project-progress-certified|RPT1-F04/u);
-  }
+  assert.match(migration, /public long Order => 1204/u);
+  assert.match(migration, /public string Version => "20260920-005"/u);
+  assert.match(migration, /project-progress-certified/u);
+  assert.match(migration, /pmcs\.reporting\.project-progress\.renderer\/v1/u);
+  assert.match(migration, /3f19d880a7790854fcc0d79d4822c5653cb6bb888294eadf8eaeeee8b5857816/u);
+  assert.match(migration, /planning\.progress\.read/u);
+  assert.match(migration, /planning\.baselines\.read/u);
+  assert.match(migration, /planning\.milestones\.read/u);
+  assert.match(policy, /ProjectProgressReportRuntimeContract\.DefinitionCode/u);
+  assert.match(policy, /TryGetSourcePermissions/u);
+  assert.match(policy, /ProjectProgressSourcePermissions/u);
+  assert.match(module, /IProjectProgressReportRenderer, ProjectProgressReportPdfRenderer/u);
+  assert.match(module, /IProjectProgressReportRenderer, ProjectProgressReportXlsxRenderer/u);
+  assert.match(module, /ProjectProgressReportCatalogMigration/u);
+  assert.match(worker, /IProjectProgressReportingSource/u);
+  assert.match(worker, /ProjectProgressReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectProgressReportRendererRegistry/u);
+  assert.match(worker, /ProjectProgressReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /ProjectProgressReportRenderRequest/u);
+  assert.match(endpoints, /ProjectProgressReportRuntimeContract\.DefinitionCode/u);
+  assert.match(endpoints, /ParseProjectProgressParameters/u);
+  assert.match(endpoints, /ProjectProgressPinnedProjectProfile\.Capture/u);
+  assert.match(endpoints, /HasAllPermissionsAsync/u);
+  assert.match(readService, /RequireSourcePermissions/u);
+  assert.match(readService, /HasSourcePermissionAsync/u);
+  assert.match(harness, /VerifyReportingProjectProgressAsync/u);
+  assert.match(harness, /requires-all-source-permissions/u);
+  assert.match(harness, /strict-empty-object/u);
+  assert.match(harnessProgram, /verify-reporting-project-progress/u);
+  assert.match(diagnostics, /verify-reporting-project-progress/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);

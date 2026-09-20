@@ -252,16 +252,21 @@ internal sealed class ReportingReadService(
         var permissionDecisions = new Dictionary<string, bool>(StringComparer.Ordinal);
         foreach (var definitionCode in ReportDefinitionRuntimePolicy.SupportedDefinitionCodes)
         {
-            var sourcePermission = ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode);
-            if (!permissionDecisions.TryGetValue(sourcePermission, out var allowed))
+            var allowed = true;
+            foreach (var sourcePermission in
+                     ReportDefinitionRuntimePolicy.RequireSourcePermissions(definitionCode))
             {
-                allowed = await HasPermissionAsync(
-                    tenantId,
-                    actorUserId,
-                    projectId,
-                    sourcePermission,
-                    cancellationToken);
-                permissionDecisions.Add(sourcePermission, allowed);
+                if (!permissionDecisions.TryGetValue(sourcePermission, out var permissionAllowed))
+                {
+                    permissionAllowed = await HasPermissionAsync(
+                        tenantId,
+                        actorUserId,
+                        projectId,
+                        sourcePermission,
+                        cancellationToken);
+                    permissionDecisions.Add(sourcePermission, permissionAllowed);
+                }
+                allowed &= permissionAllowed;
             }
             if (allowed)
             {
@@ -276,14 +281,29 @@ internal sealed class ReportingReadService(
         Guid actorUserId,
         Guid projectId,
         string definitionCode,
-        CancellationToken cancellationToken) =>
-        ReportDefinitionRuntimePolicy.TryGetSourcePermission(definitionCode, out var permission) &&
-        await HasPermissionAsync(
-            tenantId,
-            actorUserId,
-            projectId,
-            permission,
-            cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        if (!ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
+                definitionCode,
+                out var permissions))
+        {
+            return false;
+        }
+
+        foreach (var permission in permissions)
+        {
+            if (!await HasPermissionAsync(
+                    tenantId,
+                    actorUserId,
+                    projectId,
+                    permission,
+                    cancellationToken))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private Task<bool> HasPermissionAsync(
         Guid tenantId,

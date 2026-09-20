@@ -51,26 +51,48 @@ public sealed class ReportingTests
     [InlineData("daily-report-certified", "field.daily-reports.read")]
     [InlineData("project-periodic-certified", "field.daily-reports.read")]
     [InlineData("executive-project-state-certified", "project-state.read")]
-    public void RuntimePolicyPinsSourcePermissionPerDefinition(
+    public void RuntimePolicyPinsSingleSourcePermissionPerDefinition(
         string definitionCode,
         string expectedPermission)
     {
-        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
             definitionCode,
-            out var permission));
-        Assert.Equal(expectedPermission, permission);
-        Assert.Equal(expectedPermission, ReportDefinitionRuntimePolicy.RequireSourcePermission(definitionCode));
+            out var permissions));
+        Assert.Equal(new[] { expectedPermission }, permissions);
+        Assert.Equal(
+            new[] { expectedPermission },
+            ReportDefinitionRuntimePolicy.RequireSourcePermissions(definitionCode));
+    }
+
+    [Fact]
+    public void RuntimePolicyRequiresEveryProjectProgressSourcePermission()
+    {
+        var expected = new[]
+        {
+            "planning.progress.read",
+            "planning.baselines.read",
+            "planning.milestones.read"
+        };
+
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
+            ProjectProgressReportRuntimeContract.DefinitionCode,
+            out var permissions));
+        Assert.Equal(expected, permissions);
+        Assert.Equal(
+            expected,
+            ReportDefinitionRuntimePolicy.RequireSourcePermissions(
+                ProjectProgressReportRuntimeContract.DefinitionCode));
     }
 
     [Fact]
     public void RuntimePolicyRejectsUnknownDefinition()
     {
-        Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermission(
+        Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
             "unknown-report",
-            out var permission));
-        Assert.Equal(string.Empty, permission);
+            out var permissions));
+        Assert.Empty(permissions);
         Assert.Throws<InvalidOperationException>(() =>
-            ReportDefinitionRuntimePolicy.RequireSourcePermission("unknown-report"));
+            ReportDefinitionRuntimePolicy.RequireSourcePermissions("unknown-report"));
     }
 
     [Fact]
