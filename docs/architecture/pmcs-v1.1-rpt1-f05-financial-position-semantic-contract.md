@@ -1,11 +1,11 @@
 # PMCS V1.1 — قرارداد معنایی گزارش وضعیت مالی، Cash Position و Aging
 
 - شناسه: `PMCS-RPT1-F05-SEMANTIC-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.1`
 - خانواده: `RPT1-F05`
-- وضعیت: `Contract Ready | Runtime Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS13-C1`
-- Runtime change: None
+- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS14-C1`
+- Runtime change: Bounded identity/source/selector/calculator/Snapshot builder
 - Migration / API / Renderer / Template change: None
 
 ## ۱. هدف و مرز خانواده
@@ -52,13 +52,21 @@ Server هنگام پذیرش Run این evidence را pin می‌کند و Clien
 می‌شود، اما Finance/Budget state و Base Currency مؤثر در cutoff باید از projection تاریخی نسخه‌دار
 بیاید؛ profile جاری جای تاریخچه را نمی‌گیرد.
 
-شناسه Runtime Definition، Template Version، parameter/snapshot/profile schema و Source contract در
-این Micro-Step تخصیص داده نمی‌شوند؛ آن‌ها فقط همراه کد و تست واقعی در Runtime Slice محدود بعدی قطعی
-خواهند شد.
+Runtime Core این identityهای قطعی و نسخه‌دار را همراه کد و تست واقعی تثبیت کرده است:
+
+- Definition: `project-financial-position-certified/1.0.0`؛
+- parameter schema: `pmcs.reporting.project-financial-position.parameters/v1`؛
+- semantic Snapshot schema: `pmcs.reporting.project-financial-position.snapshot/v1`؛
+- Project profile schema: `pmcs.reporting.project-financial-position.project-profile/v1`؛
+- Finance source contract: `pmcs.finance.project-financial-position-reporting/v1`؛
+- Finance source manifest: `pmcs.finance.project-financial-position-manifest/v1`؛
+- selection policy: `pmcs.finance.project-financial-position-policy/v1`.
+
+Template/Renderer/Layout identity عمداً تا Slice مستقل Renderer تخصیص داده نمی‌شود.
 
 ## ۳. Source lineage و مرز ماژولی
 
-Runtime آینده F05 فقط دو Application Contract خواندنی را مصرف می‌کند:
+Runtime Core F05 فقط دو Application Contract خواندنی را مصرف می‌کند:
 
 1. Projects برای هویت جاری، lifecycle، revision، Time Zone و Base Currency پین‌شده؛
 2. Finance برای projection نسخه‌دار، cutoff-aware و classification-aware وضعیت مالی رسمی.
@@ -69,7 +77,7 @@ Finance مالک انتخاب رکوردها، تعهدات، settlementها و 
 `IFinancialStateSource` و `IFinanceControlReadService` جاری را ندارد. این سرویس‌ها read model زنده و
 current-state هستند و Source گزارش Certified تاریخی محسوب نمی‌شوند.
 
-Application Contract آینده Finance حداقل باید این evidence را برگرداند:
+Application Contract نسخه‌دار Finance این evidence را برمی‌گرداند:
 
 - contract version، Tenant/Project، cutoff UTC/local و Classification صریح؛
 - Finance/Budget feature state، Base Currency و configuration revision مؤثر در cutoff با بازهٔ اثر؛
@@ -274,9 +282,23 @@ Run ID، attempt، build time و render time نباید hash را تغییر د�
 نه truncate، sample، net یا group پنهان. PDF/XLSX، page/sheet/row budget، visual digest و performance
 فقط در Renderer Slice مستقل قطعی می‌شوند.
 
-## ۱۲. شکاف صریح Runtime موجود
+## ۱۲. Runtime Core پیاده‌شده و شکاف Compatibility
 
-Runtime فعلی برای Certified F05 کافی نیست و این Micro-Step آن را کافی جلوه نمی‌دهد:
+Runtime Core مستقل Certified F05 اکنون پیاده و checkpoint شده است:
+
+- `IProjectFinancialPositionReportingSource` مرز خواندنی، versioned، cutoff-aware و
+  classification-aware Finance را تعریف می‌کند؛
+- `ProjectFinancialPositionReportingSelector` lifecycle رکورد، تعهد، settlement و Budget را انتخاب،
+  overlap/currency/over-allocation را رد و manifest canonical را تولید می‌کند؛
+- `ProjectFinancialPositionReportingCalculator` Cash، recognized spend، Petty Cash، Budget comparison
+  و Aging جداگانهٔ Payable/Receivable را با rounding قطعی می‌سازد؛
+- `ProjectFinancialPositionReportSnapshotBuilder` فقط Finance source نسخه‌دار و Project profile
+  پین‌شده را validate و به Snapshot معنایی allowlisted تبدیل می‌کند؛
+- classification پایین‌تر از `Confidential`، schema/version ناشناخته، Tenant/Project mismatch،
+  completeness ناقص یا source hash ناسازگار fail-closed است؛
+- ۳۱ Unit/contract case سناریوهای Golden معنایی و boundaryهای Runtime را پوشش می‌دهند.
+
+سرویس‌های legacy/current-state زیر همچنان به‌تنهایی Source معتبر Certified نیستند:
 
 - `IFinancialStateSource.GetCurrentAsync` فقط آخرین Snapshot را می‌دهد و cutoff، source manifest،
   lifecycle یا completeness تاریخی ندارد؛
@@ -291,13 +313,15 @@ Runtime فعلی برای Certified F05 کافی نیست و این Micro-Step �
   Source نسخه‌دار و cutoff-aware برای بازسازی آن هنوز ارائه نشده است؛
 - `FinanceControlCalculator` Aging bucketها را میان Payable/Receivable جمع می‌کند و current-state
   collection می‌گیرد؛ قرارداد F05 دو جهت را جدا نگه می‌دارد؛
-- Source جاری version/classification/completeness و manifest hash موردنیاز Reporting را ندارد.
+- Sourceهای legacy جاری version/classification/completeness و manifest hash موردنیاز Reporting را
+  ندارند.
 
-Runtime Slice بعدی باید Application Contract باریک Finance، projection lifecycle، selector،
-calculator و semantic Snapshot builder مستقل بسازد. compatibility producer فقط وقتی مجاز است که
-configuration، approval/supersession و settlement history در cutoff را کامل اثبات کند؛ در غیر این
-صورت با code پایدار fail-closed می‌شود. حدس `approvedAt` از Audit، استفاده از status/profile جاری،
-انتخاب latest Snapshot یا fallback به endpoint زنده ممنوع است.
+`ProjectFinancialPositionReportingSource` به‌عنوان compatibility producer فقط history قابل‌اثبات
+از Persistence فعلی را به Contract نسخه‌دار تبدیل می‌کند. تغییر configuration پس از cutoff، رکورد یا
+تعهد غیرقابل‌بازسازی، Budget legacy با supersession از دست‌رفته و هر lineage مبهم با reason پایدار
+fail-closed می‌شود. حدس `approvedAt` از Audit، استفاده از status/profile جاری به‌عنوان history، انتخاب
+latest Snapshot یا fallback به endpoint زنده ممنوع است. تکمیل producer تاریخی غنی‌تر، در صورت نیاز،
+یک Slice دامنه‌ای مستقل است و شرط Renderer Slice بعدی نیست.
 
 ## ۱۳. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -346,20 +370,20 @@ FX/forecast/health/management-fee/F06 join را اثبات کند. Golden PDF/XL
 | Data status، reasonها و failure boundary | بسته |
 | چهار Permission و Classification حداقل Confidential | بسته |
 | Golden matrix بیست‌وپنج‌سناریویی | بسته |
-| Runtime Definition و parameter/snapshot/profile/source IDs | Not Implemented؛ Slice بعدی |
-| historical projection و Application Contract cutoff-aware | Not Implemented؛ Slice بعدی |
-| selector/calculator/semantic Snapshot builder | Not Implemented؛ Slice بعدی |
+| Runtime Definition و parameter/snapshot/profile/source IDs | بسته؛ `v1`/`1.0.0` نسخه‌دار |
+| historical projection و Application Contract cutoff-aware | بسته؛ compatibility مبهم fail-closed |
+| selector/calculator/semantic Snapshot builder | بسته؛ ۳۱ case متمرکز |
 | Template/Renderer و Golden binary | Not Implemented؛ Slice مستقل بعدی |
 | Catalog/API/Worker wiring | Not Implemented؛ Slice متصل بعدی |
 
-Micro-Step بعدی فقط می‌تواند Runtime identity نسخه‌دار، Application Contract خواندنی و cutoff-aware
-در Finance، compatibility projection fail-closed، selector، calculator، semantic Snapshot builder و
-Unit/contract testهای F05 را اضافه کند. Migration Catalog، endpoint/dispatch، Template، Renderer،
-Golden binary، UI و Production enablement در آن Slice مجاز نیستند.
+Micro-Step بعدی فقط می‌تواند Template/Renderer/Layout identity، render model canonical، PDF/XLSX
+قطعی و Goldenهای binary/visual/performance خانواده F05 را روی Snapshot نسخه‌دار موجود اضافه کند.
+Migration Catalog، endpoint/dispatch، Worker wiring، UI و Production enablement در آن Slice مجاز
+نیستند.
 
 ## ۱۵. Gate statement
 
-این سند فقط DoR و semantic contract خانواده F05 را آماده می‌کند. هیچ API، Migration، Catalog seed،
-Domain runtime، Source implementation، Renderer، feature flag، UI یا Production setting اضافه یا
-فعال نمی‌شود. F05 همچنان `Contract Ready / Runtime Not Implemented` و F06 تا F10 نیز
-`Required / Not Implemented` می‌مانند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.
+DoR، semantic contract و Runtime Core خانواده F05 بسته‌اند. هیچ API، Migration، Catalog seed،
+Template/Renderer، Worker dispatch، feature flag، UI یا Production setting اضافه یا فعال نشده است.
+F05 اکنون `Runtime Core Safe Checkpoint / Renderer/Wiring Not Implemented` و F06 تا F10 همچنان
+`Required / Not Implemented` هستند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.

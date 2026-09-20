@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.30.0`
-- وضعیت: F05 semantic contract safe checkpoint؛ Runtime/F06–F10/UI/Production باز
+- نسخه: `1.32.0`
+- وضعیت: F05 Runtime Core safe checkpoint؛ Renderer/Wiring/F06–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -827,3 +827,43 @@ Qualification artifact `10612744490` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS14-C1` فقط DoR/semantic contract F05 را می‌بندد. F05 هنوز
 Runtime یا API قابل اجرا ندارد؛ F06 تا F10، UI/UX2 و Production enablement بازند و همه Suiteها و
 Goldenهای V1/F01/F02/F03/F04 بدون Regression سبز مانده‌اند.
+
+## ۳۷. Runtime Core محدود خانواده F05 — Slice 07 Micro-Step 15 Safe Checkpoint
+
+Runtime Core باید بدون API، Migration، Renderer یا Worker wiring موارد زیر را با Unit/contract test
+اثبات کند:
+
+- identityهای Definition و parameter/snapshot/profile schema و Contract/manifest/policy Finance
+  همگی صریح و نسخه‌دار باشند؛
+- selector فقط Posted/Approved/settled/budget evidence واجد cutoff را انتخاب و lifecycle، tenant،
+  project، currency، overlap و over-allocation نامعتبر را fail-closed رد کند؛
+- calculator تمام formulaهای Cash و Budget و Aging جداگانهٔ Payable/Receivable را با rounding قطعی،
+  بدون netting یا zero fabrication اجرا کند؛
+- statusهای `NotConfigured/NoData/InsufficientData/Available` و reasonهای پایدار بخش‌بندی Cash،
+  obligation و Budget را حفظ کنند؛
+- semantic Snapshot builder فقط Source نسخه‌دار Finance و Project profile پین‌شده را مصرف کند و
+  DbContext، SQL، endpoint زنده یا read service جاری را دور نزند؛
+- classification حداقل `Confidential`، completeness، canonical manifest/hash، capacity budget و
+  twin-run determinism fail-closed باشند؛
+- compatibility source تغییر configuration پس از cutoff و Budget supersession history غیرقابل‌اثبات
+  را رد کند و fallback به current state نداشته باشد؛
+- Reporting endpoint، Worker، Catalog migration و Renderer هیچ reference یا dispatch جدید F05
+  نداشته باشند و defaultها خاموش بمانند.
+
+`ProjectFinancialPositionReportingTests` دقیقاً `31/31` case متمرکز را روی ۲۵ سناریوی Golden معنایی
+و boundaryهای تکمیلی Runtime اجرا می‌کند. Source `77ad46cbac12b899116516b0a58665ae888b3bf2`
+با tree `5c67523b0fbed8d521627fe406f74271a1bbdcfe` و PR validation merge
+`5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c` دارای همان tree، در Run 175 (`35541740268`) هر هشت
+Job را پاس کرد: `450/450` تست C#، `75/75` تست قراردادی Node، `139/139` تست Web، پنج browser
+scenario، validator روی `390` فایل ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `46`
+Migration و Qualification برابر `7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10615056923` با digest
+`sha256:b0aab26340bb30c39005b128f643335b1a5ae6eb379972410cdc54b9119bc401`، Integration artifact
+`10614658300` با digest `sha256:7326b21eb0d9858b8532ee687c69cce313f2656a153ff6f0c796d69dfdb4d5c8`
+و UI-E2E artifact `10615141576` با digest
+`sha256:842a550a2146542ce5b7924e0c09f0fd9893cccc085f96fa7b8ec004874f3bc5` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS15-C1` فقط Runtime Core F05 را می‌بندد. Template/Renderer و
+Golden PDF/XLSX، Catalog/API/Worker wiring، F06 تا F10، UI/UX2 و Production enablement بازند و همه
+Suiteها و Goldenهای V1/F01/F02/F03/F04 بدون Regression سبز مانده‌اند.

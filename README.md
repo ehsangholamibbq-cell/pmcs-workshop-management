@@ -7,9 +7,9 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS14-C1` در Run 171، DoR و قرارداد معنایی مستقل
-`RPT1-F05` را برای Cash Position، تعهدات/Aging و Budget اختیاری قطعی کرد. F01 تا F04 checkpoint
-متصل دارند؛ F05 اکنون `Contract Ready / Runtime Not Implemented` و F06 تا F10 باز هستند. همهٔ
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS15-C1` در Run 175، Runtime Core مستقل `RPT1-F05` را برای
+Cash Position، تعهدات/Aging و Budget اختیاری قطعی کرد. F01 تا F04 checkpoint متصل دارند؛ F05 اکنون
+`Runtime Core Safe Checkpoint / Renderer/Wiring Not Implemented` و F06 تا F10 باز هستند. همهٔ
 feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
@@ -146,9 +146,10 @@ feature flagها، license و remediation در defaults خاموش یا `Unconfi
 - F04 متصل و checkpointed برای پیشرفت فیزیکی و S-Curve: Baseline و evidence رسمیِ cutoff-aware،
   Actual/Planned/Variance قطعی، PDF/XLSX deterministic، strict `{}`، سه Permission خواندنی Planning
   و Catalog/API/Worker qualification متصل؛ بدون Forecast/EVM و بدون Production enablement
-- قرارداد checkpointed F05 برای وضعیت مالی: Cash Position قطعی، Payable/Receivable و Aging جدا،
-  Budget Baseline اختیاری و cutoff-aware، چهار Permission خواندنی و Classification حداقل
-  `Confidential`؛ بدون Runtime، FX، Forecast، EVM یا Production enablement
+- Runtime Core checkpointed F05 برای وضعیت مالی: Contract/selector/calculator/Snapshot نسخه‌دار،
+  Cash Position قطعی، Payable/Receivable و Aging جدا، Budget Baseline اختیاری و cutoff-aware، چهار
+  Permission خواندنی و Classification حداقل `Confidential`؛ بدون Renderer/wiring، FX، Forecast،
+  EVM یا Production enablement
 
 ## تصمیم‌های بنیادین
 
@@ -261,5 +262,6 @@ npm run check
 - F04 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms12-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms12-candidate.md)
 - F04 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms13-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms13-candidate.md)
 - F05 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms14-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms14-candidate.md)
+- F05 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.27.0`
-- وضعیت: `S07-MS14 F05 semantic contract safe checkpoint | Runtime/F06-F10/UI/Production open`
+- نسخه: `1.29.0`
+- وضعیت: `S07-MS15 F05 Runtime Core safe checkpoint | Renderer/Wiring/F06-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `4e50fcadeb11bf412eff9275b8fac8561fd7d097`
-- Parent checkpoint tree: `82f09cfe36bfb725032f7397c4e3887c1ebf505c`
-- Candidate source: `72fa88349d01edd4c6455eb0af1aebfdeced8c35`
-- Candidate source tree: `d2722dd8fab797650ed0c9befb80df93fc0be135`
-- PR validation merge: `6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7`؛ همان tree
-- Contract evidence: Run 171 (`35538654765`) — `success`
+- Parent checkpoint commit: `ba1f00715ddb1359cfdb26acc5aa0c012e62a47e`
+- Parent checkpoint tree: `172b7919181ea717e669b00cfee319849c00dcce`
+- Candidate source: `77ad46cbac12b899116516b0a58665ae888b3bf2`
+- Candidate source tree: `5c67523b0fbed8d521627fe406f74271a1bbdcfe`
+- PR validation merge: `5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c`؛ همان tree
+- Runtime evidence: Run 175 (`35541740268`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -62,13 +62,14 @@ history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری
 model canonical و PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production
 defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` در
+قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.1.1` در
 `pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md` وضعیت مالی Certified را به Financial
 Recordهای Posted، تعهدات و settlementهای رسمی، Aging جداگانهٔ Payable/Receivable و Budget Baseline
 اختیاریِ مؤثر در cutoff محدود می‌کند. Cash formulaها، lifecycle، status، چهار Permission خواندنی و
 Classification حداقل `Confidential` قطعی‌اند؛ FX، Forecast، EVM، Management Fee و join پنهان F06
-ممنوع است. F05 فقط `Contract Ready / Runtime Not Implemented` است و سرویس‌های current-state Finance
-یا DbContext جای Application Contract تاریخی و cutoff-aware Slice بعدی را نمی‌گیرند.
+ممنوع است. Runtime Core اکنون identity/schema نسخه‌دار، Application Contract و compatibility source
+در Finance، selector، calculator و semantic Snapshot builder را دارد. history غیرقابل‌اثبات
+fail-closed است؛ Template/Renderer و Catalog/API/Worker wiring همچنان بازند.
 
 ## ۲. Non-Scope
 
@@ -93,6 +94,7 @@ Dependencyهای مجاز:
   `IDailyReportReportingSource` و `IProgressEvidenceReportingSource`؛
 - `Pmcs.Modules.Planning` فقط از `IProjectProgressReportingSource` برای F04؛
 - `Pmcs.Modules.ProjectIntelligence` فقط از `IProjectStateReportingSource` برای F03؛
+- `Pmcs.Modules.Finance` فقط از `IProjectFinancialPositionReportingSource` برای F05؛
 - `Pmcs.Modules.Documents` فقط از Contract انتشار/خواندن Generated Document؛
 - `Pmcs.Modules.IdentityAccess` به‌صورت مستقیم لازم نیست؛ Permission از BuildingBlocks contract تزریق می‌شود.
 
@@ -634,4 +636,20 @@ Job، `419/419` تست C#، `73/73` تست قراردادی Node، `139/139` ت�
 روی `382` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و Qualification `7/7` Suite و
 `12/12` Command را پاس کرد. این Checkpoint هیچ Runtime identity/schema، Source implementation،
 Migration، API، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production default را تغییر
-نمی‌دهد؛ گام بعد فقط Runtime Core محدود F05 است.
+نمی‌دهد؛ در آن Checkpoint گام بعد فقط Runtime Core محدود F05 بود.
+
+Slice 07 Micro-Step 15 Runtime Core محدود F05 را روی همان قرارداد بست. Definition
+`project-financial-position-certified/1.0.0`، schemaهای parameter/snapshot/profile نسخه‌دار، Contract
+`pmcs.finance.project-financial-position-reporting/v1` و manifest/policy نسخه‌دار اضافه شدند. Finance
+انتخاب lifecycle رکوردهای Posted، تعهدات Approved، settlementها و Budget مؤثر را انجام می‌دهد؛
+currency mismatch، overlap، over-allocation، completeness ناقص و Classification نامعتبر fail-closed
+هستند. calculator فرمول‌های Cash/Budget و Aging جداگانهٔ Payable/Receivable را deterministic اجرا
+می‌کند و Snapshot builder فقط Source نسخه‌دار و Project profile پین‌شده را مصرف می‌کند.
+
+Candidate `77ad46cbac12b899116516b0a58665ae888b3bf2` با tree
+`5c67523b0fbed8d521627fe406f74271a1bbdcfe` و PR validation merge
+`5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c` دارای همان tree، در Run 175 (`35541740268`) هر هشت
+Job، `450/450` تست C# شامل `31/31` case متمرکز F05، `75/75` تست قراردادی Node، `139/139` تست Web،
+پنج browser scenario، validator روی `390` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و
+Qualification `7/7` Suite و `12/12` Command را پاس کرد. هیچ Migration، API، Catalog/Template seed،
+Worker dispatch، Renderer، UI یا Production default تغییر نکرد؛ گام بعد فقط Renderer/Golden F05 است.

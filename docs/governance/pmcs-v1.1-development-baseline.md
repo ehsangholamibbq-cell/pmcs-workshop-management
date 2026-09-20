@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F04 متصل؛ F05 Contract Ready/Runtime Not Implemented؛ F06–F10/UI باز |
+| Product runtime implementation | F01 تا F04 متصل؛ Runtime Core F05 checkpointed و Renderer/wiring آن باز؛ F06–F10/UI باز |
 | Database migration | ۴۶ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -288,7 +288,19 @@ Job، `419/419` تست C#، `73/73` تست Node، `139/139` تست Web، پنج 
 `382` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. Safe
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS14-C1` است. هیچ Runtime، Source implementation، Migration،
 API، Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe
-Resume اکنون MS14 و گام بعد فقط Runtime Core محدود F05 است.
+Resume در آن Checkpoint برابر MS14 و گام بعد فقط Runtime Core محدود F05 بود.
+
+Slice 07 Micro-Step 15، Runtime Core محدود `PMCS-RPT1-F05-SEMANTIC-001 v1.1.1` را بدون Renderer یا
+wiring بست. identity/schemaهای نسخه‌دار، `IProjectFinancialPositionReportingSource` در Finance،
+selector lifecycle، calculator Cash/Budget/Aging، compatibility source fail-closed و semantic
+Snapshot builder اضافه شدند. Source `77ad46cbac12b899116516b0a58665ae888b3bf2` با tree
+`5c67523b0fbed8d521627fe406f74271a1bbdcfe` و PR validation merge
+`5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c` دارای همان tree، در Run 175 (`35541740268`) هر هشت
+Job، `450/450` تست C# شامل `31/31` case متمرکز F05، `75/75` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `390` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification
+`7/7` را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS15-C1` است. هیچ Migration، API،
+Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe Resume
+اکنون MS15 و گام بعد فقط Renderer/Golden محدود F05 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

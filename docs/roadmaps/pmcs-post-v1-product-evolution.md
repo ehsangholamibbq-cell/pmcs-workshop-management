@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.47.0`
+- نسخه سند: `1.49.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -539,6 +539,23 @@ Job، `419/419` تست C#، `73/73` تست contract، `139/139` تست Web، پ�
 Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS14` و گام
 بعد فقط Runtime Core محدود F05 است.
 
+**F05 Bounded Runtime Core — Slice 07 Micro-Step 15 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS14-C1`، Definition `project-financial-position-certified/1.0.0`، schemaهای
+parameter/snapshot/profile نسخه‌دار، Contract و manifest/policy نسخه‌دار Finance، selector lifecycle،
+calculator و semantic Snapshot builder اضافه شدند. انتخاب Cash فقط Posted تا cutoff، تعهد و
+settlement رسمی، Budget مؤثر، تفکیک Payable/Receivable، Aging چهار-bucketی، Classification حداقل
+`Confidential` و absence صریح پیاده شده‌اند. currency mismatch، Budget overlap، settlement
+over-allocation، completeness ناقص و history غیرقابل‌اثبات fail-closed هستند؛ هیچ current-state
+service، DbContext یا endpoint زنده‌ای از Reporting دور زده نمی‌شود.
+
+Candidate `77ad46cbac12b899116516b0a58665ae888b3bf2` با tree
+`5c67523b0fbed8d521627fe406f74271a1bbdcfe` و PR validation merge
+`5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c` دارای همان tree، در Run 175 (`35541740268`) هر هشت
+Job، `450/450` تست C# شامل `31/31` case متمرکز F05، `75/75` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `390` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Template/Renderer، Catalog/API/Worker، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS15` و گام بعد فقط Renderer/Golden F05 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -828,3 +845,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.45.0` | ثبت Safe Checkpoint `S07-MS12` و Evidence سبز Run 167 برای Renderer/Golden خانواده F04؛ Catalog/API/Worker wiring باز است |
 | `1.46.0` | ثبت Safe Checkpoint `S07-MS13` و Evidence سبز Run 169 برای اتصال End-to-End Catalog/API/Worker خانواده F04؛ F05–F10/UI/Production باز است |
 | `1.47.0` | ثبت Safe Checkpoint `S07-MS14` و Evidence سبز Run 171 برای قرارداد معنایی F05؛ Runtime/Renderer/wiring و F06–F10/UI/Production باز است |
+| `1.48.0` | ثبت Candidate محدود `S07-MS15` برای Runtime Core F05؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.49.0` | ثبت Safe Checkpoint `S07-MS15` و Evidence سبز Run 175 برای Runtime Core F05؛ Renderer/Golden و wiring و F06–F10/UI/Production باز است |
