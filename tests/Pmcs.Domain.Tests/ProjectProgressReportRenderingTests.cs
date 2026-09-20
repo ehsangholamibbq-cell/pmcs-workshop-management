@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -130,7 +131,13 @@ public sealed class ProjectProgressReportRenderingTests
 
         Assert.Contains("'=SUM(A1:A2) باید متن بماند", worksheetXml[4], StringComparison.Ordinal);
         Assert.Contains("Actual - Planned", worksheetXml[7], StringComparison.Ordinal);
-        Assert.Contains("<v>32</v>", worksheetXml[1], StringComparison.Ordinal);
+        Assert.Contains(
+            XDocument.Parse(worksheetXml[1]).Descendants(spreadsheet + "v"),
+            value => decimal.TryParse(
+                value.Value,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var parsed) && parsed == 32m);
         Assert.Contains("—", worksheetXml[6], StringComparison.Ordinal);
         var allWorksheets = string.Concat(worksheetXml);
         Assert.DoesNotContain("Forecast", allWorksheets, StringComparison.OrdinalIgnoreCase);
@@ -198,9 +205,16 @@ public sealed class ProjectProgressReportRenderingTests
                 firstImages[index]);
         }
 
-        var expectedVisualDigests = new[] { new string('0', 64), new string('0', 64) };
+        var expectedVisualDigests = new[]
+        {
+            "556d3b6a56d59e0c4ac8e8fcd526fca405fe9ba066ae5823b2c9c7482ea4b69b",
+            "8fbb9b69d9322522e8a55f041e16c8785716dc7554660bf2eacdf9030fe5e850"
+        };
         Assert.True(
-            string.Equals(new string('0', 64), first.Sha256, StringComparison.Ordinal) &&
+            string.Equals(
+                "bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef",
+                first.Sha256,
+                StringComparison.Ordinal) &&
                 expectedVisualDigests.SequenceEqual(visualDigests),
             $"F04_PDF_GOLDEN_SHA256={first.Sha256}; " +
             $"F04_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
