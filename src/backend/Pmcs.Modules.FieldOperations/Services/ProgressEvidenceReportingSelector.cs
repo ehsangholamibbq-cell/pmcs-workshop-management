@@ -76,7 +76,7 @@ internal static class ProgressEvidenceReportingSelector
 
     private static ProgressEvidenceReportingRoot BuildRoot(
         Guid rootReportId,
-        IReadOnlyCollection<ProgressEvidenceReportingVersion> versions,
+        ProgressEvidenceReportingVersion[] versions,
         DateTimeOffset sourceCutoffUtc,
         ProgressEvidenceReportingClassification classification)
     {
