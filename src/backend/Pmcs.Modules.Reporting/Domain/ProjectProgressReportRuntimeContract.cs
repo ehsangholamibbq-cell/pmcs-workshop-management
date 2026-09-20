@@ -11,6 +11,11 @@ public static class ProjectProgressReportRuntimeContract
     public const string DefinitionVersion = "1.0.0";
     public const string ParameterSchemaVersion = "pmcs.reporting.project-progress.parameters/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.project-progress.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "3f19d880a7790854fcc0d79d4822c5653cb6bb888294eadf8eaeeee8b5857816";
+    public const string RendererContractVersion = "pmcs.reporting.project-progress.renderer/v1";
+    public const string LayoutContractVersion = "pmcs.reporting.project-progress.layout/v1";
     public const string PinnedProjectProfileSchemaVersion =
         "pmcs.reporting.project-progress.project-profile/v1";
 }

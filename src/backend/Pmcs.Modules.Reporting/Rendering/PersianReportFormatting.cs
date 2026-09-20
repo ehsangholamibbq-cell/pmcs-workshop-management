@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Text;
 using Pmcs.Modules.FieldOperations.Contracts;
+using Pmcs.Modules.Planning.Contracts;
+using Pmcs.Modules.Planning.Domain;
 using Pmcs.Modules.ProjectIntelligence.Contracts;
 using Pmcs.Modules.ProjectIntelligence.Domain;
 using Pmcs.Modules.Projects.Contracts;
+using Pmcs.Modules.Projects.Domain;
 using Pmcs.Modules.Reporting.Domain;
 
 namespace Pmcs.Modules.Reporting.Rendering;
@@ -141,6 +144,104 @@ internal static class PersianReportFormatting
         ExecutiveProjectStateReportReasonCode.ApprovedSourceChangedAfterSnapshot =>
             "منبع رسمی پس از Snapshot تغییر کرده است",
         _ => "علت نامشخص"
+    };
+
+    public static string ReasonCode(ProjectProgressReportReasonCode reason) => reason switch
+    {
+        ProjectProgressReportReasonCode.ProgressReportingNotConfigured =>
+            "گزارش‌دهی پیشرفت پیکربندی نشده است",
+        ProjectProgressReportReasonCode.PlanningModeNone =>
+            "حالت برنامه‌ریزی پروژه غیرفعال است",
+        ProjectProgressReportReasonCode.OfficialBaselineMissing =>
+            "Baseline رسمی واجد شرایط وجود ندارد",
+        ProjectProgressReportReasonCode.PlanningModeBaselineMismatch =>
+            "نوع Baseline با حالت برنامه‌ریزی مؤثر سازگار نیست",
+        ProjectProgressReportReasonCode.OfficialActualMissing =>
+            "شواهد رسمی پیشرفت وجود ندارد",
+        ProjectProgressReportReasonCode.OfficialActualIncomplete =>
+            "شواهد رسمی پیشرفت برای همه ردیف‌های وزن‌دار کامل نیست",
+        ProjectProgressReportReasonCode.ScheduleNotConfiguredForMeasurementWeights =>
+            "Baseline وزنی فاقد زمان‌بندی رسمی است",
+        ProjectProgressReportReasonCode.CalendarDaysFallback =>
+            "محاسبه برنامه بر مبنای روز تقویمی انجام شده است",
+        ProjectProgressReportReasonCode.ApprovedProgressOutsideBaseline =>
+            "شواهد رسمی خارج از Baseline بدون تخصیص باقی مانده است",
+        _ => "علت نامشخص"
+    };
+
+    public static string Classification(ReportClassification classification) => classification switch
+    {
+        ReportClassification.Internal => "داخلی",
+        ReportClassification.Confidential => "محرمانه",
+        ReportClassification.Restricted => "محدود",
+        _ => "نامشخص"
+    };
+
+    public static string PlanningMode(PlanningMode mode) => mode switch
+    {
+        Pmcs.Modules.Projects.Domain.PlanningMode.None => "بدون برنامه‌ریزی",
+        Pmcs.Modules.Projects.Domain.PlanningMode.SimpleWorkList => "فهرست کار ساده",
+        Pmcs.Modules.Projects.Domain.PlanningMode.Milestones => "مایلستون",
+        Pmcs.Modules.Projects.Domain.PlanningMode.WbsBaseline => "Baseline ساختار شکست کار",
+        Pmcs.Modules.Projects.Domain.PlanningMode.ExternalSchedule => "برنامه زمان‌بندی خارجی",
+        _ => "نامشخص"
+    };
+
+    public static string BaselineKind(PlanningBaselineKind kind) => kind switch
+    {
+        PlanningBaselineKind.MeasurementWeights => "وزن اقلام اندازه‌گیری",
+        PlanningBaselineKind.MilestonePlan => "برنامه مایلستون",
+        PlanningBaselineKind.WbsBaseline => "Baseline ساختار شکست کار",
+        PlanningBaselineKind.ExternalSchedule => "برنامه زمان‌بندی خارجی",
+        _ => "نامشخص"
+    };
+
+    public static string EntryKind(PlanningEntryKind kind) => kind switch
+    {
+        PlanningEntryKind.Summary => "خلاصه",
+        PlanningEntryKind.Activity => "فعالیت",
+        PlanningEntryKind.Milestone => "مایلستون",
+        PlanningEntryKind.MeasurementItem => "قلم اندازه‌گیری",
+        _ => "نامشخص"
+    };
+
+    public static string MeasurementMethod(ProgressMeasurementMethod method) => method switch
+    {
+        ProgressMeasurementMethod.None => "بدون روش اندازه‌گیری",
+        ProgressMeasurementMethod.QuantityBased => "مقدارمحور",
+        ProgressMeasurementMethod.ManualPercent => "درصد رسمی دستی",
+        _ => "نامشخص"
+    };
+
+    public static string MetricStatus(ProjectProgressMetricStatus status) => status switch
+    {
+        ProjectProgressMetricStatus.NotConfigured => "پیکربندی نشده",
+        ProjectProgressMetricStatus.NoData => "بدون داده",
+        ProjectProgressMetricStatus.InsufficientData => "داده ناکافی",
+        ProjectProgressMetricStatus.Available => "موجود",
+        _ => "نامشخص"
+    };
+
+    public static string CalendarBasis(ProjectProgressCalendarBasis? basis) => basis switch
+    {
+        ProjectProgressCalendarBasis.CalendarDays => "روزهای تقویمی",
+        ProjectProgressCalendarBasis.WorkingDays => "روزهای کاری پین‌شده",
+        _ => "—"
+    };
+
+    public static string CalendarState(ProjectProgressCalendarState state) => state switch
+    {
+        ProjectProgressCalendarState.NotConfigured => "پیکربندی نشده",
+        ProjectProgressCalendarState.WorkingWeek => "هفته کاری پین‌شده",
+        _ => "نامشخص"
+    };
+
+    public static string SamplingKind(ProjectProgressCurveSamplingKind kind) => kind switch
+    {
+        ProjectProgressCurveSamplingKind.NotConfigured => "پیکربندی نشده",
+        ProjectProgressCurveSamplingKind.DailyInclusiveV1 => "روزانه و شامل ابتدا/انتها",
+        ProjectProgressCurveSamplingKind.Uniform365PlusCutoffV1 => "شبکه یکنواخت ۳۶۵ نقطه به‌علاوه برش",
+        _ => "نامشخص"
     };
 
     public static string UnitState(ProjectPeriodicReportUnitState state) => state switch

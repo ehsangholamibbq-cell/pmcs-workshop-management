@@ -45,3 +45,18 @@ internal sealed class ExecutiveProjectStateReportRendererRegistry(
                 transient: false,
                 $"No certified executive-project-state renderer is registered for {format}.");
 }
+
+internal sealed class ProjectProgressReportRendererRegistry(
+    IEnumerable<IProjectProgressReportRenderer> renderers)
+{
+    private readonly Dictionary<ReportFormat, IProjectProgressReportRenderer> byFormat = renderers
+        .ToDictionary(renderer => renderer.Format);
+
+    public IProjectProgressReportRenderer Require(ReportFormat format) =>
+        byFormat.TryGetValue(format, out var renderer)
+            ? renderer
+            : throw new ReportRenderingException(
+                "reporting.format.unsupported",
+                transient: false,
+                $"No certified project-progress renderer is registered for {format}.");
+}
