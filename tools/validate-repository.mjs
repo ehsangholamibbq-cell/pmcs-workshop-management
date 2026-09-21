@@ -85,6 +85,13 @@ const requiredFiles = [
   "src/backend/Pmcs.Modules.Finance/Services/ProjectFinancialPositionReportingSelector.cs",
   "src/backend/Pmcs.Modules.Finance/Services/ProjectFinancialPositionReportingCalculator.cs",
   "src/backend/Pmcs.Modules.Commercial/Domain/ProjectContract.cs",
+  "src/backend/Pmcs.Modules.Commercial/Contracts/IProjectCommercialProcurementSupplyReportingSource.cs",
+  "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingSource.cs",
+  "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingSelector.cs",
+  "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingCalculator.cs",
+  "src/backend/Pmcs.Modules.Reporting/Domain/ProjectCommercialProcurementSupplyReportRuntimeContract.cs",
+  "src/backend/Pmcs.Modules.Reporting/Domain/ProjectCommercialProcurementSupplyReportSemanticModels.cs",
+  "src/backend/Pmcs.Modules.Reporting/Services/ProjectCommercialProcurementSupplyReportSnapshotBuilder.cs",
   "src/backend/Pmcs.Modules.QualitySafety/Domain/QualitySafetyConfiguration.cs",
   "src/backend/Pmcs.Modules.QualitySafety/Domain/CorrectiveAction.cs",
   "src/backend/Pmcs.Modules.QualityAssurance/QualityAssuranceRuntimeOptions.cs",
@@ -271,7 +278,7 @@ const allowedProjectReferences = new Map([
   ["Pmcs.Modules.ProjectIntelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.IdentityAccess", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.WorkManagement", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
-  ["Pmcs.Modules.Reporting", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Documents", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.Planning", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
+  ["Pmcs.Modules.Reporting", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Commercial", "Pmcs.Modules.Documents", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.Planning", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.QualityAssurance", ["Pmcs.BuildingBlocks"]],
 ]);
 

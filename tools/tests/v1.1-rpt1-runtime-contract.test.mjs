@@ -1876,6 +1876,103 @@ test("RPT1-F06 fixes the commercial procurement and supply contract before Runti
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
+test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwired", () => {
+  const applicationContract = read(
+    "src/backend/Pmcs.Modules.Commercial/Contracts/IProjectCommercialProcurementSupplyReportingSource.cs",
+  );
+  const source = read(
+    "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingSource.cs",
+  );
+  const selector = read(
+    "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingSelector.cs",
+  );
+  const calculator = read(
+    "src/backend/Pmcs.Modules.Commercial/Services/ProjectCommercialProcurementSupplyReportingCalculator.cs",
+  );
+  const runtime = read(
+    `${moduleRoot}/Domain/ProjectCommercialProcurementSupplyReportRuntimeContract.cs`,
+  );
+  const semantic = read(
+    `${moduleRoot}/Domain/ProjectCommercialProcurementSupplyReportSemanticModels.cs`,
+  );
+  const builder = read(
+    `${moduleRoot}/Services/ProjectCommercialProcurementSupplyReportSnapshotBuilder.cs`,
+  );
+  const reportingProject = read(`${moduleRoot}/Pmcs.Modules.Reporting.csproj`);
+  const commercialModule = read("src/backend/Pmcs.Modules.Commercial/CommercialModule.cs");
+  const reportingModule = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(runtime, /PMCS-RPT1-F06-SEMANTIC-001/u);
+  assert.match(runtime, /project-commercial-procurement-supply-certified/u);
+  assert.match(runtime, /pmcs\.reporting\.project-commercial-procurement-supply\.parameters\/v1/u);
+  assert.match(runtime, /pmcs\.reporting\.project-commercial-procurement-supply\.snapshot\/v1/u);
+  assert.match(runtime, /ProjectCommercialProcurementSupplyReportParameters/u);
+  assert.match(runtime, /CapturedAtUtc/u);
+  assert.doesNotMatch(runtime, /TemplateVersion|RendererContractVersion|LayoutContractVersion/u);
+
+  assert.match(applicationContract, /IProjectCommercialProcurementSupplyReportingSource/u);
+  assert.match(
+    applicationContract,
+    /pmcs\.commercial\.project-commercial-procurement-supply-reporting\/v1/u,
+  );
+  assert.match(applicationContract, /MaximumContracts = 20_000/u);
+  assert.match(applicationContract, /MaximumSupplyEvidence = 250_000/u);
+  assert.match(applicationContract, /ProjectCommercialContractLifecycleEvent/u);
+  assert.match(applicationContract, /ProjectCommercialPurchaseRequestLifecycleEvent/u);
+  assert.match(applicationContract, /ProjectCommercialPurchaseOrderLifecycleEvent/u);
+  assert.match(applicationContract, /ContractLifecycleCompleteness/u);
+  assert.match(applicationContract, /ReceiptInspectionCompleteness/u);
+  assert.match(applicationContract, /NotAssessable[\s\S]*PendingDue[\s\S]*OnTimeFulfilled[\s\S]*LateFulfilled[\s\S]*OverdueOpen[\s\S]*ClosedShort/u);
+  assert.match(applicationContract, /CommercialReportingNotConfigured[\s\S]*RejectedOrQuarantinedSupply/u);
+  assert.doesNotMatch(applicationContract, /FinancialRecord|BudgetBaseline|Payment|Invoice/u);
+
+  assert.match(source, /ProjectCommercialProcurementSupplyReportingCompatibilityProjection/u);
+  assert.match(source, /configuration_history\.unavailable/u);
+  assert.match(source, /contract_history\.unavailable/u);
+  assert.match(source, /excess_approval_history\.unavailable/u);
+  assert.match(source, /MaximumSupplyEvidence \+ 1/u);
+  assert.doesNotMatch(source, /ICommercialStateSource|CommercialStateSnapshot|\/commercial\/state/u);
+  assert.doesNotMatch(source, /Take\(500\)|Take\(1_000\)|Take\(2_000\)/u);
+
+  assert.match(selector, /ContractStateAt/u);
+  assert.match(selector, /RequestStateAt/u);
+  assert.match(selector, /ValidateExcessApproval/u);
+  assert.match(selector, /order\.request_duplicate/u);
+  assert.match(selector, /order\.contract_party_mismatch/u);
+  assert.match(selector, /ProjectCommercialProcurementSupplyCanonicalJson/u);
+  assert.match(applicationContract, /KnownEffectiveContractCeilingSubtotal/u);
+  assert.match(calculator, /MidpointRounding\.AwayFromZero/u);
+  assert.match(calculator, /ProjectCommercialDeliveryStatus\.ClosedShort/u);
+  assert.match(calculator, /UnitConversionHistoryUnavailable/u);
+  assert.match(applicationContract, /OnTimeFulfillmentRate/u);
+  assert.doesNotMatch(`${selector}\n${calculator}`, /Pmcs\.Modules\.Finance|FX|Forecast|Ranking|Score/u);
+
+  assert.match(builder, /ProjectCommercialProcurementSupplyPinnedProjectProfile/u);
+  assert.match(builder, /source_manifest\.hash_mismatch/u);
+  assert.match(builder, /ProjectCommercialProcurementSupplyReportSemanticSnapshot/u);
+  assert.doesNotMatch(
+    semantic,
+    /\bContractId\b|\bPurchaseOrderId\b|\bPartyId\b|NationalId|Phone|Contact|Comment|Description|Stock/u,
+  );
+  assert.match(reportingProject, /Pmcs\.Modules\.Commercial\/Pmcs\.Modules\.Commercial\.csproj/u);
+  assert.match(commercialModule, /IProjectCommercialProcurementSupplyReportingSource/u);
+
+  for (const wiredSurface of [reportingModule, worker, endpoints]) {
+    assert.doesNotMatch(
+      wiredSurface,
+      /ProjectCommercialProcurementSupply|project-commercial-procurement-supply-certified/u,
+    );
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.equal(settings.ReportingCenter.OrphanRemediationMode, "Disabled");
+  assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
+});
+
 test("RPT1-F06 semantic contract records the S07-MS18 safe checkpoint without claiming Runtime", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md");
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
