@@ -191,7 +191,12 @@ internal static partial class Program
             HasString(succeeded.Payload, "pipelineStage", "Complete") &&
             HasString(succeeded.Payload, "dataStatus", "NoData") &&
             outputs == 2,
-            $"http={(int)succeeded.StatusCode};status={ReadOptionalString(succeeded.Payload, "status")};outputs={outputs}");
+            $"http={(int)succeeded.StatusCode};" +
+            $"status={ReadOptionalString(succeeded.Payload, "status")};" +
+            $"stage={ReadOptionalString(succeeded.Payload, "pipelineStage")};" +
+            $"dataStatus={ReadOptionalString(succeeded.Payload, "dataStatus")};" +
+            $"diagnostic={ReadOptionalString(succeeded.Payload, "diagnosticCode")};" +
+            $"outputs={outputs}");
 
         var visibleRuns = await SendAsync(
             client,
