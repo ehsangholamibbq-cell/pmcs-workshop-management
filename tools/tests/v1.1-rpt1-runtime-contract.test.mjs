@@ -1445,7 +1445,7 @@ test("RPT1-F05 keeps the certified financial position contract aligned with its 
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
-test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from API Worker and renderer", () => {
+test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from API and Worker", () => {
   const financeContract = read(
     "src/backend/Pmcs.Modules.Finance/Contracts/IProjectFinancialPositionReportingSource.cs",
   );
@@ -1523,6 +1523,82 @@ test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from A
 
   for (const source of [module, worker, endpoints]) {
     assert.doesNotMatch(source, /ProjectFinancialPositionReport|project-financial-position-certified/u);
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+});
+
+test("RPT1-F05 certified renderer is versioned deterministic and remains outside connected wiring", () => {
+  const identity = read(
+    `${moduleRoot}/Domain/ProjectFinancialPositionReportRuntimeContract.cs`,
+  );
+  const renderingContracts = read(
+    `${moduleRoot}/Rendering/ProjectFinancialPositionReportRenderingContracts.cs`,
+  );
+  const pdfRenderer = read(
+    `${moduleRoot}/Rendering/ProjectFinancialPositionReportPdfRenderer.cs`,
+  );
+  const xlsxRenderer = read(
+    `${moduleRoot}/Rendering/ProjectFinancialPositionReportXlsxRenderer.cs`,
+  );
+  const rendererRegistry = read(`${moduleRoot}/Rendering/ReportRendererRegistry.cs`);
+  const renderingTests = read(
+    "tests/Pmcs.Domain.Tests/ProjectFinancialPositionReportRenderingTests.cs",
+  );
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(identity, /TemplateVersion = "1\.0\.0"/u);
+  assert.match(
+    identity,
+    /e6ad4cbf2559d825d70b1579e687e7f9ce15020afaf697692e263f18480f18e4/u,
+  );
+  assert.match(
+    identity,
+    /pmcs\.reporting\.project-financial-position\.renderer\/v1/u,
+  );
+  assert.match(
+    identity,
+    /pmcs\.reporting\.project-financial-position\.layout\/v1/u,
+  );
+  assert.match(renderingContracts, /ProjectFinancialPositionReportRenderModel/u);
+  assert.match(
+    renderingContracts,
+    /ProjectFinancialPositionReportRenderingContract\.ValidateRequest/u,
+  );
+  assert.match(renderingContracts, /MaximumCounterpartyLength = 200/u);
+  assert.match(pdfRenderer, /PageSizes\.A4\.Landscape\(\)/u);
+  assert.match(pdfRenderer, /ContentFromRightToLeft/u);
+  assert.match(pdfRenderer, /GenerateImages/u);
+  assert.doesNotMatch(pdfRenderer, /IFinancialStateSource|IFinanceControlReadService/u);
+  assert.match(xlsxRenderer, /CompressionLevel\.NoCompression/u);
+  assert.match(
+    xlsxRenderer,
+    /MetadataSheet\(model\)[\s\S]*LineageSheet\(model\)/u,
+  );
+  assert.match(xlsxRenderer, /rightToLeft/u);
+  assert.match(rendererRegistry, /ProjectFinancialPositionReportRendererRegistry/u);
+  assert.match(
+    renderingTests,
+    /CertifiedFinancialPositionXlsxIsDeterministicGoldenRtlFormulaFreeAndSemantic/u,
+  );
+  assert.match(
+    renderingTests,
+    /CertifiedFinancialPositionPdfIsDeterministicVisuallyPinnedAndWithinPerformanceBudget/u,
+  );
+  assert.match(
+    renderingTests,
+    /NoDataWorkbookKeepsFinancialSheetsHeaderOnlyAndDoesNotFabricateZeroMetrics/u,
+  );
+
+  for (const source of [module, worker, endpoints]) {
+    assert.doesNotMatch(
+      source,
+      /ProjectFinancialPositionReport|project-financial-position-certified/u,
+    );
   }
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);

@@ -13,6 +13,13 @@ public static class ProjectFinancialPositionReportRuntimeContract
         "pmcs.reporting.project-financial-position.parameters/v1";
     public const string SnapshotSchemaVersion =
         "pmcs.reporting.project-financial-position.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "e6ad4cbf2559d825d70b1579e687e7f9ce15020afaf697692e263f18480f18e4";
+    public const string RendererContractVersion =
+        "pmcs.reporting.project-financial-position.renderer/v1";
+    public const string LayoutContractVersion =
+        "pmcs.reporting.project-financial-position.layout/v1";
     public const string PinnedProjectProfileSchemaVersion =
         "pmcs.reporting.project-financial-position.project-profile/v1";
 }
