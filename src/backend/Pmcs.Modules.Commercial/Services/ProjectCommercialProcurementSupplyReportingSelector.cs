@@ -713,7 +713,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
     private static ProjectCommercialContractAtCutoff? SelectContract(
         ProjectCommercialContractVersion item,
         DateTimeOffset cutoff,
-        IReadOnlyDictionary<Guid, ProjectCommercialPartySnapshotVersion> parties,
+        Dictionary<Guid, ProjectCommercialPartySnapshotVersion> parties,
         ProjectCommercialReportingSourceCompleteness partyCompleteness)
     {
         if (item.CreatedAt > cutoff)
@@ -736,7 +736,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
     private static ProjectCommercialAmendmentAtCutoff? SelectAmendment(
         ProjectCommercialAmendmentVersion item,
         DateTimeOffset cutoff,
-        IReadOnlyDictionary<Guid, ProjectCommercialContractAtCutoff> contracts)
+        Dictionary<Guid, ProjectCommercialContractAtCutoff> contracts)
     {
         if (item.CreatedAt > cutoff || AmendmentStateAt(item, cutoff) != AmendmentWorkflowState.Approved)
         {
@@ -757,9 +757,9 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
     private static ProjectCommercialPurchaseOrderAtCutoff? SelectOrder(
         ProjectCommercialPurchaseOrderVersion item,
         DateTimeOffset cutoff,
-        IReadOnlyDictionary<Guid, ProjectCommercialPurchaseRequestVersion> requests,
-        IReadOnlyDictionary<Guid, ProjectCommercialContractAtCutoff> contracts,
-        IReadOnlyDictionary<Guid, ProjectCommercialPartySnapshotVersion> parties,
+        Dictionary<Guid, ProjectCommercialPurchaseRequestVersion> requests,
+        Dictionary<Guid, ProjectCommercialContractAtCutoff> contracts,
+        Dictionary<Guid, ProjectCommercialPartySnapshotVersion> parties,
         IReadOnlyCollection<ProjectCommercialItemSnapshotVersion> items,
         ProjectCommercialReportingSourceCompleteness contractCompleteness,
         ProjectCommercialReportingSourceCompleteness partyCompleteness,
@@ -855,7 +855,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
         ProjectCommercialGoodsReceiptVersion item,
         DateTimeOffset cutoff,
         ProjectCommercialConfigurationVersion? configuration,
-        IReadOnlyDictionary<Guid, ProjectCommercialPurchaseOrderAtCutoff> orders)
+        Dictionary<Guid, ProjectCommercialPurchaseOrderAtCutoff> orders)
     {
         if (item.CreatedAt > cutoff || item.ArrivedAt > cutoff)
         {
@@ -904,7 +904,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
         ProjectCommercialServiceAcceptanceVersion item,
         DateTimeOffset cutoff,
         DateOnly cutoffLocalDate,
-        IReadOnlyDictionary<Guid, ProjectCommercialPurchaseOrderAtCutoff> orders)
+        Dictionary<Guid, ProjectCommercialPurchaseOrderAtCutoff> orders)
     {
         if (item.VerifiedAt > cutoff || item.PeriodEnd > cutoffLocalDate)
         {
@@ -949,6 +949,9 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
     {
         foreach (var order in orders.Where(item => item.Source.OrderedBaseQuantity.HasValue))
         {
+            var orderedQuantity = order.Source.OrderedBaseQuantity ?? throw Invalid(
+                "order.quantity_basis.invalid",
+                "A quantity-based Purchase Order has no pinned base quantity.");
             var evidence = receipts
                 .Where(item => item.Source.PurchaseOrderId == order.Source.PurchaseOrderId && item.Inspected)
                 .Select(item => new ExcessEvidence(
@@ -975,7 +978,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
             foreach (var item in evidence)
             {
                 cumulative = CheckedAdd(cumulative, item.AcceptedQuantity, "supply.quantity.overflow");
-                if (cumulative > order.Source.OrderedBaseQuantity.Value &&
+                if (cumulative > orderedQuantity &&
                     (!item.ExcessApprovalId.HasValue || !item.ExcessApprovedAt.HasValue ||
                         item.ExcessApprovedAt.Value > cutoff))
                 {
@@ -1460,8 +1463,8 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
         var ordered = windows.OrderBy(item => item.EffectiveFromUtc).ToArray();
         for (var index = 1; index < ordered.Length; index++)
         {
-            if (!ordered[index - 1].EffectiveToUtc.HasValue ||
-                ordered[index].EffectiveFromUtc < ordered[index - 1].EffectiveToUtc.Value)
+            if (ordered[index - 1].EffectiveToUtc is not { } previousEnd ||
+                ordered[index].EffectiveFromUtc < previousEnd)
             {
                 throw Invalid(suffix, message);
             }
@@ -1555,7 +1558,7 @@ internal static class ProjectCommercialProcurementSupplyReportingSelector
     }
 
     private static void AddAtOrBefore(
-        ICollection<DateTimeOffset> values,
+        List<DateTimeOffset> values,
         DateTimeOffset? candidate,
         DateTimeOffset cutoff)
     {

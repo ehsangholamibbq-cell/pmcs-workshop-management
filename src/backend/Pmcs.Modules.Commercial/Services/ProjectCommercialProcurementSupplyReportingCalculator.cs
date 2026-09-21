@@ -1,5 +1,6 @@
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.Commercial.Contracts;
+using Pmcs.Modules.Commercial.Domain;
 using Pmcs.Modules.Projects.Contracts;
 using Pmcs.Modules.Projects.Domain;
 
@@ -54,7 +55,7 @@ internal static class ProjectCommercialProcurementSupplyReportingCalculator
 
     private static ProjectCommercialReportingSectionStatus ResolveContractStatus(
         ProjectCommercialProcurementSupplyReportingSelection selection,
-        ISet<ProjectCommercialReportingReasonCode> reasons)
+        HashSet<ProjectCommercialReportingReasonCode> reasons)
     {
         if (selection.Configuration is null ||
             selection.Configuration.ContractModel == ContractModel.NotConfigured ||
@@ -110,7 +111,7 @@ internal static class ProjectCommercialProcurementSupplyReportingCalculator
 
     private static ProjectCommercialReportingSectionStatus ResolveProcurementStatus(
         ProjectCommercialProcurementSupplyReportingSelection selection,
-        ISet<ProjectCommercialReportingReasonCode> reasons)
+        HashSet<ProjectCommercialReportingReasonCode> reasons)
     {
         if (selection.Configuration is null ||
             selection.Configuration.ProcurementState is ProjectFeatureState.NotConfigured or
@@ -161,7 +162,7 @@ internal static class ProjectCommercialProcurementSupplyReportingCalculator
     private static ProjectCommercialReportingSectionStatus ResolveSupplyStatus(
         ProjectCommercialProcurementSupplyReportingSelection selection,
         ProjectCommercialReportingSectionStatus procurementStatus,
-        ISet<ProjectCommercialReportingReasonCode> reasons)
+        HashSet<ProjectCommercialReportingReasonCode> reasons)
     {
         var missingPinnedBasis = selection.PurchaseOrders.Any(item =>
             item.Source.OrderedQuantity.HasValue && !item.Source.OrderedBaseQuantity.HasValue);
@@ -206,7 +207,7 @@ internal static class ProjectCommercialProcurementSupplyReportingCalculator
     private static ContractCalculation CalculateContracts(
         ProjectCommercialProcurementSupplyReportingSelection selection,
         ProjectCommercialReportingSectionStatus status,
-        ISet<ProjectCommercialReportingReasonCode> reasons)
+        HashSet<ProjectCommercialReportingReasonCode> reasons)
     {
         if (status != ProjectCommercialReportingSectionStatus.Available)
         {
@@ -380,7 +381,7 @@ internal static class ProjectCommercialProcurementSupplyReportingCalculator
         ProjectCommercialProcurementSupplyReportingSelection selection,
         ProjectCommercialReportingSectionStatus procurementStatus,
         ProjectCommercialReportingSectionStatus supplyStatus,
-        ISet<ProjectCommercialReportingReasonCode> reasons)
+        HashSet<ProjectCommercialReportingReasonCode> reasons)
     {
         if (procurementStatus != ProjectCommercialReportingSectionStatus.Available)
         {
