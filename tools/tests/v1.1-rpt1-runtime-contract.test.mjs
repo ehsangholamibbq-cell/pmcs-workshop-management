@@ -1784,6 +1784,98 @@ test("RPT1-F05 Catalog API and Worker record the S07-MS17 connected safe checkpo
   assert.match(validator, /docs\/checkpoints\/v1\.1-rpt1-slice-07-ms17-candidate\.md/u);
 });
 
+test("RPT1-F06 fixes the commercial procurement and supply contract before Runtime implementation", () => {
+  const contract = read(
+    "docs/architecture/pmcs-v1.1-rpt1-f06-commercial-procurement-supply-semantic-contract.md",
+  );
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  const commercialStateContract = read(
+    "src/backend/Pmcs.Modules.Commercial/Contracts/ICommercialStateSource.cs",
+  );
+  const commercialStateSource = read(
+    "src/backend/Pmcs.Modules.Commercial/Services/CommercialStateSource.cs",
+  );
+  const projectContract = read(
+    "src/backend/Pmcs.Modules.Commercial/Domain/ProjectContract.cs",
+  );
+  const purchaseOrder = read(
+    "src/backend/Pmcs.Modules.Commercial/Domain/PurchaseOrder.cs",
+  );
+  const supplyState = read(
+    "src/backend/Pmcs.Modules.Commercial/Endpoints/SupplyCatalogEndpoints.cs",
+  );
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const migration = read(
+    `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
+  );
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(contract, /PMCS-RPT1-F06-SEMANTIC-001/u);
+  assert.match(contract, /نسخه: `1\.0\.0`/u);
+  assert.match(contract, /Contract Ready \| Runtime Not Implemented/u);
+  assert.match(contract, /Parent checkpoint: `PMCS-V1\.1-RPT1-S07-MS17-C1`/u);
+  assert.match(contract, /پارامتر معنایی Client دقیقاً یک object خالی `\{\}`/u);
+  assert.match(contract, /Client نمی‌تواند یک قرارداد، فروشنده، سفارش، واحد، currency یا cutoff محلی/u);
+  assert.match(contract, /Contract → Amendment → Purchase Request → Purchase Order → Receipt\/Service Acceptance/u);
+  assert.match(contract, /F06 هیچ عددی را از F05 نمی‌خواند/u);
+  assert.match(contract, /موجودی انبار[\s\S]*خارج از Snapshot/u);
+  assert.match(contract, /`activatedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /Close، Suspend یا Terminate بعد از cutoff/u);
+  assert.match(contract, /`approvedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`ScopeChange`[\s\S]*`ValueChange`[\s\S]*`TimeExtension`[\s\S]*`Mixed`/u);
+  assert.match(contract, /`effectiveApprovedAmount = originalApprovedAmount \+ approvedAmountDelta`/u);
+  assert.match(contract, /`effectiveEndDate = originalEndDate \+ approvedExtensionDays`/u);
+  assert.match(contract, /knownEffectiveContractCeilingSubtotal[\s\S]*effectiveContractCeilingTotal/u);
+  assert.match(contract, /Approval به‌تنهایی commitment نیست/u);
+  assert.match(contract, /هر\s+Request حداکثر یک Order/u);
+  assert.match(contract, /`totalIssuedOrderAmount`[\s\S]*`openOrderAmount`/u);
+  assert.match(contract, /deliveryDueDate` دقیقاً برابر[\s\S]*overdue نیست/u);
+  assert.match(contract, /`createdAt <= sourceCutoffUtc`[\s\S]*`arrivedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`inspectedAt <= sourceCutoffUtc`/u);
+  assert.match(contract, /`verifiedAt <= sourceCutoffUtc`[\s\S]*`periodEnd <= cutoffLocalDate`/u);
+  assert.match(contract, /`fulfillmentPercent = acceptedBaseQuantity × 100 \/ orderedBaseQuantity`/u);
+  assert.match(contract, /درصد بالاتر از ۱۰۰ cap نمی‌شود/u);
+  assert.match(contract, /`NotAssessable`[\s\S]*`OnTimeFulfilled`[\s\S]*`LateFulfilled`[\s\S]*`OverdueOpen`[\s\S]*`ClosedShort`/u);
+  assert.match(contract, /هیچ quantity میان item یا base unit متفاوت جمع نمی‌شود/u);
+  assert.match(contract, /`onTimeFulfillmentRate = OnTimeFulfilled × 100 \/ assessableCompletedOrders`/u);
+  assert.match(contract, /`NotConfigured`[\s\S]*`InsufficientData`[\s\S]*`NoData`[\s\S]*`Available`/u);
+  assert.match(contract, /`ContractLifecycleIncomplete`[\s\S]*`ProcurementLifecycleIncomplete`[\s\S]*`SupplyLineageIncomplete`/u);
+  assert.match(contract, /`commercial-state\.read`[\s\S]*`commercial\.parties\.read`[\s\S]*`contracts\.read`[\s\S]*`procurement\.requests\.read`[\s\S]*`procurement\.orders\.read`[\s\S]*`supply\.read`/u);
+  assert.match(contract, /حداقل `Confidential`/u);
+  assert.match(contract, /`ICommercialStateSource\.GetCurrentAsync` فقط آخرین aggregate Snapshot/u);
+  assert.match(contract, /`ProjectContract\.Close` مقدار `ReviewedAt` را با زمان Close بازنویسی می‌کند/u);
+  assert.match(contract, /ordered base quantity و conversion version پین‌شده/u);
+  assert.match(contract, /`Take\(500\/1000\/2000\)`/u);
+  assert.equal((contract.match(/\| `F06-[A-Z]{1,2}\d{2}` \|/gu) ?? []).length, 32);
+  assert.match(contract, /هیچ API، Migration، Catalog seed،[\s\S]*Renderer، feature flag/u);
+
+  assert.match(canonical, /F06 تا F10[\s\S]*`Required \/ Not Implemented`/u);
+  assert.match(canonical, /گام بعدی فقط DoR و قرارداد معنایی مستقل خانواده `RPT1-F06`/u);
+  assert.match(commercialStateContract, /GetCurrentAsync/u);
+  assert.doesNotMatch(
+    commercialStateContract,
+    /sourceCutoffUtc|SourceManifest|Classification/u,
+  );
+  assert.match(commercialStateSource, /OrderByDescending\(item => item\.CalculatedAt\)/u);
+  assert.match(projectContract, /void Close[\s\S]*ReviewedAt = closedAt/u);
+  assert.doesNotMatch(purchaseOrder, /OrderedBaseQuantity|ConversionVersion/u);
+  assert.match(supplyState, /Take\(2_000\)/u);
+  assert.match(supplyState, /clock\.UtcNow/u);
+  assert.match(supplyState, /CommercialDbContext/u);
+
+  for (const source of [module, worker, endpoints, migration]) {
+    assert.doesNotMatch(
+      source,
+      /ProjectCommercialProcurementReport|project-commercial-procurement-certified|RPT1-F06/u,
+    );
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+});
+
 test("RPT1-F05 Runtime Core records the S07-MS15 safe checkpoint without opening renderer or wiring", () => {
   const checkpoint = read("docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md");
   const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");

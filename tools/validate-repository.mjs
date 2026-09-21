@@ -204,6 +204,7 @@ const requiredFiles = [
   "docs/architecture/pmcs-v1.1-rpt1-f03-executive-project-state-semantic-contract.md",
   "docs/architecture/pmcs-v1.1-rpt1-f04-progress-curve-semantic-contract.md",
   "docs/architecture/pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md",
+  "docs/architecture/pmcs-v1.1-rpt1-f06-commercial-procurement-supply-semantic-contract.md",
   "docs/security/pmcs-v1.1-reporting-security.md",
   "docs/qa/pmcs-v1.1-rpt1-test-matrix.md",
   "docs/runbooks/reporting-center.md",
