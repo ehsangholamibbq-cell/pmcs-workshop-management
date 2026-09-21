@@ -355,7 +355,7 @@ internal static class ProjectCommercialProcurementSupplyReportRenderingContract
         var rows = snapshot.ContractRegister.ToArray();
         var amendments = snapshot.ApprovedAmendments.ToArray();
         if (summary is null || rows.Length == 0 || !IsOrderedByText(rows, item => item.Number) ||
-            !IsOrderedByDateAndText(amendments, item => item.ApprovedAt, item => item.Number))
+            !IsOrderedAmendments(amendments))
         {
             throw InvalidSnapshot("Contract summary or canonical ordering is invalid.");
         }
@@ -689,7 +689,7 @@ internal static class ProjectCommercialProcurementSupplyReportRenderingContract
                 item.ServiceAcceptanceWithRejectedCount
             };
             var expectedRate = item.AssessableCompletedOrderCount == 0
-                ? null
+                ? (decimal?)null
                 : decimal.Round(
                     item.OnTimeFulfilledCount * 100m / item.AssessableCompletedOrderCount,
                     1,
@@ -820,16 +820,16 @@ internal static class ProjectCommercialProcurementSupplyReportRenderingContract
         return true;
     }
 
-    private static bool IsOrderedByDateAndText<T>(
-        IReadOnlyList<T> items,
-        Func<T, DateTimeOffset> date,
-        Func<T, string> text)
+    private static bool IsOrderedAmendments(
+        ProjectCommercialProcurementSupplyReportAmendmentRow[] items)
     {
-        for (var index = 1; index < items.Count; index++)
+        for (var index = 1; index < items.Length; index++)
         {
-            var dateComparison = date(items[index - 1]).CompareTo(date(items[index]));
+            var dateComparison = items[index - 1].ApprovedAt.CompareTo(items[index].ApprovedAt);
             if (dateComparison > 0 || dateComparison == 0 &&
-                StringComparer.Ordinal.Compare(text(items[index - 1]), text(items[index])) > 0)
+                StringComparer.Ordinal.Compare(
+                    items[index - 1].Number,
+                    items[index].Number) > 0)
             {
                 return false;
             }
@@ -837,9 +837,9 @@ internal static class ProjectCommercialProcurementSupplyReportRenderingContract
         return true;
     }
 
-    private static bool IsOrderedSupply(IReadOnlyList<ProjectCommercialSupplySummary> items)
+    private static bool IsOrderedSupply(ProjectCommercialSupplySummary[] items)
     {
-        for (var index = 1; index < items.Count; index++)
+        for (var index = 1; index < items.Length; index++)
         {
             var code = StringComparer.Ordinal.Compare(
                 items[index - 1].ItemCode,
