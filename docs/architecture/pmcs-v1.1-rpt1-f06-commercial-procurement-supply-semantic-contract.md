@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش قرارداد، اصلاحیه، خرید و تأمین
 
 - شناسه: `PMCS-RPT1-F06-SEMANTIC-001`
-- نسخه: `1.1.1`
+- نسخه: `1.2.1`
 - خانواده: `RPT1-F06`
-- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS18-C1`
-- Runtime change: Bounded identity/source/selector/calculator/Snapshot builder
-- Migration / API / Renderer / Template change: None
+- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS19-C1`
+- Runtime change: Versioned Template/Renderer/Layout و deterministic PDF/XLSX روی Runtime موجود
+- Migration / API / Catalog / Worker change: None
 
 ## ۱. هدف و مرز خانواده
 
@@ -66,7 +66,12 @@ Runtime Core این identityهای قطعی و نسخه‌دار را همراه
 - Commercial source manifest: `pmcs.commercial.project-commercial-procurement-supply-manifest/v1`؛
 - selection policy: `pmcs.commercial.project-commercial-procurement-supply-policy/v1`.
 
-Template/Renderer/Layout identity عمداً تا Slice مستقل Renderer تخصیص داده نمی‌شود.
+هویت‌های Renderer این Slice نیز قطعی و نسخه‌دارند:
+
+- Template version: `1.0.0`؛
+- Template content digest: `e5966e5910ff9d875151b3e0c5891fb2c36027e8608771d34ee0a5d67120efb5`؛
+- Renderer contract: `pmcs.reporting.project-commercial-procurement-supply.renderer/v1`؛
+- Layout contract: `pmcs.reporting.project-commercial-procurement-supply.layout/v1`.
 
 ## ۳. Source lineage و مرز ماژولی
 
@@ -328,8 +333,9 @@ Worker آینده پس از ساخت Snapshot آن را برای Retry/Download 
 نسخه اول حداکثر ۲۰٬۰۰۰ Contract، ۱۰۰٬۰۰۰ Amendment، ۱۰۰٬۰۰۰ Purchase Request، ۱۰۰٬۰۰۰ Purchase
 Order، ۲۵۰٬۰۰۰ Receipt/Service Acceptance و ۵۰٬۰۰۰ Party/Item snapshot را می‌پذیرد. عبور از budget،
 متن بیش‌ازحد یا manifest/semantic hash ناسازگار باید non-transient و fail-closed باشد، نه truncate،
-sample، latest-only یا group پنهان. PDF/XLSX، page/sheet/row budget، visual digest و performance فقط
-در Renderer Slice مستقل قطعی می‌شوند.
+sample، latest-only یا group پنهان. Renderer نیز row/page/text budget را پیش از انتشار fail-closed
+کنترل می‌کند؛ PDF سه‌صفحه‌ای و XLSX ده-Sheet، visual digest و performance در همین Checkpoint قطعی
+شده‌اند.
 
 ## ۱۳. Runtime Core پیاده‌شده و شکاف Compatibility
 
@@ -374,8 +380,29 @@ Runtime Core مستقل Certified F06 اکنون پیاده و checkpoint شده
 lifecycle، Item snapshot در زمان Issue و excess approval غیرقابل‌بازسازی با reason پایدار fail-closed
 می‌شوند؛ current state یا آخرین Item به‌عنوان history پذیرفته نمی‌شود. حدس activation از ReviewedAt،
 استفاده از current status/profile، latest state، truncated endpoint یا Audit متن آزاد ممنوع است.
-تکمیل producer تاریخی غنی‌تر، در صورت نیاز، یک Slice دامنه‌ای مستقل است و شرط Renderer Slice بعدی
+تکمیل producer تاریخی غنی‌تر، در صورت نیاز، یک Slice دامنه‌ای مستقل است و شرط wiring متصل بعدی
 نیست.
+
+### ۱۳.۱ Renderer/Golden پیاده‌شده
+
+Renderer مستقل F06 روی Snapshot نسخه‌دار موجود بسته شده است:
+
+- parser/request/model، Definition، schema، Template/Renderer/Layout، semantic/source hash، cutoff،
+  Project profile و filename را fail-closed تطبیق می‌دهند؛
+- render model بخش‌های Contract/Amendment، Procurement/Order، Supply و Supplier را canonical می‌کند
+  و status/null/reason را بدون تبدیل به صفر یا وضعیت سالم نگه می‌دارد؛
+- PDF فارسی/RTL و A4 افقی دقیقاً سه صفحه دارد: قراردادها/اصلاحیه‌ها، خرید/سفارش/تأمین و
+  supplier/lineage؛
+- XLSX دقیقاً ده Sheet ثابت `Metadata`، `Contract Summary`، `Contracts`، `Amendments`،
+  `Procurement`، `Purchase Orders`، `Supply Summary`، `Suppliers`، `Source Counts` و `Lineage`
+  دارد؛ ترتیب و timestamp ZIP ثابت، compression خاموش، RTL، frozen header، سلول عددی واقعی و صفر
+  Formula است؛
+- متن با prefix فرمول خنثی و NoData در Sheetهای تجاری header-only می‌شود؛ هیچ مقدار ساختگی، F05
+  join، Inventory/Stock، FX، ranking، AI یا truncate تولید نمی‌شود؛
+- عبور از budget، value/status یا identity/hash ناسازگار non-transient و fail-closed است؛
+- Registry اختصاصی F06 عمداً خارج از composition root، endpoint و Worker باقی مانده است؛
+- شش case Renderer/Golden و در مجموع `38/38` case متمرکز F06، binary/visual/performance را در Run
+  196 قطعی کرده‌اند.
 
 ## ۱۴. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -436,17 +463,18 @@ Golden معنایی را نمی‌گیرد.
 | Runtime Definition و parameter/snapshot/profile/source IDs | بسته؛ `v1`/`1.0.0` نسخه‌دار |
 | historical projection و Application Contract cutoff-aware | بسته؛ compatibility مبهم fail-closed |
 | selector/calculator/semantic Snapshot builder | بسته؛ ۳۲ case متمرکز |
-| Template/Renderer و Golden binary | Not Implemented؛ Slice مستقل بعدی |
+| Template/Renderer و Golden binary/visual/performance | بسته؛ PDF سه‌صفحه‌ای و XLSX ده-Sheet قطعی |
 | Catalog/API/Worker wiring | Not Implemented؛ Slice متصل بعدی |
 
-Micro-Step بعدی فقط می‌تواند Template/Renderer/Layout identity، render model canonical، PDF/XLSX
-قطعی و Goldenهای binary/visual/performance خانواده F06 را روی Snapshot نسخه‌دار موجود اضافه کند.
-Migration Catalog، endpoint/dispatch، Worker wiring، UI و Production enablement در آن Slice مجاز
-نیستند.
+Micro-Step بعدی فقط می‌تواند Catalog/Template seed نسخه‌دار، strict `{}` API، Project profile
+پین‌شده، شش Permission definition-aware و Worker/Renderer dispatch متصل F06 را روی همین Runtime و
+Renderer اضافه و End-to-End qualify کند. UI/UX2، Production enablement، Report Designer و F07 در
+آن Slice مجاز نیستند.
 
 ## ۱۶. Gate statement
 
-DoR، semantic contract و Runtime Core خانواده F06 بسته‌اند. هیچ API، Migration، Catalog seed،
-Template/Renderer، Worker dispatch، feature flag، UI یا Production setting اضافه یا فعال نشده است.
-F06 اکنون `Runtime Core Safe Checkpoint / Renderer/Wiring Not Implemented` و F07 تا F10 همچنان
+DoR، semantic contract، Runtime Core و Renderer/Golden خانواده F06 بسته‌اند. هیچ API، Migration،
+Catalog/Template seed، Worker dispatch/DI registration، feature flag، UI یا Production setting
+اضافه یا فعال نشده است. F06 اکنون
+`Renderer/Golden Safe Checkpoint / Catalog/API/Worker Not Implemented` و F07 تا F10 همچنان
 `Required / Not Implemented` هستند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.

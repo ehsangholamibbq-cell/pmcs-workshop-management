@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.18.0`
-- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 Runtime Core security checkpointed/unwired؛ Production disabled
+- نسخه: `1.19.0`
+- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 Runtime/Renderer/Golden security checkpointed/unwired؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -198,9 +198,11 @@ section، latest-state fallback یا ساخت صفر/تکمیل مصنوعی م�
 ID/contact، delivery address، attachment/evidence link، actor، Stock location، Batch/Lot، Finance
 link و Source ID در Snapshot یا filename/log/diagnostic نشت نمی‌کنند. Checkpoint `S07-MS18` این policy
 را در قرارداد و Golden matrix تثبیت کرد؛ `S07-MS19` همان مرز را در Source/selector/calculator/Snapshot
-builder نسخه‌دار و fail-closed پیاده کرد. Source `177a1d89a07c23b2ae446218e98556cfbcf57a21`
-در Run 192 هر هشت Job و `32/32` case متمرکز F06 را پاس کرد؛ Catalog، Worker، API و Renderer F06
-فعال نشده‌اند و defaults همچنان خاموش/Unconfigured هستند.
+builder نسخه‌دار و fail-closed پیاده کرد. `S07-MS20` parser/request/model و Rendererهای PDF/XLSX را
+نیز با allowlist معنایی، identity/hash/filename validation، formula neutralization و row/page/text
+budget fail-closed بست. Source `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8` در Run 196 هر هشت
+Job و `38/38` case متمرکز F06 را پاس کرد؛ Registry F06 در DI/Worker ثبت نشده، Catalog/API فعال
+نشده‌اند و defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

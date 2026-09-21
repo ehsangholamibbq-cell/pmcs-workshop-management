@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.33.0`
-- وضعیت: `S07-MS19 F06 Runtime Core safe checkpoint | Renderer/Wiring/F07-F10/UI/Production open`
+- نسخه: `1.34.0`
+- وضعیت: `S07-MS20 F06 Renderer/Golden safe checkpoint | Wiring/F07-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `9516ac3a4db940d506d89b1d7195f1874f0a4989`
-- Parent checkpoint tree: `6955448c08e247b0b92a124743909db1f86fe304`
-- Candidate source: `177a1d89a07c23b2ae446218e98556cfbcf57a21`
-- Candidate source tree: `165cd1d451935f3cb94db7b9f5718678de00aca2`
-- PR validation merge: `2dbaf0ba14cf80ee863e07c2561ab7392037fd7c`؛ همان tree
-- Runtime evidence: Run 192 (`35573450703`) — `success`
+- Parent checkpoint commit: `36fb3e174fceb7be1830ee1f1abc46327e90bf10`
+- Parent checkpoint tree: `97a9aefc3c417a4bcee0d716d40c5fb00e1485e8`
+- Candidate source: `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8`
+- Candidate source tree: `212c1193d249cf1120297920c59b4ea15cb80c07`
+- PR validation merge: `9f8d6ce25b5ddbeec777d0e104024e9389b9a513`؛ همان tree
+- Renderer evidence: Run 196 (`35582136746`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -73,15 +73,17 @@ fail-closed است. Checkpoint جاری Template/Renderer/Layout identity، rend
 PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production defaults همچنان
 جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.1.1` در
+قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.2.1` در
 `pmcs-v1.1-rpt1-f06-commercial-procurement-supply-semantic-contract.md`، زنجیرهٔ قرارداد، اصلاحیه،
 درخواست خرید، سفارش و Receipt/Inspection/Service Acceptance را به evidence رسمی واجد cutoff محدود
 می‌کند. مبلغ/مدت مؤثر Contract، commitment سفارش، fulfillment و supplier performance بدون F05 join،
 Inventory، Invoice/Payment، FX، ranking یا AI تعریف شده‌اند. Client فقط `{}` می‌فرستد؛ شش Permission
 Commercial/Procurement/Supply و Classification حداقل `Confidential` قطعی‌اند. Runtime Core اکنون
 identity/schema نسخه‌دار، Application Contract و compatibility source در Commercial، selector،
-calculator و semantic Snapshot builder را دارد؛ history غیرقابل‌اثبات fail-closed است. Renderer،
-Catalog/API/Worker wiring، UI و Production defaults همچنان جدا و خاموش‌اند.
+calculator و semantic Snapshot builder را دارد؛ history غیرقابل‌اثبات fail-closed است. Checkpoint
+جاری Template/Renderer/Layout identity، render model canonical، PDF فارسی/RTL سه‌صفحه‌ای و XLSX
+ده-Sheet قطعی را مستقل بسته است؛ Catalog/API/Worker wiring، UI و Production defaults همچنان جدا و
+خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -743,3 +745,24 @@ Job، `490/490` تست C# شامل `32/32` case متمرکز F06، `82/82` تس�
 و Qualification `7/7` Suite و `12/12` Command سبز کرد. retry همان Run فقط failure موقت pull از
 Docker Hub در Job identity-container را رفع کرد. هیچ Migration، API، Catalog/Template seed، Worker
 dispatch، Renderer، UI یا Production default تغییر نکرد؛ گام بعد فقط Renderer/Golden F06 است.
+
+Slice 07 Micro-Step 20 Renderer/Golden محدود F06 را روی Runtime همان Checkpoint بست. Template
+`1.0.0` با content digest پین‌شده، قراردادهای
+`pmcs.reporting.project-commercial-procurement-supply.renderer/v1` و
+`pmcs.reporting.project-commercial-procurement-supply.layout/v1`، render request/model fail-closed،
+PDF فارسی/RTL سه‌صفحه‌ای و XLSX ده-Sheet قطعی اضافه شدند. status/null/reasonهای Contract،
+Procurement، Supply و Supplier حفظ می‌شوند؛ NoData header-only است، متن formula-like خنثی می‌شود و
+هیچ F05 join، Inventory/Stock، FX، ranking، AI یا truncate انجام نمی‌شود. Registry اختصاصی F06
+عمداً بیرون DI/Worker باقی مانده است.
+
+کاندید اولیه `e8b86d8d65e2fed79acd5213586235a87ceb40fb` در Run 194 خطاهای compile gate را آشکار کرد؛
+اصلاح `72933e6850bab80eb348466b2f7db446766c4668` build را با صفر warning/error سبز کرد و Run 195 فقط
+دو placeholder Golden را برای آشکارسازی digest قطعی fail کرد. Source نهایی
+`fb88b94d6949e7780f5f40aa567e2ea3f187a6e8` با tree
+`212c1193d249cf1120297920c59b4ea15cb80c07` و PR validation merge
+`9f8d6ce25b5ddbeec777d0e104024e9389b9a513` دارای همان tree، در Run 196 (`35582136746`) هر هشت
+Job، `496/496` تست C# شامل شش case Renderer/Golden تازه و `38/38` case متمرکز F06، `84/84` تست
+قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `405` فایل، audit ثابت
+`274/204/5`، Restore کامل ۴۷ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد.
+هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI یا Production default تغییر نکرد؛
+گام بعد فقط wiring متصل Catalog/API/Worker F06 است.

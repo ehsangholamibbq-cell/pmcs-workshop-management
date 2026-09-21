@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.53.0`
+- نسخه سند: `1.54.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۳۰ (۲۰۲۶-۰۹-۲۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -628,6 +628,24 @@ browser scenario، validator روی `402` فایل، audit `274/204/5`، Restore
 `7/7` را پاس کرد. هیچ Migration، Template/Renderer، Catalog/API/Worker، UI یا Production enablement
 وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS19` و گام بعد فقط Renderer/Golden F06 است.
 
+**F06 Deterministic Renderer/Golden — Slice 07 Micro-Step 20 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS19-C1`، Template `1.0.0` با content digest پین‌شده، قراردادهای نسخه‌دار
+Renderer/Layout، render request/model fail-closed و PDF/XLSX قطعی برای Snapshot موجود F06 اضافه
+شدند. PDF فارسی/RTL در سه صفحهٔ A4 افقی قرارداد/اصلاحیه، خرید/سفارش/تأمین و supplier/lineage را
+نمایش می‌دهد. XLSX ده Sheet ثابت، ZIP deterministic، RTL، frozen header، عدد واقعی و صفر Formula
+دارد؛ NoData header-only است و هیچ F05 join، Inventory، FX، ranking یا truncation تولید نمی‌شود.
+
+کاندید اولیه `e8b86d8d65e2fed79acd5213586235a87ceb40fb` خطاهای compile gate را آشکار کرد؛ اصلاح
+`72933e6850bab80eb348466b2f7db446766c4668` build را سبز کرد و Run 195 فقط دو placeholder Golden
+را برای آشکارسازی digest قطعی fail کرد. Source نهایی `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8`
+با tree `212c1193d249cf1120297920c59b4ea15cb80c07` و PR validation merge
+`9f8d6ce25b5ddbeec777d0e104024e9389b9a513` دارای همان tree، در Run 196 (`35582136746`) هر هشت
+Job، `496/496` تست C# شامل شش case Renderer/Golden تازه و `38/38` case متمرکز F06، `84/84` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `405` فایل، audit `274/204/5`،
+Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/Template seed، API،
+Worker/DI wiring، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
+`S07-MS20` و گام بعد فقط wiring متصل Catalog/API/Worker F06 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -923,3 +941,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.51.0` | ثبت Connected Safe Checkpoint `S07-MS17` و Evidence سبز Run 185 برای اتصال End-to-End Catalog/API/Worker خانواده F05؛ F06–F10/UI/Production باز است |
 | `1.52.0` | ثبت Safe Checkpoint `S07-MS18` و Evidence سبز Run 188 برای قرارداد معنایی F06؛ Runtime/Renderer/wiring و F07–F10/UI/Production باز است |
 | `1.53.0` | ثبت Safe Checkpoint `S07-MS19` و Evidence سبز Run 192 برای Runtime Core F06؛ Renderer/Golden و wiring و F07–F10/UI/Production باز است |
+| `1.54.0` | ثبت Safe Checkpoint `S07-MS20` و Evidence سبز Run 196 برای Renderer/Golden قطعی F06؛ Catalog/API/Worker wiring و F07–F10/UI/Production باز است |

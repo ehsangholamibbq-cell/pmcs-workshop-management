@@ -360,6 +360,22 @@ validator روی `402` فایل، audit `274/204/5`، Restore ۴۷ Migration و 
 seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe Resume اکنون MS19 و گام
 بعد فقط Renderer/Golden محدود F06 است.
 
+Slice 07 Micro-Step 20، Renderer/Golden محدود `PMCS-RPT1-F06-SEMANTIC-001 v1.2.1` را روی Runtime
+موجود بست. Template `1.0.0` و content digest، Renderer/Layout identity، request/model fail-closed،
+PDF فارسی/RTL سه‌صفحه‌ای و XLSX ده-Sheet قطعی اضافه شدند. NoData header-only، text formula-like
+خنثی، ZIP/order/timestamp ثابت و row/page/text budget بدون truncate هستند. Registry اختصاصی F06
+بیرون DI/Worker باقی ماند و هیچ F05 join، Inventory، FX، ranking یا AI تولید نمی‌شود.
+
+کاندید اولیه `e8b86d8d65e2fed79acd5213586235a87ceb40fb` خطاهای compile gate را آشکار کرد؛ اصلاح
+`72933e6850bab80eb348466b2f7db446766c4668` build را سبز کرد و `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8`
+با tree `212c1193d249cf1120297920c59b4ea15cb80c07` Goldenهای قطعی را pin کرد. PR validation merge
+`9f8d6ce25b5ddbeec777d0e104024e9389b9a513` همان tree را در Run 196 (`35582136746`) با هر هشت
+Job، `496/496` تست C# شامل شش case Renderer/Golden تازه و `38/38` case متمرکز F06، `84/84` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `405` فایل، audit `274/204/5`،
+Restore ۴۷ Migration و Qualification `7/7` پاس کرد. Safe Checkpoint آن
+`PMCS-V1.1-RPT1-S07-MS20-C1` است. هیچ Migration، API، Catalog/Template seed، Worker/DI wiring، UI
+یا default Production تغییر نکرد؛ Safe Resume اکنون MS20 و گام بعد فقط wiring متصل F06 است.
+
 ## ۳. قرارداد شاخه و ادغام
 
 - شاخه `v1.1-development` فقط از SHA دقیق بالا ایجاد می‌شود؛
