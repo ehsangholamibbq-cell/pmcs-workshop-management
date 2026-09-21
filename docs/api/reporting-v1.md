@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02/F03/F04 connected؛ F05 contract ready/runtime not implemented؛ F06–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02/F03/F04/F05 connected؛ F06–F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -114,20 +114,30 @@ Registry نسخه‌دار F04 و مسیر immutable Generated Document منتش
 F04 برابر `15/15` و Restore Drill کامل ۴۶ Migration را پاس کرد. Safe Resume اکنون `S07-MS13` است
 و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
-### ۱.۸ قرارداد checkpointed F05 بدون تغییر API
+### ۱.۸ خانواده F05 روی API متصل — Safe Checkpoint
 
-Safe Checkpoint `S07-MS14` فقط قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` را تثبیت می‌کند و هیچ
-Definition، Template، parser، endpoint یا Worker dispatch تازه‌ای اضافه نمی‌کند. پارامتر معنایی Client
-برای Runtime آینده دقیقاً `{}` خواهد بود؛ `projectId` از route و cutoff از `asOfUtc` پین‌شدهٔ Run
-می‌آیند و Client حق انتخاب Budget، ارز، Aging bucket، تاریخ محلی، filter یا Source را ندارد.
+Micro-Stepهای `S07-MS14/MS15/MS16` قرارداد، Runtime Core و Renderer/Golden را مستقل checkpoint
+کردند. Checkpoint `S07-MS17` همان routeهای موجود را برای Definition پنجم فعال می‌کند. قرارداد
+`PMCS-RPT1-F05-SEMANTIC-001 v1.3.1` پارامتر Client را دقیقاً `{}` تعریف می‌کند؛ `projectId` از route
+و cutoff از `asOfUtc` پین‌شدهٔ Run می‌آیند. Client اجازه ارسال Budget، currency، Aging bucket،
+Contract/Party، تاریخ محلی، filter یا Source selector را ندارد.
 
-Runtime آینده باید فقط Application Contract خواندنی و cutoff-aware Finance/Projects را مصرف کند؛
+Runtime فقط Application Contract خواندنی و cutoff-aware Finance/Projects را مصرف می‌کند؛
 `GET /finance/state`، `GET /finance/control`، `IFinancialStateSource`، `IFinanceControlReadService` و
-DbContextهای جاری Source گزارش Certified تاریخی نیستند. تمام چهار Permission
-`financial-state.read`، `finance.records.read`، `finance.obligations.read` و
-`budget.baselines.read` و Classification حداقل `Confidential` لازم‌اند. Run 171 قرارداد و Golden
-matrix بیست‌وپنج‌سناریویی را qualify کرد، اما F05 هنوز از API قابل ایجاد، اجرا یا دانلود نیست و
-Production defaults خاموش/Unconfigured باقی مانده‌اند.
+DbContextهای جاری Source مستقیم Reporting نیستند. Migration forward شمارهٔ 47، Definition/Template
+با Classification `Confidential` و هر چهار Permission `financial-state.read`،
+`finance.records.read`، `finance.obligations.read` و `budget.baselines.read` را seed می‌کند. API
+parser فقط object خالی را می‌پذیرد، Project profile سروری را pin می‌کند و Catalog/Run/Retry/Cancel/
+Download/Verify و سرویس read-only را فقط در صورت داشتن تمام Source permissionهای Definition فیلتر
+یا deny می‌کند.
+
+Worker مجوزها را هنگام processing دوباره ارزیابی، `IProjectFinancialPositionReportingSource` و
+Snapshot builder checkpointed را dispatch و payload را پیش از render دوباره validate می‌کند.
+PDF/XLSX فقط از Registry نسخه‌دار F05 و مسیر immutable Generated Document منتشر می‌شوند. Source
+`6de1e9ac3b457426be5e50064d1767106cd50c39` با tree
+`a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` در Run 185 (`35563055242`) هر هشت Job، هارنس متصل
+F05 برابر `15/15` و Restore Drill کامل ۴۷ Migration را پاس کرد. Safe Resume اکنون `S07-MS17` است
+و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
 ## ۲. Catalog
 
@@ -166,6 +176,15 @@ Definition سوم `executive-project-state-certified` با schema
 `project-state.read`، فرمت‌های `Pdf/Xlsx` و همان چهار وضعیت داده منتشر می‌شود. Catalog هر Definition
 را مستقل از دیگری براساس permission منبع فیلتر می‌کند؛ داشتن `project-state.read` مجوز دیدن F01/F02
 را تولید نمی‌کند.
+
+Definition چهارم `project-progress-certified` با schema
+`pmcs.reporting.project-progress.parameters/v1`، Template `1.0.0`، سه Permission خواندنی Planning،
+فرمت‌های `Pdf/Xlsx` و چهار وضعیت داده منتشر می‌شود.
+
+Definition پنجم `project-financial-position-certified` با schema
+`pmcs.reporting.project-financial-position.parameters/v1`، Template `1.0.0`، Classification
+`Confidential`، چهار Permission خواندنی Finance/Budget و فرمت‌های `Pdf/Xlsx` منتشر می‌شود. Catalog
+داشتن هر چهار Permission را لازم می‌داند و subset آن‌ها visibility ایجاد نمی‌کند.
 
 ## ۳. ایجاد Run
 
@@ -218,6 +237,20 @@ Content-Type: application/json
 }
 ```
 
+نمونهٔ F04 و F05 نیز همین strict empty-object contract را دارند؛ فقط Definition code متفاوت است.
+نمونهٔ F05:
+
+```json
+{
+  "clientGeneratedId": "11111111-1111-1111-8111-111111111115",
+  "definitionCode": "project-financial-position-certified",
+  "templateVersion": "1.0.0",
+  "asOfUtc": "2026-09-21T04:30:00Z",
+  "formats": ["Pdf", "Xlsx"],
+  "parameters": {}
+}
+```
+
 Permission:
 
 - `reporting.run.create`؛
@@ -255,7 +288,7 @@ GET /api/v1/projects/{projectId}/reports/runs/{runId}
 ```
 
 Permission: `reporting.catalog.read` و Source permission جاری همان Definition. فهرست Runها نیز فقط
-Definitionهای مجاز را برمی‌گرداند؛ دسترسی F03 به metadata گزارش‌های F01/F02 گسترش نمی‌یابد.
+Definitionهای مجاز را برمی‌گرداند؛ دسترسی یک خانواده به metadata خانواده‌های دیگر گسترش نمی‌یابد.
 
 پاسخ Run موفق شامل metadata است، نه Snapshot payload کامل:
 

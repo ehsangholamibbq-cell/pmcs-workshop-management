@@ -1,13 +1,13 @@
 # PMCS V1.1 — قرارداد معنایی گزارش وضعیت مالی، Cash Position و Aging
 
 - شناسه: `PMCS-RPT1-F05-SEMANTIC-001`
-- نسخه: `1.2.1`
+- نسخه: `1.3.1`
 - خانواده: `RPT1-F05`
-- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS15-C1`
+- وضعیت: `Connected Safe Checkpoint | F06-F10/UI/Production open`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS16-C1`
 - Runtime change: Bounded identity/source/selector/calculator/Snapshot builder
 - Renderer / Template change: Versioned deterministic PDF/XLSX and pinned binary/visual Goldens
-- Migration / Catalog / API / Worker change: None
+- Migration / Catalog / API / Worker change: Versioned seed، strict `{}`، definition-aware policy و connected dispatch
 
 ## ۱. هدف و مرز خانواده
 
@@ -266,8 +266,8 @@ contract/classification mismatch و hash mismatch باید Run را fail-closed 
 
 Classification Definition و خروجی F05 حداقل `Confidential` است. Source باید Classification را صریح
 برگرداند و خروجی بیشترین مقدار میان Definition، configuration و evidenceهای واردشده را می‌گیرد؛
-unknown یا downgrade failure امن است. چون مدل Finance جاری per-record classification ندارد، producer
-آینده حق برگرداندن `Internal` برای دادهٔ مالی را ندارد. filename/log/event/diagnostic نباید مبلغ، شماره
+unknown یا downgrade failure امن است. چون مدل Finance جاری per-record classification ندارد، هیچ
+producerی حق برگرداندن `Internal` برای دادهٔ مالی را ندارد. filename/log/event/diagnostic نباید مبلغ، شماره
 تعهد، counterparty یا Source ID را نشت دهد.
 
 ## ۱۱. Determinism، hash و budget
@@ -275,7 +275,7 @@ unknown یا downgrade failure امن است. چون مدل Finance جاری per
 semantic JSON و source manifest با property order ثابت، enum case-sensitive، UTC canonical، DateOnly
 به ISO، decimal invariant و collectionهای مرتب‌شده تولید می‌شوند. دو Run با Project profile pin،
 cutoff و Source یکسان باید semantic/source-manifest hash یکسان داشته باشند؛ query order، DB plan،
-Run ID، attempt، build time و render time نباید hash را تغییر دهند. Worker آینده پس از ساخت Snapshot
+Run ID، attempt، build time و render time نباید hash را تغییر دهند. Worker متصل پس از ساخت Snapshot
 آن را برای Retry/Download از Source بازسازی نمی‌کند.
 
 نسخه اول حداکثر ۱۰۰٬۰۰۰ Financial Record، ۲۰٬۰۰۰ Obligation و ۱۰۰٬۰۰۰ Settlement را می‌پذیرد.
@@ -297,7 +297,8 @@ Runtime Core مستقل Certified F05 اکنون پیاده و checkpoint شده
   پین‌شده را validate و به Snapshot معنایی allowlisted تبدیل می‌کند؛
 - classification پایین‌تر از `Confidential`، schema/version ناشناخته، Tenant/Project mismatch،
   completeness ناقص یا source hash ناسازگار fail-closed است؛
-- ۳۱ Unit/contract case سناریوهای Golden معنایی و boundaryهای Runtime را پوشش می‌دهند.
+- ۳۳ Unit/contract case سناریوهای Golden معنایی، boundaryهای Runtime، policy چهار-Permissionی و
+  round-trip دقت microsecond پایگاه‌داده را پوشش می‌دهند.
 
 Renderer/Golden مستقل Certified F05 نیز اکنون پیاده و checkpoint شده است:
 
@@ -314,8 +315,18 @@ Renderer/Golden مستقل Certified F05 نیز اکنون پیاده و checkpo
   صفحه به‌ترتیب `44afd18ca0babb473b69911bf83d775dec57519c34c0237e471bebc9bdd439b7` و
   `f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb` هستند؛
 - شش case Renderer/Golden، determinism، semantics، NoData، tamper/budget، visual و performance را
-  پوشش می‌دهند و همراه ۳۱ case Runtime، مجموع متمرکز F05 را به `37/37` می‌رسانند؛
-- Registry اختصاصی Renderer وجود دارد ولی در DI، Worker یا endpoint ثبت نشده است.
+  پوشش می‌دهند و همراه ۳۳ case Runtime/Policy، مجموع متمرکز F05 را به `39/39` می‌رسانند؛
+- Registry اختصاصی Renderer در DI ثبت و فقط برای Definition نسخه‌دار F05 از Worker dispatch می‌شود.
+
+اتصال End-to-End نیز در Checkpoint `S07-MS17` بسته شده است:
+
+- Migration 47، Definition/Template ثابت، چهار Source permission و Classification حداقل
+  `Confidential` را در Catalog ثبت می‌کند؛
+- API فقط `{}` را می‌پذیرد و Project profile نسخه‌دار را server-side pin می‌کند؛
+- Catalog، Run/Retry/Cancel، Download/Verify و read service همهٔ Permissionهای Definition را
+  definition-aware و fail-closed دوباره ارزیابی می‌کنند؛
+- Worker فقط Source، Snapshot builder و Registryهای checkpointed F05 را مصرف می‌کند؛
+- هارنس متصل `15/15` assertion و Run 185 هر هشت Job را سبز کرده‌اند.
 
 سرویس‌های legacy/current-state زیر همچنان به‌تنهایی Source معتبر Certified نیستند:
 
@@ -340,7 +351,7 @@ Renderer/Golden مستقل Certified F05 نیز اکنون پیاده و checkpo
 تعهد غیرقابل‌بازسازی، Budget legacy با supersession از دست‌رفته و هر lineage مبهم با reason پایدار
 fail-closed می‌شود. حدس `approvedAt` از Audit، استفاده از status/profile جاری به‌عنوان history، انتخاب
 latest Snapshot یا fallback به endpoint زنده ممنوع است. تکمیل producer تاریخی غنی‌تر، در صورت نیاز،
-یک Slice دامنه‌ای مستقل است و شرط Renderer Slice بعدی نیست.
+یک Slice دامنه‌ای مستقل است و شرط بسته‌شدن اتصال F05 نبوده است.
 
 ## ۱۳. Golden matrix و Qualification
 
@@ -373,9 +384,10 @@ latest Snapshot یا fallback به endpoint زنده ممنوع است. تکمی
 | `F05-SC01` | تلاش برای current service/DbContext/HTTP fallback | contract test رد می‌کند؛ فقط Application Contract نسخه‌دار مجاز است |
 
 Qualification Renderer در Run 178، Goldenهای PDF/XLSX و visual/performance را همراه Golden معنایی
-بدون Regression بست. Qualification متصل آینده باید انتخاب cutoff را با query مستقل کنترل، semantic
-Snapshot را parse و absence FX/forecast/health/management-fee/F06 join را از مسیر واقعی
-Catalog/API/Worker نیز اثبات کند. Golden PDF/XLSX جای Golden معنایی را نمی‌گیرد.
+بدون Regression بست. Qualification متصل Run 185 نیز انتخاب cutoff، strict `{}`، چهار Permission،
+semantic Snapshot، Worker/Registry، PDF/XLSX و absence FX/forecast/health/management-fee/F06 join را
+از مسیر واقعی Catalog/API/Worker با `15/15` assertion اثبات کرد. Golden PDF/XLSX جای Golden معنایی
+را نمی‌گیرد.
 
 ## ۱۴. Definition of Ready و Slice مجاز بعدی
 
@@ -394,17 +406,16 @@ Catalog/API/Worker نیز اثبات کند. Golden PDF/XLSX جای Golden مع�
 | historical projection و Application Contract cutoff-aware | بسته؛ compatibility مبهم fail-closed |
 | selector/calculator/semantic Snapshot builder | بسته؛ ۳۱ case متمرکز |
 | Template/Renderer و Golden binary/visual/performance | بسته؛ Run 178 |
-| Catalog/API/Worker wiring | Not Implemented؛ Slice متصل بعدی |
+| Catalog/API/Worker wiring | بسته؛ Migration 47 و Run 185 متصل |
 
-Micro-Step بعدی فقط می‌تواند Migration و seed نسخه‌دار Definition/Template، Catalog و Project
-profile، strict parameter parser، Permissionهای definition-aware و fail-closed، Worker dispatch به
-Source/Runtime/Rendererهای نسخه‌دار و Qualification End-to-End خانواده F05 را اضافه کند. UI/UX2،
-Production enablement، تغییر defaultها و شروع F06 در آن Slice مجاز نیستند.
+Micro-Step بعدی فقط می‌تواند DoR و قرارداد معنایی مستقل خانواده `RPT1-F06` برای قرارداد، اصلاحیه،
+خرید و تأمین را تثبیت کند. Runtime، Renderer، Migration، Catalog/API/Worker wiring F06، UI/UX2،
+Production enablement و تغییر defaultها در آن Slice مجاز نیستند.
 
 ## ۱۵. Gate statement
 
-DoR، semantic contract، Runtime Core و Renderer/Golden خانواده F05 بسته‌اند. هیچ API، Migration،
-Catalog/Template seed، Worker dispatch/DI registration، feature flag، UI یا Production setting اضافه
-یا فعال نشده است. F05 اکنون
-`Renderer/Golden Safe Checkpoint / Catalog/API/Worker Not Implemented` و F06 تا F10 همچنان
-`Required / Not Implemented` هستند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.
+DoR، semantic contract، Runtime Core، Renderer/Golden و اتصال Catalog/API/Worker خانواده F05
+بسته‌اند. Migration 47، Definition/Template، strict API، Project profile، policy چهار-Permissionی و
+Worker/Renderer dispatch متصل‌اند، اما هیچ feature flag، UI یا Production setting فعال نشده است.
+F05 اکنون `Connected Safe Checkpoint` و F06 تا F10 همچنان `Required / Not Implemented` هستند؛ RPT1
+و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.15.0`
-- وضعیت: F01/F02/F03/F04 connected؛ F05 semantic security contract checkpointed؛ Runtime/Production disabled
+- نسخه: `1.16.0`
+- وضعیت: F01/F02/F03/F04/F05 connected؛ F06–F10 open؛ UI/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -171,6 +171,16 @@ Document Number، فایل، Audit payload و شناسه‌های Commercial و�
 Catalog، Worker یا Renderer F05 را فعال نمی‌کند. Candidate
 `72fa88349d01edd4c6455eb0af1aebfdeced8c35` در Run 171 هر هشت Job را پاس کرد و defaults همچنان
 خاموش/Unconfigured هستند.
+
+Checkpoint `S07-MS17` این policy را در هر سه نقطه متصل می‌کند: Catalog/Create و سرویس read-only فقط
+با هر چهار Source permission، Worker با `reporting.run.create` و هر چهار read پیش از Snapshot و
+Storage، و Download/Verify با `reporting.output.download` و همان Source permissionها. Actor دارای
+سه مجوز از چهار مجوز، Definition یا Run F05 را نمی‌بیند و Create او با
+`reporting.source_permission.denied` fail-closed می‌شود؛ idempotent replay نیز re-evaluation را دور
+نمی‌زند. strict `{}`، Project profile پین‌شده، Classification حداقل `Confidential`، integrity و
+Verify هر دو فرمت در هارنس متصل پوشش داده شده‌اند. Source
+`6de1e9ac3b457426be5e50064d1767106cd50c39` در Run 185 هر هشت Job و `15/15` assertion F05 را پاس
+کرد. feature flagها، license و Production defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

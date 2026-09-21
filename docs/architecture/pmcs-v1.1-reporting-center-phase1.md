@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.30.0`
-- وضعیت: `S07-MS16 F05 Renderer/Golden safe checkpoint | Catalog/API/Worker/F06-F10/UI/Production open`
+- نسخه: `1.31.0`
+- وضعیت: `S07-MS17 F05 connected safe checkpoint | F06-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `b1bfcc8b9257c11df106d55c5f0f3312685cc7ea`
-- Parent checkpoint tree: `d5d4a17a93004b203ee35b5bb5e3ca094c5d7183`
-- Candidate source: `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2`
-- Candidate source tree: `f873795dcb8893dc28f88d5e5fc8292c5201e1e4`
-- PR validation merge: `72ab7827731fa763828c049be953ee9ca8c128a4`؛ همان tree
-- Renderer evidence: Run 178 (`35558202348`) — `success`
+- Parent checkpoint commit: `81d8fb92f5ad79a402084f7eae9529fdb0fa3afc`
+- Parent checkpoint tree: `d90e0780bfe88b60baeedecf23f03952573c957a`
+- Candidate source: `6de1e9ac3b457426be5e50064d1767106cd50c39`
+- Candidate source tree: `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f`
+- PR validation merge: `cbd27a673b1887b2e245bef5340eb8199f480be4`؛ همان tree
+- Connected evidence: Run 185 (`35563055242`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -62,7 +62,7 @@ history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری
 model canonical و PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production
 defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.2.1` در
+قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.3.1` در
 `pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md` وضعیت مالی Certified را به Financial
 Recordهای Posted، تعهدات و settlementهای رسمی، Aging جداگانهٔ Payable/Receivable و Budget Baseline
 اختیاریِ مؤثر در cutoff محدود می‌کند. Cash formulaها، lifecycle، status، چهار Permission خواندنی و
@@ -70,7 +70,8 @@ Classification حداقل `Confidential` قطعی‌اند؛ FX، Forecast، EVM
 ممنوع است. Runtime Core اکنون identity/schema نسخه‌دار، Application Contract و compatibility source
 در Finance، selector، calculator و semantic Snapshot builder را دارد. history غیرقابل‌اثبات
 fail-closed است. Checkpoint جاری Template/Renderer/Layout identity، render model canonical و
-PDF/XLSX قطعی را بسته است؛ Catalog/API/Worker wiring همچنان باز است.
+PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production defaults همچنان
+جدا و خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -672,3 +673,24 @@ Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37`
 `274/204/5`، Restore کامل ۴۶ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد.
 هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI یا Production default تغییر نکرد؛
 گام بعد فقط wiring متصل F05 است.
+
+Slice 07 Micro-Step 17 روی Safe Checkpoint `S07-MS16`، Migration forward شمارهٔ 47 و
+Definition/Template ثابت `project-financial-position-certified/1.0.0` را اضافه می‌کند. parser فقط
+object خالی `{}` را می‌پذیرد؛ Project profile نسخه‌دار سروری با Tenant/Project، Time Zone، currency،
+revision/configuration و acceptance time پین و در Worker دوباره validate می‌شود. Catalog،
+Run/Retry/Cancel، Download/Verify و `IReportingReadService` فقط در صورت داشتن هر چهار Permission
+`financial-state.read`، `finance.records.read`، `finance.obligations.read` و
+`budget.baselines.read` metadata یا عملیات F05 را ارائه می‌کنند. Worker مجوزها را پیش از Snapshot
+و Storage دوباره ارزیابی، فقط `IProjectFinancialPositionReportingSource` و Snapshot builder
+checkpointed را مصرف و پس از parse/integrity check از Registry PDF/XLSX F05 رندر می‌کند.
+
+کاندید اولیه `f8d9078b6fc29863d9d3222f3b69b505f5b2a4ff` در مسیر Worker اختلاف دقت timestamp پین‌شدهٔ .NET
+و PostgreSQL را fail-closed آشکار کرد. اصلاح `6de1e9ac3b457426be5e50064d1767106cd50c39` مقایسه‌های
+profile را به دقت microsecond پایگاه‌داده canonical کرد و regression test مرزی افزود. Candidate
+نهایی با tree `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` و PR validation merge
+`cbd27a673b1887b2e245bef5340eb8199f480be4` دارای همان tree، در Run 185 (`35563055242`) هر هشت
+Job، `458/458` تست C# شامل `39/39` case متمرکز F05، `78/78` تست Node، `139/139` تست Web، پنج
+browser scenario، هارنس F05 برابر `15/15`، validator روی `394` فایل، audit ثابت `274/204/5`،
+Restore کامل ۴۷ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. UI، feature
+flagها، license و Production defaults تغییر نکرده‌اند؛ گام بعد فقط DoR/قرارداد معنایی مستقل F06
+برای قرارداد، اصلاحیه، خرید و تأمین است.

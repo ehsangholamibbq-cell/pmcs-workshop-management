@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F04 متصل؛ Runtime/Renderer/Golden F05 checkpointed و Catalog/API/Worker wiring آن باز؛ F06–F10/UI باز |
-| Database migration | ۴۶ Migration در Safe Resume و Restore Drill متصل سبز است |
+| Product runtime implementation | F01 تا F05 متصل؛ F06–F10/UI باز |
+| Database migration | ۴۷ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -315,6 +315,23 @@ Node، `139/139` تست Web، پنج browser scenario، validator روی `393` �
 Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
 `PMCS-V1.1-RPT1-S07-MS16-C1` است. هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI
 یا default Production تغییر نکرد؛ Safe Resume اکنون MS16 و گام بعد فقط wiring متصل F05 است.
+
+Slice 07 Micro-Step 17، Catalog/Template، strict API، Project profile، Permissionهای definition-aware
+و Worker/Renderer dispatch خانواده `PMCS-RPT1-F05-SEMANTIC-001 v1.3.1` را متصل کرد. Migration
+forward شمارهٔ 47، Definition/Template ثابت `project-financial-position-certified/1.0.0` را با
+Classification حداقل `Confidential` و چهار Permission Finance/Budget منتشر می‌کند. Catalog، تمام
+Run mutation/readها، Download/Verify و read service فقط با همهٔ Permissionهای Definition پاسخ
+می‌دهند و Worker همان policy را پیش از Snapshot و Storage دوباره ارزیابی می‌کند.
+
+کاندید اولیه خطای fail-closed ناشی از تفاوت دقت timestamp .NET/PostgreSQL را آشکار کرد؛ source نهایی
+`6de1e9ac3b457426be5e50064d1767106cd50c39` با tree
+`a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` و PR validation merge
+`cbd27a673b1887b2e245bef5340eb8199f480be4` همان مقایسه را به دقت microsecond canonical و با تست
+مرزی pin کرد. Run 185 (`35563055242`) هر هشت Job، `458/458` تست C# شامل `39/39` case متمرکز F05،
+`78/78` تست Node، `139/139` تست Web، پنج browser scenario، هارنس متصل `15/15`، validator روی
+`394` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS17-C1` است. UI/UX2، Production enablement و defaultها تغییر
+نکردند؛ Safe Resume اکنون MS17 و گام بعد فقط DoR/قرارداد معنایی مستقل F06 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.50.0`
+- نسخه سند: `1.51.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -573,6 +573,26 @@ Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. هیچ Migrati
 Worker/DI wiring، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
 `S07-MS16` و گام بعد فقط wiring متصل Catalog/API/Worker F05 است.
 
+**F05 Catalog/API/Worker — Slice 07 Micro-Step 17 Connected Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS16-C1`، Migration forward شمارهٔ 47، Definition/Template ثابت
+`project-financial-position-certified/1.0.0`، strict parser برای `{}`، Project profile pin و policy
+چهار-Permissionی اضافه شدند. Catalog، Run/Retry/Cancel، Download/Verify و `IReportingReadService`
+فقط با تمام Permissionهای `financial-state.read`، `finance.records.read`،
+`finance.obligations.read` و `budget.baselines.read` Definition/Run/Output را ارائه می‌کنند. Worker
+همین مجوزها را دوباره ارزیابی، `IProjectFinancialPositionReportingSource` را با cutoff پین‌شده مصرف،
+Snapshot را با builder checkpointed تولید و فقط از Registry نسخه‌دار PDF/XLSX F05 رندر می‌کند.
+
+کاندید اولیه `f8d9078b6fc29863d9d3222f3b69b505f5b2a4ff` یک اختلاف دقت زیر-microsecond میان timestamp پین‌شده
+.NET و round-trip PostgreSQL را fail-closed آشکار کرد. اصلاح
+`6de1e9ac3b457426be5e50064d1767106cd50c39` مقایسه را به دقت ذخیره‌سازی canonical کرد و regression
+test همان boundary را pin نمود. این source با tree `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` و PR
+validation merge `cbd27a673b1887b2e245bef5340eb8199f480be4` دارای همان tree، در Run 185
+(`35563055242`) هر هشت Job، `458/458` تست C# شامل `39/39` case متمرکز F05، `78/78` تست Node،
+`139/139` تست Web، پنج browser scenario، هارنس F05 برابر `15/15`، validator روی `394` فایل، audit
+`274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. UI، feature flagها، license و
+Production defaults تغییر نکرده‌اند؛ Safe Resume اکنون `S07-MS17` و گام بعد فقط DoR/قرارداد معنایی
+مستقل F06 برای قرارداد، اصلاحیه، خرید و تأمین است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -865,3 +885,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.48.0` | ثبت Candidate محدود `S07-MS15` برای Runtime Core F05؛ Full CI/Checkpoint و Renderer/wiring باز است |
 | `1.49.0` | ثبت Safe Checkpoint `S07-MS15` و Evidence سبز Run 175 برای Runtime Core F05؛ Renderer/Golden و wiring و F06–F10/UI/Production باز است |
 | `1.50.0` | ثبت Safe Checkpoint `S07-MS16` و Evidence سبز Run 178 برای Renderer/Golden قطعی F05؛ Catalog/API/Worker wiring و F06–F10/UI/Production باز است |
+| `1.51.0` | ثبت Connected Safe Checkpoint `S07-MS17` و Evidence سبز Run 185 برای اتصال End-to-End Catalog/API/Worker خانواده F05؛ F06–F10/UI/Production باز است |
