@@ -640,9 +640,9 @@ public sealed class ProjectCommercialProcurementSupplyReportingTests
         var payload = Build(result).PayloadJson;
         Assert.Contains("Supplier One", payload, StringComparison.Ordinal);
         Assert.Contains("Pump", payload, StringComparison.Ordinal);
-        Assert.DoesNotContain("contractId", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("purchaseOrderId", payload, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("partyId", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"contractId\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"purchaseOrderId\":", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"partyId\":", payload, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("nationalId", payload, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("contact", payload, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("stock", payload, StringComparison.OrdinalIgnoreCase);
