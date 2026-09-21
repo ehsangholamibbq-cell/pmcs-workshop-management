@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.35.0`
-- وضعیت: F06 semantic contract safe checkpoint؛ Runtime/F07–F10/UI/Production باز
+- نسخه: `1.36.0`
+- وضعیت: F06 Runtime Core safe checkpoint؛ Renderer/Wiring/F07–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -988,3 +988,41 @@ Qualification artifact `10625080529` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS18-C1` فقط DoR/semantic contract F06 را می‌بندد. F06 هنوز
 Runtime یا API قابل اجرا ندارد؛ F07 تا F10، UI/UX2 و Production enablement بازند و همه Suiteها و
 Goldenهای V1/F01 تا F05 بدون Regression سبز مانده‌اند.
+
+## ۴۱. Runtime Core محدود خانواده F06 — Slice 07 Micro-Step 19 Safe Checkpoint
+
+Runtime Core باید بدون API، Migration، Renderer یا Worker wiring موارد زیر را با Unit/contract test
+اثبات کند:
+
+- identityهای نسخه‌دار Definition و parameter/snapshot/profile schema با پارامتر دقیق `{}`؛
+- Application Contract و manifest/policy نسخه‌دار Commercial، cutoff-aware و classification-aware؛
+- lifecycle پیوستهٔ Contract/Amendment/Request/Order و انتخاب فقط eventهای واجد cutoff؛
+- Party snapshot مؤثر و Item/quantity/unit/conversion snapshot پین‌شده در زمان Issue؛
+- مبلغ/مدت مؤثر، known subtotal/nullable total و issued/open amount بدون F05/Finance join؛
+- Receipt/Inspection/Service Acceptance، fulfillment بدون cap و excess فقط با Approval معتبر؛
+- delivery status و supplier count/rate بدون score، ranking یا AI؛
+- fail-closed برای currency/link/unit/history/completeness/classification/hash ناسازگار؛
+- Snapshot معنایی allowlisted بدون Source ID، contact/comment/stock/finance metadata؛
+- استقلال از ReportingModule، API endpoint، Worker dispatch، Migration و Renderer؛
+- پوشش دقیق هر ۳۲ سناریوی Golden معنایی F06 و خاموش‌ماندن تمام defaultها.
+
+کاندید اولیه `4cdc45e77508b69e75753f838480c1454f68824d` خطاهای build-gate را آشکار کرد؛ اصلاح build
+`02bc0f483203b8f17cf1102eff7274200270b349` و اصلاح assertion
+`177a1d89a07c23b2ae446218e98556cfbcf57a21` با tree
+`165cd1d451935f3cb94db7b9f5718678de00aca2` کاندید نهایی را ساختند. PR validation merge
+`2dbaf0ba14cf80ee863e07c2561ab7392037fd7c` دارای همان tree، در Run 192 (`35573450703`) هر هشت
+Job را پاس کرد: `490/490` تست C# شامل `32/32` case متمرکز F06، `82/82` تست قراردادی Node،
+`139/139` تست Web، پنج browser scenario، validator روی `402` فایل ماژولی، system audit ثابت
+`274/204/5`، Restore Drill کامل `47` Migration و Qualification برابر `7/7` Suite و `12/12`
+Command با صفر failure. attempt دوم همان Run فقط failure موقت pull از Docker Hub را در
+identity-container رفع کرد و source tree تغییر نکرد.
+
+Qualification artifact `10626938368` با digest
+`sha256:6c91b67e1ae37632e94a899712958729f7aa30f1e3aabe7e6c0cdb399efdc88d`، Integration artifact
+`10627202299` با digest `sha256:36f5e2f29e65ddcf7f6365cb8508bb2ea3df2fdcab8b48d70e35037a3fba2850`
+و UI-E2E artifact `10627535954` با digest
+`sha256:3b2bdd54dd62d04c80a45fab3aa45ef1461a9876a37d18cc2710c45b1876f46a` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS19-C1` فقط Runtime Core F06 را می‌بندد. Template/Renderer و
+Golden PDF/XLSX، Catalog/API/Worker wiring، F07 تا F10، UI/UX2 و Production enablement بازند و همه
+Suiteها و Goldenهای V1/F01 تا F05 بدون Regression سبز مانده‌اند.

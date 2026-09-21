@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.17.0`
-- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 semantic security contract checkpointed؛ Runtime/Production disabled
+- نسخه: `1.18.0`
+- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 Runtime Core security checkpointed/unwired؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -197,9 +197,10 @@ Classification ناسازگار، conversion version گمشده و excess بدو
 section، latest-state fallback یا ساخت صفر/تکمیل مصنوعی مجاز نیست. Notes/Comment/Description، National
 ID/contact، delivery address، attachment/evidence link، actor، Stock location، Batch/Lot، Finance
 link و Source ID در Snapshot یا filename/log/diagnostic نشت نمی‌کنند. Checkpoint `S07-MS18` این policy
-را در قرارداد و Golden matrix تثبیت می‌کند؛ هیچ Runtime، Catalog، Worker یا Renderer F06 را فعال
-نمی‌کند. Candidate `4c5d026466cb3f76f351221297540a0936337335` در Run 188 هر هشت Job را پاس کرد و
-defaults همچنان خاموش/Unconfigured هستند.
+را در قرارداد و Golden matrix تثبیت کرد؛ `S07-MS19` همان مرز را در Source/selector/calculator/Snapshot
+builder نسخه‌دار و fail-closed پیاده کرد. Source `177a1d89a07c23b2ae446218e98556cfbcf57a21`
+در Run 192 هر هشت Job و `32/32` case متمرکز F06 را پاس کرد؛ Catalog، Worker، API و Renderer F06
+فعال نشده‌اند و defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

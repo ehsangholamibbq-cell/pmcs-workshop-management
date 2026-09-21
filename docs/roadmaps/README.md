@@ -6,7 +6,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.52.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.53.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -63,4 +63,5 @@
 | V1.1 RPT1 Slice 07 MS16 | source `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` / tree `f873795dcb8893dc28f88d5e5fc8292c5201e1e4` / Run 178 deterministic F05 PDF/XLSX Renderer/Golden passed / Catalog/API/Worker wiring و F06–F10/UI/Production open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS17 | source `6de1e9ac3b457426be5e50064d1767106cd50c39` / tree `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` / Run 185 F05 Catalog/API/Worker connected qualification passed / F06–F10/UI/Production open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS18 | source `4c5d026466cb3f76f351221297540a0936337335` / tree `d9e8febc5f220f8d00eaff80926b00dec2ea0926` / Run 188 F06 semantic contract passed / Runtime not implemented، F07–F10/UI/Production open، RPT1 active |
+| V1.1 RPT1 Slice 07 MS19 | source `177a1d89a07c23b2ae446218e98556cfbcf57a21` / tree `165cd1d451935f3cb94db7b9f5718678de00aca2` / Run 192 bounded F06 Runtime Core passed / Renderer/Golden و wiring/F07–F10/UI/Production open، RPT1 active |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

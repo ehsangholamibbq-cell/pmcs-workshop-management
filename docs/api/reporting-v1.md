@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01/F02/F03/F04/F05 connected؛ F06 contract ready/runtime not implemented؛ F07–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01/F02/F03/F04/F05 connected؛ F06 Runtime Core checkpointed/API unwired؛ F07–F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -139,21 +139,22 @@ PDF/XLSX فقط از Registry نسخه‌دار F05 و مسیر immutable Genera
 F05 برابر `15/15` و Restore Drill کامل ۴۷ Migration را پاس کرد. Safe Resume اکنون `S07-MS17` است
 و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
-### ۱.۹ قرارداد checkpointed F06 بدون تغییر API
+### ۱.۹ Runtime Core checkpointed F06 بدون تغییر API
 
-Safe Checkpoint `S07-MS18` فقط قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` را تثبیت می‌کند و هیچ
-Definition، Template، parser، endpoint، Migration یا Worker dispatch تازه‌ای اضافه نمی‌کند. پارامتر
-معنایی Client برای Runtime آینده دقیقاً `{}` خواهد بود؛ Project و cutoff از route/Run و profile،
-configuration، lifecycle policy و Source permissionها توسط Server pin می‌شوند. Contract/Party/
+Safe Checkpointهای `S07-MS18/MS19` قرارداد و Runtime Core محدود
+`PMCS-RPT1-F06-SEMANTIC-001 v1.1.1` را تثبیت می‌کنند، اما هیچ Definition، Template، parser، endpoint،
+Migration یا Worker dispatch تازه‌ای اضافه نمی‌کنند. پارامتر معنایی Client دقیقاً `{}` است؛ Project
+و cutoff از route/Run و profile، configuration، lifecycle policy و Source permissionها توسط Server
+pin می‌شوند. Contract/Party/
 Supplier/Request/Order، status/type، currency، تاریخ محلی، item/category، include/filter، Query، SQL
 و Source selector در body مجاز نیستند.
 
-Runtime آینده باید فقط Application Contract خواندنی و cutoff-aware Commercial را مصرف کند؛
-`ICommercialStateSource` جاری، DbContextها و endpointهای `/commercial/state` و
+Runtime Core فقط Application Contract خواندنی و cutoff-aware Commercial را مصرف می‌کند؛
+`ICommercialStateSource` جاری، DbContextهای Reporting و endpointهای `/commercial/state` و
 `/commercial/supply/state` Source Certified نیستند. هر شش Permission `commercial-state.read`،
 `commercial.parties.read`، `contracts.read`، `procurement.requests.read`،
-`procurement.orders.read` و `supply.read` و Classification حداقل `Confidential` لازم‌اند. Run 188
-هر هشت Job را سبز کرد، اما هیچ گزارش F06 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا
+`procurement.orders.read` و `supply.read` و Classification حداقل `Confidential` لازم‌اند. Run 192
+هر هشت Job و `32/32` case متمرکز F06 را سبز کرد، اما هیچ گزارش F06 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا
 دانلود نیست و همهٔ Production defaults خاموش/Unconfigured باقی مانده‌اند.
 
 ## ۲. Catalog

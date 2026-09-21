@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.32.0`
-- وضعیت: `S07-MS18 F06 semantic contract safe checkpoint | Runtime/F07-F10/UI/Production open`
+- نسخه: `1.33.0`
+- وضعیت: `S07-MS19 F06 Runtime Core safe checkpoint | Renderer/Wiring/F07-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `32772e1f19c9c9d8023947654a3402f53ee0f6b6`
-- Parent checkpoint tree: `5eadc44c115ffb6e44cc57b52a44ec0ea5bddc55`
-- Candidate source: `4c5d026466cb3f76f351221297540a0936337335`
-- Candidate source tree: `d9e8febc5f220f8d00eaff80926b00dec2ea0926`
-- PR validation merge: `9bfb7badcde8a67d385567db997f265a67497f0f`؛ همان tree
-- Contract evidence: Run 188 (`35567252567`) — `success`
+- Parent checkpoint commit: `9516ac3a4db940d506d89b1d7195f1874f0a4989`
+- Parent checkpoint tree: `6955448c08e247b0b92a124743909db1f86fe304`
+- Candidate source: `177a1d89a07c23b2ae446218e98556cfbcf57a21`
+- Candidate source tree: `165cd1d451935f3cb94db7b9f5718678de00aca2`
+- PR validation merge: `2dbaf0ba14cf80ee863e07c2561ab7392037fd7c`؛ همان tree
+- Runtime evidence: Run 192 (`35573450703`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -73,14 +73,15 @@ fail-closed است. Checkpoint جاری Template/Renderer/Layout identity، rend
 PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production defaults همچنان
 جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` در
+قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.1.1` در
 `pmcs-v1.1-rpt1-f06-commercial-procurement-supply-semantic-contract.md`، زنجیرهٔ قرارداد، اصلاحیه،
 درخواست خرید، سفارش و Receipt/Inspection/Service Acceptance را به evidence رسمی واجد cutoff محدود
 می‌کند. مبلغ/مدت مؤثر Contract، commitment سفارش، fulfillment و supplier performance بدون F05 join،
 Inventory، Invoice/Payment، FX، ranking یا AI تعریف شده‌اند. Client فقط `{}` می‌فرستد؛ شش Permission
-Commercial/Procurement/Supply و Classification حداقل `Confidential` قطعی‌اند. F06 فقط
-`Contract Ready / Runtime Not Implemented` است و current-state/truncated sourceهای جاری Commercial
-جای Application Contract تاریخی، نسخه‌دار و cutoff-aware Slice بعدی را نمی‌گیرند.
+Commercial/Procurement/Supply و Classification حداقل `Confidential` قطعی‌اند. Runtime Core اکنون
+identity/schema نسخه‌دار، Application Contract و compatibility source در Commercial، selector،
+calculator و semantic Snapshot builder را دارد؛ history غیرقابل‌اثبات fail-closed است. Renderer،
+Catalog/API/Worker wiring، UI و Production defaults همچنان جدا و خاموش‌اند.
 
 ## ۲. Non-Scope
 
@@ -106,6 +107,7 @@ Dependencyهای مجاز:
 - `Pmcs.Modules.Planning` فقط از `IProjectProgressReportingSource` برای F04؛
 - `Pmcs.Modules.ProjectIntelligence` فقط از `IProjectStateReportingSource` برای F03؛
 - `Pmcs.Modules.Finance` فقط از `IProjectFinancialPositionReportingSource` برای F05؛
+- `Pmcs.Modules.Commercial` فقط از `IProjectCommercialProcurementSupplyReportingSource` برای F06؛
 - `Pmcs.Modules.Documents` فقط از Contract انتشار/خواندن Generated Document؛
 - `Pmcs.Modules.IdentityAccess` به‌صورت مستقیم لازم نیست؛ Permission از BuildingBlocks contract تزریق می‌شود.
 
@@ -721,3 +723,23 @@ validator روی `394` فایل، audit ثابت `274/204/5`، Restore کامل 
 `7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint هیچ Runtime identity/schema، Source
 implementation، Migration، API، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production
 default را تغییر نمی‌دهد؛ گام بعد فقط Runtime Core محدود F06 است.
+
+Slice 07 Micro-Step 19 Runtime Core محدود F06 را روی همان قرارداد بست. Definition
+`project-commercial-procurement-supply-certified/1.0.0`، schemaهای parameter/snapshot/profile
+نسخه‌دار، Contract `pmcs.commercial.project-commercial-procurement-supply-reporting/v1` و
+manifest/policy نسخه‌دار اضافه شدند. Commercial lifecycle قرارداد، اصلاحیه، درخواست و سفارش را در
+cutoff بازسازی و Party/Item snapshot، link، unit/conversion و excess approval را validate می‌کند؛
+Item identity و quantity basis در زمان Issue پین می‌شوند. calculator مبلغ/مدت، commitment،
+fulfillment، delivery status و supplier count/rate را deterministic می‌سازد و Snapshot builder فقط
+Source نسخه‌دار و Project profile پین‌شده را مصرف می‌کند.
+
+کاندید اولیه `4cdc45e77508b69e75753f838480c1454f68824d` خطاهای build-gate را آشکار کرد؛ اصلاح
+`02bc0f483203b8f17cf1102eff7274200270b349` build را سبز و اصلاح assertion
+`177a1d89a07c23b2ae446218e98556cfbcf57a21` کاندید نهایی را با tree
+`165cd1d451935f3cb94db7b9f5718678de00aca2` ساخت. PR validation merge
+`2dbaf0ba14cf80ee863e07c2561ab7392037fd7c` همان tree را در Run 192 (`35573450703`) با هر هشت
+Job، `490/490` تست C# شامل `32/32` case متمرکز F06، `82/82` تست قراردادی Node، `139/139` تست Web،
+پنج browser scenario، validator روی `402` فایل، audit ثابت `274/204/5`، Restore کامل ۴۷ Migration
+و Qualification `7/7` Suite و `12/12` Command سبز کرد. retry همان Run فقط failure موقت pull از
+Docker Hub در Job identity-container را رفع کرد. هیچ Migration، API، Catalog/Template seed، Worker
+dispatch، Renderer، UI یا Production default تغییر نکرد؛ گام بعد فقط Renderer/Golden F06 است.

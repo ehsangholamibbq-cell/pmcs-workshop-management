@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F05 متصل؛ F06 Contract Ready/Runtime Not Implemented؛ F07–F10/UI باز |
+| Product runtime implementation | F01 تا F05 متصل؛ F06 Runtime Core checkpointed/Renderer و wiring باز؛ F07–F10/UI باز |
 | Database migration | ۴۷ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -345,6 +345,20 @@ Job، `458/458` تست C#، `80/80` تست Node، `139/139` تست Web، پنج 
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS18-C1` است. هیچ Runtime، Source implementation، Migration،
 API، Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe
 Resume اکنون MS18 و گام بعد فقط Runtime Core محدود F06 است.
+
+Slice 07 Micro-Step 19، Runtime Core محدود `PMCS-RPT1-F06-SEMANTIC-001 v1.1.1` را بدون Renderer یا
+wiring بست. identity/schemaهای نسخه‌دار، `IProjectCommercialProcurementSupplyReportingSource` در
+Commercial، compatibility projection fail-closed، selector lifecycle، calculator و semantic
+Snapshot builder اضافه شدند. Item snapshot و quantity basis در زمان Issue پین می‌شوند و history
+configuration/contract/excess approval غیرقابل‌اثبات fallback نمی‌گیرد. Source نهایی
+`177a1d89a07c23b2ae446218e98556cfbcf57a21` با tree
+`165cd1d451935f3cb94db7b9f5718678de00aca2` و PR validation merge
+`2dbaf0ba14cf80ee863e07c2561ab7392037fd7c` در Run 192 (`35573450703`) هر هشت Job، `490/490`
+تست C# شامل `32/32` case متمرکز F06، `82/82` تست Node، `139/139` تست Web، پنج browser scenario،
+validator روی `402` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس
+کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS19-C1` است. هیچ Migration، API، Catalog/Template
+seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe Resume اکنون MS19 و گام
+بعد فقط Renderer/Golden محدود F06 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.52.0`
+- نسخه سند: `1.53.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۶/۳۰ (۲۰۲۶-۰۹-۲۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -611,6 +611,23 @@ Checkpoint فقط DoR و Golden matrix سی‌ودوسناریویی را می�
 Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS18` و گام
 بعد فقط Runtime Core محدود F06 است.
 
+**F06 Bounded Runtime Core — Slice 07 Micro-Step 19 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS18-C1`، Definition
+`project-commercial-procurement-supply-certified/1.0.0`، schemaهای parameter/snapshot/profile
+نسخه‌دار، Contract و manifest/policy نسخه‌دار Commercial، selector lifecycle، calculator و semantic
+Snapshot builder اضافه شدند. lifecycleهای Contract/Amendment/Request/Order، Party snapshot و
+Item/quantity basis پین‌شده در زمان Issue، receipt/inspection/service acceptance و excess approval
+با cutoff رسمی validate می‌شوند؛ history غیرقابل‌اثبات و Source current-state/truncated fail-closed
+است.
+
+Source نهایی `177a1d89a07c23b2ae446218e98556cfbcf57a21` با tree
+`165cd1d451935f3cb94db7b9f5718678de00aca2` و PR validation merge
+`2dbaf0ba14cf80ee863e07c2561ab7392037fd7c` دارای همان tree، در Run 192 (`35573450703`) هر هشت
+Job، `490/490` تست C# شامل `32/32` case متمرکز F06، `82/82` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `402` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Template/Renderer، Catalog/API/Worker، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS19` و گام بعد فقط Renderer/Golden F06 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -905,3 +922,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.50.0` | ثبت Safe Checkpoint `S07-MS16` و Evidence سبز Run 178 برای Renderer/Golden قطعی F05؛ Catalog/API/Worker wiring و F06–F10/UI/Production باز است |
 | `1.51.0` | ثبت Connected Safe Checkpoint `S07-MS17` و Evidence سبز Run 185 برای اتصال End-to-End Catalog/API/Worker خانواده F05؛ F06–F10/UI/Production باز است |
 | `1.52.0` | ثبت Safe Checkpoint `S07-MS18` و Evidence سبز Run 188 برای قرارداد معنایی F06؛ Runtime/Renderer/wiring و F07–F10/UI/Production باز است |
+| `1.53.0` | ثبت Safe Checkpoint `S07-MS19` و Evidence سبز Run 192 برای Runtime Core F06؛ Renderer/Golden و wiring و F07–F10/UI/Production باز است |
