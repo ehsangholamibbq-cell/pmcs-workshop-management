@@ -1593,6 +1593,22 @@ test("RPT1-F05 certified renderer is versioned deterministic and remains outside
     renderingTests,
     /NoDataWorkbookKeepsFinancialSheetsHeaderOnlyAndDoesNotFabricateZeroMetrics/u,
   );
+  assert.match(
+    renderingTests,
+    /cadb7f0dc5670f401df879f04efdd930cf799213194e7cdf43c0d5d5e75a6222/u,
+  );
+  assert.match(
+    renderingTests,
+    /25293911fd4eec21e9b2e2f62de9239d6f5d5bed8b4842a32c8d1483fc987d09/u,
+  );
+  assert.match(
+    renderingTests,
+    /44afd18ca0babb473b69911bf83d775dec57519c34c0237e471bebc9bdd439b7/u,
+  );
+  assert.match(
+    renderingTests,
+    /f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb/u,
+  );
 
   for (const source of [module, worker, endpoints]) {
     assert.doesNotMatch(

@@ -162,7 +162,7 @@ public sealed class ProjectFinancialPositionReportRenderingTests
         WriteQualificationArtifacts("project-financial-position-golden.xlsx", first.Bytes);
         Assert.True(
             string.Equals(
-                "F05_XLSX_PENDING",
+                "cadb7f0dc5670f401df879f04efdd930cf799213194e7cdf43c0d5d5e75a6222",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F05_XLSX_GOLDEN_SHA256={first.Sha256}");
@@ -221,9 +221,16 @@ public sealed class ProjectFinancialPositionReportRenderingTests
                 firstImages[index]);
         }
 
-        var expectedVisualDigests = new[] { "F05_VISUAL_PENDING" };
+        var expectedVisualDigests = new[]
+        {
+            "44afd18ca0babb473b69911bf83d775dec57519c34c0237e471bebc9bdd439b7",
+            "f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb"
+        };
         Assert.True(
-            string.Equals("F05_PDF_PENDING", first.Sha256, StringComparison.Ordinal) &&
+            string.Equals(
+                "25293911fd4eec21e9b2e2f62de9239d6f5d5bed8b4842a32c8d1483fc987d09",
+                first.Sha256,
+                StringComparison.Ordinal) &&
                 expectedVisualDigests.SequenceEqual(visualDigests),
             $"F05_PDF_GOLDEN_SHA256={first.Sha256}; " +
             $"F05_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
