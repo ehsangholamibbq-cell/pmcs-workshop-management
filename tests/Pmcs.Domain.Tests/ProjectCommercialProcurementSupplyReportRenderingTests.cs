@@ -174,7 +174,10 @@ public sealed class ProjectCommercialProcurementSupplyReportRenderingTests
             "project-commercial-procurement-supply-golden.xlsx",
             first.Bytes);
         Assert.True(
-            string.Equals("F06_XLSX_PENDING", first.Sha256, StringComparison.Ordinal),
+            string.Equals(
+                "42ab487014979eb5916628a782e46b8f6095ae0f2fd0c1f6e6a573cdbcd19750",
+                first.Sha256,
+                StringComparison.Ordinal),
             $"F06_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -239,9 +242,17 @@ public sealed class ProjectCommercialProcurementSupplyReportRenderingTests
                 firstImages[index]);
         }
 
-        var expectedVisualDigests = new[] { "F06_VISUAL_PENDING" };
+        var expectedVisualDigests = new[]
+        {
+            "dbe3fbc103ebc99a892a2690986a786f039a6c4e0910baea0c463658318e6994",
+            "04e1754b19c6ba21a44f57dd79b121975c72f51b133401025493d1ff98216e50",
+            "fab7c75f5638077f056448606c50018ead10d29450e0c1b15fda221a45fb2609"
+        };
         Assert.True(
-            string.Equals("F06_PDF_PENDING", first.Sha256, StringComparison.Ordinal) &&
+            string.Equals(
+                "7d33988f4c86df11c9da002816eae2f9e2f758004f670ea0ec86ded236e522cb",
+                first.Sha256,
+                StringComparison.Ordinal) &&
                 expectedVisualDigests.SequenceEqual(visualDigests),
             $"F06_PDF_GOLDEN_SHA256={first.Sha256}; " +
             $"F06_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");

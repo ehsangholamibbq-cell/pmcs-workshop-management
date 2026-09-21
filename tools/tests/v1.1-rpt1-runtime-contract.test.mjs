@@ -2045,6 +2045,26 @@ test("RPT1-F06 certified renderer is versioned deterministic and remains outside
     renderingTests,
     /NoDataWorkbookKeepsCommercialSheetsHeaderOnlyAndDoesNotFabricateZeroMetrics/u,
   );
+  assert.match(
+    renderingTests,
+    /42ab487014979eb5916628a782e46b8f6095ae0f2fd0c1f6e6a573cdbcd19750/u,
+  );
+  assert.match(
+    renderingTests,
+    /7d33988f4c86df11c9da002816eae2f9e2f758004f670ea0ec86ded236e522cb/u,
+  );
+  assert.match(
+    renderingTests,
+    /dbe3fbc103ebc99a892a2690986a786f039a6c4e0910baea0c463658318e6994/u,
+  );
+  assert.match(
+    renderingTests,
+    /04e1754b19c6ba21a44f57dd79b121975c72f51b133401025493d1ff98216e50/u,
+  );
+  assert.match(
+    renderingTests,
+    /fab7c75f5638077f056448606c50018ead10d29450e0c1b15fda221a45fb2609/u,
+  );
   assert.doesNotMatch(
     `${renderingContracts}\n${pdfRenderer}\n${xlsxRenderer}`,
     /CommercialDbContext|IProjectCommercialProcurementSupplyReportingSource/u,
