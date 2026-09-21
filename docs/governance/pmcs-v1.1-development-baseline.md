@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F04 متصل؛ Runtime Core F05 checkpointed و Renderer/wiring آن باز؛ F06–F10/UI باز |
+| Product runtime implementation | F01 تا F04 متصل؛ Runtime/Renderer/Golden F05 checkpointed و Catalog/API/Worker wiring آن باز؛ F06–F10/UI باز |
 | Database migration | ۴۶ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -301,6 +301,20 @@ browser scenario، validator روی `390` فایل، audit `274/204/5`، Restore
 `7/7` را پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS15-C1` است. هیچ Migration، API،
 Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe Resume
 اکنون MS15 و گام بعد فقط Renderer/Golden محدود F05 است.
+
+Slice 07 Micro-Step 16، Renderer/Golden قطعی `PMCS-RPT1-F05-SEMANTIC-001 v1.2.1` را بدون wiring
+بست. Template `1.0.0`، digest و Renderer/Layout identity نسخه‌دار، render model canonical، PDF
+فارسی/RTL دوصفحه‌ای و XLSX هشت-Sheet قطعی اضافه شدند. status/nullهای Cash، Budget و Obligation،
+Payable/Receivable و Aging جدا، ماندهٔ Budget منفی و مصرف بالای صددرصد حفظ می‌شوند؛ FX، Forecast،
+EVM، Management Fee، Formula و join پنهان F06 تولید نمی‌شود. Goldenهای PDF/XLSX و visual digest دو
+صفحه پین شدند. Source `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` با tree
+`f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
+`72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
+Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل، audit `274/204/5`،
+Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
+`PMCS-V1.1-RPT1-S07-MS16-C1` است. هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI
+یا default Production تغییر نکرد؛ Safe Resume اکنون MS16 و گام بعد فقط wiring متصل F05 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

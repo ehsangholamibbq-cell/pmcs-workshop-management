@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.29.0`
-- وضعیت: `S07-MS15 F05 Runtime Core safe checkpoint | Renderer/Wiring/F06-F10/UI/Production open`
+- نسخه: `1.30.0`
+- وضعیت: `S07-MS16 F05 Renderer/Golden safe checkpoint | Catalog/API/Worker/F06-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `ba1f00715ddb1359cfdb26acc5aa0c012e62a47e`
-- Parent checkpoint tree: `172b7919181ea717e669b00cfee319849c00dcce`
-- Candidate source: `77ad46cbac12b899116516b0a58665ae888b3bf2`
-- Candidate source tree: `5c67523b0fbed8d521627fe406f74271a1bbdcfe`
-- PR validation merge: `5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c`؛ همان tree
-- Runtime evidence: Run 175 (`35541740268`) — `success`
+- Parent checkpoint commit: `b1bfcc8b9257c11df106d55c5f0f3312685cc7ea`
+- Parent checkpoint tree: `d5d4a17a93004b203ee35b5bb5e3ca094c5d7183`
+- Candidate source: `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2`
+- Candidate source tree: `f873795dcb8893dc28f88d5e5fc8292c5201e1e4`
+- PR validation merge: `72ab7827731fa763828c049be953ee9ca8c128a4`؛ همان tree
+- Renderer evidence: Run 178 (`35558202348`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -62,14 +62,15 @@ history غیرقابل‌اثبات fail-closed است. Safe Checkpoint جاری
 model canonical و PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production
 defaults همچنان جدا و خاموش‌اند.
 
-قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.1.1` در
+قرارداد `PMCS-RPT1-F05-SEMANTIC-001 v1.2.1` در
 `pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md` وضعیت مالی Certified را به Financial
 Recordهای Posted، تعهدات و settlementهای رسمی، Aging جداگانهٔ Payable/Receivable و Budget Baseline
 اختیاریِ مؤثر در cutoff محدود می‌کند. Cash formulaها، lifecycle، status، چهار Permission خواندنی و
 Classification حداقل `Confidential` قطعی‌اند؛ FX، Forecast، EVM، Management Fee و join پنهان F06
 ممنوع است. Runtime Core اکنون identity/schema نسخه‌دار، Application Contract و compatibility source
 در Finance، selector، calculator و semantic Snapshot builder را دارد. history غیرقابل‌اثبات
-fail-closed است؛ Template/Renderer و Catalog/API/Worker wiring همچنان بازند.
+fail-closed است. Checkpoint جاری Template/Renderer/Layout identity، render model canonical و
+PDF/XLSX قطعی را بسته است؛ Catalog/API/Worker wiring همچنان باز است.
 
 ## ۲. Non-Scope
 
@@ -653,3 +654,21 @@ Job، `450/450` تست C# شامل `31/31` case متمرکز F05، `75/75` تس�
 پنج browser scenario، validator روی `390` فایل، audit ثابت `274/204/5`، Restore کامل ۴۶ Migration و
 Qualification `7/7` Suite و `12/12` Command را پاس کرد. هیچ Migration، API، Catalog/Template seed،
 Worker dispatch، Renderer، UI یا Production default تغییر نکرد؛ گام بعد فقط Renderer/Golden F05 است.
+
+Slice 07 Micro-Step 16 Renderer/Golden محدود F05 را روی Runtime همان Checkpoint بست. Template
+`1.0.0` با content digest پین‌شده، قراردادهای
+`pmcs.reporting.project-financial-position.renderer/v1` و
+`pmcs.reporting.project-financial-position.layout/v1`، render request/model fail-closed، PDF
+فارسی/RTL دوصفحه‌ای و XLSX هشت-Sheet قطعی اضافه شدند. وضعیت‌ها و nullهای Cash/Budget/Obligation،
+هفت formula نقدی، Budget comparison، Payable/Receivable و Aging جدا حفظ می‌شوند؛ negative remaining
+و consumption بالای صددرصد cap نمی‌شود و هیچ FX، Forecast، EVM، Management Fee یا F06 join تولید
+نمی‌شود. Renderer registry عمداً خارج از DI/Worker باقی مانده است.
+
+Candidate `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` با tree
+`f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
+`72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
+Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77` تست
+قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل، audit ثابت
+`274/204/5`، Restore کامل ۴۶ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد.
+هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI یا Production default تغییر نکرد؛
+گام بعد فقط wiring متصل F05 است.

@@ -1,12 +1,13 @@
 # PMCS V1.1 — قرارداد معنایی گزارش وضعیت مالی، Cash Position و Aging
 
 - شناسه: `PMCS-RPT1-F05-SEMANTIC-001`
-- نسخه: `1.1.1`
+- نسخه: `1.2.1`
 - خانواده: `RPT1-F05`
-- وضعیت: `Runtime Core Safe Checkpoint | Renderer/Wiring Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS14-C1`
+- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS15-C1`
 - Runtime change: Bounded identity/source/selector/calculator/Snapshot builder
-- Migration / API / Renderer / Template change: None
+- Renderer / Template change: Versioned deterministic PDF/XLSX and pinned binary/visual Goldens
+- Migration / Catalog / API / Worker change: None
 
 ## ۱. هدف و مرز خانواده
 
@@ -279,8 +280,8 @@ Run ID، attempt، build time و render time نباید hash را تغییر د�
 
 نسخه اول حداکثر ۱۰۰٬۰۰۰ Financial Record، ۲۰٬۰۰۰ Obligation و ۱۰۰٬۰۰۰ Settlement را می‌پذیرد.
 عبور از budget، متن بیش‌ازحد یا manifest/semantic hash ناسازگار باید non-transient و fail-closed باشد،
-نه truncate، sample، net یا group پنهان. PDF/XLSX، page/sheet/row budget، visual digest و performance
-فقط در Renderer Slice مستقل قطعی می‌شوند.
+نه truncate، sample، net یا group پنهان. Renderer checkpointed نیز page/sheet/row/text budget را قبل
+از تولید خروجی کنترل می‌کند؛ PDF/XLSX، visual digest و performance در Run 178 قطعی شده‌اند.
 
 ## ۱۲. Runtime Core پیاده‌شده و شکاف Compatibility
 
@@ -297,6 +298,24 @@ Runtime Core مستقل Certified F05 اکنون پیاده و checkpoint شده
 - classification پایین‌تر از `Confidential`، schema/version ناشناخته، Tenant/Project mismatch،
   completeness ناقص یا source hash ناسازگار fail-closed است؛
 - ۳۱ Unit/contract case سناریوهای Golden معنایی و boundaryهای Runtime را پوشش می‌دهند.
+
+Renderer/Golden مستقل Certified F05 نیز اکنون پیاده و checkpoint شده است:
+
+- Template `1.0.0` با digest
+  `e6ad4cbf2559d825d70b1579e687e7f9ce15020afaf697692e263f18480f18e4`، قرارداد Renderer
+  `pmcs.reporting.project-financial-position.renderer/v1` و Layout
+  `pmcs.reporting.project-financial-position.layout/v1` نسخه‌دار و fail-closed هستند؛
+- render model فقط Snapshot allowlisted را canonical می‌کند و status/nullهای Cash، Budget و
+  Obligation، Payable/Receivable، Aging و lineage را بدون zero fabrication حفظ می‌کند؛
+- PDF فارسی/RTL دوصفحه‌ای و XLSX با هشت Sheet ثابت `Metadata/Cash/Budget/Summaries/Aging/Open
+  Obligations/Source Counts/Lineage` deterministic، RTL، frozen و formula-free هستند؛
+- Golden XLSX برابر `cadb7f0dc5670f401df879f04efdd930cf799213194e7cdf43c0d5d5e75a6222` و Golden PDF برابر
+  `25293911fd4eec21e9b2e2f62de9239d6f5d5bed8b4842a32c8d1483fc987d09` است؛ visual digestهای دو
+  صفحه به‌ترتیب `44afd18ca0babb473b69911bf83d775dec57519c34c0237e471bebc9bdd439b7` و
+  `f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb` هستند؛
+- شش case Renderer/Golden، determinism، semantics، NoData، tamper/budget، visual و performance را
+  پوشش می‌دهند و همراه ۳۱ case Runtime، مجموع متمرکز F05 را به `37/37` می‌رسانند؛
+- Registry اختصاصی Renderer وجود دارد ولی در DI، Worker یا endpoint ثبت نشده است.
 
 سرویس‌های legacy/current-state زیر همچنان به‌تنهایی Source معتبر Certified نیستند:
 
@@ -323,7 +342,7 @@ fail-closed می‌شود. حدس `approvedAt` از Audit، استفاده از 
 latest Snapshot یا fallback به endpoint زنده ممنوع است. تکمیل producer تاریخی غنی‌تر، در صورت نیاز،
 یک Slice دامنه‌ای مستقل است و شرط Renderer Slice بعدی نیست.
 
-## ۱۳. Golden matrix الزامی برای Sliceهای بعدی
+## ۱۳. Golden matrix و Qualification
 
 | ID | Fixture | انتظار قطعی |
 | --- | --- | --- |
@@ -353,9 +372,10 @@ latest Snapshot یا fallback به endpoint زنده ممنوع است. تکمی
 | `F05-SP01` | پارامتر خالی در برابر currency/bucket/baseline/filter اضافه | `{}` پذیرفته و هر property اضافه strict رد می‌شود |
 | `F05-SC01` | تلاش برای current service/DbContext/HTTP fallback | contract test رد می‌کند؛ فقط Application Contract نسخه‌دار مجاز است |
 
-Qualification آینده باید انتخاب cutoff را با query مستقل کنترل، semantic Snapshot را parse و absence
-FX/forecast/health/management-fee/F06 join را اثبات کند. Golden PDF/XLSX جای Golden معنایی را
-نمی‌گیرد.
+Qualification Renderer در Run 178، Goldenهای PDF/XLSX و visual/performance را همراه Golden معنایی
+بدون Regression بست. Qualification متصل آینده باید انتخاب cutoff را با query مستقل کنترل، semantic
+Snapshot را parse و absence FX/forecast/health/management-fee/F06 join را از مسیر واقعی
+Catalog/API/Worker نیز اثبات کند. Golden PDF/XLSX جای Golden معنایی را نمی‌گیرد.
 
 ## ۱۴. Definition of Ready و Slice مجاز بعدی
 
@@ -373,17 +393,18 @@ FX/forecast/health/management-fee/F06 join را اثبات کند. Golden PDF/XL
 | Runtime Definition و parameter/snapshot/profile/source IDs | بسته؛ `v1`/`1.0.0` نسخه‌دار |
 | historical projection و Application Contract cutoff-aware | بسته؛ compatibility مبهم fail-closed |
 | selector/calculator/semantic Snapshot builder | بسته؛ ۳۱ case متمرکز |
-| Template/Renderer و Golden binary | Not Implemented؛ Slice مستقل بعدی |
+| Template/Renderer و Golden binary/visual/performance | بسته؛ Run 178 |
 | Catalog/API/Worker wiring | Not Implemented؛ Slice متصل بعدی |
 
-Micro-Step بعدی فقط می‌تواند Template/Renderer/Layout identity، render model canonical، PDF/XLSX
-قطعی و Goldenهای binary/visual/performance خانواده F05 را روی Snapshot نسخه‌دار موجود اضافه کند.
-Migration Catalog، endpoint/dispatch، Worker wiring، UI و Production enablement در آن Slice مجاز
-نیستند.
+Micro-Step بعدی فقط می‌تواند Migration و seed نسخه‌دار Definition/Template، Catalog و Project
+profile، strict parameter parser، Permissionهای definition-aware و fail-closed، Worker dispatch به
+Source/Runtime/Rendererهای نسخه‌دار و Qualification End-to-End خانواده F05 را اضافه کند. UI/UX2،
+Production enablement، تغییر defaultها و شروع F06 در آن Slice مجاز نیستند.
 
 ## ۱۵. Gate statement
 
-DoR، semantic contract و Runtime Core خانواده F05 بسته‌اند. هیچ API، Migration، Catalog seed،
-Template/Renderer، Worker dispatch، feature flag، UI یا Production setting اضافه یا فعال نشده است.
-F05 اکنون `Runtime Core Safe Checkpoint / Renderer/Wiring Not Implemented` و F06 تا F10 همچنان
+DoR، semantic contract، Runtime Core و Renderer/Golden خانواده F05 بسته‌اند. هیچ API، Migration،
+Catalog/Template seed، Worker dispatch/DI registration، feature flag، UI یا Production setting اضافه
+یا فعال نشده است. F05 اکنون
+`Renderer/Golden Safe Checkpoint / Catalog/API/Worker Not Implemented` و F06 تا F10 همچنان
 `Required / Not Implemented` هستند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.
