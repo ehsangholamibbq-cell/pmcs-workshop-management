@@ -1911,7 +1911,9 @@ test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwire
   assert.match(runtime, /pmcs\.reporting\.project-commercial-procurement-supply\.snapshot\/v1/u);
   assert.match(runtime, /ProjectCommercialProcurementSupplyReportParameters/u);
   assert.match(runtime, /CapturedAtUtc/u);
-  assert.doesNotMatch(runtime, /TemplateVersion|RendererContractVersion|LayoutContractVersion/u);
+  assert.match(runtime, /TemplateVersion = "1\.0\.0"/u);
+  assert.match(runtime, /RendererContractVersion/u);
+  assert.match(runtime, /LayoutContractVersion/u);
 
   assert.match(applicationContract, /IProjectCommercialProcurementSupplyReportingSource/u);
   assert.match(
@@ -1970,6 +1972,93 @@ test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwire
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
   assert.equal(settings.ReportingCenter.OrphanRemediationMode, "Disabled");
+  assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
+});
+
+test("RPT1-F06 certified renderer is versioned deterministic and remains outside connected wiring", () => {
+  const identity = read(
+    `${moduleRoot}/Domain/ProjectCommercialProcurementSupplyReportRuntimeContract.cs`,
+  );
+  const renderingContracts = read(
+    `${moduleRoot}/Rendering/ProjectCommercialProcurementSupplyReportRenderingContracts.cs`,
+  );
+  const pdfRenderer = read(
+    `${moduleRoot}/Rendering/ProjectCommercialProcurementSupplyReportPdfRenderer.cs`,
+  );
+  const xlsxRenderer = read(
+    `${moduleRoot}/Rendering/ProjectCommercialProcurementSupplyReportXlsxRenderer.cs`,
+  );
+  const rendererRegistry = read(`${moduleRoot}/Rendering/ReportRendererRegistry.cs`);
+  const renderingTests = read(
+    "tests/Pmcs.Domain.Tests/ProjectCommercialProcurementSupplyReportRenderingTests.cs",
+  );
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+
+  assert.match(identity, /TemplateVersion = "1\.0\.0"/u);
+  assert.match(
+    identity,
+    /e5966e5910ff9d875151b3e0c5891fb2c36027e8608771d34ee0a5d67120efb5/u,
+  );
+  assert.match(
+    identity,
+    /pmcs\.reporting\.project-commercial-procurement-supply\.renderer\/v1/u,
+  );
+  assert.match(
+    identity,
+    /pmcs\.reporting\.project-commercial-procurement-supply\.layout\/v1/u,
+  );
+  assert.match(
+    renderingContracts,
+    /ProjectCommercialProcurementSupplyReportRenderModel/u,
+  );
+  assert.match(
+    renderingContracts,
+    /ProjectCommercialProcurementSupplyReportRenderingContract\.ValidateRequest/u,
+  );
+  assert.match(renderingContracts, /MaximumPartyNameLength = 200/u);
+  assert.match(pdfRenderer, /PageSizes\.A4\.Landscape\(\)/u);
+  assert.match(pdfRenderer, /ContentFromRightToLeft/u);
+  assert.match(pdfRenderer, /GenerateImages/u);
+  assert.match(xlsxRenderer, /CompressionLevel\.NoCompression/u);
+  assert.match(
+    xlsxRenderer,
+    /MetadataSheet\(model\)[\s\S]*ContractSummarySheet\(model\)[\s\S]*ContractsSheet\(model\)[\s\S]*AmendmentsSheet\(model\)[\s\S]*ProcurementSheet\(model\)[\s\S]*PurchaseOrdersSheet\(model\)[\s\S]*SupplySummarySheet\(model\)[\s\S]*SuppliersSheet\(model\)[\s\S]*SourceCountsSheet\(model\)[\s\S]*LineageSheet\(model\)/u,
+  );
+  assert.match(xlsxRenderer, /rightToLeft/u);
+  assert.match(xlsxRenderer, /SafeSpreadsheetText/u);
+  assert.match(
+    rendererRegistry,
+    /ProjectCommercialProcurementSupplyReportRendererRegistry/u,
+  );
+  assert.match(
+    renderingTests,
+    /CertifiedCommercialProcurementSupplyXlsxIsDeterministicGoldenRtlFormulaFreeAndSemantic/u,
+  );
+  assert.match(
+    renderingTests,
+    /CertifiedCommercialProcurementSupplyPdfIsDeterministicVisuallyPinnedAndWithinPerformanceBudget/u,
+  );
+  assert.match(
+    renderingTests,
+    /NoDataWorkbookKeepsCommercialSheetsHeaderOnlyAndDoesNotFabricateZeroMetrics/u,
+  );
+  assert.doesNotMatch(
+    `${renderingContracts}\n${pdfRenderer}\n${xlsxRenderer}`,
+    /CommercialDbContext|IProjectCommercialProcurementSupplyReportingSource/u,
+  );
+
+  for (const source of [module, worker, endpoints]) {
+    assert.doesNotMatch(
+      source,
+      /ProjectCommercialProcurementSupply|project-commercial-procurement-supply-certified/u,
+    );
+  }
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
   assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
 });
 

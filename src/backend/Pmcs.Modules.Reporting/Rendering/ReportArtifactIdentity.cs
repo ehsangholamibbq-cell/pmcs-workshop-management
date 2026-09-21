@@ -151,6 +151,26 @@ internal static class ReportArtifactIdentity
         return $"project-financial-position-{projectCode}-{cutoff}.{extension}";
     }
 
+    public static string FileName(
+        ProjectCommercialProcurementSupplyReportSemanticSnapshot snapshot,
+        ReportFormat format)
+    {
+        var projectCode = SafeFileSegment(snapshot.Project.Code);
+        var cutoff = PersianReportFormatting.FormatDate(
+            snapshot.Cutoff.CutoffLocalDate,
+            persianDigits: false).Replace('/', '-');
+        var extension = format switch
+        {
+            ReportFormat.Pdf => "pdf",
+            ReportFormat.Xlsx => "xlsx",
+            _ => throw new ReportRenderingException(
+                "reporting.format.unsupported",
+                transient: false,
+                "Output format is not supported by the certified template.")
+        };
+        return $"project-commercial-procurement-supply-{projectCode}-{cutoff}.{extension}";
+    }
+
     public static string ContentType(ReportFormat format) => format switch
     {
         ReportFormat.Pdf => "application/pdf",

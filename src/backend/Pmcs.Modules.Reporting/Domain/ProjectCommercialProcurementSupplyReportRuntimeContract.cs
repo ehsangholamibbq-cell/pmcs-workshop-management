@@ -13,6 +13,13 @@ public static class ProjectCommercialProcurementSupplyReportRuntimeContract
         "pmcs.reporting.project-commercial-procurement-supply.parameters/v1";
     public const string SnapshotSchemaVersion =
         "pmcs.reporting.project-commercial-procurement-supply.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "e5966e5910ff9d875151b3e0c5891fb2c36027e8608771d34ee0a5d67120efb5";
+    public const string RendererContractVersion =
+        "pmcs.reporting.project-commercial-procurement-supply.renderer/v1";
+    public const string LayoutContractVersion =
+        "pmcs.reporting.project-commercial-procurement-supply.layout/v1";
     public const string PinnedProjectProfileSchemaVersion =
         "pmcs.reporting.project-commercial-procurement-supply.project-profile/v1";
 }

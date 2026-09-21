@@ -75,3 +75,18 @@ internal sealed class ProjectFinancialPositionReportRendererRegistry(
                 transient: false,
                 $"No certified project-financial-position renderer is registered for {format}.");
 }
+
+internal sealed class ProjectCommercialProcurementSupplyReportRendererRegistry(
+    IEnumerable<IProjectCommercialProcurementSupplyReportRenderer> renderers)
+{
+    private readonly Dictionary<ReportFormat, IProjectCommercialProcurementSupplyReportRenderer>
+        byFormat = renderers.ToDictionary(renderer => renderer.Format);
+
+    public IProjectCommercialProcurementSupplyReportRenderer Require(ReportFormat format) =>
+        byFormat.TryGetValue(format, out var renderer)
+            ? renderer
+            : throw new ReportRenderingException(
+                "reporting.format.unsupported",
+                transient: false,
+                $"No certified project-commercial-procurement-supply renderer is registered for {format}.");
+}
