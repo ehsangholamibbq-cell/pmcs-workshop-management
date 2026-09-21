@@ -11,6 +11,7 @@ using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.Documents.Contracts;
 using Pmcs.Modules.Documents.Domain;
 using Pmcs.Modules.FieldOperations.Contracts;
+using Pmcs.Modules.Finance.Contracts;
 using Pmcs.Modules.Planning.Contracts;
 using Pmcs.Modules.ProjectIntelligence.Contracts;
 using Pmcs.Modules.Projects.Contracts;
@@ -402,6 +403,41 @@ internal sealed partial class ReportGenerationWorker(
                 run.CreatedAt,
                 builtAt);
         }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            _ = DeserializeStored<ProjectFinancialPositionReportParameters>(
+                run.ParametersJson,
+                "reporting.parameters.invalid",
+                permissionSnapshotJson);
+            var pinnedProject = DeserializeStored<ProjectFinancialPositionPinnedProjectProfile>(
+                run.PinnedProjectProfileJson,
+                "reporting.project_financial_position.project_scope.invalid",
+                permissionSnapshotJson);
+            var timeZone = pinnedProject.ValidateForRun(
+                run.TenantId,
+                run.ProjectId,
+                run.AsOfUtc,
+                run.CreatedAt);
+            var cutoffLocalDate = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
+            var source = await services.GetRequiredService<IProjectFinancialPositionReportingSource>().LoadAsync(
+                run.TenantId,
+                run.ProjectId,
+                cutoffLocalDate,
+                run.AsOfUtc,
+                cancellationToken);
+            snapshot = ProjectFinancialPositionReportSnapshotBuilder.Build(
+                run.Id,
+                run.TenantId,
+                pinnedProject,
+                run.AsOfUtc,
+                source,
+                run.CreatedAt,
+                builtAt);
+        }
         else
         {
             throw new ReportProcessingException(
@@ -455,6 +491,8 @@ internal sealed partial class ReportGenerationWorker(
         var executiveRendererRegistry =
             services.GetRequiredService<ExecutiveProjectStateReportRendererRegistry>();
         var progressRendererRegistry = services.GetRequiredService<ProjectProgressReportRendererRegistry>();
+        var financialRendererRegistry =
+            services.GetRequiredService<ProjectFinancialPositionReportRendererRegistry>();
         var publisher = services.GetRequiredService<IGeneratedDocumentPublisher>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
         var clock = services.GetRequiredService<IClock>();
@@ -497,6 +535,7 @@ internal sealed partial class ReportGenerationWorker(
         ProjectPeriodicReportSemanticSnapshot? periodicRenderSnapshot = null;
         ExecutiveProjectStateReportSemanticSnapshot? executiveRenderSnapshot = null;
         ProjectProgressReportSemanticSnapshot? progressRenderSnapshot = null;
+        ProjectFinancialPositionReportSemanticSnapshot? financialRenderSnapshot = null;
         if (string.Equals(
                 run.DefinitionCode,
                 ReportDefinitionRuntimePolicy.DailyDefinitionCode,
@@ -528,6 +567,14 @@ internal sealed partial class ReportGenerationWorker(
         {
             progressRenderSnapshot = ProjectProgressReportRenderSnapshot.Parse(snapshot.PayloadJson);
             VerifyRenderSnapshot(progressRenderSnapshot, snapshot, run);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            financialRenderSnapshot = ProjectFinancialPositionReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(financialRenderSnapshot, snapshot, run);
         }
         else
         {
@@ -610,7 +657,9 @@ internal sealed partial class ReportGenerationWorker(
                     ? ReportArtifactIdentity.FileName(periodicRenderSnapshot, format)
                     : executiveRenderSnapshot is not null
                         ? ReportArtifactIdentity.FileName(executiveRenderSnapshot, format)
-                        : ReportArtifactIdentity.FileName(progressRenderSnapshot!, format);
+                        : progressRenderSnapshot is not null
+                            ? ReportArtifactIdentity.FileName(progressRenderSnapshot, format)
+                            : ReportArtifactIdentity.FileName(financialRenderSnapshot!, format);
             RenderedReportArtifact artifact;
             if (dailyRenderSnapshot is not null)
             {
@@ -679,7 +728,7 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.SourceCutoffUtc,
                         executiveRenderSnapshot));
             }
-            else
+            else if (progressRenderSnapshot is not null)
             {
                 artifact = progressRendererRegistry.Require(format).Render(
                     new ProjectProgressReportRenderRequest(
@@ -700,7 +749,30 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.Sha256,
                         snapshot.SourceManifestSha256,
                         snapshot.SourceCutoffUtc,
-                        progressRenderSnapshot!));
+                        progressRenderSnapshot));
+            }
+            else
+            {
+                artifact = financialRendererRegistry.Require(format).Render(
+                    new ProjectFinancialPositionReportRenderRequest(
+                        run.Id,
+                        outputId,
+                        snapshot.Id,
+                        template.Id,
+                        run.DefinitionCode,
+                        ProjectFinancialPositionReportRuntimeContract.DefinitionVersion,
+                        run.TemplateVersion,
+                        template.ContentDigest,
+                        template.RendererContractVersion,
+                        template.LayoutContractVersion,
+                        format,
+                        fileName,
+                        manifest.VerificationCode,
+                        manifest.Sha256,
+                        snapshot.Sha256,
+                        snapshot.SourceManifestSha256,
+                        snapshot.SourceCutoffUtc,
+                        financialRenderSnapshot!));
             }
             VerifyRenderedArtifact(artifact, manifest, fileName, format);
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
@@ -1357,6 +1429,32 @@ internal sealed partial class ReportGenerationWorker(
             !string.Equals(
                 renderSnapshot.DefinitionVersion,
                 ProjectProgressReportRuntimeContract.DefinitionVersion,
+                StringComparison.Ordinal) ||
+            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
+            !string.Equals(
+                renderSnapshot.SourceManifestSha256,
+                snapshot.SourceManifestSha256,
+                StringComparison.Ordinal))
+        {
+            throw new ReportProcessingException(
+                "reporting.snapshot.integrity_failed",
+                transient: false,
+                permissionSnapshotJson: null);
+        }
+    }
+
+    private static void VerifyRenderSnapshot(
+        ProjectFinancialPositionReportSemanticSnapshot renderSnapshot,
+        ReportSnapshot snapshot,
+        ReportRun run)
+    {
+        if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
+            !string.Equals(
+                renderSnapshot.DefinitionVersion,
+                ProjectFinancialPositionReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
             renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||

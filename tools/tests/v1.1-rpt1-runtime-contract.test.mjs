@@ -17,6 +17,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`,
     `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
     `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
@@ -31,6 +32,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingPeriodicVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingExecutiveProjectStateVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingProjectProgressVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingProjectFinancialPositionVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -72,7 +74,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migrations 42 through 46 own reporting schema and the connected F02/F03/F04 catalogs", () => {
+test("migrations 42 through 47 own reporting schema and the connected F02/F03/F04/F05 catalogs", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
   const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
@@ -81,6 +83,9 @@ test("migrations 42 through 46 own reporting schema and the connected F02/F03/F0
   );
   const progressMigration = read(
     `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
+  );
+  const financialMigration = read(
+    `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
   );
   const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
@@ -118,9 +123,20 @@ test("migrations 42 through 46 own reporting schema and the connected F02/F03/F0
   assert.match(progressMigration, /"planning\.baselines\.read"/u);
   assert.match(progressMigration, /"planning\.milestones\.read"/u);
   assert.match(progressMigration, /'Landscape'/u);
+  assert.match(financialMigration, /public long Order => 1205/u);
+  assert.match(financialMigration, /public string Version => "20260921-006"/u);
+  assert.match(financialMigration, /project-financial-position-certified/u);
+  assert.match(financialMigration, /pmcs\.reporting\.project-financial-position\.parameters\/v1/u);
+  assert.match(financialMigration, /pmcs\.reporting\.project-financial-position\.renderer\/v1/u);
+  assert.match(financialMigration, /'Confidential'/u);
+  assert.match(financialMigration, /"financial-state\.read"/u);
+  assert.match(financialMigration, /"finance\.records\.read"/u);
+  assert.match(financialMigration, /"finance\.obligations\.read"/u);
+  assert.match(financialMigration, /"budget\.baselines\.read"/u);
+  assert.match(financialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"46"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"47"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -1360,7 +1376,7 @@ test("RPT1-F04 Catalog API and Worker record the S07-MS13 connected safe checkpo
   assert.match(validator, /docs\/checkpoints\/v1\.1-rpt1-slice-07-ms13-candidate\.md/u);
 });
 
-test("RPT1-F05 keeps the certified financial position contract aligned with its Runtime and Renderer", () => {
+test("RPT1-F05 keeps the certified financial position contract aligned with its connected Runtime and Renderer", () => {
   const contract = read(
     "docs/architecture/pmcs-v1.1-rpt1-f05-financial-position-semantic-contract.md",
   );
@@ -1376,8 +1392,15 @@ test("RPT1-F05 keeps the certified financial position contract aligned with its 
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
   const migration = read(
-    `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
   );
+  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
+  const readService = read(`${moduleRoot}/Services/ReportingReadService.cs`);
+  const harness = read(
+    "src/backend/Pmcs.TestHarness/ReportingProjectFinancialPositionVerification.cs",
+  );
+  const harnessProgram = read("src/backend/Pmcs.TestHarness/Program.cs");
+  const diagnostics = read("tools/qa/seed-diagnostics.sh");
   const financialStateSource = read(
     "src/backend/Pmcs.Modules.Finance/Contracts/IFinancialStateSource.cs",
   );
@@ -1434,18 +1457,40 @@ test("RPT1-F05 keeps the certified financial position contract aligned with its 
   assert.match(financeControlSource, /FinanceDbContext/u);
   assert.match(budget, /void Supersede[\s\S]*ReviewedAt = reviewedAt/u);
 
-  for (const source of [module, worker, endpoints, migration]) {
-    assert.doesNotMatch(
-      source,
-      /ProjectFinancialPositionReport|project-financial-position-certified|RPT1-F05/u,
-    );
-  }
+  assert.match(migration, /public long Order => 1205/u);
+  assert.match(migration, /public string Version => "20260921-006"/u);
+  assert.match(migration, /project-financial-position-certified/u);
+  assert.match(migration, /e6ad4cbf2559d825d70b1579e687e7f9ce15020afaf697692e263f18480f18e4/u);
+  assert.match(migration, /financial-state\.read/u);
+  assert.match(migration, /finance\.records\.read/u);
+  assert.match(migration, /finance\.obligations\.read/u);
+  assert.match(migration, /budget\.baselines\.read/u);
+  assert.match(policy, /ProjectFinancialPositionReportRuntimeContract\.DefinitionCode/u);
+  assert.match(policy, /ProjectFinancialPositionSourcePermissions/u);
+  assert.match(module, /IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportPdfRenderer/u);
+  assert.match(module, /IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportXlsxRenderer/u);
+  assert.match(module, /ProjectFinancialPositionReportCatalogMigration/u);
+  assert.match(worker, /IProjectFinancialPositionReportingSource/u);
+  assert.match(worker, /ProjectFinancialPositionReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectFinancialPositionReportRendererRegistry/u);
+  assert.match(worker, /ProjectFinancialPositionReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /ProjectFinancialPositionReportRenderRequest/u);
+  assert.match(endpoints, /ParseProjectFinancialPositionParameters/u);
+  assert.match(endpoints, /ProjectFinancialPositionPinnedProjectProfile\.Capture/u);
+  assert.match(endpoints, /HasAllPermissionsAsync/u);
+  assert.match(readService, /RequireSourcePermissions/u);
+  assert.match(readService, /HasSourcePermissionAsync/u);
+  assert.match(harness, /VerifyReportingProjectFinancialPositionAsync/u);
+  assert.match(harness, /requires-all-source-permissions/u);
+  assert.match(harness, /strict-empty-object/u);
+  assert.match(harnessProgram, /verify-reporting-project-financial-position/u);
+  assert.match(diagnostics, /verify-reporting-project-financial-position/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
-test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from API and Worker", () => {
+test("RPT1-F05 bounded Runtime Core is versioned and connected only through its certified API and Worker path", () => {
   const financeContract = read(
     "src/backend/Pmcs.Modules.Finance/Contracts/IProjectFinancialPositionReportingSource.cs",
   );
@@ -1521,15 +1566,17 @@ test("RPT1-F05 bounded Runtime Core is versioned and remains disconnected from A
   assert.match(tests, /TwinRunsIgnoreQueryOrderRunIdentityAndBuildTime/u);
   assert.match(tests, /CompatibilityProjectionRejectsLegacySupersededBudgetHistory/u);
 
-  for (const source of [module, worker, endpoints]) {
-    assert.doesNotMatch(source, /ProjectFinancialPositionReport|project-financial-position-certified/u);
-  }
+  assert.match(module, /ProjectFinancialPositionReportRendererRegistry/u);
+  assert.match(worker, /IProjectFinancialPositionReportingSource/u);
+  assert.match(worker, /ProjectFinancialPositionReportSnapshotBuilder\.Build/u);
+  assert.match(endpoints, /ProjectFinancialPositionReportRuntimeContract\.DefinitionCode/u);
+  assert.match(endpoints, /ParseProjectFinancialPositionParameters/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
-test("RPT1-F05 certified renderer is versioned deterministic and remains outside connected wiring", () => {
+test("RPT1-F05 certified renderer is versioned deterministic and connected through the pinned registry", () => {
   const identity = read(
     `${moduleRoot}/Domain/ProjectFinancialPositionReportRuntimeContract.cs`,
   );
@@ -1610,12 +1657,11 @@ test("RPT1-F05 certified renderer is versioned deterministic and remains outside
     /f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb/u,
   );
 
-  for (const source of [module, worker, endpoints]) {
-    assert.doesNotMatch(
-      source,
-      /ProjectFinancialPositionReport|project-financial-position-certified/u,
-    );
-  }
+  assert.match(module, /IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportPdfRenderer/u);
+  assert.match(module, /IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportXlsxRenderer/u);
+  assert.match(worker, /ProjectFinancialPositionReportRendererRegistry/u);
+  assert.match(worker, /ProjectFinancialPositionReportRenderRequest/u);
+  assert.match(endpoints, /ProjectFinancialPositionReportRuntimeContract\.DefinitionCode/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);

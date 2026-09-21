@@ -66,6 +66,8 @@ internal static partial class Program
                     await VerifyReportingExecutiveProjectStateAsync(),
                 "verify-reporting-project-progress" =>
                     await VerifyReportingProjectProgressAsync(),
+                "verify-reporting-project-financial-position" =>
+                    await VerifyReportingProjectFinancialPositionAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
@@ -494,6 +496,7 @@ internal static partial class Program
             "verify-reporting-golden|verify-reporting-pdf-golden|verify-reporting-periodic|" +
             "verify-reporting-executive-state|" +
             "verify-reporting-project-progress|" +
+            "verify-reporting-project-financial-position|" +
             "verify-reporting-cancellation|" +
             "verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +

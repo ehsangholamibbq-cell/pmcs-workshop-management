@@ -8,6 +8,10 @@ internal static class ReportDefinitionRuntimePolicy
     public const string ProjectProgressSourcePermission = "planning.progress.read";
     public const string ProjectBaselineSourcePermission = "planning.baselines.read";
     public const string ProjectMilestoneSourcePermission = "planning.milestones.read";
+    public const string FinancialStateSourcePermission = "financial-state.read";
+    public const string FinanceRecordSourcePermission = "finance.records.read";
+    public const string FinanceObligationSourcePermission = "finance.obligations.read";
+    public const string BudgetBaselineSourcePermission = "budget.baselines.read";
 
     private static readonly string[] DailyReportSourcePermissions =
         [DailyReportSourcePermission];
@@ -19,13 +23,21 @@ internal static class ReportDefinitionRuntimePolicy
         ProjectBaselineSourcePermission,
         ProjectMilestoneSourcePermission
     ];
+    private static readonly string[] ProjectFinancialPositionSourcePermissions =
+    [
+        FinancialStateSourcePermission,
+        FinanceRecordSourcePermission,
+        FinanceObligationSourcePermission,
+        BudgetBaselineSourcePermission
+    ];
 
     public static readonly string[] SupportedDefinitionCodes =
     [
         DailyDefinitionCode,
         ProjectPeriodicReportRuntimeContract.DefinitionCode,
         ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
-        ProjectProgressReportRuntimeContract.DefinitionCode
+        ProjectProgressReportRuntimeContract.DefinitionCode,
+        ProjectFinancialPositionReportRuntimeContract.DefinitionCode
     ];
 
     public static bool TryGetSourcePermissions(
@@ -38,6 +50,8 @@ internal static class ReportDefinitionRuntimePolicy
             ProjectPeriodicReportRuntimeContract.DefinitionCode => DailyReportSourcePermissions,
             ExecutiveProjectStateReportRuntimeContract.DefinitionCode => ProjectStateSourcePermissions,
             ProjectProgressReportRuntimeContract.DefinitionCode => ProjectProgressSourcePermissions,
+            ProjectFinancialPositionReportRuntimeContract.DefinitionCode =>
+                ProjectFinancialPositionSourcePermissions,
             _ => Array.Empty<string>()
         };
         return permissions.Count > 0;

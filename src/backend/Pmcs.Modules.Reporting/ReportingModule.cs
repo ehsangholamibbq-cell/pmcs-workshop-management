@@ -121,11 +121,15 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IProjectProgressReportRenderer, ProjectProgressReportPdfRenderer>();
         services.AddSingleton<IProjectProgressReportRenderer, ProjectProgressReportXlsxRenderer>();
         services.AddSingleton<ProjectProgressReportRendererRegistry>();
+        services.AddSingleton<IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportPdfRenderer>();
+        services.AddSingleton<IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportXlsxRenderer>();
+        services.AddSingleton<ProjectFinancialPositionReportRendererRegistry>();
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectPeriodicReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, ExecutiveProjectStateReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectProgressReportCatalogMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectFinancialPositionReportCatalogMigration>();
         services.AddHostedService<ReportGenerationWorker>();
         services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(

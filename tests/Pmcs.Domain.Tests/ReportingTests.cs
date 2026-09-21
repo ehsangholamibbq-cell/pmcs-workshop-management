@@ -85,6 +85,27 @@ public sealed class ReportingTests
     }
 
     [Fact]
+    public void RuntimePolicyRequiresEveryProjectFinancialPositionSourcePermission()
+    {
+        var expected = new[]
+        {
+            "financial-state.read",
+            "finance.records.read",
+            "finance.obligations.read",
+            "budget.baselines.read"
+        };
+
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
+            ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
+            out var permissions));
+        Assert.Equal(expected, permissions);
+        Assert.Equal(
+            expected,
+            ReportDefinitionRuntimePolicy.RequireSourcePermissions(
+                ProjectFinancialPositionReportRuntimeContract.DefinitionCode));
+    }
+
+    [Fact]
     public void RuntimePolicyRejectsUnknownDefinition()
     {
         Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
