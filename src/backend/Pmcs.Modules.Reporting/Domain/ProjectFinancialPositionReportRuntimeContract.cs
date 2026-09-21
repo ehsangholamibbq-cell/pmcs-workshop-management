@@ -73,8 +73,10 @@ public sealed record ProjectFinancialPositionPinnedProjectProfile(
         DateTimeOffset sourceCutoffUtc,
         DateTimeOffset acceptedAtUtc)
     {
-        var cutoff = sourceCutoffUtc.ToUniversalTime();
-        var acceptedAt = acceptedAtUtc.ToUniversalTime();
+        var cutoff = ToMicrosecondPrecision(sourceCutoffUtc);
+        var acceptedAt = ToMicrosecondPrecision(acceptedAtUtc);
+        var configurationChangedAt = ToMicrosecondPrecision(ConfigurationChangedAt);
+        var capturedAt = ToMicrosecondPrecision(CapturedAtUtc);
         if (!string.Equals(
                 SchemaVersion,
                 ProjectFinancialPositionReportRuntimeContract.PinnedProjectProfileSchemaVersion,
@@ -84,8 +86,7 @@ public sealed record ProjectFinancialPositionPinnedProjectProfile(
             string.IsNullOrWhiteSpace(TimeZone) || !IsCurrency(BaseCurrencyCode) ||
             Revision <= 0 || ConfigurationVersion <= 0 || ConfigurationChangedAt == default ||
             CapturedAtUtc == default || acceptedAt == default || cutoff == default ||
-            ConfigurationChangedAt.ToUniversalTime() > CapturedAtUtc.ToUniversalTime() ||
-            CapturedAtUtc.ToUniversalTime() > acceptedAt || cutoff > CapturedAtUtc.ToUniversalTime() ||
+            configurationChangedAt > capturedAt || capturedAt > acceptedAt || cutoff > capturedAt ||
             Status != ProjectStatus.Active)
         {
             throw new DomainRuleException(
@@ -122,6 +123,12 @@ public sealed record ProjectFinancialPositionPinnedProjectProfile(
 
     private static bool IsCurrency(string value) =>
         value.Length == 3 && value.All(char.IsAsciiLetterUpper);
+
+    private static DateTimeOffset ToMicrosecondPrecision(DateTimeOffset value)
+    {
+        var utc = value.ToUniversalTime();
+        return utc.AddTicks(-(utc.Ticks % 10));
+    }
 
     private static DomainRuleException InvalidTimeZone() => new(
         "reporting.project_financial_position.time_zone.invalid",

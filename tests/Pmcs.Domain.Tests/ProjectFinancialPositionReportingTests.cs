@@ -514,6 +514,22 @@ public sealed class ProjectFinancialPositionReportingTests
     }
 
     [Fact]
+    public void PinnedProfileAcceptsDatabaseMicrosecondPrecisionAtAcceptanceBoundary()
+    {
+        var capturedAt = Cutoff.AddTicks(9);
+        var persistedAt = capturedAt.AddTicks(-(capturedAt.Ticks % 10));
+        var pinned = ProjectFinancialPositionPinnedProjectProfile.Capture(Profile(), capturedAt);
+
+        var timeZone = pinned.ValidateForRun(
+            TenantId,
+            ProjectId,
+            persistedAt,
+            persistedAt);
+
+        Assert.Equal("Asia/Tehran", timeZone.Id);
+    }
+
+    [Fact]
     public void SourceManifestTamperingFailsClosedAtSnapshotBoundary()
     {
         var result = Calculate(Projection(records: [Record(10, FinancialRecordType.Receipt, 100m)]));
