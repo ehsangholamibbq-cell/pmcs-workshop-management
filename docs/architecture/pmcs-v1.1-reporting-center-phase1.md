@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.31.0`
-- وضعیت: `S07-MS17 F05 connected safe checkpoint | F06-F10/UI/Production open`
+- نسخه: `1.32.0`
+- وضعیت: `S07-MS18 F06 semantic contract safe checkpoint | Runtime/F07-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `81d8fb92f5ad79a402084f7eae9529fdb0fa3afc`
-- Parent checkpoint tree: `d90e0780bfe88b60baeedecf23f03952573c957a`
-- Candidate source: `6de1e9ac3b457426be5e50064d1767106cd50c39`
-- Candidate source tree: `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f`
-- PR validation merge: `cbd27a673b1887b2e245bef5340eb8199f480be4`؛ همان tree
-- Connected evidence: Run 185 (`35563055242`) — `success`
+- Parent checkpoint commit: `32772e1f19c9c9d8023947654a3402f53ee0f6b6`
+- Parent checkpoint tree: `5eadc44c115ffb6e44cc57b52a44ec0ea5bddc55`
+- Candidate source: `4c5d026466cb3f76f351221297540a0936337335`
+- Candidate source tree: `d9e8febc5f220f8d00eaff80926b00dec2ea0926`
+- PR validation merge: `9bfb7badcde8a67d385567db997f265a67497f0f`؛ همان tree
+- Contract evidence: Run 188 (`35567252567`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -72,6 +72,15 @@ Classification حداقل `Confidential` قطعی‌اند؛ FX، Forecast، EVM
 fail-closed است. Checkpoint جاری Template/Renderer/Layout identity، render model canonical و
 PDF/XLSX قطعی را از مسیر Catalog/strict API/Worker متصل کرده است؛ UI و Production defaults همچنان
 جدا و خاموش‌اند.
+
+قرارداد `PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` در
+`pmcs-v1.1-rpt1-f06-commercial-procurement-supply-semantic-contract.md`، زنجیرهٔ قرارداد، اصلاحیه،
+درخواست خرید، سفارش و Receipt/Inspection/Service Acceptance را به evidence رسمی واجد cutoff محدود
+می‌کند. مبلغ/مدت مؤثر Contract، commitment سفارش، fulfillment و supplier performance بدون F05 join،
+Inventory، Invoice/Payment، FX، ranking یا AI تعریف شده‌اند. Client فقط `{}` می‌فرستد؛ شش Permission
+Commercial/Procurement/Supply و Classification حداقل `Confidential` قطعی‌اند. F06 فقط
+`Contract Ready / Runtime Not Implemented` است و current-state/truncated sourceهای جاری Commercial
+جای Application Contract تاریخی، نسخه‌دار و cutoff-aware Slice بعدی را نمی‌گیرند.
 
 ## ۲. Non-Scope
 
@@ -694,3 +703,21 @@ browser scenario، هارنس F05 برابر `15/15`، validator روی `394` ف
 Restore کامل ۴۷ Migration و Qualification `7/7` Suite و `12/12` Command را پاس کرد. UI، feature
 flagها، license و Production defaults تغییر نکرده‌اند؛ گام بعد فقط DoR/قرارداد معنایی مستقل F06
 برای قرارداد، اصلاحیه، خرید و تأمین است.
+
+Slice 07 Micro-Step 18 فقط DoR و قرارداد معنایی F06 را تعریف می‌کند. lifecycle قرارداد و اصلاحیه،
+درخواست و سفارش از eventهای immutable تا cutoff بازسازی می‌شود؛ مبلغ/مدت مؤثر nullable، known
+subtotal در برابر total کامل، issued/open order amount و statusهای تحویل مستقل‌اند. Receipt،
+Inspection و Service Acceptance زمان‌های جدا دارند؛ fulfillment فقط از quantity/unit/conversion
+version پین‌شده ساخته می‌شود، cross-unit جمع نمی‌شود و درصد approved excess cap نمی‌شود. Supplier
+performance فقط count/rate nullable دارد و score/ranking تولید نمی‌کند.
+
+شش Permission خواندنی Commercial/Procurement/Supply، Classification حداقل `Confidential`،
+minimization، determinism و failure boundaryهای fail-closed در Golden matrix سی‌ودوسناریویی pin
+شده‌اند. Candidate `4c5d026466cb3f76f351221297540a0936337335` با tree
+`d9e8febc5f220f8d00eaff80926b00dec2ea0926` و PR validation merge
+`9bfb7badcde8a67d385567db997f265a67497f0f` دارای همان tree، در Run 188 (`35567252567`) هر هشت
+Job، `458/458` تست C#، `80/80` تست قراردادی Node، `139/139` تست Web، پنج browser scenario،
+validator روی `394` فایل، audit ثابت `274/204/5`، Restore کامل ۴۷ Migration و Qualification
+`7/7` Suite و `12/12` Command را پاس کرد. این Checkpoint هیچ Runtime identity/schema، Source
+implementation، Migration، API، Catalog/Template seed، Worker dispatch، Renderer، UI یا Production
+default را تغییر نمی‌دهد؛ گام بعد فقط Runtime Core محدود F06 است.

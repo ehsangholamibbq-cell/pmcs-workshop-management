@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F05 متصل؛ F06–F10/UI باز |
+| Product runtime implementation | F01 تا F05 متصل؛ F06 Contract Ready/Runtime Not Implemented؛ F07–F10/UI باز |
 | Database migration | ۴۷ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -332,6 +332,19 @@ Run mutation/readها، Download/Verify و read service فقط با همهٔ Per
 `394` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. Safe
 Checkpoint آن `PMCS-V1.1-RPT1-S07-MS17-C1` است. UI/UX2، Production enablement و defaultها تغییر
 نکردند؛ Safe Resume اکنون MS17 و گام بعد فقط DoR/قرارداد معنایی مستقل F06 است.
+
+Slice 07 Micro-Step 18 فقط DoR و قرارداد معنایی `PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` را برای
+قرارداد، اصلاحیه، خرید و تأمین تثبیت کرد. lifecycle و cutoff رسمی، مبلغ/مدت مؤثر nullable، Request/
+Order commitment semantics، Receipt/Inspection/Service Acceptance، fulfillment، supplier count/rate،
+status/reason، شش Permission و Classification حداقل `Confidential` در Golden matrix
+سی‌ودوسناریویی pin شدند. Source `4c5d026466cb3f76f351221297540a0936337335` با tree
+`d9e8febc5f220f8d00eaff80926b00dec2ea0926` و PR validation merge
+`9bfb7badcde8a67d385567db997f265a67497f0f` دارای همان tree، در Run 188 (`35567252567`) هر هشت
+Job، `458/458` تست C#، `80/80` تست Node، `139/139` تست Web، پنج browser scenario، validator روی
+`394` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS18-C1` است. هیچ Runtime، Source implementation، Migration،
+API، Catalog/Template seed، Worker dispatch، Renderer، UI یا default Production تغییر نکرد؛ Safe
+Resume اکنون MS18 و گام بعد فقط Runtime Core محدود F06 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

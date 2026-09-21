@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.34.0`
-- وضعیت: F05 connected safe checkpoint؛ F06–F10/UI/Production باز
+- نسخه: `1.35.0`
+- وضعیت: F06 semantic contract safe checkpoint؛ Runtime/F07–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -953,3 +953,38 @@ Qualification artifact `10622488624` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS17-C1` اتصال End-to-End F05 را می‌بندد. F06 تا F10، UI/UX2
 و Production enablement بازند؛ Micro-Step بعدی فقط DoR/قرارداد معنایی مستقل F06 برای قرارداد،
 اصلاحیه، خرید و تأمین است.
+
+## ۴۰. قرارداد معنایی قرارداد/خرید/تأمین خانواده F06 — Slice 07 Micro-Step 18
+
+این Micro-Step بدون افزودن Runtime باید موارد زیر را اثبات کند:
+
+- پارامتر Client دقیقاً `{}` و منع انتخاب Contract/Party/Supplier/Request/Order، status/type،
+  currency، تاریخ محلی، item/category، filter، Query، SQL یا Source؛
+- انتخاب lifecycle رسمی Contract/Amendment/Request/Order فقط از eventهای immutable تا cutoff؛
+- مبلغ/مدت مؤثر Contract، null و known-subtotal/complete-total بدون zero fabrication؛
+- Approved Request بدون commitment و Order صادرشده به‌عنوان تعهد تجاری، بدون F05/Finance join؛
+- Receipt/Inspection/Service Acceptance cutoff-aware و جدایی received/accepted/rejected/quarantined؛
+- fulfillment فقط با quantity/unit/conversion version پین‌شده، بدون cross-unit aggregation یا cap
+  کردن approved excess؛
+- delivery status و supplier count/rate قابل ممیزی، بدون score/ranking/AI؛
+- منع Inventory/Stock/Custody/Issue/Adjustment/Return، Invoice Matching و RFQ/Tender/Quote؛
+- شش Permission Commercial/Procurement/Supply و Classification حداقل `Confidential`؛
+- آشکارسازی شکاف historical sourceهای current-state/truncated Commercial و منع DbContext/HTTP fallback؛
+- Golden matrix دقیقاً سی‌ودوسناریویی و نبود هرگونه Runtime/API/Migration/Renderer F06.
+
+Source `4c5d026466cb3f76f351221297540a0936337335` با tree
+`d9e8febc5f220f8d00eaff80926b00dec2ea0926` و PR validation merge
+`9bfb7badcde8a67d385567db997f265a67497f0f` دارای همان tree، در Run 188 (`35567252567`) هر هشت
+Job را پاس کرد: `458/458` تست C#، `80/80` تست قراردادی Node، `139/139` تست Web، پنج browser
+scenario، validator روی `394` فایل ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `47`
+Migration و Qualification برابر `7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10625080529` با digest
+`sha256:75f7fca9f7c04e84f13174ddf248066a2846702cfeb0f53874458aa3cba361e6`، Integration artifact
+`10624875716` با digest `sha256:7ab7f874510d2b6d1994fbb080f40d4d0f619b2509ac4d439fb1a3bcb229bb62`
+و UI-E2E artifact `10625025437` با digest
+`sha256:840f3124f4033207cf2e047c6f2367b0b14a71e8398001a29f8cef60badc69a8` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS18-C1` فقط DoR/semantic contract F06 را می‌بندد. F06 هنوز
+Runtime یا API قابل اجرا ندارد؛ F07 تا F10، UI/UX2 و Production enablement بازند و همه Suiteها و
+Goldenهای V1/F01 تا F05 بدون Regression سبز مانده‌اند.

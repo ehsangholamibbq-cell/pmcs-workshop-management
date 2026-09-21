@@ -1,9 +1,9 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.51.0`
+- نسخه سند: `1.52.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
-- تاریخ ثبت: ۱۴۰۵/۰۶/۲۹ (۲۰۲۶-۰۹-۲۰)
+- تاریخ ثبت: ۱۴۰۵/۰۶/۳۰ (۲۰۲۶-۰۹-۲۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -593,6 +593,24 @@ validation merge `cbd27a673b1887b2e245bef5340eb8199f480be4` دارای همان 
 Production defaults تغییر نکرده‌اند؛ Safe Resume اکنون `S07-MS17` و گام بعد فقط DoR/قرارداد معنایی
 مستقل F06 برای قرارداد، اصلاحیه، خرید و تأمین است.
 
+**F06 Contract / Amendment / Procurement / Supply Semantic Contract — Slice 07 Micro-Step 18 Safe
+Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS17-C1`، قرارداد
+`PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` زنجیرهٔ Contract/Amendment/Request/Order/Receipt/Service
+Acceptance را با lifecycle و cutoff رسمی تثبیت می‌کند. مبلغ/مدت مؤثر Contract، known subtotal در
+برابر total کامل، commitment تجاری Order، fulfillment مبتنی بر quantity basis پین‌شده، delivery
+status و supplier count/rate قطعی‌اند. F05/Finance join، Inventory، Invoice Matching، FX،
+RFQ/Tender، ranking و AI ممنوع است. Client فقط `{}` می‌فرستد؛ شش Permission
+Commercial/Procurement/Supply و Classification حداقل `Confidential` لازم‌اند.
+
+Candidate `4c5d026466cb3f76f351221297540a0936337335` با tree
+`d9e8febc5f220f8d00eaff80926b00dec2ea0926` و PR validation merge
+`9bfb7badcde8a67d385567db997f265a67497f0f` دارای همان tree، در Run 188 (`35567252567`) هر هشت
+Job، `458/458` تست C#، `80/80` تست contract، `139/139` تست Web، پنج browser scenario، validator
+روی `394` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix سی‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS18` و گام
+بعد فقط Runtime Core محدود F06 است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -886,3 +904,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.49.0` | ثبت Safe Checkpoint `S07-MS15` و Evidence سبز Run 175 برای Runtime Core F05؛ Renderer/Golden و wiring و F06–F10/UI/Production باز است |
 | `1.50.0` | ثبت Safe Checkpoint `S07-MS16` و Evidence سبز Run 178 برای Renderer/Golden قطعی F05؛ Catalog/API/Worker wiring و F06–F10/UI/Production باز است |
 | `1.51.0` | ثبت Connected Safe Checkpoint `S07-MS17` و Evidence سبز Run 185 برای اتصال End-to-End Catalog/API/Worker خانواده F05؛ F06–F10/UI/Production باز است |
+| `1.52.0` | ثبت Safe Checkpoint `S07-MS18` و Evidence سبز Run 188 برای قرارداد معنایی F06؛ Runtime/Renderer/wiring و F07–F10/UI/Production باز است |

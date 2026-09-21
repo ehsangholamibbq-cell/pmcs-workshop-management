@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.16.0`
-- وضعیت: F01/F02/F03/F04/F05 connected؛ F06–F10 open؛ UI/Production disabled
+- نسخه: `1.17.0`
+- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 semantic security contract checkpointed؛ Runtime/Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -181,6 +181,25 @@ Storage، و Download/Verify با `reporting.output.download` و همان Source
 Verify هر دو فرمت در هارنس متصل پوشش داده شده‌اند. Source
 `6de1e9ac3b457426be5e50064d1767106cd50c39` در Run 185 هر هشت Job و `15/15` assertion F05 را پاس
 کرد. feature flagها، license و Production defaults همچنان خاموش/Unconfigured هستند.
+
+### سیاست ثابت F06
+
+F06 علاوه بر Permissionهای Reporting به هر شش Permission `commercial-state.read`،
+`commercial.parties.read`، `contracts.read`، `procurement.requests.read`،
+`procurement.orders.read` و `supply.read` نیاز دارد. نبود حتی یکی باید Catalog/Create/processing/
+download آینده را fail-closed کند؛ Permissionهای F01 تا F05 یا Command permissionهای submit/review/
+issue/inspect هیچ دسترسی ضمنی به F06 نمی‌سازند. Classification خروجی بیشترین مقدار میان Definition،
+Project/configuration و Contract/Party/Order/Supply evidence است و حداقل `Confidential` می‌ماند.
+
+Client فقط `{}` می‌فرستد و حق انتخاب Contract/Party/Supplier/Request/Order، status/type، currency،
+تاریخ محلی، item/category، Query یا Source را ندارد. lifecycle/link/unit basis ناقص، currency یا
+Classification ناسازگار، conversion version گمشده و excess بدون Approval failure امن‌اند؛ حذف خاموش
+section، latest-state fallback یا ساخت صفر/تکمیل مصنوعی مجاز نیست. Notes/Comment/Description، National
+ID/contact، delivery address، attachment/evidence link، actor، Stock location، Batch/Lot، Finance
+link و Source ID در Snapshot یا filename/log/diagnostic نشت نمی‌کنند. Checkpoint `S07-MS18` این policy
+را در قرارداد و Golden matrix تثبیت می‌کند؛ هیچ Runtime، Catalog، Worker یا Renderer F06 را فعال
+نمی‌کند. Candidate `4c5d026466cb3f76f351221297540a0936337335` در Run 188 هر هشت Job را پاس کرد و
+defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

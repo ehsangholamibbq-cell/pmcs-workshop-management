@@ -7,10 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS17-C1` در Run 185، Catalog/Template، strict API، Project
-profile، Permissionهای definition-aware و Worker/Renderer dispatch خانواده `RPT1-F05` را متصل و
-End-to-End qualify کرد. F01 تا F05 checkpoint متصل دارند و F06 تا F10 باز هستند. همهٔ
-feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS18-C1` در Run 188، DoR و قرارداد معنایی مستقل
+`RPT1-F06` را برای قرارداد، اصلاحیه، خرید و تأمین قطعی کرد. F01 تا F05 checkpoint متصل دارند؛ F06
+اکنون `Contract Ready / Runtime Not Implemented` و F07 تا F10 باز هستند. همهٔ feature flagها،
+license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -150,6 +150,10 @@ feature flagها، license و remediation در defaults خاموش یا `Unconfi
   نسخه‌دار، Cash Position قطعی، Payable/Receivable و Aging جدا، Budget Baseline اختیاری و cutoff-aware،
   PDF/XLSX deterministic، strict `{}`، چهار Permission Finance/Budget و Catalog/API/Worker
   qualification متصل؛ بدون FX، Forecast، EVM، F06 join یا Production enablement
+- قرارداد checkpointed F06 برای زنجیرهٔ قرارداد/اصلاحیه/خرید/تأمین: lifecycle و cutoff مستقل، مبلغ
+  و مدت مؤثر nullable، تعهد تجاری Order، Receipt/Inspection/Service Acceptance، fulfillment و supplier
+  rate قابل ممیزی، شش Permission و Classification حداقل `Confidential`؛ بدون Runtime، F05 join،
+  Inventory، ranking یا Production enablement
 
 ## تصمیم‌های بنیادین
 
@@ -265,5 +269,6 @@ npm run check
 - F05 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md)
 - F05 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms16-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms16-candidate.md)
 - F05 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms17-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms17-candidate.md)
+- F06 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.
