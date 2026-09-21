@@ -311,7 +311,7 @@ EVM، Management Fee، Formula و join پنهان F06 تولید نمی‌شود
 `f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
 `72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
 Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77` تست
-Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل، audit `274/204/5`،
+Node، `139/139` تست Web، پنج browser scenario، validator روی `393` فایل، audit `274/204/5`،
 Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. Safe Checkpoint آن
 `PMCS-V1.1-RPT1-S07-MS16-C1` است. هیچ Migration، Catalog/Template seed، API، Worker/DI wiring، UI
 یا default Production تغییر نکرد؛ Safe Resume اکنون MS16 و گام بعد فقط wiring متصل F05 است.

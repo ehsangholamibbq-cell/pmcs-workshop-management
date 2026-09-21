@@ -330,7 +330,7 @@ dispatch برای F05 وجود ندارد.
   `f873795dcb8893dc28f88d5e5fc8292c5201e1e4`؛ PR validation merge
   `72ab7827731fa763828c049be953ee9ca8c128a4` با همان tree؛ Run 178 (`35558202348`) هر هشت Job
   موفق، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77`
-  تست Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل، audit `274/204/5`
+  تست Node، `139/139` تست Web، پنج browser scenario، validator روی `393` فایل، audit `274/204/5`
   و Restore ۴۶ Migration؛ Catalog/API/Worker wiring F05 باز است.
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،

@@ -1647,7 +1647,7 @@ test("RPT1-F05 Renderer and Golden record the S07-MS16 safe checkpoint without o
   assert.match(checkpoint, /`37\/37` case متمرکز F05/u);
   assert.match(checkpoint, /`77\/77` تست قراردادی Node/u);
   assert.match(checkpoint, /`139\/139` تست Web/u);
-  assert.match(checkpoint, /`501` فایل C#/u);
+  assert.match(checkpoint, /`393` فایل C#/u);
   assert.match(checkpoint, /`274` endpoint، `204` mutation و `5`/u);
   assert.match(checkpoint, /Restore Drill کامل `46` Migration/u);
   assert.match(checkpoint, /`7\/7` Suite و `12\/12` Command/u);

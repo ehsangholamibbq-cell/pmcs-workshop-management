@@ -898,7 +898,7 @@ Source `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` با tree
 `f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
 `72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
 Job را پاس کرد: `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05،
-`77/77` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل
+`77/77` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `393` فایل
 ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `46` Migration و Qualification برابر
 `7/7` Suite و `12/12` Command با صفر failure.
 

@@ -568,7 +568,7 @@ Candidate `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` با tree
 `f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
 `72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
 Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77` تست
-Node، `139/139` تست Web، پنج browser scenario، validator روی `501` فایل، audit `274/204/5`،
+Node، `139/139` تست Web، پنج browser scenario، validator روی `393` فایل، audit `274/204/5`،
 Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/Template seed، API،
 Worker/DI wiring، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
 `S07-MS16` و گام بعد فقط wiring متصل Catalog/API/Worker F05 است.

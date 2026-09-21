@@ -663,6 +663,10 @@ console.log(`Repository validation passed (${moduleFiles.length} C# module files
 function walk(directory) {
   return readdirSync(directory).flatMap((entry) => {
     const path = join(directory, entry);
-    return statSync(path).isDirectory() ? walk(path) : [path];
+    if (!statSync(path).isDirectory()) {
+      return [path];
+    }
+
+    return entry === "bin" || entry === "obj" ? [] : walk(path);
   });
 }
