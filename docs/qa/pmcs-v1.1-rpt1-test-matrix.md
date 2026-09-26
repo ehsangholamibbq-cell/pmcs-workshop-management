@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.37.0`
-- وضعیت: F06 Renderer/Golden safe checkpoint؛ Catalog/API/Worker/F07–F10/UI/Production باز
+- نسخه: `1.38.0`
+- وضعیت: F01–F06 connected safe checkpoint؛ F07–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1073,3 +1073,44 @@ Qualification artifact `10630524321` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS20-C1` فقط Renderer/Golden F06 را می‌بندد.
 Catalog/API/Worker wiring، F07 تا F10، UI/UX2 و Production enablement بازند و همه Suiteها و Goldenهای
 V1/F01 تا F05 بدون Regression سبز مانده‌اند.
+
+## ۴۳. اتصال Catalog/API/Worker خانواده F06 — Slice 07 Micro-Step 21 Safe Checkpoint
+
+Candidate باید بدون UI، Production enablement، Report Designer یا شروع F07 موارد زیر را End-to-End
+اثبات کند:
+
+- Migration forward شمارهٔ 48 و Definition/Template ثابت F06 با Classification برابر
+  `Confidential`، فرمت‌های `Pdf/Xlsx` و شش Source permission دقیق؛
+- strict `{}` و رد Contract/Party/Supplier/Request/Order، filter/date/currency/item/source selector؛
+- Project profile پین‌شده و validate مجدد identity، Time Zone، base currency، revision/configuration،
+  `asOfUtc` و cutoff؛
+- fail-closed بودن Catalog/Create/List/Get/Retry/Cancel/Download/Verify و read service در نبود حتی
+  یکی از شش Permission؛
+- re-authorization Worker در processing/rendering و منع idempotent replay bypass؛
+- فراخوانی فقط `IProjectCommercialProcurementSupplyReportingSource`، ساخت Snapshot نسخه‌دار و
+  validation identity/schema/hash پیش از render؛
+- dispatch فقط از Registry PDF/XLSX F06 و انتشار immutable Generated Document؛
+- Catalog isolation، strict params، deny، create/replay/conflict، Run filtering، completion،
+  metadata/download/SHA/ETag/security/Verify و parse مستقل PDF سه‌صفحه‌ای/XLSX ده-Sheet؛
+- Query مستقل Database برای Catalog/Template، profile، permission evidence، Snapshot bounded،
+  output confidential، Audit/Outbox/Idempotency و Restore Drill کامل 48 Migration؛
+- ثابت‌ماندن تمام defaultها روی disabled/unconfigured و نبود F05 join، Inventory/Stock، FX،
+  Forecast، ranking یا AI.
+
+Source نهایی `df3879dd8b17403787154a398cc114b27c7172bc` با tree
+`5483e684aaa220a32b3135ea0b2bb3b2136023be` و PR validation merge
+`0900def8f237a8d282501a8ee4ae0be5676f2fda` دارای همان tree، در Run 202 (`36235821024`) هر هشت
+Job را پاس کرد: `497/497` تست C# شامل `39/39` case متمرکز F06، هارنس F06 برابر `15/15`،
+`85/85` تست قراردادی Node، `139/139` تست Web، پنج browser scenario، validator روی `406` فایل
+ماژولی، system audit ثابت `274/204/5`، Restore Drill کامل `48` Migration و Qualification برابر
+`7/7` Suite و `12/12` Command با صفر failure.
+
+Qualification artifact `10903829279` با digest
+`sha256:86b5a127f3c04d9732489668e97c58ac2c828d159e94e67bda06cdbf9426d12c`، Integration artifact
+`10904376645` با digest `sha256:6a99e3a7ce2b4104085c71e29d9eadb43b6bd9898f821dcb5cb53a3871cd5ae9`
+و UI-E2E artifact `10904401482` با digest
+`sha256:e21ac77c6878a47ce455487c8ccf480cb5dfef099729b5cda85619f5feb1cd41` ثبت شدند.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS21-C1` اتصال End-to-End F06 را می‌بندد. F07 تا F10،
+UI/UX2 و Production enablement بازند؛ Micro-Step بعدی فقط DoR/قرارداد معنایی مستقل F07 برای دفتر
+فنی Document/RFI/Submittal/Transmittal است.

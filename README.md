@@ -7,10 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS20-C1` در Run 196، Renderer/Golden قطعی `RPT1-F06` را روی
-Runtime موجود قرارداد، اصلاحیه، خرید و تأمین بست. F01 تا F05 checkpoint متصل دارند؛ F06 اکنون
-`Renderer/Golden Safe Checkpoint / Catalog/API/Worker Not Implemented` و F07 تا F10 باز هستند. همهٔ
-feature flagها، license و remediation در defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS21-C1` در Run 202، Catalog/API/Worker و qualification متصل
+`RPT1-F06` را روی Runtime و Rendererهای موجود قرارداد، اصلاحیه، خرید و تأمین بست. F01 تا F06
+checkpoint متصل دارند و F07 تا F10 باز هستند. همهٔ feature flagها، license و remediation در
+defaults خاموش یا `Unconfigured` باقی مانده‌اند.
 
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
@@ -150,11 +150,11 @@ feature flagها، license و remediation در defaults خاموش یا `Unconfi
   نسخه‌دار، Cash Position قطعی، Payable/Receivable و Aging جدا، Budget Baseline اختیاری و cutoff-aware،
   PDF/XLSX deterministic، strict `{}`، چهار Permission Finance/Budget و Catalog/API/Worker
   qualification متصل؛ بدون FX، Forecast، EVM، F06 join یا Production enablement
-- Runtime/Renderer/Golden checkpointed F06 برای زنجیرهٔ قرارداد/اصلاحیه/خرید/تأمین: Contract/
+- F06 متصل و checkpointed برای زنجیرهٔ قرارداد/اصلاحیه/خرید/تأمین: Contract/
   selector/calculator/Snapshot نسخه‌دار، lifecycle و cutoff مستقل، مبلغ و مدت مؤثر nullable، تعهد
   تجاری Order، Receipt/Inspection/Service Acceptance، fulfillment و supplier rate قابل ممیزی،
-  PDF فارسی/RTL سه‌صفحه‌ای و XLSX ده-Sheet قطعی؛ بدون Catalog/API/Worker wiring، F05 join، Inventory،
-  ranking یا Production enablement
+  PDF فارسی/RTL سه‌صفحه‌ای و XLSX ده-Sheet قطعی، strict `{}`، شش Permission definition-aware و
+  Catalog/API/Worker qualification متصل؛ بدون F05 join، Inventory، ranking یا Production enablement
 
 ## تصمیم‌های بنیادین
 
@@ -273,5 +273,6 @@ npm run check
 - F06 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md)
 - F06 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms19-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms19-candidate.md)
 - F06 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms20-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms20-candidate.md)
+- F06 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms21-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms21-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

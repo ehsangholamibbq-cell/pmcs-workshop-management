@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.19.0`
-- وضعیت: F01/F02/F03/F04/F05 connected؛ F06 Runtime/Renderer/Golden security checkpointed/unwired؛ Production disabled
+- نسخه: `1.20.0`
+- وضعیت: F01–F06 connected؛ F07–F10 open؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -186,8 +186,8 @@ Verify هر دو فرمت در هارنس متصل پوشش داده شده‌ا
 
 F06 علاوه بر Permissionهای Reporting به هر شش Permission `commercial-state.read`،
 `commercial.parties.read`، `contracts.read`، `procurement.requests.read`،
-`procurement.orders.read` و `supply.read` نیاز دارد. نبود حتی یکی باید Catalog/Create/processing/
-download آینده را fail-closed کند؛ Permissionهای F01 تا F05 یا Command permissionهای submit/review/
+`procurement.orders.read` و `supply.read` نیاز دارد. نبود حتی یکی Catalog/Create/processing/
+rendering/download/verify را fail-closed می‌کند؛ Permissionهای F01 تا F05 یا Command permissionهای submit/review/
 issue/inspect هیچ دسترسی ضمنی به F06 نمی‌سازند. Classification خروجی بیشترین مقدار میان Definition،
 Project/configuration و Contract/Party/Order/Supply evidence است و حداقل `Confidential` می‌ماند.
 
@@ -200,9 +200,13 @@ link و Source ID در Snapshot یا filename/log/diagnostic نشت نمی‌ک�
 را در قرارداد و Golden matrix تثبیت کرد؛ `S07-MS19` همان مرز را در Source/selector/calculator/Snapshot
 builder نسخه‌دار و fail-closed پیاده کرد. `S07-MS20` parser/request/model و Rendererهای PDF/XLSX را
 نیز با allowlist معنایی، identity/hash/filename validation، formula neutralization و row/page/text
-budget fail-closed بست. Source `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8` در Run 196 هر هشت
-Job و `38/38` case متمرکز F06 را پاس کرد؛ Registry F06 در DI/Worker ثبت نشده، Catalog/API فعال
-نشده‌اند و defaults همچنان خاموش/Unconfigured هستند.
+budget fail-closed بست. Checkpoint `S07-MS21` این policy را در هر سه مرز متصل می‌کند: Catalog/API و
+سرویس read-only همهٔ شش Source permission را اعمال می‌کنند؛ Worker پیش از Snapshot و رندر مجوزهای
+`reporting.run.create` و هر شش read را دوباره می‌سنجد؛ Download/Verify نیز
+`reporting.output.download` و همان Source permissionها را require می‌کنند. idempotent replay Gate را
+دور نمی‌زند و Actor ناقص Definition/Run/Output را نمی‌بیند. Source
+`df3879dd8b17403787154a398cc114b27c7172bc` در Run 202 هر هشت Job، `39/39` case متمرکز F06 و
+هارنس متصل `15/15` را پاس کرد؛ defaults همچنان خاموش/Unconfigured هستند.
 
 ## ۴. Threat model
 

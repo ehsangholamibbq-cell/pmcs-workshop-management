@@ -37,6 +37,14 @@ V1.2 یا Stage دیگری منتقل نمی‌شوند و RPT1 تا Qualificati
 | `RPT1-F09` | Issue، Risk، Decision، Escalation و Action | Required؛ Not Implemented |
 | `RPT1-F10` | Portfolio Summary با تفکیک دسترسی و ارز و بدون تبدیل پنهان | Required؛ Not Implemented |
 
+### وضعیت اجرای تصمیم در Safe Checkpoint جاری
+
+این ستون تاریخی «وضعیت در زمان تصمیم» را بازنویسی نمی‌کند. تا Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS21-C1`، خانواده‌های `RPT1-F01` تا `RPT1-F06` قرارداد معنایی، Runtime،
+Renderer/Golden، Catalog/API/Worker و Qualification End-to-End مستقل دارند. `RPT1-F07` تا
+`RPT1-F10` همچنان `Required / Not Implemented` هستند؛ بنابراین Gate خروج RPT1 طبق همین ADR باز است.
+گام بعدی فقط DoR و قرارداد معنایی مستقل F07 برای Document/RFI/Submittal/Transmittal است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

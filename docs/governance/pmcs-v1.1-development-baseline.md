@@ -29,8 +29,8 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F05 متصل؛ F06 Runtime Core checkpointed/Renderer و wiring باز؛ F07–F10/UI باز |
-| Database migration | ۴۷ Migration در Safe Resume و Restore Drill متصل سبز است |
+| Product runtime implementation | F01 تا F06 متصل؛ F07–F10/UI باز |
+| Database migration | ۴۸ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
 
@@ -375,6 +375,22 @@ Node، `139/139` تست Web، پنج browser scenario، validator روی `405` �
 Restore ۴۷ Migration و Qualification `7/7` پاس کرد. Safe Checkpoint آن
 `PMCS-V1.1-RPT1-S07-MS20-C1` است. هیچ Migration، API، Catalog/Template seed، Worker/DI wiring، UI
 یا default Production تغییر نکرد؛ Safe Resume اکنون MS20 و گام بعد فقط wiring متصل F06 است.
+
+Slice 07 Micro-Step 21، `PMCS-RPT1-F06-SEMANTIC-001 v1.3.1` را با Migration forward شمارهٔ 48،
+Catalog/Template ثابت، strict `{}`، Project profile پین‌شده، شش Permission definition-aware و
+Worker/Renderer dispatch متصل کرد. Catalog/Create/List/Get/Retry/Cancel/Download/Verify و read
+service fail-closed هستند؛ Worker در processing/rendering مجوزها را دوباره می‌سنجد، فقط Source
+cutoff-aware را می‌خواند و Snapshot identity/schema/hash را پیش از render validate می‌کند. هارنس
+F06 تمام `15/15` assertion را پاس کرد.
+
+Source نهایی `df3879dd8b17403787154a398cc114b27c7172bc` با tree
+`5483e684aaa220a32b3135ea0b2bb3b2136023be` و PR validation merge
+`0900def8f237a8d282501a8ee4ae0be5676f2fda` همان tree را در Run 202 (`36235821024`) با هر هشت
+Job، `497/497` تست C# شامل `39/39` case متمرکز F06، `85/85` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `406` فایل، audit `274/204/5`، Restore ۴۸ Migration و Qualification
+`7/7` پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS21-C1` است. UI/UX2، Production enablement،
+Report Designer و F07 تغییر نکردند؛ Safe Resume اکنون MS21 و گام بعد فقط DoR/قرارداد معنایی مستقل
+F07 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

@@ -1,12 +1,12 @@
 # PMCS V1.1 — قرارداد معنایی گزارش قرارداد، اصلاحیه، خرید و تأمین
 
 - شناسه: `PMCS-RPT1-F06-SEMANTIC-001`
-- نسخه: `1.2.1`
+- نسخه: `1.3.1`
 - خانواده: `RPT1-F06`
-- وضعیت: `Renderer/Golden Safe Checkpoint | Catalog/API/Worker Not Implemented`
-- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS19-C1`
-- Runtime change: Versioned Template/Renderer/Layout و deterministic PDF/XLSX روی Runtime موجود
-- Migration / API / Catalog / Worker change: None
+- وضعیت: `Connected Safe Checkpoint | F07-F10/UI/Production open`
+- Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS20-C1`
+- Runtime change: اتصال Runtime و Rendererهای نسخه‌دار به pipeline مشترک بدون تغییر semantic boundary
+- Migration / API / Catalog / Worker change: Migration 48 و wiring متصل definition-aware
 
 ## ۱. هدف و مرز خانواده
 
@@ -400,9 +400,27 @@ Renderer مستقل F06 روی Snapshot نسخه‌دار موجود بسته ش
 - متن با prefix فرمول خنثی و NoData در Sheetهای تجاری header-only می‌شود؛ هیچ مقدار ساختگی، F05
   join، Inventory/Stock، FX، ranking، AI یا truncate تولید نمی‌شود؛
 - عبور از budget، value/status یا identity/hash ناسازگار non-transient و fail-closed است؛
-- Registry اختصاصی F06 عمداً خارج از composition root، endpoint و Worker باقی مانده است؛
+- Registry اختصاصی F06 فقط از composition root و Worker definition-aware فراخوانی می‌شود؛
 - شش case Renderer/Golden و در مجموع `38/38` case متمرکز F06، binary/visual/performance را در Run
   196 قطعی کرده‌اند.
+
+### ۱۳.۲ اتصال Catalog/API/Worker پیاده‌شده
+
+Safe Checkpoint `S07-MS21` همین قرارداد و Rendererها را End-to-End متصل کرده است:
+
+- Migration forward شمارهٔ 48 با version `20260926-007`، Definition/Template ثابت
+  `project-commercial-procurement-supply-certified/1.0.0`، Classification برابر `Confidential`،
+  فرمت‌های `Pdf/Xlsx` و هر شش Source permission را seed می‌کند؛
+- API فقط `{}` را می‌پذیرد، Project profile نسخه‌دار را در پذیرش Run pin می‌کند و Catalog/Create/
+  List/Get/Retry/Cancel/Download/Verify را با همهٔ permissionهای Definition fail-closed می‌کند؛
+- Worker در processing و rendering مجوزها را دوباره ارزیابی می‌کند، Source تجاری نسخه‌دار را فقط با
+  cutoff پین‌شده می‌خواند، Snapshot identity/schema/hash را validate و خروجی را فقط از Registry F06
+  تولید می‌کند؛
+- هارنس واقعی `15/15` assertion برای isolation، strict params، deny، idempotency، completion،
+  download/integrity/verify و parse PDF/XLSX را پاس کرده است؛
+- Run 202 هر هشت Job، `497/497` تست C# شامل `39/39` case متمرکز F06، `85/85` تست Node،
+  `139/139` تست Web، پنج browser scenario، Restore 48 Migration و Qualification `7/7` را سبز کرد؛
+- Feature defaultها خاموش، `PdfLicense=Unconfigured` و UI/Production خارج از Scope باقی مانده‌اند.
 
 ## ۱۴. Golden matrix الزامی برای Sliceهای بعدی
 
@@ -441,7 +459,7 @@ Renderer مستقل F06 روی Snapshot نسخه‌دار موجود بسته ش
 | `F06-SP01` | پارامتر خالی در برابر Contract/Party/status/date/filter اضافه | `{}` پذیرفته و هر property اضافه strict رد می‌شود |
 | `F06-SC01` | تلاش برای current service/DbContext/HTTP/truncated fallback | contract test رد می‌کند؛ فقط Application Contract نسخه‌دار مجاز است |
 
-Qualification آینده باید cutoff/lifecycle را با query مستقل کنترل، semantic Snapshot را parse و absence
+Qualification متصل cutoff/lifecycle را با query مستقل کنترل، semantic Snapshot را parse و absence
 FX، F05 join، inventory/custody، AI score و zero fabrication را اثبات کند. Golden PDF/XLSX جای
 Golden معنایی را نمی‌گیرد.
 
@@ -464,17 +482,15 @@ Golden معنایی را نمی‌گیرد.
 | historical projection و Application Contract cutoff-aware | بسته؛ compatibility مبهم fail-closed |
 | selector/calculator/semantic Snapshot builder | بسته؛ ۳۲ case متمرکز |
 | Template/Renderer و Golden binary/visual/performance | بسته؛ PDF سه‌صفحه‌ای و XLSX ده-Sheet قطعی |
-| Catalog/API/Worker wiring | Not Implemented؛ Slice متصل بعدی |
+| Catalog/API/Worker wiring | بسته؛ Migration 48 و Run 202 متصل |
 
-Micro-Step بعدی فقط می‌تواند Catalog/Template seed نسخه‌دار، strict `{}` API، Project profile
-پین‌شده، شش Permission definition-aware و Worker/Renderer dispatch متصل F06 را روی همین Runtime و
-Renderer اضافه و End-to-End qualify کند. UI/UX2، Production enablement، Report Designer و F07 در
-آن Slice مجاز نیستند.
+Micro-Step بعدی فقط می‌تواند DoR و قرارداد معنایی مستقل خانواده `RPT1-F07` برای دفتر فنی شامل
+Document/RFI/Submittal/Transmittal را تثبیت کند. Runtime، Renderer، Migration، Catalog/API/Worker،
+UI/UX2، Production enablement و Report Designer در همان Micro-Step مجاز نیستند.
 
 ## ۱۶. Gate statement
 
-DoR، semantic contract، Runtime Core و Renderer/Golden خانواده F06 بسته‌اند. هیچ API، Migration،
-Catalog/Template seed، Worker dispatch/DI registration، feature flag، UI یا Production setting
-اضافه یا فعال نشده است. F06 اکنون
-`Renderer/Golden Safe Checkpoint / Catalog/API/Worker Not Implemented` و F07 تا F10 همچنان
+DoR، semantic contract، Runtime Core، Renderer/Golden و اتصال End-to-End خانواده F06 بسته‌اند.
+Migration/Catalog/API/Worker فقط برای همین Definition اضافه شده و هیچ feature flag، UI یا Production
+setting فعال نشده است. F01 تا F06 `Connected Safe Checkpoint` دارند و F07 تا F10 همچنان
 `Required / Not Implemented` هستند؛ RPT1 و PMCS V1.1 بسته، Qualified، Final یا Locked نیستند.
