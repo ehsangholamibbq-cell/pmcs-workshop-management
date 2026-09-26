@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { readAuthEnvironment } from "../lib/auth-environment.ts";
 
@@ -12,6 +13,7 @@ const valid = {
   PMCS_OIDC_INTERNAL_ISSUER: "https://identity.internal.example.com/realms/pmcs",
   PMCS_WEB_OIDC_CLIENT_ID: "pmcs-web",
   PMCS_WEB_OIDC_CLIENT_SECRET: "production-client-secret-at-least-24",
+  PMCS_LOGIN_TENANT_ID: "11111111-1111-1111-1111-111111111111",
 } satisfies NodeJS.ProcessEnv;
 
 test("production authentication environment accepts explicit HTTPS boundaries", () => {
@@ -20,6 +22,14 @@ test("production authentication environment accepts explicit HTTPS boundaries", 
   assert.equal(result.secureCookies, true);
   assert.equal(result.clientId, "pmcs-web");
   assert.equal(result.publicIssuer, "https://identity.example.com/realms/pmcs");
+  assert.equal(result.loginTenantId, "11111111-1111-1111-1111-111111111111");
+});
+
+test("login presentation tenant must be an explicit UUID", () => {
+  assert.throws(
+    () => readAuthEnvironment({ ...valid, PMCS_LOGIN_TENANT_ID: "current-tenant" }),
+    /UUID/u,
+  );
 });
 
 test("insecure identity endpoints require an explicit development switch", () => {
@@ -48,4 +58,19 @@ test("development HTTP switch cannot be used with a public host", () => {
     }),
     /محلی/u,
   );
+});
+
+test("compose injects the login tenant into the web service only", () => {
+  const compose = readFileSync(new URL("../../../docker-compose.yml", import.meta.url), "utf8");
+  const keycloakSection = compose.slice(
+    compose.indexOf("\n  keycloak:\n"),
+    compose.indexOf("\n  minio:\n"),
+  );
+  const webSection = compose.slice(
+    compose.indexOf("\n  web:\n"),
+    compose.indexOf("\nvolumes:\n"),
+  );
+
+  assert.match(webSection, /PMCS_LOGIN_TENANT_ID/u);
+  assert.doesNotMatch(keycloakSection, /PMCS_LOGIN_TENANT_ID/u);
 });

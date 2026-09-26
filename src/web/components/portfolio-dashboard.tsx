@@ -96,7 +96,9 @@ function PortfolioDashboardContent() {
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
           <a className="nav-item" href="#exceptions">اقدامات کلیدی</a>
           <a className="nav-item" href="#exposure">نمای مالی</a>
+          <Link className="nav-item" href="/profile">پروفایل من</Link>
           {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</Link>}
+          {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>}
         </nav>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />

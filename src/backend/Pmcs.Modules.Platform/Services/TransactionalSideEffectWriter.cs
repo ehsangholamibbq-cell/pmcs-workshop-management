@@ -31,6 +31,18 @@ internal sealed class TransactionalSideEffectWriter : ITransactionalSideEffectWr
         await InsertIdempotencyAsync(postgresConnection, postgresTransaction, batch.Idempotency, cancellationToken);
     }
 
+    public async Task WriteEventAsync(
+        DbConnection connection,
+        DbTransaction transaction,
+        TransactionalEventBatch batch,
+        CancellationToken cancellationToken = default)
+    {
+        var (postgresConnection, postgresTransaction) = RequirePostgres(connection, transaction);
+
+        await InsertAuditAsync(postgresConnection, postgresTransaction, batch.Audit, cancellationToken);
+        await InsertOutboxAsync(postgresConnection, postgresTransaction, batch.Outbox, cancellationToken);
+    }
+
     private static (NpgsqlConnection Connection, NpgsqlTransaction Transaction) RequirePostgres(
         DbConnection connection,
         DbTransaction transaction)

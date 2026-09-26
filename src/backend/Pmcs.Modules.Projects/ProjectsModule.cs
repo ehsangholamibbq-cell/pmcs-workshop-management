@@ -17,6 +17,64 @@ public sealed class ProjectsModule : IModule
 {
     public string Name => "Projects";
 
+    public ModuleDescriptor Descriptor { get; } = new(
+        ModuleManifestSchemas.VersionOne,
+        "projects.core",
+        "Projects and Controlled Bootstrap",
+        "1.1.0",
+        [
+            "projects.registry",
+            "projects.setup",
+            "projects.locations",
+            "projects.controlled-bootstrap"
+        ],
+        ["platform.foundation", "identity-access.core"],
+        "projects",
+        "1.1.0",
+        false,
+        [
+            new PermissionManifest("projects.read", PermissionScope.Project, ManifestRiskClass.Low,
+                "Read an authorized project and its setup state."),
+            new PermissionManifest("projects.create", PermissionScope.Tenant, ManifestRiskClass.High,
+                "Create a new independent draft project."),
+            new PermissionManifest("projects.activate", PermissionScope.Project, ManifestRiskClass.High,
+                "Activate a draft project after readiness validation."),
+            new PermissionManifest("projects.locations.manage", PermissionScope.Project, ManifestRiskClass.High,
+                "Create and retire project location structure entries."),
+            new PermissionManifest("projects.calendar.configure", PermissionScope.Project, ManifestRiskClass.High,
+                "Configure the project working calendar."),
+            new PermissionManifest("projects.setup.configure", PermissionScope.Project, ManifestRiskClass.High,
+                "Configure draft project setup values."),
+            new PermissionManifest("projects.setup.configure-sensitive", PermissionScope.Project, ManifestRiskClass.Critical,
+                "Change sensitive setup values after project activation."),
+            new PermissionManifest("projects.planning.configure", PermissionScope.Project, ManifestRiskClass.High,
+                "Change the project planning mode without rewriting facts."),
+            new PermissionManifest("projects.bootstrap.preview", PermissionScope.Project, ManifestRiskClass.Medium,
+                "Preview an allowlisted project bootstrap dry run."),
+            new PermissionManifest("projects.bootstrap.create", PermissionScope.Tenant, ManifestRiskClass.High,
+                "Create a destination draft and execute allowlisted setup contributors."),
+            new PermissionManifest("projects.bootstrap.members_copy", PermissionScope.Project, ManifestRiskClass.High,
+                "Create selected destination memberships that reference existing tenant users."),
+            new PermissionManifest("projects.bootstrap.activate", PermissionScope.Project, ManifestRiskClass.High,
+                "Activate a validated project bootstrap destination independently of execution.")
+        ],
+        [
+            new NavigationManifest(
+                "projects.bootstrap",
+                "/project-bootstraps",
+                "ساخت از روی پروژهٔ موجود",
+                "projects.bootstrap.preview",
+                "projects.controlled-bootstrap",
+                1_200)
+        ],
+        [],
+        [
+            new IntegrationEventManifest(
+                "projects.bootstrap.completed",
+                1,
+                IntegrationEventClassification.Confidential)
+        ]);
+
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Pmcs")
@@ -26,12 +84,15 @@ public sealed class ProjectsModule : IModule
         services.AddScoped<IProjectTenantDirectory, ProjectTenantDirectory>();
         services.AddScoped<IProjectDirectory, ProjectDirectory>();
         services.AddScoped<IProjectLocationDirectory, ProjectLocationDirectory>();
+        services.AddScoped<ProjectBootstrapPreviewFactory>();
+        services.AddScoped<ProjectReadinessEvaluator>();
         services.AddSingleton<IDatabaseMigration, ProjectsInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectCalendarAndFinanceMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectProcurementMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectLocationMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectActivationMetadataMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectSetupReadinessMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectBootstrapMigration>();
         services.AddHostedService<DevelopmentProjectSeeder>();
     }
 
@@ -39,5 +100,6 @@ public sealed class ProjectsModule : IModule
     {
         endpoints.MapProjectEndpoints();
         endpoints.MapProjectLocationEndpoints();
+        endpoints.MapProjectBootstrapEndpoints();
     }
 }

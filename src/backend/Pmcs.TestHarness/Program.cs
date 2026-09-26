@@ -58,6 +58,29 @@ internal static partial class Program
                 "probe" => await ProbeAsync(),
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
+                "verify-reporting" => await VerifyReportingAsync(),
+                "verify-reporting-golden" => await VerifyReportingGoldenAsync(),
+                "verify-reporting-pdf-golden" => await VerifyReportingPdfGoldenAsync(),
+                "verify-reporting-periodic" => await VerifyReportingPeriodicAsync(),
+                "verify-reporting-executive-state" =>
+                    await VerifyReportingExecutiveProjectStateAsync(),
+                "verify-reporting-project-progress" =>
+                    await VerifyReportingProjectProgressAsync(),
+                "verify-reporting-project-financial-position" =>
+                    await VerifyReportingProjectFinancialPositionAsync(),
+                "verify-reporting-project-commercial-procurement-supply" =>
+                    await VerifyReportingProjectCommercialProcurementSupplyAsync(),
+                "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
+                "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
+                "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
+                "prepare-reporting-worker-revocation" => await PrepareReportingWorkerRevocationAsync(),
+                "verify-reporting-worker-revocation" => await VerifyReportingWorkerRevocationAsync(),
+                "verify-reporting-object-security" => await VerifyReportingObjectSecurityAsync(),
+                "prepare-reporting-orphan-objects" => await PrepareReportingOrphanObjectsAsync(),
+                "verify-reporting-orphan-objects" => await VerifyReportingOrphanObjectsAsync(),
+                "cleanup-reporting-orphan-objects" => await CleanupReportingOrphanObjectsAsync(),
+                "prepare-reporting-capacity" => await PrepareReportingCapacityAsync(),
+                "verify-reporting-capacity" => await VerifyReportingCapacityAsync(),
                 "verify-sync" => await VerifySyncAsync(),
                 "verify-exploratory" => await VerifyExploratoryAsync(),
                 _ => WriteUsage()
@@ -471,7 +494,18 @@ internal static partial class Program
     private static int WriteUsage()
     {
         Console.Error.WriteLine(
-            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-sync|verify-exploratory>");
+            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
+            "verify-reporting-golden|verify-reporting-pdf-golden|verify-reporting-periodic|" +
+            "verify-reporting-executive-state|" +
+            "verify-reporting-project-progress|" +
+            "verify-reporting-project-financial-position|" +
+            "verify-reporting-project-commercial-procurement-supply|" +
+            "verify-reporting-cancellation|" +
+            "verify-reporting-recovery|" +
+            "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
+            "verify-reporting-object-security|prepare-reporting-orphan-objects|" +
+            "verify-reporting-orphan-objects|cleanup-reporting-orphan-objects|prepare-reporting-capacity|" +
+            "verify-reporting-capacity|verify-sync|verify-exploratory>");
         return 2;
     }
 

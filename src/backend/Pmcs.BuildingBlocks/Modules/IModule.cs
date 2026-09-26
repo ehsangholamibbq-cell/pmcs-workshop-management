@@ -8,6 +8,8 @@ public interface IModule
 {
     string Name { get; }
 
+    ModuleDescriptor Descriptor => ModuleDescriptor.Legacy(Name);
+
     void AddServices(IServiceCollection services, IConfiguration configuration);
 
     void MapEndpoints(IEndpointRouteBuilder endpoints);

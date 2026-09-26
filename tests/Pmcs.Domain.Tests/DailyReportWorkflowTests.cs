@@ -1,5 +1,7 @@
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.FieldOperations.Contracts;
 using Pmcs.Modules.FieldOperations.Domain;
+using Pmcs.Modules.FieldOperations.Services;
 
 namespace Pmcs.Domain.Tests;
 
@@ -119,6 +121,35 @@ public sealed class DailyReportWorkflowTests
         Assert.Equal(correction.Id, report.SupersededByReportId);
         Assert.Equal(report.Id, correction.SupersedesReportId);
         Assert.Equal(DailyReportStatus.Approved, correction.Status);
+    }
+
+    [Fact]
+    public void ReportingProjectionHidesFutureSupersessionMetadataAtHistoricalCutoff()
+    {
+        var report = CreateApprovedReport();
+        var approvedAt = report.ReviewedAt!.Value;
+        var approvedRevision = report.Revision;
+        var correction = report.CreateCorrection(
+            Guid.NewGuid(), report.Revision, "Correct the quantity.", Guid.NewGuid(), StartedAt.AddMinutes(4));
+        correction.Submit(correction.Revision, StartedAt.AddMinutes(5));
+        correction.Approve(correction.Revision, null, Guid.NewGuid(), StartedAt.AddMinutes(6));
+        report.SupersedeWith(correction.Id, correction.CorrectionReason!, StartedAt.AddMinutes(6));
+
+        var before = DailyReportReportingSource.MapForCutoff(report, StartedAt.AddMinutes(3));
+        var after = DailyReportReportingSource.MapForCutoff(report, StartedAt.AddMinutes(6));
+
+        Assert.Equal(DailyReportReportingVersionState.Approved, before.State);
+        Assert.Null(before.SupersededByReportId);
+        Assert.Null(before.SupersededAt);
+        Assert.Null(before.CorrectionReason);
+        Assert.Equal(approvedAt, before.LastModifiedAt);
+        Assert.Equal(approvedRevision, before.Revision);
+
+        Assert.Equal(DailyReportReportingVersionState.Superseded, after.State);
+        Assert.Equal(correction.Id, after.SupersededByReportId);
+        Assert.Equal(StartedAt.AddMinutes(6), after.SupersededAt);
+        Assert.Equal("Correct the quantity.", after.CorrectionReason);
+        Assert.Equal(approvedRevision + 1, after.Revision);
     }
 
     [Fact]

@@ -23,6 +23,7 @@ public sealed class FinanceModule : IModule
         services.AddDbContext<FinanceDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IFinancialStateSource, FinancialStateSource>();
         services.AddScoped<IFinanceControlReadService, FinanceControlReadService>();
+        services.AddScoped<IProjectFinancialPositionReportingSource, ProjectFinancialPositionReportingSource>();
         services.AddScoped<IFinanceVerificationService, FinanceVerificationService>();
         services.AddSingleton<IDatabaseMigration, FinanceInitialMigration>();
         services.AddSingleton<IDatabaseMigration, FinanceCommercialLinkMigration>();

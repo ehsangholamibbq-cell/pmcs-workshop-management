@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "pmcs.feature-candidate/v1",
+  "productVersion": "1.1.0",
+  "stage": "V1.1-PRJ1",
+  "status": "verified",
+  "parentStage": "V1.1-IAM1",
+  "parentSourceCommit": "86f9f4efd086e4e67823a930fcb3ef1b7249b71f",
+  "integrationParentCommit": "84a0ecab7d44c345d7580eccbe5d9f3df95c32f9",
+  "sourceCommit": "e1b5bf6af813af7324065edc1c91eecf2391eccd",
+  "sourceTree": "0539d3c7b337a1785ffd2334c7c1457f92d629c2",
+  "workflowRun": {
+    "number": 92,
+    "id": "35355855215",
+    "conclusion": "success",
+    "requiredJobs": 8,
+    "qualificationArtifact": {
+      "id": 10551513960,
+      "digest": "sha256:21d0c525bd4813864cb59a5309baf247971929badf28a4b22cb04b48d565bd58"
+    }
+  },
+  "migration": {
+    "ledgerCount": 41,
+    "module": "projects",
+    "version": "20260918-007",
+    "order": 306
+  },
+  "contracts": {
+    "api": "docs/api/project-bootstrap-v1.md",
+    "contributorCatalog": "pmcs.project-bootstrap/v1.0.0",
+    "event": "projects.bootstrap.completed.v1",
+    "permissions": [
+      "projects.bootstrap.preview",
+      "projects.bootstrap.create",
+      "projects.bootstrap.members_copy",
+      "projects.bootstrap.activate"
+    ]
+  },
+  "localEvidence": {
+    "dotnetTests": 284,
+    "webUnitTests": 139,
+    "browserScenarios": 5,
+    "csharpModuleFiles": 305,
+    "systemEndpoints": 265,
+    "systemMutations": 201,
+    "protocolManagedMutations": 5,
+    "webBuild": "passed",
+    "repositoryValidation": "passed",
+    "connectedIntegration": "passed",
+    "restoreDrillMigrations": 41
+  },
+  "gates": {
+    "previewExecuteParity": "passed",
+    "permissionAndTenantBoundary": "passed",
+    "membershipReferenceOnly": "passed",
+    "idempotencyAndRecovery": "passed",
+    "auditAndOutbox": "passed",
+    "operationalDataNonCopy": "passed",
+    "independentActivation": "passed",
+    "fullCi": "passed"
+  },
+  "qualificationClaims": {
+    "featureCheckpointClosed": true,
+    "featureComplete": false,
+    "qualified": false,
+    "final": false,
+    "baselineLocked": false
+  },
+  "nextStage": "V1.1-RPT1"
+}

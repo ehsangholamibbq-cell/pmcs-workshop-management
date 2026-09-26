@@ -1,0 +1,961 @@
+# Roadmap حاکم تکامل محصول PMCS پس از V1
+
+- شناسه سند: `PMCS-RM-POST-V1-001`
+- نسخه سند: `1.55.0`
+- وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
+- تاریخ ثبت: ۱۴۰۵/۰۷/۰۴ (۲۰۲۶-۰۹-۲۶)
+- مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
+- Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
+- وضعیت V1: `Qualified | Final | Baseline Locked`
+- خط توسعه فعال بعدی: `PMCS V1.1`
+- شاخه توسعه: `v1.1-development`
+- Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
+- مرحله فعال: `V1.1-RPT1 — Reporting Center Phase 1`
+
+## ۱. هدف و قاعده حاکم
+
+این سند ادامهٔ رسمی Roadmap قفل‌شدهٔ V1 است و سند تاریخی V1 را بازنویسی نمی‌کند. هدف آن تبدیل PMCS از یک V1 عملیاتی و Qualified به یک بستر توسعه‌پذیر، حرفه‌ای از نظر تجربهٔ کاربری، دارای همکاری پروژه‌ای و دارای مرکز گزارش‌سازی قابل استناد است؛ بدون شکستن مرزهای معماری، Permission، Audit، Offline و دادهٔ رسمی V1.
+
+هیچ قابلیت جدیدی مجاز نیست مستقیماً به جدول‌های ماژول دیگر متصل شود، Permission کاربر را دور بزند، Chat را به منبع حقیقت رسمی تبدیل کند یا محاسبات قطعی را به LLM بسپارد.
+
+قواعد Version و Baseline این Roadmap در `docs/governance/pmcs-version-and-baseline-policy.md` لازم‌الاجرا است.
+
+## ۲. وضعیت مبنا و مرز عدم تغییر
+
+| مورد | وضعیت قطعی |
+| --- | --- |
+| PMCS V1 | Qualified، Final و Locked |
+| Baseline منبع V1 | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
+| تغییر مستقیم V1 برای قابلیت جدید | ممنوع |
+| تعمیر V1 | فقط Patch نسخه‌دار از Baseline قفل‌شده و با Full Regression |
+| خط قابلیت جدید | V1.1 و نسخه‌های بعدی |
+| معماری اصلی | Modular Monolith، Permission مرکزی، Audit/Outbox/Idempotency، Offline-first |
+| مرز Agent | `Agent → Permission-aware Tool → Application Service → Business Rules → Database` |
+| تاریخ کاربر | شمسی، ارقام فارسی و منطقه زمانی پروژه؛ داخل سیستم ISO/UTC |
+
+Commit شروع Repository برای شاخهٔ V1.1 باید هنگام ایجاد شاخه به‌صورت جداگانه ثبت شود و نباید با عبارت‌هایی مانند «آخرین main» یا «نسخه فعلی» جایگزین شود. Runtime Parent آن همواره Baseline منبع V1 بالا است.
+
+## ۳. تصمیم‌های قطعی Post-V1
+
+| شناسه | تصمیم | وضعیت |
+| --- | --- | --- |
+| `D-PV1-01` | قبل از ماژول‌های بزرگ آینده، Extensibility Foundation ساخته می‌شود. | مصوب |
+| `D-PV1-02` | Visual Excellence Program، Design System و نمونهٔ تصویری/کلیک‌پذیر قبل از پیاده‌سازی UI جدید تصویب می‌شوند. | مصوب |
+| `D-PV1-03` | برای هر پروژه یک فضای گفت‌وگوی گروهی کنترل‌شده ساخته می‌شود. | مصوب |
+| `D-PV1-04` | پیام خصوصی، تماس صوتی/تصویری، Story و شبکهٔ اجتماعی عمومی ساخته نمی‌شوند. | خارج از Scope دائمی فعلی |
+| `D-PV1-05` | Chat منبع حقیقت رسمی نیست؛ تبدیل به رکورد رسمی فقط با Command صریح و Permission انجام می‌شود. | مصوب |
+| `D-PV1-06` | مرکز گزارش‌سازی و چاپ حرفه‌ای یک Bounded Context مستقل خواهد بود. | مصوب |
+| `D-PV1-07` | V1.1 با گزارش‌های استاندارد و تأییدشده شروع می‌شود؛ Report Designer آزاد به V1.2 موکول است. | مصوب |
+| `D-PV1-08` | Agent فقط از Tool Registry مجوزدار استفاده می‌کند؛ SQL/DB مستقیم ممنوع می‌ماند. | مصوب |
+| `D-PV1-09` | PMO، PMBOK، توجیه اقتصادی، متره/برآورد و Scheduling/MSP ماژول‌های مستقل V2.x هستند. | مصوب |
+| `D-PV1-10` | نبود داده، Baseline، WBS، Budget یا ماژول اختیاری با صفر یا وضعیت سبز جایگزین نمی‌شود. | پابرجا |
+| `D-PV1-11` | Agent مدیریتی دقیقاً هفت Stage مستقل و دارای Gate دارد و نباید به یک عنوان کلی یا پنج فاز فشرده شود. | مصوب و بازیابی‌شده |
+| `D-PV1-12` | مسیر بصری «مدیریت ممتاز» با لوگوی رسمی بتن بسپار قزوین، Surface گرم و Accent کنترل‌شدهٔ سرمه‌ای/سبز/نقره‌ای مبنای V1.1 است. | مصوب |
+| `D-PV1-13` | طرح گرافیکی Login از جریان Authentication جدا و با Descriptor/Asset نسخه‌دار، امن و قابل Rollback تغییرپذیر است؛ HTML/CSS/JS دلخواه قابل بارگذاری نیست. | مصوب |
+| `D-PV1-14` | هر عضو سامانه یک پروفایل شخصی حداقلی و یکپارچه دارد و می‌تواند تصویر خود را مدیریت کند؛ عضویت و نقش پروژه جدا از پروفایل شخصی باقی می‌ماند. | مصوب |
+| `D-PV1-15` | ایجاد پروژه از روی پروژهٔ موجود با Preview و انتخاب اقلام Setup/Member مجاز است؛ دادهٔ عملیاتی، مالی، پیام، فایل، Audit و سابقه هرگز ضمنی کپی نمی‌شود. | مصوب |
+| `D-PV1-16` | هر ده خانوادهٔ استاندارد کاتالوگ RPT1 در Scope باقی می‌مانند؛ خانواده‌های ۲ تا ۱۰ باید با Micro-Slice و Qualification مستقل تکمیل شوند و RPT1 پیش از آن بسته نمی‌شود. | مصوب؛ ADR 0031 |
+
+## ۴. نقشهٔ نسخه‌های محصول
+
+| خط نسخه | هدف | قابلیت‌های اصلی | خروجی نهایی |
+| --- | --- | --- | --- |
+| `V1.0.x` | نگهداری Baseline V1 | فقط Security/Critical Defect؛ بدون قابلیت جدید | Patch Qualified مستقل |
+| `V1.1` | بنیاد توسعه‌پذیری و تجربهٔ محصول | Extensibility، Visual Excellence، Login قابل پیکربندی، پروفایل شخصی، Project Bootstrap، Documents، Collaboration، Reporting Phase 1 و Agent Stage 1 | Baseline جدید Qualified |
+| `V1.2` | بلوغ Intelligence، گزارش و همکاری | Agent Stages 2–7، Advanced Report Builder، Scheduled Reports و Topic Channels | Baseline جدید Qualified |
+| `V2.x` | توسعهٔ دامنه‌های راهبردی | PMO، PMBOK، Feasibility، Quantify، Scheduling/MSP و Agentهای تخصصی | Baseline مستقل هر Increment |
+
+نسخهٔ V2 یک بستهٔ یک‌مرحله‌ای عظیم نیست. هر قابلیت راهبردی باید Increment و Baseline مستقل خود را داشته باشد تا ریسک و Regression کنترل شود.
+
+## ۵. Roadmap اجرایی PMCS V1.1
+
+### `V1.1-G0` — Governance و Development Baseline
+
+**هدف:** شروع نسخه از مرجع دقیق و جلوگیری از توسعهٔ مبهم.
+
+خروجی‌های لازم:
+
+- ثبت Parent Runtime Baseline و Repository Start Commit؛
+- ثبت Scope، Non-Scope، Decision Register و Risk Register؛
+- ADRهای Extensibility، Documents، Collaboration، Reporting و UX؛
+- Permission Catalog اولیهٔ قابلیت‌های جدید؛
+- API/Event/Migration strategy؛
+- Test Strategy و Qualification Contract نسخهٔ V1.1؛
+- ایجاد Checkpoint Manifest بدون ادعای Feature Complete یا Qualified.
+
+**Gate خروج:** `Governance Approved`؛ بدون این Gate هیچ کد محصولی V1.1 آغاز نمی‌شود.
+
+**Evidence:** Gate با Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` و Run 71 (`35275795712`) بسته شد. Main/Runtime V1 تغییر نکرده است.
+
+### `V1.1-UX1` — Visual Excellence، Design System و High-Fidelity Product Prototype
+
+**هدف:** بازطراحی بنیادین تجربهٔ بصری در سطح یک محصول سازمانی ممتاز، نه اجرای یک Skin یا Polish محدود.
+
+مرجع لازم‌الاجرا: `docs/roadmaps/pmcs-visual-excellence-program.md`.
+
+Scope:
+
+- Design Tokenهای رنگ، فاصله، Radius، Elevation، Motion و State؛
+- Typography فارسی، سلسله‌مراتب اطلاعات و قواعد RTL؛
+- Shell، Navigation، Header، Project Context و Command Surfaces؛
+- جدول، فرم، فیلتر، نمودار، Timeline، Attachment و Workflow components؛
+- Empty، Loading، Error، Offline، No Permission و No Data؛
+- Responsive برای Desktop، Tablet و Mobile؛
+- Print Design برای A4/A3، عمودی و افقی؛
+- نمونهٔ High-Fidelity داشبورد، Chat پروژه و Reporting Center؛
+- نمونهٔ High-Fidelity برای Executive Intelligence Center در هماهنگی با Stage 4 Agent؛
+- نمونهٔ High-Fidelity پروفایل شخصی، ویرایش Avatar و حالت بدون تصویر؛
+- نمونهٔ High-Fidelity Wizard ساخت پروژه از روی پروژهٔ موجود شامل Preview، Conflict و Confirmation؛
+- بستهٔ بازبینی شامل تصاویر مسیرهای اصلی و Prototype قابل کلیک تا مالک محصول بدون زیرساخت اجرایی بتواند تجربه را ارزیابی کند.
+
+**موج مهاجرت UI:**
+
+1. Login، Shell، Portfolio و Project Command Center؛
+2. My Work، Notification، فرم‌ها، جدول‌ها و Workflowهای مشترک؛
+3. صفحات ماژول‌های V1؛
+4. Collaboration و Reporting جدید.
+
+**Gate خروج:** `Visual Direction Approved`. مسیر «مدیریت ممتاز» از نظر ترکیب Login، گرمی محیط و شدت Motion توسط مالک محصول تصویب شده است. این تصمیم فقط Gate انتخاب Art Direction را می‌بندد؛ `VX-G3 System Ready`، Prototype تمام stateها و Design System هنوز باید پیش از مهاجرت تولیدی کامل شوند.
+
+**Evidence:** مالک محصول Candidate `PMCS-V1.1-UX1-RC1` را در ۲۰۲۶-۰۹-۱۷ برای سه معیار قفل‌شده تأیید کرد. موشن، تصویر و تم Login باید در IAM1 از Authentication جدا، نسخه‌دار و دارای Preview/Publish/Rollback/Fallback باشند.
+
+### `V1.1-EXT1` — Extensibility Foundation
+
+**هدف:** اتصال قابلیت‌های آینده از طریق Contract، نه تغییرات موردی.
+
+Scope:
+
+- `ModuleDescriptor` شامل شناسه، نسخه، Capability و dependency مجاز؛
+- `PermissionManifest` ماژول‌محور با تصمیم نهایی در Permission Engine مرکزی؛
+- `NavigationManifest` و Feature Flag؛
+- `ToolManifest` برای ابزارهای Agent با Input/Output schema، Permission و Risk Class؛
+- Integration Eventهای نسخه‌دار روی Outbox؛
+- Application Contractهای پایدار برای خواندن بین‌ماژولی؛
+- Compatibility metadata و migration ownership؛
+- Architecture Gate برای منع دسترسی مستقیم به Persistence ماژول دیگر؛
+- Contract test برای Module، Permission، Event، Navigation و Agent Tool.
+
+**Non-Scope:** بارگذاری Dynamic و ناامن Binary/Plugin شخص ثالث در Runtime. V1.1 یک Platform Contract می‌سازد، نه Marketplace افزونه.
+
+**Gate خروج:** یک Reference Module باید از Manifest تا UI Navigation، Permission، Event و Tool Contract به‌طور کامل در تست اثبات شود.
+
+**Evidence:** Reference Module `platform.foundation` با Manifest schema نسخه‌دار، Permission مرکزی، Navigation fail-closed، Event v1 و Tool read-only در Candidate source commit `b61a644de91ec3a0cf4a6288e54185e174794e1f` اثبات شد. هر هشت Job در Run 77 (`35283742706`) سبز شدند؛ ۲۶۴ تست C#، ۱۲۸ تست Web، ۴ سناریوی مرورگر واقعی و Restore Drill دارای ۳۸ Migration پاس شدند. EXT1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
+
+### `V1.1-DOC1` — Shared Document and Attachment Foundation
+
+**هدف:** جداسازی فایل عمومی محصول از Evidence تخصصی گزارش روزانه.
+
+Scope:
+
+- Document/Attachment عمومی با `ownerType/ownerId` کنترل‌شده؛
+- Tenant/Project boundary، Classification و Permission مستقل؛
+- Upload Session، Object Storage خصوصی، SHA-256 و Content Signature؛
+- محدودیت نوع/حجم، Malware Scanner Adapter، Quarantine و Release State؛
+- نسخه، Retention، Legal Hold، Audit و دانلود Permission-aware؛
+- Idempotency، Retry و Offline upload queue؛
+- قرارداد اتصال به Chat، Reporting، Technical Office و ماژول‌های آینده.
+
+رکوردهای Evidence موجود بدون Migration پنهان و بدون تغییر معنا حفظ می‌شوند. تبدیل یا اشتراک فایل میان Contextها فقط با Command صریح انجام می‌شود.
+
+**Gate خروج:** تست Upload/Download/Retry/Duplicate/Permission/Quarantine/Audit و جداسازی Tenant/Project.
+
+**Evidence:** ماژول مستقل `documents.shared`، Migration شماره ۳۹، Object Storage خصوصی، Offline upload queue و مرزهای Permission/Quarantine در Candidate source commit `3fb9f3cb9d14cef5ecbc3de1a3f1f266e88e0e11` اثبات شد. هر هشت Job در Run 83 (`35338895848`) سبز شدند؛ ۲۷۴ تست C#، ۱۳۰ تست Web، ۴ سناریوی مرورگر واقعی و Restore Drill دارای ۳۹ Migration پاس شدند. DOC1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
+
+### `V1.1-IAM1` — Configurable Login and Minimal Member Profile
+
+**هدف:** جداکردن هویت بصری Login از جریان امنیتی و فراهم‌کردن پروفایل شخصی حداقلی برای تمام اعضای سامانه.
+
+Scope:
+
+- `LoginExperienceDescriptor` نسخه‌دار شامل Design token، Asset slot، Composition variant، Motion policy، Active version و Rollback؛
+- مدیریت Asset فقط برای مدیر دارای Permission مشخص، با همان Upload/Validation/Quarantine pipeline بنیاد اسناد؛
+- Fallback داخلی سالم در صورت حذف، خرابی یا ناسازگاری Asset؛
+- منع کامل HTML/CSS/JavaScript دلخواه و منع تغییر OIDC/BFF/Authentication contract از مسیر تنظیمات گرافیکی؛
+- یک `MemberProfile` به‌ازای هر حساب Tenant شامل نام نمایشی، تصویر، عنوان شغلی، واحد سازمانی و اطلاعات تماس سازمانی مجاز؛
+- تصویر پیش‌فرض، Crop و Thumbnailهای کنترل‌شده، محدودیت نوع/حجم، حذف/جایگزینی، Cache invalidation و Audit؛
+- Self-service برای ویرایش فیلدهای مجاز و Permission مستقل برای اصلاح Directory fields توسط مدیر؛
+- نمایش یک Profile واحد در تمام پروژه‌ها، در حالی که Project Membership، Role و Access Scope همچنان پروژه‌محور و مستقل هستند؛
+- Privacy contract برای اینکه هیچ دادهٔ شخصی خارج از Tenant/Project permission نمایش داده نشود.
+
+**Non-Scope:** شبکهٔ اجتماعی شخصی، Follow، Status، پیام خصوصی، رزومهٔ گسترده، Gallery و پروفایل عمومی اینترنتی.
+
+**Gate خروج:** تست Authentication isolation، Descriptor version/rollback، asset failure fallback، self/admin permission، image validation، privacy و نمایش سازگار Profile در چند پروژه.
+
+
+**Evidence:** پروفایل یکپارچه عضو، Avatar خصوصی، Login Descriptor نسخه‌دار و مسیر بصری «مدیریت ممتاز» در Candidate source commit `86f9f4efd086e4e67823a930fcb3ef1b7249b71f` اثبات شد. هر هشت Job در Run 88 (`35345558791`) سبز شدند؛ ۲۷۹ تست C#، ۱۳۷ تست Web، ۵ سناریوی مرورگر واقعی و Restore Drill دارای ۴۰ Migration پاس شدند. IAM1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
+
+### `V1.1-PRJ1` — Controlled Project Bootstrap and Duplication
+
+**هدف:** ساخت سریع پروژهٔ جدید از روی Setup یک پروژهٔ موجود، بدون تکثیر دادهٔ عملیاتی یا ایجاد دسترسی پنهان.
+
+قابلیت در UI با عنوان «ساخت از روی پروژهٔ موجود» ارائه می‌شود و دارای Wizard انتخابی است. کاربر باید پیش از اجرا Preview دقیق Added/Skipped/Conflict را ببیند.
+
+اقلام قابل انتخاب برای انتقال:
+
+- تنظیمات پایه و Module enablementهای سازگار؛
+- Calendar، Location structure، Role template، Workflow/Form/Report template و Lookupهای صراحتاً Cloneable؛
+- اعضای فعال پروژه به‌صورت Reference به حساب موجود، همراه Role و Access Scope انتخاب‌شده؛
+- تنظیمات اعلان و گروه پروژه فقط به‌صورت Default جدید، نه کپی سابقه.
+
+مواردی که هرگز به‌صورت ضمنی کپی نمی‌شوند:
+
+- شناسه، کد، نام، تاریخ‌ها، قرارداد و مقادیر یکتای پروژهٔ مبدأ؛
+- Daily Report، Progress actual، Finance، Payment، Voucher، Budget actual، Procurement transaction و Contract history؛
+- پیام، فایل، Attachment، Technical document، RFI، Approval، Issue، Action، Notification و Agent conversation؛
+- Audit، Outbox، Idempotency key، Offline queue، Sync state، Project State snapshot و هر سابقهٔ عملیاتی.
+
+کنترل‌های الزامی:
+
+- فقط داخل یک Tenant و با Permissionهای مستقل `projects.bootstrap.create` و `projects.bootstrap.members_copy`؛
+- حساب کاربر Duplicate نمی‌شود؛ فقط Membership جدید به Identity موجود ساخته می‌شود؛
+- عضو غیرفعال، تعلیق‌شده یا ناسازگار در Preview با دلیل `Skipped/Blocked` نمایش داده می‌شود؛
+- اجرای Idempotent با Correlation ID، Audit، Dry-run، conflict policy و نتیجهٔ قابل دانلود؛
+- پروژهٔ مقصد تا پایان Validation در وضعیت Draft باقی می‌ماند و Activation یک Command مستقل است؛
+- ارسال اعلان عضویت فقط پس از Confirmation نهایی و مطابق Policy پروژهٔ مقصد؛
+- هر Template/Module باید صریحاً Clone contract و Version compatibility خود را اعلام کند.
+
+**Gate خروج:** تست Preview/execute parity، permission و cross-tenant denial، inactive-member handling، idempotency، partial failure recovery، audit، عدم کپی دادهٔ عملیاتی و Activation مستقل.
+
+**Evidence:** Plan/Digest/Expiry، یازده Contributor نسخه‌دار، Membership reference-only، denylist دادهٔ عملیاتی، Wizard فارسی و Activation مستقل در Candidate source commit `e1b5bf6af813af7324065edc1c91eecf2391eccd` اثبات شد. هر هشت Job در Run 92 (`35355855215`) سبز شدند؛ ۲۸۴ تست C#، ۱۳۹ تست Web، پنج سناریوی مرورگر واقعی، connected bootstrap regression و Restore Drill دارای ۴۱ Migration پاس شدند. PRJ1 بسته است، اما V1.1 هنوز Feature Complete، Qualified یا Locked نیست.
+
+### `V1.1-RPT1` — Reporting Center Phase 1
+
+**هدف:** تولید گزارش‌های رسمی، نسخه‌دار، قابل چاپ و قابل ممیزی.
+
+Scope معماری:
+
+- Reporting bounded context مستقل؛
+- Semantic Read Model فقط از دادهٔ مجاز و رسمی؛
+- Report Catalog و Template Versioning؛
+- Job غیرهم‌زمان با Status، Retry و Diagnostics؛
+- Data Cut-off/As-of، پارامترها و Permission snapshot؛
+- خروجی immutable با Hash، Audit، Retention و Archive؛
+- PDF و Excel؛ CSV فقط برای دادهٔ جدولی مجاز؛
+- RTL، تاریخ شمسی، ارقام فارسی و Time Zone پروژه؛
+- Header/Footer، لوگو، شماره صفحه، Revision، Watermark، امضا و QR/Verification Code؛
+- A4/A3، Portrait/Landscape، تکرار Header جدول و Page-break کنترل‌شده؛
+- NoData/NotConfigured/InsufficientData صریح و بدون صفر ساختگی.
+
+کاتالوگ استاندارد اولیه:
+
+1. گزارش روزانه رسمی و زنجیرهٔ اصلاحات؛
+2. گزارش هفتگی و ماهانهٔ پروژه؛
+3. گزارش مدیریتی/Executive Project State؛
+4. پیشرفت، Planned/Actual/Variance و S-Curve در صورت وجود Baseline معتبر؛
+5. مالی، Cash Position، تعهدات، Aging و بودجه در صورت پیکربندی؛
+6. قرارداد، اصلاحیه، خرید و تأمین؛
+7. دفتر فنی شامل Document/RFI/Submittal/Transmittal؛
+8. Quality و HSE با رعایت Classification؛
+9. Issue، Risk، Decision، Escalation و Action؛
+10. Portfolio Summary به تفکیک دسترسی و ارز، بدون تبدیل پنهان.
+
+**Non-Scope V1.1:** Designer آزاد Drag-and-Drop، Query مستقیم کاربر به Database و تولید عدد توسط LLM.
+
+**Gate خروج:** Golden-file و visual print tests، determinism، Permission، Snapshot/Audit، Jalali/RTL و بازتولید خروجی از Template Version یکسان.
+
+**Definition of Ready:** بسته `PMCS-V1.1-RPT1-DOR1` روی Parent commit
+`720de8869e251f5a4c39a6940a76e9929232706b` ثبت شد. ADR 0029، معماری Semantic Snapshot،
+API، Permission/Threat contract، Test Matrix و Runbook آماده‌اند. این Evidence فقط آغاز
+پیاده‌سازی RPT1 را مجاز می‌کند و هیچ Runtime/Migration یا Gate خروج RPT1 را کامل اعلام نمی‌کند.
+
+**Implementation Slice 01:** Source Candidate با commit
+`43cac1b83ac7764fe6005fee108029597091a238` و tree
+`257d8c80f45435e462563e38bb3c5fa12c77808b` ثبت شد. Module/Descriptor، Migration 42،
+Catalog/Create/Get/List، Source contract زنجیره گزارش روزانه، canonical Snapshot، Worker claim،
+Permission re-evaluation، Role mapping، read-only Agent manifests/application service و جلوگیری از
+generic Documents access برای `ReportOutput` پیاده شده‌اند. Feature flag پیش‌فرض خاموش است و این
+Candidate هنوز Build/CI/connected integration، Rendererهای PDF/XLSX، Download/Verify، Golden،
+Restore و Full Regression ندارد؛ در نتیجه RPT1 همچنان فعال و باز است.
+
+**Implementation Slice 02:** Source Candidate با commit
+`ef5d68e5d35b7f2b58ebd3da87b3b35dadf19173` و tree
+`4deccade8899a2438485fb1304cd918115af2654` ثبت شد. Generated Document publish/read با
+read-after-write integrity، Rendererهای PDF/XLSX، RTL/Jalali/Persian formatting، stable
+output/document identity، Worker rendering/finalization، Retry/Cancel، Download/Verify، integrity
+Audit، rollback-aware output access، Migration 43 و هارنس PostgreSQL/Object Storage در Source
+پیاده شده‌اند. رگرسیون محلی ابزارها `40/40` و Web `139/139` به‌همراه Web check، architecture
+validator و system contract audit سبز است. Run 99 (`35381177208`) هر هشت Job، `295/295` تست C#،
+هارنس Reporting با `13/13` assertion متصل و Restore Drill ۴۳ Migration را روی همان tree پاس کرد.
+این Candidate هنوز PDF license/golden، crash/concurrency/load، revocation/tamper گسترده،
+observability و UI اختصاصی Reporting را ندارد؛ Feature/Worker/OutputAccess پیش‌فرض خاموش‌اند و
+RPT1 بسته نشده است. نقطهٔ ادامه تکمیل Gateهای Recovery/Security/Golden/Observability است، نه شروع
+معماری جدید.
+
+**Qualification Slice 03:** Candidate با commit
+`b4da1e951debf76e1ba3b398bde2ccf60fbde5de` و tree
+`aa4063214ad1dea8fac19685a81818623296c24c` در Run 102 (`35383686315`) هر هشت Job را پاس کرد.
+Cancel با Worker خاموش، replay/final-state، denial ناشناس و cross-tenant، منع generic Documents،
+revocation پس از success، metadata tamper fail-closed/restore و Audit/Outbox/Idempotency متصل اثبات
+شدند. این Slice API/معماری Runtime را تغییر نداد و revocation حین Worker، دو Worker/crash window،
+object-byte tamper، load، observability، Golden و UI Reporting را باز نگه می‌دارد.
+
+**Qualification Slice 04:** Candidate با commit
+`e1ac3263df53a245b1aefb338a015be4854d367b` و tree
+`f58881f7e0a77bf89f65b872d4f988bd154a809f` در Run 104 (`35390054888`) هر هشت Job را پاس کرد.
+دو Worker واقعی، `SKIP LOCKED`، rollback claim پس از `SIGKILL`، stale lease و
+crash-before/after-storage با reuse سند پایدار و بدون side effect تکراری متصل اثبات شدند. pauseهای
+Qualification فقط در QA Gateway ایزوله و default-off هستند. این Slice معماری/API/Migration را
+تغییر نداد و revocation حین Worker، object tamper/orphan inventory، load/observability، Golden،
+PDF قانونی و UI Reporting را باز نگه می‌دارد.
+
+**Qualification Slice 05:** Candidate با commit
+`167133fc1985c5b57c3dac90535f7a962dfd03b7` و tree
+`34fb70aee9a62a434a8446444d7c6d5c6c9819bd` در Run 108 (`35393509764`) هر هشت Job را پاس کرد.
+Permissionهای Reporting/Source بلافاصله پیش از Storage دوباره ارزیابی و revocation حین Rendering
+بدون انتشار Document/Output fail-closed شد. byte-tamper، missing و malformed object روی MinIO واقعی
+برای Verify/Download fail-closed و سپس restore شد؛ inventory نیز orphan پنجرهٔ crash-after-storage و
+صفرشدن آن پس از recovery را اثبات کرد. این Slice API خارجی/Migration/معماری را تغییر نداد و sweeper
+تولیدی، retry/load/budget، observability، Golden، PDF قانونی و UI Reporting را باز نگه می‌دارد.
+
+**Slice 06 Micro-Step 03 — Safe Checkpoint C1:** Candidate با commit
+`83f13cf43679b23a6a169cc0912985b391b1c017` و tree
+`1705d184bd494e80e50d8a85b723f0bc63e20abc` در Run 117 (`35441980440`) هر هشت Job را پاس کرد.
+نه Meter instrument و چهار tag کم‌کاردینالیتی به قرارداد تست‌شده تبدیل شدند؛ readiness فقط چهار
+مقدار عددی allowlist‌شدهٔ `reporting-worker` را منتشر می‌کند. fairness متصل `10/10`، وضعیت
+`Degraded` صف aged و عدم نشت Tenant/Project/User/Run ID را اثبات کرد. این Safe Checkpoint میانی
+MS03 است: exporter/scrape/alert rule و delivery در `S06-MS03-C2` بازند و ترتیب RPT1، COL1، UX2،
+INT1 یا هفت Stage Agent تغییر نکرده است.
+
+**Slice 06 Micro-Step 03 — Safe Checkpoint C2:** Candidate با commit
+`9bb7ede9b89da2078e165cccb2927e0449116909` و tree
+`a960cddb5264b3de8857812906b7595db0664ba5` در Run 120 (`35443563270`) هر هشت Job را پاس کرد.
+exporter OTLP فقط با endpoint صریح فعال می‌شود؛ Collector/Prometheus/Alertmanager نسخه‌پین‌شده سه
+rule queue-age/heartbeat/failure-retry را load کردند و alert queue-age واقعاً firing و به webhook
+ایزوله تحویل شد. پنج assertion observability و کنترل عدم نشت identity پاس شدند. MS03 بسته است، اما
+RPT1 برای remediation امن orphan، Golden معنایی/XLSX، PDF قانونی و UI Reporting باز می‌ماند؛
+نقطهٔ بعدی `S06-MS04` است و ترتیب RPT1، COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
+
+**Slice 06 Micro-Step 04 — Safe Checkpoint:** Candidate با commit
+`4ff44c96104ee1df87d267ca9a530d19b9248ba3` و tree
+`d4c320e7917121f64a70dea1251169bef4b516ce` در Run 123 (`35445497353`) هر هشت Job را پاس کرد.
+worker داخلی و default-off در `InventoryOnly` چهار Candidate را بدون side effect inventory کرد و در
+`ApplyEligible` فقط orphan منقضی، بدون legal hold و بدون owner را حذف کرد. retention و legal hold
+زیر row lock دوباره سنجیده شدند؛ Retry/remediation advisory lock مشترک، Audit یکتا و بدون object key
+و sweep دوم idempotent بودند. هیچ API تجاری یا Migration اضافه نشد. MS04 بسته است، اما RPT1 برای
+Golden معنایی/XLSX، تصمیم قانونی و Golden/Performance PDF و UI Reporting باز می‌ماند؛ ترتیب RPT1،
+COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
+
+**Slice 06 Micro-Step 05 — Safe Checkpoint:** Candidate با commit
+`38a03f33f4747d0b6a76696705877633acd17678` و tree
+`eb9369c9e32eb3f523c4faa22487d6428c2d7e34` در Run 130 (`35449387794`) هر هشت Job را پاس کرد.
+چهار Run twin روی زنجیرهٔ سه‌نسخه‌ای، cutoff پیش/پس از correction، Snapshot/manifest hash، replay
+byte-identical، parser مستقل OpenXML و SQL مستقل را هر `13/13` assertion پاس کردند. projection
+تاریخی metadata supersession آینده را پنهان کرد و Draft از Snapshot/XLSX حذف ماند. هیچ API تجاری
+یا Migration اضافه نشد. MS05 بسته است، اما RPT1 برای تصمیم قانونی و Golden/Performance PDF و UI
+Reporting باز می‌ماند؛ ترتیب RPT1، COL1، UX2، INT1 یا هفت Stage Agent تغییر نکرده است.
+
+**Slice 06 Micro-Step 06 — Safe Checkpoint:** Candidate با commit
+`b8f21492a4f44c7c412e5b7eda0b164e7f256758` و tree
+`e94b6ba3753e67b42ea0ec99e998761fdad0bcc3` در Run 133 (`35463350892`) هر هشت Job را پاس کرد.
+ADR 0030 تصمیم `QuestPDF Community` را ثبت کرد؛ package، build/runtime image و دو فونت DejaVu Sans
+با digest دقیق pin شدند. PDF Golden متصل `8/8` assertion، رندر byte-identical، visual digest ثابت،
+parse متن/RTL و performance budget را پاس کرد. defaultهای Production خاموش و license پیش‌فرض
+`Unconfigured` ماندند. MS06 بسته است، اما RPT1 تا تعیین تکلیف رسمی اختلاف کاتالوگ ده‌گانه با Runtime
+تک‌گزارش فعال می‌ماند؛ UI اختصاصی Reporting طبق برنامه در UX2 است و ترتیب RPT1، COL1، UX2، INT1 یا
+هفت Stage Agent تغییر نکرده است.
+
+**Catalog Completion Decision — Slice 07 Micro-Step 01 Safe Checkpoint:** مالک محصول در ADR 0031
+گزینهٔ «حفظ هر ۱۰ خانواده» را صریحاً انتخاب کرد. Candidate با commit
+`d81ecc00762145210e1c688f8f5843f46d62fc04` و tree
+`5f40383ad506d94520c741eb69fcd00086283734` در Run 135 (`35466775368`) هر هشت Job را پاس کرد؛
+`330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario سبز شدند.
+کاتالوگ اولیه RPT1 کاهش نیافت؛ `RPT1-F01` همان گزارش روزانه qualifyشده است و `RPT1-F02` تا
+`RPT1-F10` به‌عنوان Required/Not Implemented با Micro-Sliceهای مستقل باقی می‌مانند. زیرساخت مشترک
+یا placeholder هیچ خانواده‌ای را Done نمی‌کند. هیچ API، Migration، Runtime، feature flag، Baseline
+یا ترتیب کلان Roadmap تغییر نکرد. نخستین Slice اجرایی بعدی DoR و قرارداد معنایی گزارش
+هفتگی/ماهانه `RPT1-F02` است و RPT1 فعال می‌ماند.
+
+**F02 Weekly/Monthly Semantic Contract — Slice 07 Micro-Step 02 Safe Checkpoint:** قرارداد
+`PMCS-RPT1-F02-SEMANTIC-001 v1.0.0`، F02 را به roll-up دوره‌ای گزارش‌های روزانه رسمی همان پروژه
+محدود می‌کند. Weekly بازهٔ شنبه تا شنبه بعد و Monthly بازهٔ روز اول تا روز اول ماه شمسی بعد را در
+Time Zone pin‌شده پروژه دارد. پارامتر بسته، source lineage، cutoff correction-safe، coverage،
+precedence وضعیت‌های `NotConfigured/NoData/InsufficientData/Available`، permission/classification
+fail-closed و Golden matrix چهارده‌سناریویی تثبیت شده‌اند. Candidate
+`b4a59fa966320a1da4b53759814224e21893c01e` با tree
+`6b5b486dace3c07b0b4e0385413bf1add5aee7a3` در Run 137 (`35474388839`) هر هشت Job،
+`330/330` C#، `56/56` contract، `139/139` Web، پنج browser scenario و Restore ۴۳ Migration را پاس
+کرد. هیچ Runtime Definition، Template/schema ID، API، Migration، Source implementation، Renderer
+یا feature flag ایجاد نشد؛ F02 اکنون `Contract Ready / Runtime Not Implemented` است و RPT1 فعال
+می‌ماند.
+
+**F02 Runtime Core Safe Checkpoint — Slice 07 Micro-Step 03:** قرارداد معنایی
+`PMCS-RPT1-F02-SEMANTIC-001 v1.1.1` به identity داخلی `project-periodic-certified/1.0.0`،
+schemaهای parameter/snapshot، Project configuration pin، period-read contract نسخه‌دار در
+FieldOperations، resolver شنبه/ماه شمسی و semantic Snapshot builder نگاشت شد. Core، سه cadence،
+چهار data status، reason allowlist، lineage/hash قطعی، aggregation بدون conversion و classification
+propagation را با ۱۶ case جدید پوشش می‌دهد. Source commit
+`6fc28cf54a6df820c49a2365eab76e3550ae421a` و tree
+`5188dac79fe5187b319e6aa727da89163fa37c1b` در Run 139 هر هشت Job، `346/346` تست C#، `58/58`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS03-C1` است. API، Migration، Catalog/Template seed، Worker
+dispatch، Renderer، UI و Production defaults دست‌نخورده‌اند؛ بنابراین F02 هنوز End-to-End Done
+نیست و RPT1 فعال می‌ماند.
+
+**F02 Renderer/Golden Safe Checkpoint — Slice 07 Micro-Step 04:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS03-C1` قراردادهای Template `1.0.0`، Renderer
+`pmcs.reporting.project-periodic.renderer/v1` و Layout
+`pmcs.reporting.project-periodic.layout/v1` اضافه شدند. parser/request hash و cutoff را fail-closed
+تطبیق می‌دهند و یک model canonical، PDF دوصفحه‌ای RTL/Jalali و XLSX هشت-Sheet deterministic را
+می‌سازد. Golden قطعی PDF/XLSX و دو visual digest، Monthly boundary، `NoData`، `NotConfigured`،
+formula escaping، unit separation، budget و regression بدون تغییر F01 را پوشش می‌دهند. این
+Slice عمداً هیچ Catalog/Template seed، API، Worker dispatch، DI registration، Migration، UI،
+feature flag یا Production enablement ندارد. Source commit
+`4f68f57de2c2a79b654a19128894d9c89878ab65` و tree
+`f4b592c72ea65974c00b936ca59c0428eb47f981` در Run 141 هر هشت Job، `353/353` تست C#، `60/60`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۳ Migration را پاس کردند. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS04-C1` است؛ wiring متصل F02/RPT1 همچنان باز می‌ماند.
+
+**F02 Catalog/API/Worker Safe Checkpoint — Slice 07 Micro-Step 05:** روی Checkpoint
+`PMCS-V1.1-RPT1-S07-MS04-C1`، Migration 44 Definition/Template رسمی F02 و Project profile pin‌شده را
+اضافه کرد؛ API و Worker روی contractهای موجود dispatch می‌کنند و QA متصل PDF/XLSX، مجوز،
+idempotency و database evidence را می‌سنجد. Source
+`7fc55c167ad2159a31c895b32a52d78f47574df9` با tree
+`d665fe4cdf29369f96ec0875bc6f1535db349d55` در Run 144 هر هشت Job، `355/355` تست C#، `61/61`
+تست Node، `139/139` تست Web، پنج browser scenario، هارنس متصل `13/13` و Restore ۴۴ Migration را
+پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS05-C1` است. UI و Production defaults عمداً
+تغییر نکرده‌اند؛ گام بعد فقط DoR/semantic contract مستقل F03 است و F03 تا F10 باز می‌مانند.
+
+**F03 Executive Project State Semantic Contract — Slice 07 Micro-Step 06 Safe Checkpoint:** روی Safe
+Checkpoint `PMCS-V1.1-RPT1-S07-MS05-C1`، قرارداد `PMCS-RPT1-F03-SEMANTIC-001 v1.0.0` گزارش
+مدیریتی را به Snapshot رسمی و immutable Project State محدود می‌کند. پارامتر Client فقط `{}` است؛
+انتخاب Source تا cutoff و server-owned، trend چهارده‌تاریخی canonical و currency براساس Project
+revision و آخرین Approved Source است. Operational Status با Coverage/Freshness/Confidence و
+`dataStatus` یکی نمی‌شود، `isPartial` صریح می‌ماند و `Stable` سلامت کل پروژه نیست. Recalculate،
+Composite Health، AI summary و join Finance/Commercial/F04 تا F10 ممنوع‌اند. Candidate
+`e3218555a38f7ba460558e51b4db3f8bc17fcd9c` با tree
+`1fe4cc804fdd078a71ff2633201c8c690447900e` در Run 146 (`35500809115`) هر هشت Job، `355/355`
+C#، `63/63` contract، `139/139` Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix هفده‌سناریویی را می‌بندد؛ Runtime identity/source/builder،
+Renderer، Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
+
+**F03 Bounded Runtime Core — Slice 07 Micro-Step 07 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS06-C1` فقط identity/schema نسخه‌دار، Project profile pin، Application
+Contract خواندنی ProjectIntelligence، selector cutoff-aware و semantic Snapshot builder اضافه شده
+است. Unit/contract testها cutoff/tie-break، trend چهارده‌تاریخی، چهار data status، currency، partial
+scope، Attention ordering، Classification و determinism را پوشش می‌دهند. Source
+`22d5b0f91edf8d733192fae0ba946c8538c63bca` با tree
+`eb5ea4253a7b80e8ab3320b9ccea747624f89790` در Run 148 هر هشت Job، `377/377` تست C#، `64/64`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS07-C1` است و هیچ Renderer، Catalog/API/Worker wiring،
+Migration، UI یا Production enablement وارد این Micro-Step نشده است.
+
+**F03 Renderer/Golden — Slice 07 Micro-Step 08 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS07-C1` فقط Template/Renderer/Layout identity، parser/request/model
+fail-closed، PDF دوصفحه‌ای A4 فارسی و XLSX هشت‌Sheet قطعی اضافه شده است. Operational،
+Coverage/Freshness/Confidence، partial scope، Attention و trend بدون Composite Health یا truncate
+حفظ می‌شوند. Source `d9d7ddb17d222f3b53402f291bf3d0cb8a3f957f` با tree
+`58fb79b0ee3d7c9cfa11630635b8ebdfbcbce434` در Run 154 هر هشت Job، `383/383` تست C#، `65/65`
+تست Node، `139/139` تست Web، پنج browser scenario و Restore ۴۴ Migration را پاس کرد. Safe
+Checkpoint آن `PMCS-V1.1-RPT1-S07-MS08-C1` است و هیچ Catalog/API/Worker wiring، Migration، DI
+registration، UI یا Production enablement وارد این Micro-Step نشده است.
+
+**F03 Catalog/API/Worker — Slice 07 Micro-Step 09 Connected Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS08-C1`، Migration forward شمارهٔ 45، Definition/Template قطعی F03، parser
+سخت‌گیرانهٔ `{}`، Project profile pin و permission policy مستقل هر Definition اضافه شده است. Worker
+فقط از `IProjectStateReportingSource` و Runtime/Rendererهای checkpointed استفاده می‌کند و
+permission را پیش از Snapshot و Storage دوباره می‌سنجد؛ HTTP و سرویس read-only ابزارها نیز metadata
+را per-definition فیلتر می‌کنند. TestHarness با Finance Manager دارای
+`project-state.read` و فاقد `field.daily-reports.read`، جداسازی Catalog/Run و تولید/verify هر دو
+خروجی را کنترل می‌کند. Source `40afeb37d7bf90e97a988cae141901e28d336516` با tree
+`ae06285bf1a68fe2592dacc76c7d31cb291ab924` در Run 156 هر هشت Job، `387/387` تست C#، `66/66`
+تست Node، `139/139` تست Web، پنج browser scenario، هارنس `14/14`، Restore ۴۵ Migration و
+Qualification `7/7` را پاس کرد. Safe Resume اکنون `S07-MS09` و UI/Production defaults خاموش‌اند؛
+گام بعد فقط F04 است.
+
+**F04 Progress / Planned-Actual-Variance / S-Curve Semantic Contract — Slice 07 Micro-Step 10
+Safe Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS09-C1`، قرارداد
+`PMCS-RPT1-F04-SEMANTIC-001 v1.0.0` پیشرفت فیزیکی Certified را به Planning configuration، یک
+Baseline رسمیِ مؤثر و evidence تأییدشده تا cutoff محدود می‌کند. پارامتر Client فقط `{}` است؛ انتخاب
+Baseline و grid Curve server-owned، Variance دقیقاً `Actual - Planned` و Curve حداکثر ۳۶۶ نقطه است.
+MeasurementWeights بدون Schedule معتبر می‌ماند و Forecast/EVM/Composite Health یا join F05 تا F10
+ممنوع است. سه Permission خواندنی Planning و Classification کامل لازم‌اند. قرارداد همچنین صریح می‌کند
+که lifecycle/target/profile جاری برای بازسازی تاریخی کافی نیست و Runtime بعدی باید projection
+cutoff-aware بسازد. Candidate `f8829027c2ce073c207cd0e04a49c306b546c6a1` با tree
+`2b784f135894092ef55bf7c7df201b1f03e0c77f` در Run 158 (`35522512734`) هر هشت Job، `387/387`
+C#، `68/68` contract، `139/139` Web، پنج browser scenario و Restore ۴۵ Migration را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix بیست‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement هنوز پیاده نشده‌اند.
+
+**F04 Bounded Runtime Core — Slice 07 Micro-Step 11 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS10-C1` فقط identity/schema نسخه‌دار، Application Contractهای باریک و
+cutoff-aware در Planning و FieldOperations، lifecycle selector، calculator قطعی و semantic Snapshot
+builder اضافه شده است. Unit/contract testها ماتریس ۲۲سناریویی، correction/rebaseline تاریخی،
+Actual/Planned/Variance، sampling حداکثر ۳۶۶ نقطه، status/reason، Classification و determinism را
+پوشش می‌دهند. compatibility projection هر legacy history غیرقابل‌اثبات را fail-closed می‌کند. Source
+`deb1571ec66d820868e8f4b77b631471e3c8207c` با tree
+`9e41495a357480af03f1555ef640962ab863d332` و PR validation merge
+`f0d3a5550d9bd1c10d8ddd5a3c0ada24eb0fead5` دارای همان tree، در Run 163 (`35527577826`) هر هشت
+Job، `412/412` تست C# شامل `25/25` case متمرکز F04، `69/69` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `378` فایل، audit `274/204/5`، Restore ۴۵ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Renderer، Catalog/API/Worker wiring، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS11` و گام بعد فقط Renderer/Golden F04 است.
+
+**F04 Deterministic Renderer/Golden — Slice 07 Micro-Step 12 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS11-C1` فقط Template/Renderer/Layout identity، parser/request/model
+fail-closed و PDF/XLSX قطعی اضافه شده است. PDF فارسی/RTL و A4 افقی، XLSX هشت-Sheet با ZIP قطعی،
+RTL، frozen header، سلول عددی واقعی و صفر Formula، NoData بدون صفر ساختگی و budgetهای fail-closed
+دارد. Goldenهای XLSX/PDF به‌ترتیب
+`8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7` و
+`bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef` هستند. Source
+`6a717f10e4bff167ad7e2643313008f5afcc8264` با tree
+`995c7fae108bbb5265faa036f951036d36e7061e` و PR validation merge
+`782f42ff73425cf5cad69b0635bacf05790d2ff1` دارای همان tree، در Run 167 (`35532522587`) هر هشت
+Job، `418/418` تست C# شامل شش case Renderer/Golden تازه و `31/31` case متمرکز F04، `70/70` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `381` فایل، audit `274/204/5`،
+Restore ۴۵ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/API/Worker wiring،
+DI registration، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
+`S07-MS12` و گام بعد فقط wiring متصل F04 است.
+
+**F04 Catalog/API/Worker — Slice 07 Micro-Step 13 Connected Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS12-C1`، Migration forward شمارهٔ 46، Definition/Template قطعی F04، parser
+سخت‌گیرانهٔ `{}`، Project profile pin و policy چندPermissionی هر Definition اضافه شده است. Catalog،
+Runها و Outputها فقط با هر سه Permission `planning.progress.read`، `planning.baselines.read` و
+`planning.milestones.read` دیده و اجرا می‌شوند و سرویس read-only نیز همان policy را fail-closed
+اعمال می‌کند. Worker permissionها را دوباره ارزیابی، از `IProjectProgressReportingSource` و Snapshot
+builder checkpointed استفاده و PDF/XLSX را فقط از Registry نسخه‌دار F04 منتشر می‌کند. هارنس متصل
+strict parameters، isolation، create/replay/conflict، `NotConfigured` صریح و integrity/verify هر دو
+فرمت را کنترل می‌کند. Source `4c48c03aad126a594e5328fc7995a72728ba2274` با tree
+`49f957729fdccb0397dd153b93135ce2eaddd68a` و PR validation merge
+`05ca8ac7e3fa643e111b9c8511e3e08d62be60a5` دارای همان tree، در Run 169 (`35535904655`) هر هشت
+Job، `419/419` تست C#، `71/71` تست Node، `139/139` تست Web، پنج browser scenario، هارنس F04
+برابر `15/15`، validator روی `382` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification
+`7/7` را پاس کرد. Safe Resume اکنون `S07-MS13` است؛ UI/UX2 و Production defaults خاموش‌اند و گام
+بعد فقط DoR/قرارداد معنایی مستقل F05 است.
+
+**F05 Financial Position / Cash / Obligations / Aging Semantic Contract — Slice 07 Micro-Step 14
+Safe Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS13-C1`، قرارداد
+`PMCS-RPT1-F05-SEMANTIC-001 v1.0.0` Cash Position را فقط از Financial Recordهای Posted تا cutoff،
+تعهدات Approved و settlementهای immutable و Budget Baseline اختیاری می‌سازد. Cash formulaها،
+تفکیک Payable/Receivable، Aging چهار-bucketی، lifecycle مستقل Budget، status/reason و absence صفر
+ساختگی قطعی‌اند. FX، Forecast، EVM، Management Fee و join پنهان F06 ممنوع است. Client فقط `{}`
+می‌فرستد؛ چهار Permission Finance/Budget و Classification حداقل `Confidential` لازم‌اند.
+
+Candidate `72fa88349d01edd4c6455eb0af1aebfdeced8c35` با tree
+`d2722dd8fab797650ed0c9befb80df93fc0be135` و PR validation merge
+`6f1918ed1323fa3f6f14eeeaedcad8b2cf241ff7` دارای همان tree، در Run 171 (`35538654765`) هر هشت
+Job، `419/419` تست C#، `73/73` تست contract، `139/139` تست Web، پنج browser scenario، validator روی
+`382` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. این Checkpoint
+فقط DoR و Golden matrix بیست‌وپنج‌سناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS14` و گام
+بعد فقط Runtime Core محدود F05 است.
+
+**F05 Bounded Runtime Core — Slice 07 Micro-Step 15 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS14-C1`، Definition `project-financial-position-certified/1.0.0`، schemaهای
+parameter/snapshot/profile نسخه‌دار، Contract و manifest/policy نسخه‌دار Finance، selector lifecycle،
+calculator و semantic Snapshot builder اضافه شدند. انتخاب Cash فقط Posted تا cutoff، تعهد و
+settlement رسمی، Budget مؤثر، تفکیک Payable/Receivable، Aging چهار-bucketی، Classification حداقل
+`Confidential` و absence صریح پیاده شده‌اند. currency mismatch، Budget overlap، settlement
+over-allocation، completeness ناقص و history غیرقابل‌اثبات fail-closed هستند؛ هیچ current-state
+service، DbContext یا endpoint زنده‌ای از Reporting دور زده نمی‌شود.
+
+Candidate `77ad46cbac12b899116516b0a58665ae888b3bf2` با tree
+`5c67523b0fbed8d521627fe406f74271a1bbdcfe` و PR validation merge
+`5f9ad7bd2bf0cb48c5a47dbfbe29ab09afc3f92c` دارای همان tree، در Run 175 (`35541740268`) هر هشت
+Job، `450/450` تست C# شامل `31/31` case متمرکز F05، `75/75` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `390` فایل، audit `274/204/5`، Restore ۴۶ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Template/Renderer، Catalog/API/Worker، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS15` و گام بعد فقط Renderer/Golden F05 است.
+
+**F05 Deterministic Renderer/Golden — Slice 07 Micro-Step 16 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS15-C1`، Template `1.0.0`، content digest و Renderer/Layout identity نسخه‌دار،
+render model canonical و PDF/XLSX قطعی برای Snapshot موجود F05 اضافه شدند. Renderer همهٔ statusها و
+nullهای Cash/Budget/Obligation را حفظ می‌کند؛ Payable/Receivable و Aging جدا هستند، Budget negative
+remaining و consumption بالای صددرصد cap نمی‌شود و هیچ FX، Forecast، EVM، Management Fee یا join
+پنهان F06 تولید نمی‌شود. PDF فارسی/RTL دوصفحه‌ای و XLSX هشت-Sheet با ZIP deterministic، RTL، frozen
+header، عدد واقعی و صفر Formula، Goldenهای binary/visual/performance پین‌شده دارند.
+
+Candidate `9ddf7f1d96324e7ffb22d2abec83071a6c087ec2` با tree
+`f873795dcb8893dc28f88d5e5fc8292c5201e1e4` و PR validation merge
+`72ab7827731fa763828c049be953ee9ca8c128a4` دارای همان tree، در Run 178 (`35558202348`) هر هشت
+Job، `456/456` تست C# شامل شش case Renderer/Golden تازه و `37/37` case متمرکز F05، `77/77` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `393` فایل، audit `274/204/5`،
+Restore ۴۶ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/Template seed، API،
+Worker/DI wiring، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
+`S07-MS16` و گام بعد فقط wiring متصل Catalog/API/Worker F05 است.
+
+**F05 Catalog/API/Worker — Slice 07 Micro-Step 17 Connected Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS16-C1`، Migration forward شمارهٔ 47، Definition/Template ثابت
+`project-financial-position-certified/1.0.0`، strict parser برای `{}`، Project profile pin و policy
+چهار-Permissionی اضافه شدند. Catalog، Run/Retry/Cancel، Download/Verify و `IReportingReadService`
+فقط با تمام Permissionهای `financial-state.read`، `finance.records.read`،
+`finance.obligations.read` و `budget.baselines.read` Definition/Run/Output را ارائه می‌کنند. Worker
+همین مجوزها را دوباره ارزیابی، `IProjectFinancialPositionReportingSource` را با cutoff پین‌شده مصرف،
+Snapshot را با builder checkpointed تولید و فقط از Registry نسخه‌دار PDF/XLSX F05 رندر می‌کند.
+
+کاندید اولیه `f8d9078b6fc29863d9d3222f3b69b505f5b2a4ff` یک اختلاف دقت زیر-microsecond میان timestamp پین‌شده
+.NET و round-trip PostgreSQL را fail-closed آشکار کرد. اصلاح
+`6de1e9ac3b457426be5e50064d1767106cd50c39` مقایسه را به دقت ذخیره‌سازی canonical کرد و regression
+test همان boundary را pin نمود. این source با tree `a4a8e8e655c56d05da2be5d87e7b84a9bb9a7a1f` و PR
+validation merge `cbd27a673b1887b2e245bef5340eb8199f480be4` دارای همان tree، در Run 185
+(`35563055242`) هر هشت Job، `458/458` تست C# شامل `39/39` case متمرکز F05، `78/78` تست Node،
+`139/139` تست Web، پنج browser scenario، هارنس F05 برابر `15/15`، validator روی `394` فایل، audit
+`274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. UI، feature flagها، license و
+Production defaults تغییر نکرده‌اند؛ Safe Resume اکنون `S07-MS17` و گام بعد فقط DoR/قرارداد معنایی
+مستقل F06 برای قرارداد، اصلاحیه، خرید و تأمین است.
+
+**F06 Contract / Amendment / Procurement / Supply Semantic Contract — Slice 07 Micro-Step 18 Safe
+Checkpoint:** روی Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS17-C1`، قرارداد
+`PMCS-RPT1-F06-SEMANTIC-001 v1.0.0` زنجیرهٔ Contract/Amendment/Request/Order/Receipt/Service
+Acceptance را با lifecycle و cutoff رسمی تثبیت می‌کند. مبلغ/مدت مؤثر Contract، known subtotal در
+برابر total کامل، commitment تجاری Order، fulfillment مبتنی بر quantity basis پین‌شده، delivery
+status و supplier count/rate قطعی‌اند. F05/Finance join، Inventory، Invoice Matching، FX،
+RFQ/Tender، ranking و AI ممنوع است. Client فقط `{}` می‌فرستد؛ شش Permission
+Commercial/Procurement/Supply و Classification حداقل `Confidential` لازم‌اند.
+
+Candidate `4c5d026466cb3f76f351221297540a0936337335` با tree
+`d9e8febc5f220f8d00eaff80926b00dec2ea0926` و PR validation merge
+`9bfb7badcde8a67d385567db997f265a67497f0f` دارای همان tree، در Run 188 (`35567252567`) هر هشت
+Job، `458/458` تست C#، `80/80` تست contract، `139/139` تست Web، پنج browser scenario، validator
+روی `394` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. این
+Checkpoint فقط DoR و Golden matrix سی‌ودوسناریویی را می‌بندد؛ Runtime، Migration، Renderer،
+Catalog/API/Worker، UI و Production enablement پیاده نشده‌اند. Safe Resume اکنون `S07-MS18` و گام
+بعد فقط Runtime Core محدود F06 است.
+
+**F06 Bounded Runtime Core — Slice 07 Micro-Step 19 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS18-C1`، Definition
+`project-commercial-procurement-supply-certified/1.0.0`، schemaهای parameter/snapshot/profile
+نسخه‌دار، Contract و manifest/policy نسخه‌دار Commercial، selector lifecycle، calculator و semantic
+Snapshot builder اضافه شدند. lifecycleهای Contract/Amendment/Request/Order، Party snapshot و
+Item/quantity basis پین‌شده در زمان Issue، receipt/inspection/service acceptance و excess approval
+با cutoff رسمی validate می‌شوند؛ history غیرقابل‌اثبات و Source current-state/truncated fail-closed
+است.
+
+Source نهایی `177a1d89a07c23b2ae446218e98556cfbcf57a21` با tree
+`165cd1d451935f3cb94db7b9f5718678de00aca2` و PR validation merge
+`2dbaf0ba14cf80ee863e07c2561ab7392037fd7c` دارای همان tree، در Run 192 (`35573450703`) هر هشت
+Job، `490/490` تست C# شامل `32/32` case متمرکز F06، `82/82` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `402` فایل، audit `274/204/5`، Restore ۴۷ Migration و Qualification
+`7/7` را پاس کرد. هیچ Migration، Template/Renderer، Catalog/API/Worker، UI یا Production enablement
+وارد این Checkpoint نشده است؛ Safe Resume اکنون `S07-MS19` و گام بعد فقط Renderer/Golden F06 است.
+
+**F06 Deterministic Renderer/Golden — Slice 07 Micro-Step 20 Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS19-C1`، Template `1.0.0` با content digest پین‌شده، قراردادهای نسخه‌دار
+Renderer/Layout، render request/model fail-closed و PDF/XLSX قطعی برای Snapshot موجود F06 اضافه
+شدند. PDF فارسی/RTL در سه صفحهٔ A4 افقی قرارداد/اصلاحیه، خرید/سفارش/تأمین و supplier/lineage را
+نمایش می‌دهد. XLSX ده Sheet ثابت، ZIP deterministic، RTL، frozen header، عدد واقعی و صفر Formula
+دارد؛ NoData header-only است و هیچ F05 join، Inventory، FX، ranking یا truncation تولید نمی‌شود.
+
+کاندید اولیه `e8b86d8d65e2fed79acd5213586235a87ceb40fb` خطاهای compile gate را آشکار کرد؛ اصلاح
+`72933e6850bab80eb348466b2f7db446766c4668` build را سبز کرد و Run 195 فقط دو placeholder Golden
+را برای آشکارسازی digest قطعی fail کرد. Source نهایی `fb88b94d6949e7780f5f40aa567e2ea3f187a6e8`
+با tree `212c1193d249cf1120297920c59b4ea15cb80c07` و PR validation merge
+`9f8d6ce25b5ddbeec777d0e104024e9389b9a513` دارای همان tree، در Run 196 (`35582136746`) هر هشت
+Job، `496/496` تست C# شامل شش case Renderer/Golden تازه و `38/38` case متمرکز F06، `84/84` تست
+Node، `139/139` تست Web، پنج browser scenario، validator روی `405` فایل، audit `274/204/5`،
+Restore ۴۷ Migration و Qualification `7/7` را پاس کرد. هیچ Migration، Catalog/Template seed، API،
+Worker/DI wiring، UI یا Production enablement وارد این Checkpoint نشده است؛ Safe Resume اکنون
+`S07-MS20` و گام بعد فقط wiring متصل Catalog/API/Worker F06 است.
+
+**F06 Catalog/API/Worker — Slice 07 Micro-Step 21 Connected Safe Checkpoint:** روی Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS20-C1`، Migration forward شمارهٔ 48، Definition/Template ثابت، strict `{}`،
+Project profile پین‌شده، هر شش Permission definition-aware و Worker/Renderer dispatch متصل F06
+اضافه شدند. Catalog/Create/List/Get/Retry/Cancel/Download/Verify و read service fail-closed هستند؛
+Worker در processing/rendering re-authorization می‌کند و فقط Source cutoff-aware و Registry نسخه‌دار
+F06 را مصرف می‌کند. هارنس متصل `15/15` assertion را پاس کرد و Production defaults خاموش ماندند.
+
+Source نهایی `df3879dd8b17403787154a398cc114b27c7172bc` با tree
+`5483e684aaa220a32b3135ea0b2bb3b2136023be` و PR validation merge
+`0900def8f237a8d282501a8ee4ae0be5676f2fda` دارای همان tree، در Run 202 (`36235821024`) هر هشت
+Job، `497/497` تست C# شامل `39/39` case متمرکز F06، `85/85` تست Node، `139/139` تست Web، پنج
+browser scenario، validator روی `406` فایل، audit `274/204/5`، Restore ۴۸ Migration و Qualification
+`7/7` را پاس کرد. Safe Resume اکنون `S07-MS21` و گام بعد فقط DoR/قرارداد معنایی مستقل F07 برای
+دفتر فنی Document/RFI/Submittal/Transmittal است؛ Runtime/Renderer/wiring F07 و UI/Production در آن
+Micro-Step خارج از Scope می‌مانند.
+
+### `V1.1-COL1` — Project Collaboration
+
+**هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
+
+Scope:
+
+- یک Room پیش‌فرض برای هر پروژه؛
+- Membership مشتق‌شده از عضویت فعال پروژه و بدون Invite مستقل دورزننده؛
+- Permissionهای Read، Send، Upload، Edit Own، Moderate و Convert؛
+- پیام Real-time با SignalR/WebSocket و fallback/reconnect کنترل‌شده؛
+- Reply، Mention، Reaction، Pin و Search؛
+- Last-read cursor، unread count و اعلان Mention/Reply؛
+- Attachment از Shared Document Foundation؛
+- Offline queue، stable client message ID، idempotency و duplicate prevention؛
+- Edit/Delete policy با history و Audit؛
+- Retention، Legal Hold و Moderation؛
+- Commandهای صریح تبدیل پیام/فایل به Action، Issue، RFI، Daily Fact، Evidence یا Technical Document؛
+- حفظ lineage پیام، فایل، Hash، Actor و زمان در تبدیل رسمی.
+
+مرز حقیقت:
+
+- پیام Chat دادهٔ غیررسمی و زمینه‌ای است؛
+- Chat مستقیماً Finance، Progress، Schedule، Approval یا Project State را تغییر نمی‌دهد؛
+- تبدیل به رکورد رسمی Permission، Validation و Human Confirmation مستقل دارد؛
+- حذف نمایشی پیام، Audit یا رکورد رسمی مشتق‌شده را حذف نمی‌کند.
+
+خارج از Scope:
+
+- پیام خصوصی و Direct Message؛
+- تماس صوتی یا تصویری؛
+- Voice Room، Story، Status و Feed عمومی؛
+- Room عمومی خارج از Project Membership؛
+- Bot خودمختار با حق اقدام رسمی؛
+- رمزنگاری سرتاسری ناسازگار با Retention/Audit سازمانی.
+
+**Gate خروج:** تست Real-time، reconnect، ordering، duplicate، دو کاربر هم‌زمان، عضویت/تعلیق، فایل، Offline، Search، Audit و تبدیل به رکورد رسمی.
+
+### `V1.1-UX2` — Product UI Implementation and Migration
+
+**هدف:** پیاده‌سازی Design System تصویب‌شده روی تمام مسیرهای فعال V1 و قابلیت‌های V1.1.
+
+Scope:
+
+- مهاجرت Shell و تمام shared components؛
+- حذف ناهماهنگی بصری میان ماژول‌ها؛
+- دسترس‌پذیری Keyboard/Focus/Contrast؛
+- Responsive و density قابل کنترل برای داده‌های پرتراکم؛
+- طراحی اختصاصی Chat و Reporting Center؛
+- پیاده‌سازی Login نسخه‌پذیر، پروفایل شخصی و Project Duplication Wizard بر اساس Design System مصوب؛
+- Visual regression در Desktop/Tablet/Mobile؛
+- عدم تغییر Business Truth در جریان بازطراحی.
+
+**Gate خروج:** Visual QA، Accessibility، RTL/Jalali، cross-browser و عدم Regression تمام Workflowهای V1.
+
+### `V1.1-INT1` — Managerial Agent Stage 1: Intelligence Foundation
+
+**هدف:** اجرای Stage 1 از برنامهٔ هفت‌مرحله‌ای Agent مدیریتی، بدون ادعای Read-only Agent کامل.
+
+Scope:
+
+- تثبیت Bounded Context مستقل `PMCS.Intelligence`؛
+- Provider-independent Model Gateway و Provider abstraction؛
+- Session/Request/Run lifecycle و Structured Output contract؛
+- Permission-aware Tool Registry و Risk Classification؛
+- Tool invocation pipeline با Permission evaluation در هر فراخوانی؛
+- Audit، Correlation، Model/Prompt/Policy version و safe failure؛
+- Cost/latency/usage telemetry بدون ثبت Secret یا Payload حساس؛
+- ابزارهای Reference read-only برای Report Catalog، Report Status و Collaboration context مجاز؛
+- negative-boundary tests برای SQL/DB، privilege escalation و cross-project access.
+
+**Non-Scope V1.1:** Stage 2 Read-only Agent، RAG، Executive Intelligence UI تولیدی، Draft Action، Controlled Write و `@PMCS` عمومی در Chat. این قابلیت‌ها فقط با Gateهای Stageهای بعدی فعال می‌شوند.
+
+**Gate خروج:** Provider swap contract، Tool/Permission isolation، Audit lineage، safe failure و منع DB/SQL مستقیم به‌طور مستقل اثبات شوند.
+
+### `V1.1-QA1` — Qualification and Baseline Lock
+
+**هدف:** بستن نسخه با Evidence، نه صرفاً سبزشدن Build.
+
+Suiteهای الزامی افزوده بر قرارداد V1:
+
+- Module/Manifest/Compatibility contract؛
+- Permission matrix قابلیت‌های جدید؛
+- Document security و malware/quarantine adapter contract؛
+- Login descriptor/asset rollback، Member Profile privacy و image-security؛
+- Project Bootstrap preview/execute، membership permission و operational-data non-copy contract؛
+- Collaboration real-time/offline/concurrency؛
+- Reporting determinism، print visual regression و export integrity؛
+- UI visual/accessibility/responsive؛
+- Agent Tool negative-boundary tests؛
+- Migration از V1 Baseline و rollback/restore rehearsal؛
+- Load/soak متناسب با Pilot و failure recovery؛
+- Full Regression تمام قابلیت‌های V1.
+
+ترتیب وضعیت:
+
+`Planned → Architecture Approved → In Development → Feature Complete → Release Candidate → Qualified → Final → Baseline Locked`
+
+هیچ وضعیت بعدی بدون Evidence وضعیت قبلی مجاز نیست.
+
+## ۵.۱. برنامهٔ هفت‌مرحله‌ای Agent مدیریتی
+
+برنامهٔ Agent یک Track مستقل و لازم‌الاجرا است و مرجع تفصیلی آن در `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` قرار دارد.
+
+| Stage | عنوان قطعی | Release mapping فعلی | وضعیت |
+| --- | --- | --- | --- |
+| 1 | Intelligence Foundation | `V1.1-INT1` | Planned |
+| 2 | Read-Only Project Intelligence Agent | V1.2 Intelligence Track | Planned |
+| 3 | Knowledge / RAG / Evidence / Citations | V1.2 Intelligence Track | Planned |
+| 4 | Executive Intelligence UI | V1.2 Intelligence Track + Visual Excellence | Planned |
+| 5 | Draft Actions | V1.2 Intelligence Track | Planned |
+| 6 | Controlled Actions + Permission + Human Approval | V1.2 Intelligence Track | Planned |
+| 7 | Evaluation / QA / Security / Hardening | V1.2 Qualification Track | Planned |
+
+هیچ Stage با Stage بعدی ادغام یا با عنوان کلی «Agent integration» بسته نمی‌شود. هر Stage Definition of Ready، Gate خروج، Checkpoint Snapshot و Regression مستقل دارد.
+
+## ۶. Roadmap PMCS V1.2
+
+V1.2 فقط پس از قفل Baseline V1.1 آغاز می‌شود.
+
+### Reporting Phase 2
+
+- Report Builder کنترل‌شده برای انتخاب ستون، Filter، Group، Pivot و Chart؛
+- Saved View و Template Workflow شامل Draft/Review/Publish/Retire؛
+- Scheduled Report، Subscription و Delivery policy؛
+- Executive Pack چندگزارشی و مقایسه دوره‌ای؛
+- Word output فقط در صورت تعریف Use Case رسمی و تست Fidelity؛
+- External analytics adapter فقط Read-only و Permission-scoped.
+
+### Collaboration Phase 2
+
+- Topic Channelهای پروژه با Policy؛
+- Thread و Search پیشرفته؛
+- Retention policy قابل تنظیم و Legal Hold UI؛
+- Digest و summary؛
+- بدون DM، Voice یا Video.
+
+### Intelligence Integration Phase 2
+
+V1.2 باید Stageهای 2 تا 7 برنامهٔ Agent مدیریتی را دقیقاً به‌ترتیب و با Gate مستقل اجرا کند:
+
+1. Read-only Project Intelligence؛
+2. Knowledge/RAG/Evidence/Citations؛
+3. Executive Intelligence UI؛
+4. Draft Actions؛
+5. Controlled Actions + Human Approval؛
+6. Evaluation/QA/Security/Hardening.
+
+`@PMCS` فقط پس از Gateهای Stage 2، 3 و 4 به‌عنوان Interface کنترل‌شده در Room پروژه فعال می‌شود. Chat فقط Entry Point است؛ Executive Intelligence Center رابط اصلی باقی می‌ماند. ساخت Draft به Stage 5 و هر عملیات رسمی به Stage 6 محدود است. کل Agent فقط پس از Stage 7 Qualified محسوب می‌شود.
+
+## ۷. Roadmap ماژول‌های PMCS V2.x
+
+هر ردیف زیر یک Program Increment مستقل با ADR، Permission Catalog، Data Contract، Test Contract و Baseline جدا است.
+
+| Increment | دامنه | قاعدهٔ کلیدی |
+| --- | --- | --- |
+| `V2.0` | PMO / Portfolio / Program Governance | تجمیع از Snapshot/Event ماژول‌ها؛ بدون Join مستقیم Persistence |
+| `V2.1` | PMBOK / Process Governance | Template و Process Versioning؛ نه Hard-code کردن تمام سازمان |
+| `V2.2` | Economic Feasibility | NPV/IRR/Cash Flow/Sensitivity قطعی؛ AI فقط توضیح و سناریو |
+| `V2.3` | PMCS Quantify / BOQ / Estimate | Geometry/Quantity/Rate/Assembly قطعی، Evidence و Review مترور؛ بدون هزینهٔ لایسنس اجباری |
+| `V2.4` | Scheduling / MSP Integration | CPM/Calendar/Logic قطعی، Import/Export نسخه‌دار و Validation |
+| `V2.5` | Specialist Domain Agents | Agentهای تخصصی PMO/Feasibility/Quantify/Scheduling روی Orchestrator مدیریتی Qualified؛ نه جایگزین هفت Stage Agent اصلی |
+
+ترتیب دقیق V2.x پس از دادهٔ Pilot و Discovery رسمی قابل بازاولویت‌بندی است؛ مرزهای معماری و Baseline آن قابل حذف نیست.
+
+## ۸. Definition of Ready برای هر Checkpoint
+
+قبل از کدنویسی هر Checkpoint باید موارد زیر ثبت شده باشند:
+
+1. Scope و Non-Scope؛
+2. Parent Baseline و Start Commit دقیق؛
+3. ADR و مالک Bounded Context؛
+4. Permission و Classification؛
+5. API/Event/Data/Migration contract؛
+6. Offline و conflict semantics؛
+7. UX stateها و Prototype در قابلیت‌های UI؛
+8. Threat/Privacy/Retention assessment؛
+9. Test matrix و negative cases؛
+10. Rollout، rollback و observability plan؛
+11. Acceptance criteria قابل‌اندازه‌گیری؛
+12. اثر بر قابلیت‌های V1 و Regression scope.
+
+## ۹. Definition of Done برای هر Checkpoint
+
+- Scope مصوب کامل و Non-Scope دست‌نخورده است؛
+- Unit/Domain/Contract/Integration/UI تست‌های مرتبط سبز هستند؛
+- Permission، Tenant و Project isolation تست منفی دارند؛
+- Audit/Outbox/Idempotency/Correlation در عملیات لازم اثبات شده‌اند؛
+- Migration از Baseline قبلی و Backup/Restore بررسی شده است؛
+- RTL/Jalali/Responsive/Offline در صورت ارتباط کنترل شده‌اند؛
+- Documentation، API contract و Runbook همگام‌اند؛
+- Commit شروع و پایان، CI Run و Artifact digest ثبت شده‌اند؛
+- Known limitation و Risk باقیمانده صریح است؛
+- Checkpoint Snapshot ثبت می‌شود، اما تا Qualification کامل «Locked Product Baseline» نامیده نمی‌شود.
+
+## ۱۰. ترتیب اجرایی و Dependency Map
+
+```text
+V1 Locked Baseline
+  → G0 Governance
+  → UX1 Visual Excellence Direction
+  → EXT1 Extensibility
+  → DOC1 Shared Documents
+  → IAM1 Login/Profile ───────────────┐
+  → PRJ1 Project Bootstrap ───────────┤
+  → RPT1 Reporting Core ──────────────┼→ UX2 Product UI → INT1 Agent Stage 1 → QA1 Qualification → V1.1 Locked
+  → COL1 Collaboration ───────────────┘
+  → V1.2 Agent Stages 2–7 + Advanced Reporting/Collaboration
+  → V2.x Domain Modules and Specialist Agents
+```
+
+IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و DOC1 می‌توانند در شاخه‌های کاری مستقل توسعه یابند، اما ادغام آن‌ها فقط روی Integration Baseline مشترک و پس از Contract Test مجاز است.
+
+## ۱۱. ریسک‌های اصلی و کنترل آن‌ها
+
+| ریسک | کنترل الزامی |
+| --- | --- |
+| تبدیل Modular Monolith به وابستگی درهم | Manifest، contract، architecture guard و منع Persistence reference |
+| تبدیل Chat به منبع تصمیم رسمی | Convert command، human confirmation، lineage و audit |
+| نشت فایل یا پیام بین پروژه‌ها | Tenant/Project isolation و negative permission tests |
+| گزارش زیبا ولی عدد نادرست | Semantic read model قطعی، as-of، snapshot، hash و golden test |
+| بزرگ‌شدن بی‌مهار Report Builder | Phase 1 استاندارد؛ Designer پیشرفته فقط در V1.2 |
+| بازطراحی ظاهری با Regression عملیاتی | migration موجی، E2E و visual regression |
+| تقلیل «حرفه‌ای‌سازی ظاهر» به تغییر رنگ و CSS | Visual Excellence Program، prototype gate و مهاجرت تمام سطوح محصول |
+| تزریق کد یا Asset ناسالم از تنظیمات Login | Schema بسته، Asset validation/quarantine، CSP، versioning و rollback |
+| نشت اطلاعات پروفایل یا تصویر عضو | Tenant boundary، field-level permission، private object storage و privacy tests |
+| انتقال اشتباه دسترسی یا دادهٔ محرمانه در Duplicate پروژه | Preview، allowlist صریح Clone contract، cross-tenant denial، Draft target و operational-data non-copy tests |
+| فشرده‌شدن هفت Stage Agent و حذف Gateها | Roadmap مستقل A1–A7 و Checkpoint/Evidence جدا برای هر Stage |
+| Agent دارای قدرت بیش از کاربر | Tool permission per call، risk class و human approval |
+| توسعهٔ مبهم بدون نقطه بازگشت | Version/Baseline policy و checkpoint manifest |
+
+## ۱۲. معیار تصمیم‌گیری حرفه‌ای
+
+هر درخواست جدید قبل از ورود به Roadmap یکی از وضعیت‌های زیر را می‌گیرد:
+
+- **تأیید:** ارزش محصول روشن، سازگار با معماری و دارای Scope قابل کنترل؛
+- **تأیید مشروط:** مفید است اما نیازمند پیش‌نیاز، محدودسازی یا انتقال به نسخهٔ بعد؛
+- **رد:** ناسازگار با هدف PMCS، پرریسک، تکراری یا دارای هزینهٔ بیشتر از ارزش واقعی.
+
+موافقت مالک محصول به‌تنهایی جایگزین Architecture، Security و Qualification Gate نیست؛ همان‌طور که مخالفت فنی نیز باید با دلیل و شواهد ثبت شود.
+
+## ۱۳. تاریخچه نسخه سند
+
+| نسخه | تغییر |
+| --- | --- |
+| `1.0.0` | ایجاد Roadmap Post-V1، Collaboration، Reporting، Extensibility و Baseline governance |
+| `1.1.0` | بازیابی و ثبت مستقل هفت Stage Agent مدیریتی و ایجاد Visual Excellence Program سراسری |
+| `1.2.0` | تصویب مسیر «مدیریت ممتاز»، Login قابل پیکربندی، پروفایل شخصی عضو و Project Bootstrap/Duplication کنترل‌شده |
+| `1.6.0` | ثبت Evidence قطعی IAM1 و فعال‌سازی PRJ1 پس از سبزشدن هشت Job CI |
+| `1.7.0` | ثبت Evidence قطعی PRJ1 و فعال‌سازی RPT1 پس از سبزشدن هشت Job CI |
+| `1.8.0` | ثبت ممیزی تداوم و Definition of Ready مرحله RPT1؛ بدون تغییر Runtime |
+| `1.9.0` | ثبت Source Candidate اولین Slice هسته RPT1؛ بدون ادعای Qualification |
+| `1.10.0` | ثبت Source Candidate دوم RPT1 برای Generated Document، PDF/XLSX، Download/Verify و هارنس متصل؛ Gate خروج همچنان باز |
+| `1.11.0` | ثبت Evidence متصل Run 99 برای Build، PostgreSQL/Object Storage، Restore ۴۳ Migration و Full CI؛ Gateهای توسعه‌یافته RPT1 همچنان باز |
+| `1.12.0` | ثبت Qualification Slice سوم RPT1 برای Cancel، revocation پس از success، tenant isolation و tamper fail-closed؛ Gate خروج همچنان باز |
+| `1.13.0` | ثبت Qualification Slice چهارم RPT1 برای دو Worker، `SKIP LOCKED`، stale lease و crash-before/after-storage؛ Gate خروج همچنان باز |
+| `1.14.0` | ثبت Qualification Slice پنجم RPT1 برای worker-time revocation، object-byte/missing/malformed integrity و orphan inventory؛ Gate خروج همچنان باز |
+| `1.15.0` | ثبت Safe Checkpoint `S06-MS01` برای Core ظرفیت، timeout، retry exhaustion، fairness، telemetry و health؛ Qualification متصل load/poison/fairness در `MS02` باز است |
+| `1.16.0` | ثبت Safe Checkpoint متصل `S06-MS02` برای ۲۰ Run سالم + poison، P95 و fairness دو پروژه/دو Worker؛ Operational Observability در `MS03` باز است |
+| `1.17.0` | ثبت Safe Checkpoint میانی `S06-MS03-C1` برای قرارداد کم‌کاردینالیتی Meter و readiness متصل queue-age؛ exporter/scrape/alert delivery در `MS03-C2` باز است |
+| `1.18.0` | ثبت Safe Checkpoint نهایی `S06-MS03-C2` برای OTLP، scrape، سه alert rule و delivery متصل queue-age؛ MS03 بسته و remediation orphan/Golden/PDF/UI باز است |
+| `1.19.0` | ثبت Safe Checkpoint `S06-MS04` برای inventory/dry-run و remediation امن orphan با retention، legal hold، Audit و idempotency؛ MS04 بسته و Golden/PDF/UI باز است |
+| `1.20.0` | ثبت Safe Checkpoint `S06-MS05` برای Golden معنایی cutoff و XLSX deterministic با replay، OpenXML و SQL مستقل؛ MS05 بسته و PDF/UI باز است |
+| `1.21.0` | ثبت Safe Checkpoint `S06-MS06` برای تصمیم Community، pin image/font و PDF Golden/visual/performance؛ MS06 بسته و اختلاف کاتالوگ پیش از بستن RPT1 باز است |
+| `1.22.0` | ثبت ADR 0031 و تصمیم صریح حفظ Scope ده‌گانه RPT1؛ F02 تا F10 با Micro-Slice مستقل الزامی‌اند و RPT1 فعال می‌ماند |
+| `1.23.0` | ثبت Safe Checkpoint `S07-MS01` و Evidence سبز Run 135 برای تصمیم حفظ کاتالوگ ده‌گانه؛ F02 تا F10 همچنان بازند |
+| `1.24.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F02 برای گزارش هفتگی و ماهانه؛ Runtime/Renderer هنوز پیاده نشده‌اند |
+| `1.25.0` | ثبت Safe Checkpoint `S07-MS02` و Evidence سبز Run 137 برای قرارداد معنایی F02؛ Runtime/Renderer باز است |
+| `1.26.0` | ثبت Candidate محدود Runtime Core F02 برای identity/source/resolver/Snapshot و Unit/contract؛ API/Renderer و Qualification متصل باز است |
+| `1.27.0` | ثبت Safe Checkpoint `S07-MS03` و Evidence سبز Run 139 برای Runtime Core F02؛ Renderer/Golden و wiring متصل باز است |
+| `1.28.0` | ثبت Candidate محدود `S07-MS04` برای قرارداد Renderer و Golden قطعی PDF/XLSX خانواده F02؛ Catalog/API/Worker wiring و Full CI باز است |
+| `1.29.0` | ثبت Safe Checkpoint `S07-MS04` و Evidence سبز Run 141 برای Renderer/Golden خانواده F02؛ Catalog/API/Worker wiring باز است |
+| `1.30.0` | ثبت Source Candidate محدود `S07-MS05` برای Migration/Catalog/API/Worker و QA متصل F02؛ Full CI و Safe Checkpoint باز است |
+| `1.31.0` | ثبت Safe Checkpoint `S07-MS05` و Evidence سبز Run 144 برای اتصال Catalog/API/Worker خانواده F02؛ F03 تا F10/UI/Production باز است |
+| `1.32.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F03 برای Executive Project State رسمی، cutoff-aware و بدون Composite Health؛ Runtime هنوز پیاده نشده است |
+| `1.33.0` | ثبت Safe Checkpoint `S07-MS06` و Evidence سبز Run 146 برای قرارداد معنایی F03؛ Runtime/Renderer/wiring باز است |
+| `1.34.0` | ثبت Candidate محدود `S07-MS07` برای Runtime Core F03؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.35.0` | ثبت Safe Checkpoint `S07-MS07` و Evidence سبز Run 148 برای Runtime Core F03؛ Renderer/Golden و wiring متصل باز است |
+| `1.36.0` | ثبت Candidate محدود `S07-MS08` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F03؛ wiring و Full CI باز است |
+| `1.37.0` | ثبت Safe Checkpoint `S07-MS08` و Evidence سبز Run 154 برای Renderer/Golden خانواده F03؛ Catalog/API/Worker wiring باز است |
+| `1.38.0` | ثبت Connected Candidate `S07-MS09` برای Migration/Catalog، strict API، permissionهای definition-aware، Worker dispatch و QA متصل F03؛ Full CI و Safe Checkpoint باز است |
+| `1.39.0` | ثبت Safe Checkpoint `S07-MS09` و Evidence سبز Run 156 برای اتصال End-to-End خانواده F03؛ F04 تا F10/UI/Production باز است |
+| `1.40.0` | ثبت Candidate قرارداد معنایی/DoR خانواده F04 برای Baseline رسمی، Actual/Planned/Variance و S-Curve cutoff-aware؛ Runtime هنوز پیاده نشده است |
+| `1.41.0` | ثبت Safe Checkpoint `S07-MS10` و Evidence سبز Run 158 برای قرارداد معنایی F04؛ Runtime/Renderer/wiring باز است |
+| `1.42.0` | ثبت Candidate محدود `S07-MS11` برای Runtime Core F04؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.43.0` | ثبت Safe Checkpoint `S07-MS11` و Evidence سبز Run 163 برای Runtime Core F04؛ Renderer/Golden و wiring باز است |
+| `1.44.0` | ثبت Candidate محدود `S07-MS12` برای Renderer contract و Golden قطعی PDF/XLSX خانواده F04؛ wiring و Full CI باز است |
+| `1.45.0` | ثبت Safe Checkpoint `S07-MS12` و Evidence سبز Run 167 برای Renderer/Golden خانواده F04؛ Catalog/API/Worker wiring باز است |
+| `1.46.0` | ثبت Safe Checkpoint `S07-MS13` و Evidence سبز Run 169 برای اتصال End-to-End Catalog/API/Worker خانواده F04؛ F05–F10/UI/Production باز است |
+| `1.47.0` | ثبت Safe Checkpoint `S07-MS14` و Evidence سبز Run 171 برای قرارداد معنایی F05؛ Runtime/Renderer/wiring و F06–F10/UI/Production باز است |
+| `1.48.0` | ثبت Candidate محدود `S07-MS15` برای Runtime Core F05؛ Full CI/Checkpoint و Renderer/wiring باز است |
+| `1.49.0` | ثبت Safe Checkpoint `S07-MS15` و Evidence سبز Run 175 برای Runtime Core F05؛ Renderer/Golden و wiring و F06–F10/UI/Production باز است |
+| `1.50.0` | ثبت Safe Checkpoint `S07-MS16` و Evidence سبز Run 178 برای Renderer/Golden قطعی F05؛ Catalog/API/Worker wiring و F06–F10/UI/Production باز است |
+| `1.51.0` | ثبت Connected Safe Checkpoint `S07-MS17` و Evidence سبز Run 185 برای اتصال End-to-End Catalog/API/Worker خانواده F05؛ F06–F10/UI/Production باز است |
+| `1.52.0` | ثبت Safe Checkpoint `S07-MS18` و Evidence سبز Run 188 برای قرارداد معنایی F06؛ Runtime/Renderer/wiring و F07–F10/UI/Production باز است |
+| `1.53.0` | ثبت Safe Checkpoint `S07-MS19` و Evidence سبز Run 192 برای Runtime Core F06؛ Renderer/Golden و wiring و F07–F10/UI/Production باز است |
+| `1.54.0` | ثبت Safe Checkpoint `S07-MS20` و Evidence سبز Run 196 برای Renderer/Golden قطعی F06؛ Catalog/API/Worker wiring و F07–F10/UI/Production باز است |
+| `1.55.0` | ثبت Connected Safe Checkpoint `S07-MS21` و Evidence سبز Run 202 برای اتصال End-to-End Catalog/API/Worker خانواده F06؛ F07–F10/UI/Production باز است |

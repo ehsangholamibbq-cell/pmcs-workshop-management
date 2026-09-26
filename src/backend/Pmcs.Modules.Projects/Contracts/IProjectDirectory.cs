@@ -36,7 +36,11 @@ public sealed record ProjectControlProfile(
     ProjectFeatureState Hse,
     ProjectFeatureState Finance,
     ProjectFeatureState Procurement,
-    ProjectCalendarProfile Calendar);
+    ProjectCalendarProfile Calendar,
+    long ConfigurationVersion = 0,
+    TimeOnly? DailyCutoffLocalTime = null,
+    ReportingFrequency ReportingFrequency = ReportingFrequency.NotConfigured,
+    DailyReportWorkflow DailyReportWorkflow = DailyReportWorkflow.NotConfigured);
 
 public sealed record ProjectCalendarProfile(
     ProjectCalendarConfigurationState State,

@@ -14,6 +14,12 @@ public interface IApprovedDailyFactSource
         Guid projectId,
         CancellationToken cancellationToken = default);
 
+    Task<DateTimeOffset?> GetLatestApprovedChangeAtAsync(
+        Guid tenantId,
+        Guid projectId,
+        DateTimeOffset asOfUtc,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<Guid, DateTimeOffset>> GetLatestApprovedChangesAsync(
         Guid tenantId,
         IReadOnlyCollection<Guid> projectIds,

@@ -12,6 +12,9 @@ namespace Pmcs.Domain.Tests;
 
 public sealed class InfrastructureBoundaryTests
 {
+    private static readonly string[] PublicHealthDataKeys =
+        ["activeRuns", "heartbeatAgeSeconds", "oldestQueueAgeSeconds", "queuedRuns"];
+
     [Theory]
     [InlineData("abc-123_DEF.xyz", true)]
     [InlineData("contains a space", false)]
@@ -26,6 +29,74 @@ public sealed class InfrastructureBoundaryTests
     public void CorrelationIdValidationRejectsMoreThanSixtyFourCharacters()
     {
         Assert.False(CorrelationIdMiddleware.IsValid(new string('a', 65)));
+    }
+
+    [Fact]
+    public void PublicHealthDataAllowsOnlyBoundedOperationalNumbers()
+    {
+        var source = new Dictionary<string, object>
+        {
+            ["queuedRuns"] = 4L,
+            ["oldestQueueAgeSeconds"] = 42.5d,
+            ["heartbeatAgeSeconds"] = 1.25d,
+            ["activeRuns"] = 0,
+            ["tenantId"] = Guid.NewGuid().ToString(),
+            ["projectId"] = Guid.NewGuid(),
+            ["diagnostic"] = "reporting.run.timeout",
+            ["queuedRunsUnsafe"] = "4"
+        };
+        var selected = HealthResponseWriter.SelectPublicData("reporting-worker", source);
+
+        Assert.Equal(PublicHealthDataKeys, selected.Keys.ToArray());
+        Assert.DoesNotContain("tenantId", selected.Keys);
+        Assert.DoesNotContain("projectId", selected.Keys);
+        Assert.DoesNotContain("diagnostic", selected.Keys);
+        Assert.IsType<long>(selected["queuedRuns"]);
+        Assert.Empty(HealthResponseWriter.SelectPublicData("database", source));
+    }
+
+    [Fact]
+    public void OperationalMetricsExporterIsDisabledWithoutACollectorEndpoint()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+
+        Assert.Null(OperationalMetricsConfiguration.ResolveEndpoint(configuration));
+    }
+
+    [Theory]
+    [InlineData("collector:4317")]
+    [InlineData("ftp://collector.internal/metrics")]
+    [InlineData("https://operator:secret@collector.internal:4317")]
+    [InlineData("https://collector.internal:4317?tenant=one")]
+    [InlineData("https://collector.internal:4317#metrics")]
+    public void OperationalMetricsExporterRejectsAmbiguousOrSecretBearingEndpoints(string endpoint)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [OperationalMetricsConfiguration.EndpointKey] = endpoint
+            })
+            .Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            OperationalMetricsConfiguration.ResolveEndpoint(configuration));
+
+        Assert.Contains(OperationalMetricsConfiguration.EndpointKey, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("http://127.0.0.1:4317")]
+    [InlineData("https://collector.internal:4317")]
+    public void OperationalMetricsExporterAcceptsExplicitCollectorTransport(string endpoint)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [OperationalMetricsConfiguration.EndpointKey] = endpoint
+            })
+            .Build();
+
+        Assert.Equal(new Uri(endpoint), OperationalMetricsConfiguration.ResolveEndpoint(configuration));
     }
 
     [Fact]
@@ -205,6 +276,14 @@ public sealed class InfrastructureBoundaryTests
         Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.view"));
         Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.generate"));
         Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "insights.review"));
+    }
+
+    [Fact]
+    public void PlatformModuleCatalogUsesCentralTenantPermissions()
+    {
+        Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "platform.modules.read"));
+        Assert.False(ProjectPermissionService.GrantsTenant(TenantRole.PortfolioViewer, "platform.modules.manage"));
+        Assert.True(ProjectPermissionService.GrantsTenant(TenantRole.TenantAdministrator, "platform.modules.manage"));
     }
 
     [Theory]

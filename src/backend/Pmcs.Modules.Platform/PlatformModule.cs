@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.Modules.Platform.Endpoints;
 using Pmcs.Modules.Platform.Migrations;
 using Pmcs.Modules.Platform.Persistence;
 using Pmcs.Modules.Platform.Services;
@@ -16,6 +17,59 @@ namespace Pmcs.Modules.Platform;
 public sealed class PlatformModule : IModule
 {
     public string Name => "Platform";
+
+    public ModuleDescriptor Descriptor { get; } = new(
+        ModuleManifestSchemas.VersionOne,
+        "platform.foundation",
+        "PMCS Platform Foundation",
+        "1.1.0",
+        [
+            "platform.module-catalog",
+            "platform.navigation-manifest",
+            "platform.agent-tool-manifest",
+            "platform.integration-event-manifest"
+        ],
+        [],
+        "platform",
+        "1.1.0",
+        false,
+        [
+            new PermissionManifest(
+                "platform.modules.read",
+                PermissionScope.Tenant,
+                ManifestRiskClass.Low,
+                "Read validated module, navigation, event and tool contracts."),
+            new PermissionManifest(
+                "platform.modules.manage",
+                PermissionScope.Tenant,
+                ManifestRiskClass.High,
+                "Manage platform module activation and compatibility settings.")
+        ],
+        [
+            new NavigationManifest(
+                "platform.modules",
+                "/admin/platform/modules",
+                "ماژول‌های سامانه",
+                "platform.modules.read",
+                "platform.module-catalog",
+                9_000)
+        ],
+        [
+            new ToolManifest(
+                "platform.modules.describe",
+                "Returns the validated descriptor for a registered PMCS module.",
+                """{"type":"object","properties":{"moduleId":{"type":"string"}},"required":["moduleId"],"additionalProperties":false}""",
+                """{"type":"object","required":["schemaVersion","moduleId","version"],"additionalProperties":true}""",
+                "platform.modules.read",
+                ManifestRiskClass.Low,
+                ToolAccessMode.ReadOnly)
+        ],
+        [
+            new IntegrationEventManifest(
+                "platform.module-catalog.snapshot",
+                1,
+                IntegrationEventClassification.Internal)
+        ]);
 
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -38,6 +92,7 @@ public sealed class PlatformModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapPlatformModuleEndpoints();
         endpoints.MapGet("/api/v1/foundation", () => Results.Ok(new
         {
             service = "PMCS API",

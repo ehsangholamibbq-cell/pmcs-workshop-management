@@ -11,16 +11,20 @@
     <ProjectReference Include="../Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Documents/Pmcs.Modules.Documents.csproj" />
     <ProjectReference Include="../Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
     <ProjectReference Include="../Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <ProjectReference Include="../Pmcs.Modules.WorkManagement/Pmcs.Modules.WorkManagement.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.Reporting/Pmcs.Modules.Reporting.csproj" />
     <ProjectReference Include="../Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
 </Project>

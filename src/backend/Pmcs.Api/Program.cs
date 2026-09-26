@@ -17,6 +17,7 @@ using Pmcs.Modules.Platform;
 using Pmcs.Modules.ProjectIntelligence;
 using Pmcs.Modules.Projects;
 using Pmcs.Modules.Evidence;
+using Pmcs.Modules.Documents;
 using Pmcs.Modules.ActionControl;
 using Pmcs.Modules.Finance;
 using Pmcs.Modules.Commercial;
@@ -27,6 +28,7 @@ using Pmcs.Modules.QualitySafety;
 using Pmcs.Modules.Sync;
 using Pmcs.Modules.WorkManagement;
 using Pmcs.Modules.QualityAssurance;
+using Pmcs.Modules.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 var releaseIdentity = ReleaseIdentity.FromAssembly(typeof(Program).Assembly);
@@ -37,6 +39,7 @@ var qaRuntime = QualityAssuranceRuntimeOptions.Create(
     releaseIdentity.Version,
     releaseIdentity.BuiltAt);
 ProductionConfigurationValidator.Validate(builder.Environment, builder.Configuration, releaseIdentity);
+OperationalMetricsConfiguration.Configure(builder.Services, builder.Configuration, releaseIdentity);
 
 const string authenticationScheme = "Pmcs";
 const long maximumRequestBodySize = 30L * 1024L * 1024L;
@@ -61,6 +64,7 @@ IModule[] modules =
     new PlanningModule(),
     new TechnicalOfficeModule(),
     new EvidenceModule(),
+    new DocumentsModule(),
     new ActionControlModule(),
     new CommercialModule(),
     new FinanceModule(),
@@ -68,13 +72,16 @@ IModule[] modules =
     new ProjectIntelligenceModule(),
     new IntelligenceModule(),
     new WorkManagementModule(),
+    new ReportingModule(),
     new QualityAssuranceModule()
 ];
+var moduleCatalog = ModuleCatalog.Create(modules.Select(module => module.Descriptor));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(qaRuntime);
+builder.Services.AddSingleton<IModuleCatalog>(moduleCatalog);
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services
     .AddAuthentication(options =>

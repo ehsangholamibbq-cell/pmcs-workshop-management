@@ -121,6 +121,34 @@ assert.match(platformStore, /record\.ExpiresAt <= clock\.UtcNow/);
 assert.match(platformStore, /on conflict \(tenant_id, key, operation\) do update/);
 assert.match(transactionalEffects, /on conflict \(tenant_id, key, operation\) do update/);
 
+const bootstrapEndpoints = readFileSync(
+  join(backendRoot, "Pmcs.Modules.Projects/Endpoints/ProjectBootstrapEndpoints.cs"),
+  "utf8",
+);
+const bootstrapCatalog = readFileSync(
+  join(backendRoot, "Pmcs.Modules.Projects/Services/ProjectBootstrapContributorCatalog.cs"),
+  "utf8",
+);
+const membershipBootstrap = readFileSync(
+  join(backendRoot, "Pmcs.Modules.IdentityAccess/Services/ProjectMembershipBootstrapService.cs"),
+  "utf8",
+);
+const bootstrapWizard = readFileSync(
+  join(root, "src/web/components/project-bootstrap-wizard.tsx"),
+  "utf8",
+);
+assert.match(bootstrapEndpoints, /projects\.bootstrap\.completed\.v1/);
+assert.match(bootstrapEndpoints, /EnsurePreviewUsable\(request\.PreviewDigest/);
+assert.match(bootstrapEndpoints, /target\.Status != ProjectStatus\.Draft/);
+assert.match(bootstrapEndpoints, /operational-data-excluded/);
+assert.match(bootstrapCatalog, /AlwaysExcluded/);
+assert.match(bootstrapCatalog, /identity\.project-memberships/);
+assert.match(membershipBootstrap, /ProjectMembership\.Assign/);
+assert.doesNotMatch(membershipBootstrap, /UserAccount\.Create/);
+assert.match(bootstrapWizard, /window\.localStorage/);
+assert.match(bootstrapWizard, /window\.navigator\.onLine/);
+assert.match(bootstrapWizard, /preview\.summary\.blocked/);
+
 const operationStore = readFileSync(join(root, "src/web/lib/operation-store.ts"), "utf8");
 const syncClient = readFileSync(join(root, "src/web/lib/sync-client.ts"), "utf8");
 const syncRecovery = readFileSync(join(root, "src/web/lib/sync-recovery.ts"), "utf8");

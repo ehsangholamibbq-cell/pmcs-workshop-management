@@ -279,7 +279,9 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <a className="nav-item" href="#governance">ریسک و تصمیم</a>
           <a className="nav-item" href="#advisory">تحلیل مشورتی</a>
           <a className="nav-item" href="#setup">تنظیمات پروژه</a>
+          <a className="nav-item" href="/profile">پروفایل من</a>
           {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</a>}
+          {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</a>}
         </nav>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />

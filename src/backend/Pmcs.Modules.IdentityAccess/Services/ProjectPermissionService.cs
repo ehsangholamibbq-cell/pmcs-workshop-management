@@ -16,13 +16,21 @@ internal sealed class ProjectPermissionService(
         {
             "identity.manage",
             "identity.users.manage",
+            "login-experience.manage",
+            "member-profile.manage-directory",
             "projects.create",
             "projects.activate",
+            "projects.bootstrap.preview",
+            "projects.bootstrap.create",
+            "projects.bootstrap.members_copy",
+            "projects.bootstrap.activate",
             "projects.locations.manage",
             "projects.calendar.configure",
             "projects.setup.configure",
             "projects.setup.configure-sensitive",
-            "sync.devices.manage"
+            "reporting.template.publish",
+            "sync.devices.manage",
+            "documents.quarantine.release"
         };
 
     private static readonly HashSet<string> OperationalRoles =
@@ -56,6 +64,8 @@ internal sealed class ProjectPermissionService(
                 "technical.rfis.submit",
                 "evidence.read",
                 "evidence.upload",
+                "documents.read",
+                "documents.upload",
                 "actions.read",
                 "actions.update",
                 "governance.read",
@@ -99,6 +109,7 @@ internal sealed class ProjectPermissionService(
                 "planning.milestones.read",
                 "technical.read",
                 "evidence.read",
+                "documents.read",
                 "actions.read",
                 "governance.read",
                 "quality.read",
@@ -143,6 +154,9 @@ internal sealed class ProjectPermissionService(
                 "technical.submittals.close",
                 "evidence.read",
                 "evidence.upload",
+                "documents.read",
+                "documents.upload",
+                "documents.classify",
                 "actions.read",
                 "actions.create",
                 "actions.update",
@@ -193,6 +207,8 @@ internal sealed class ProjectPermissionService(
                 "decision-requests.create",
                 "decision-requests.submit",
                 "finance.records.read",
+                "documents.read",
+                "documents.upload",
                 "finance.records.capture",
                 "finance.records.submit",
                 "financial-state.read",
@@ -236,6 +252,9 @@ internal sealed class ProjectPermissionService(
                 "decisions.review-effect",
                 "escalations.acknowledge",
                 "finance.records.read",
+                "documents.read",
+                "documents.upload",
+                "documents.classify",
                 "finance.records.capture",
                 "finance.records.submit",
                 "finance.records.review",
@@ -289,6 +308,9 @@ internal sealed class ProjectPermissionService(
                 "commercial.parties.read",
                 "commercial.parties.manage",
                 "contracts.read",
+                "documents.read",
+                "documents.upload",
+                "documents.classify",
                 "contracts.capture",
                 "contracts.submit",
                 "contracts.review",
@@ -330,6 +352,8 @@ internal sealed class ProjectPermissionService(
                 "decision-requests.submit",
                 "commercial.parties.read",
                 "contracts.read",
+                "documents.read",
+                "documents.upload",
                 "procurement.requests.read",
                 "procurement.requests.capture",
                 "procurement.requests.submit",
@@ -360,6 +384,9 @@ internal sealed class ProjectPermissionService(
                 "commercial.parties.read",
                 "commercial.parties.manage",
                 "contracts.read",
+                "documents.read",
+                "documents.upload",
+                "documents.classify",
                 "procurement.requests.read",
                 "procurement.requests.capture",
                 "procurement.requests.submit",
@@ -392,6 +419,7 @@ internal sealed class ProjectPermissionService(
                 "quality.defects.manage", "quality.defects.verify", "quality.actions.create",
                 "quality.standards.manage", "quality.tests.capture",
                 "quality.actions.update", "quality.actions.verify", "quality.actions.extend", "evidence.read",
+                "documents.read", "documents.upload",
                 "governance.read", "issues.create", "issues.manage", "issues.verify-close",
                 "risks.create", "risks.assess", "risks.manage", "risks.review",
                 "decision-requests.create", "decision-requests.submit", "decisions.review-effect",
@@ -410,14 +438,15 @@ internal sealed class ProjectPermissionService(
                 "issues.create", "issues.manage", "issues.verify-close", "risks.create",
                 "risks.assess", "risks.manage", "risks.review", "decision-requests.create",
                 "decision-requests.submit", "decisions.review-effect", "escalations.acknowledge",
-                "evidence.read", "evidence.upload", "project-state.read"
+                "evidence.read", "evidence.upload", "documents.read", "documents.upload", "project-state.read"
             },
             ["ProjectController"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "projects.read", "project-state.read", "planning.measurement-items.read",
+                "projects.read", "project-state.read", "field.daily-reports.read", "planning.measurement-items.read",
                 "planning.progress.read", "planning.baselines.read", "planning.milestones.read",
                 "technical.read", "financial-state.read", "commercial-state.read", "supply.read",
-                "quality.read", "hse.read", "evidence.read", "actions.read", "actions.create",
+                "quality.read", "hse.read", "evidence.read", "documents.read", "documents.upload",
+                "documents.classify", "actions.read", "actions.create",
                 "actions.update", "actions.manage", "attention.triage", "governance.read",
                 "projects.planning.configure", "sync.conflicts.manage",
                 "governance.configure", "governance.escalate", "governance.sensitive.read",
@@ -427,6 +456,25 @@ internal sealed class ProjectPermissionService(
                 "decisions.implement", "decisions.review-effect",
                 "escalations.acknowledge", "escalations.manage"
             }
+        };
+
+    private static readonly Dictionary<string, IReadOnlySet<string>> ReportingRolePermissions =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Observer"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "reporting.catalog.read", "reporting.output.download"
+            },
+            ["SiteSupervisor"] = ReportingOperatorPermissions(),
+            ["TechnicalOffice"] = ReportingOperatorPermissions(),
+            ["FinanceOperator"] = ReportingOperatorPermissions(),
+            ["FinanceManager"] = ReportingOperatorPermissions(),
+            ["ContractAdministrator"] = ReportingOperatorPermissions(),
+            ["ProcurementOperator"] = ReportingOperatorPermissions(),
+            ["ProcurementManager"] = ReportingOperatorPermissions(),
+            ["QualityController"] = ReportingOperatorPermissions(),
+            ["HseOfficer"] = ReportingOperatorPermissions(),
+            ["ProjectController"] = ReportingOperatorPermissions()
         };
 
     public async Task<bool> HasTenantPermissionAsync(
@@ -646,8 +694,15 @@ internal sealed class ProjectPermissionService(
 
     private static string[] KnownOperations() => ProjectRolePermissions.Values
         .SelectMany(permissions => permissions)
+        .Concat(ReportingRolePermissions.Values.SelectMany(permissions => permissions))
         .Where(permission => permission != "*")
         .Concat(AdministratorOnlyPermissions)
+        .Concat([
+            "member-profile.read-self",
+            "member-profile.update-self",
+            "member-profile.avatar.publish-self",
+            "member-profile.read-directory"
+        ])
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 
@@ -666,6 +721,9 @@ internal sealed class ProjectPermissionService(
             .SingleOrDefaultAsync(cancellationToken);
 
     internal static bool GrantsTenant(TenantRole role, string permission) =>
+        string.Equals(permission, "member-profile.read-self", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(permission, "member-profile.update-self", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(permission, "member-profile.avatar.publish-self", StringComparison.OrdinalIgnoreCase) ||
         role == TenantRole.TenantAdministrator ||
         (role == TenantRole.PortfolioViewer &&
             (string.Equals(permission, "portfolio.read", StringComparison.OrdinalIgnoreCase) ||
@@ -684,9 +742,25 @@ internal sealed class ProjectPermissionService(
                 string.Equals(permission, "quality.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "hse.read", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(permission, "governance.read", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase)));
+                string.Equals(permission, "platform.modules.read", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.catalog.read", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.run.create", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "reporting.output.download", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "insights.view", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool GrantsRole(string roleCode, string permission) =>
         ProjectRolePermissions.TryGetValue(roleCode, out var permissions) &&
-        (permissions.Contains("*") || permissions.Contains(permission));
+        (permissions.Contains("*") || permissions.Contains(permission) ||
+            string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)) ||
+        ReportingRolePermissions.TryGetValue(roleCode, out var reportingPermissions) &&
+        reportingPermissions.Contains(permission);
+
+    private static HashSet<string> ReportingOperatorPermissions() =>
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "reporting.catalog.read",
+            "reporting.run.create",
+            "reporting.output.download"
+        };
 }

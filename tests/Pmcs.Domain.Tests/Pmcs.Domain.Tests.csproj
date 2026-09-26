@@ -15,11 +15,13 @@
     <ProjectReference Include="../../src/backend/Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.Intelligence/Pmcs.Modules.Intelligence.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.Evidence/Pmcs.Modules.Evidence.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Documents/Pmcs.Modules.Documents.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.ActionControl/Pmcs.Modules.ActionControl.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.Finance/Pmcs.Modules.Finance.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.Commercial/Pmcs.Modules.Commercial.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.WorkManagement/Pmcs.Modules.WorkManagement.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Reporting/Pmcs.Modules.Reporting.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -33,5 +35,15 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../assets/reporting/fonts/DejaVuSans.ttf">
+      <Link>fonts/DejaVuSans.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="../../assets/reporting/fonts/DejaVuSans-Bold.ttf">
+      <Link>fonts/DejaVuSans-Bold.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

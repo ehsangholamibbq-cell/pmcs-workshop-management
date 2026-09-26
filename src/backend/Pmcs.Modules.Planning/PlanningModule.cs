@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.Modules.Planning.Contracts;
 using Pmcs.Modules.Planning.Endpoints;
 using Pmcs.Modules.Planning.Migrations;
 using Pmcs.Modules.Planning.Persistence;
@@ -22,6 +23,7 @@ public sealed class PlanningModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddDbContext<PlanningDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IMeasurementItemDirectory, MeasurementItemDirectory>();
+        services.AddScoped<IProjectProgressReportingSource, ProjectProgressReportingSource>();
         services.AddSingleton<IDatabaseMigration, PlanningInitialMigration>();
         services.AddSingleton<IDatabaseMigration, PlanningBaselineMigration>();
     }

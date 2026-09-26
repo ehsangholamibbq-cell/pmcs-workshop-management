@@ -72,3 +72,38 @@ test("loading and failure states stay explicit and localized", async ({ page }) 
   await expect(page.getByText("Sensitive upstream failure must not reach the user")).toHaveCount(0);
   await expect(page.locator(".portfolio-empty-panel").getByText(/در حال حاضر مشکلی در سرور رخ داده است/u)).toBeVisible();
 });
+
+test("member profile and login presentation administration work through the real UI", async ({ page }) => {
+  await page.goto("/profile");
+  await expect(page.getByRole("heading", { name: "مشخصات کاری من" })).toBeVisible();
+  await expect(page.getByLabel("ایمیل سازمانی")).toBeDisabled();
+  await expect(page.getByLabel("واحد سازمانی")).toBeDisabled();
+  await expect(page.getByText("یک پروفایل، چند پروژه")).toBeVisible();
+
+  await expect(page.getByRole("button", { name: "ذخیره پروفایل" })).toBeEnabled();
+  await page.getByLabel("عنوان شغلی").fill("مدیر سامانه آزمون");
+  await page.getByRole("button", { name: "ذخیره پروفایل" }).click();
+  await expect(page.getByText("پروفایل با موفقیت به‌روزرسانی شد.")).toBeVisible();
+
+  await page.goto("/admin/login-experience");
+  await expect(page.getByRole("heading", { name: "مدیریت ظاهر صفحه ورود" })).toBeVisible();
+  await expect(page.getByText("بدون کد اجرایی دلخواه")).toBeVisible();
+  await page.getByLabel("تیتر اصلی").fill("مرکز فرمان حرفه‌ای پروژه");
+  await page.getByLabel("شدت حرکت").selectOption("Calm");
+  await page.getByRole("button", { name: "ساخت نسخه پیش‌نویس" }).click();
+  await expect(page.getByText("نسخه پیش‌نویس ساخته شد؛ پس از بازبینی می‌توانید آن را منتشر کنید.")).toBeVisible();
+
+  const draft = page.locator(".login-version-list article").filter({ hasText: "مرکز فرمان حرفه‌ای پروژه" });
+  await expect(draft).toContainText("پیش‌نویس");
+  await draft.getByRole("button", { name: "انتشار" }).click();
+  await expect(page.getByText("نسخه جدید منتشر شد.")).toBeVisible();
+  await expect(draft).toContainText("فعال");
+
+  const published = await page.request.get("/api/login-experience");
+  expect(published.status()).toBe(200);
+  expect(await published.json()).toMatchObject({
+    fallbackUsed: false,
+    headline: "مرکز فرمان حرفه‌ای پروژه",
+    motionPolicy: "Calm",
+  });
+});

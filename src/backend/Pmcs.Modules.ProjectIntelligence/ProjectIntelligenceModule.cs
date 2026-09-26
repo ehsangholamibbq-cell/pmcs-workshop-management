@@ -23,6 +23,7 @@ public sealed class ProjectIntelligenceModule : IModule
 
         services.AddDbContext<ProjectIntelligenceDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IProjectStateContextSource, ProjectStateContextSource>();
+        services.AddScoped<IProjectStateReportingSource, ProjectStateReportingSource>();
         services.AddSingleton<IDatabaseMigration, ProjectIntelligenceInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectStateV2Migration>();
         services.AddSingleton<IDatabaseMigration, ProjectStateLocationLinkMigration>();

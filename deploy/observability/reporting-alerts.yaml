@@ -1,0 +1,34 @@
+groups:
+  - name: pmcs-reporting-worker
+    interval: 1s
+    rules:
+      - alert: PmcsReportingQueueAgeBudgetExceeded
+        expr: pmcs_reporting_worker_queue_oldest_age_seconds > 120
+        for: 0s
+        labels:
+          component: reporting-worker
+          severity: warning
+        annotations:
+          summary: Certified reporting queue age exceeded its operating budget.
+          runbook: docs/runbooks/reporting-center.md#operational-observability
+
+      - alert: PmcsReportingHeartbeatMissingOrStale
+        expr: pmcs_reporting_worker_heartbeat_age_seconds < 0 or pmcs_reporting_worker_heartbeat_age_seconds > 180
+        for: 1m
+        labels:
+          component: reporting-worker
+          severity: critical
+        annotations:
+          summary: Certified reporting worker heartbeat is missing or stale.
+          runbook: docs/runbooks/reporting-center.md#operational-observability
+
+      - alert: PmcsReportingFailureOrRetryDetected
+        expr: sum by (reporting_outcome) (increase(pmcs_reporting_worker_outcomes_total{reporting_outcome=~"failed|requeued"}[10m])) > 0
+        for: 0s
+        labels:
+          component: reporting-worker
+          severity: warning
+        annotations:
+          summary: Certified reporting emitted a terminal failure or bounded retry.
+          runbook: docs/runbooks/reporting-center.md#operational-observability
+

@@ -6,6 +6,12 @@
 
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
+خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS21-C1` در Run 202، Catalog/API/Worker و qualification متصل
+`RPT1-F06` را روی Runtime و Rendererهای موجود قرارداد، اصلاحیه، خرید و تأمین بست. F01 تا F06
+checkpoint متصل دارند و F07 تا F10 باز هستند. همهٔ feature flagها، license و remediation در
+defaults خاموش یا `Unconfigured` باقی مانده‌اند.
+
 - QA Foundation Slice 1: QA Gateway، Test Authentication، Seed چندنقشی، Diagnostics و Reset خارجیِ fail-closed پیاده‌سازی شده و چرخه Qualification همچنان فعال است.
 - QA Foundation Slice 2: Permission Matrix، Workflow واقعی چندنقشی و راستی‌آزمایی مستقل Database/Audit در CI متصل تأیید شده است.
 - QA Foundation Slice 3: کنترل امضای واقعی فایل، Permission/Idempotency، MinIO roundtrip، یکپارچگی دانلود و Audit دریافت Evidence با `21/21` assertion در CI متصل تأیید و بسته شده است.
@@ -132,6 +138,23 @@
 - Location/LBS سلسله‌مراتبی با ROOT، بازنشستگی کنترل‌شده و شناسه پایدار تا Fact و Project State
 - گیت سراسری قرارداد ۲۱۲ Endpoint و ۱۶۹ Mutation در CI
 - گزارش صریح تطبیق Blueprint که قابلیت کامل، جزئی، باز و Gate محیط را از هم جدا می‌کند
+- گزارش هفتگی/ماهانه F02 متصل: Source رسمی correction-safe، مرز شمسی و شنبه‌محور، Snapshot/hash
+  قطعی، PDF/XLSX deterministic و Catalog/API/Worker دارای qualification متصل
+- F03 متصل و checkpointed برای Executive Project State: فقط Snapshot رسمی و immutable،
+  cutoff-aware، بدون Recalculate، Composite Health یا join پنهان F04 تا F10؛ Runtime Core و
+  Renderer/Golden PDF/XLSX و Catalog/API/Worker دارای qualification متصل
+- F04 متصل و checkpointed برای پیشرفت فیزیکی و S-Curve: Baseline و evidence رسمیِ cutoff-aware،
+  Actual/Planned/Variance قطعی، PDF/XLSX deterministic، strict `{}`، سه Permission خواندنی Planning
+  و Catalog/API/Worker qualification متصل؛ بدون Forecast/EVM و بدون Production enablement
+- F05 متصل و checkpointed برای وضعیت مالی: Contract/selector/calculator/Snapshot
+  نسخه‌دار، Cash Position قطعی، Payable/Receivable و Aging جدا، Budget Baseline اختیاری و cutoff-aware،
+  PDF/XLSX deterministic، strict `{}`، چهار Permission Finance/Budget و Catalog/API/Worker
+  qualification متصل؛ بدون FX، Forecast، EVM، F06 join یا Production enablement
+- F06 متصل و checkpointed برای زنجیرهٔ قرارداد/اصلاحیه/خرید/تأمین: Contract/
+  selector/calculator/Snapshot نسخه‌دار، lifecycle و cutoff مستقل، مبلغ و مدت مؤثر nullable، تعهد
+  تجاری Order، Receipt/Inspection/Service Acceptance، fulfillment و supplier rate قابل ممیزی،
+  PDF فارسی/RTL سه‌صفحه‌ای و XLSX ده-Sheet قطعی، strict `{}`، شش Permission definition-aware و
+  Catalog/API/Worker qualification متصل؛ بدون F05 join، Inventory، ranking یا Production enablement
 
 ## تصمیم‌های بنیادین
 
@@ -203,6 +226,8 @@ npm run check
 ## مستندات
 
 - Roadmap قطعی توسعه و Qualification: [`docs/roadmaps/pmcs-v1-development-and-qualification.md`](docs/roadmaps/pmcs-v1-development-and-qualification.md)
+- Roadmap فعال Post-V1 و تکامل V1.1/V1.2/V2.x: [`docs/roadmaps/pmcs-post-v1-product-evolution.md`](docs/roadmaps/pmcs-post-v1-product-evolution.md)
+- Registry رسمی Roadmapها و وضعیت مرحلهٔ فعال: [`docs/roadmaps/README.md`](docs/roadmaps/README.md)
 - تصمیم‌های معماری: [`docs/adr`](docs/adr)
 - API و قراردادهای توسعه: [`docs/api`](docs/api)
 - پایه Permission: [`docs/security`](docs/security)
@@ -221,5 +246,33 @@ npm run check
 - گزارش Slice ششم QA Foundation: [`docs/checkpoints/qa-foundation-06.md`](docs/checkpoints/qa-foundation-06.md)
 - گزارش Slice هفتم QA Foundation: [`docs/checkpoints/qa-foundation-07.md`](docs/checkpoints/qa-foundation-07.md)
 - گزارش نهایی Qualification و قفل V1: [`docs/checkpoints/pmcs-v1-qualification.md`](docs/checkpoints/pmcs-v1-qualification.md)
+- Checkpoint آمادگی RPT1: [`docs/checkpoints/v1.1-rpt1-readiness.md`](docs/checkpoints/v1.1-rpt1-readiness.md)
+- Source Candidate اول RPT1: [`docs/checkpoints/v1.1-rpt1-slice-01-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-01-candidate.md)
+- Source Candidate دوم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-02-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-02-candidate.md)
+- Recovery/Security Candidate سوم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-03-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-03-candidate.md)
+- Worker Concurrency/Crash Recovery Candidate چهارم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-04-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-04-candidate.md)
+- Worker Revocation/Object Integrity Candidate پنجم RPT1: [`docs/checkpoints/v1.1-rpt1-slice-05-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-05-candidate.md)
+- Worker Capacity Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms01-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms01-candidate.md)
+- Connected Capacity/Fairness Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms02-candidate.md)
+- Operational Signal Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-candidate.md)
+- Operational Observability Delivery Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms03-c2-candidate.md)
+- Safe Orphan Remediation Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms04-candidate.md)
+- Semantic/XLSX Golden Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms05-candidate.md)
+- Certified PDF Qualification Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-06-ms06-candidate.md)
+- F03 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms07-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms07-candidate.md)
+- F03 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms08-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms08-candidate.md)
+- F03 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms09-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms09-candidate.md)
+- F04 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms10-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms10-candidate.md)
+- F04 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms11-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms11-candidate.md)
+- F04 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms12-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms12-candidate.md)
+- F04 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms13-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms13-candidate.md)
+- F05 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms14-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms14-candidate.md)
+- F05 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms15-candidate.md)
+- F05 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms16-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms16-candidate.md)
+- F05 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms17-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms17-candidate.md)
+- F06 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms18-candidate.md)
+- F06 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms19-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms19-candidate.md)
+- F06 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms20-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms20-candidate.md)
+- F06 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms21-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms21-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

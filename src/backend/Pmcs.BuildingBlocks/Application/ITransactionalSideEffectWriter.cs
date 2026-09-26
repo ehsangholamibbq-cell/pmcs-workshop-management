@@ -17,12 +17,22 @@ public sealed record TransactionalSideEffectBatch(
     OutboxEnvelope Outbox,
     IdempotencyReceipt Idempotency);
 
+public sealed record TransactionalEventBatch(
+    AuditEntry Audit,
+    OutboxEnvelope Outbox);
+
 public interface ITransactionalSideEffectWriter
 {
     Task WriteAuditAsync(
         DbConnection connection,
         DbTransaction transaction,
         AuditEntry audit,
+        CancellationToken cancellationToken = default);
+
+    Task WriteEventAsync(
+        DbConnection connection,
+        DbTransaction transaction,
+        TransactionalEventBatch batch,
         CancellationToken cancellationToken = default);
 
     Task WriteAsync(
