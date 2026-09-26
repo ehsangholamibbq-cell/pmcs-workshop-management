@@ -320,6 +320,24 @@ internal static class ReportingEndpoints
                 return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
             }
         }
+        else if (parameters is ProjectCommercialProcurementSupplyReportParameters)
+        {
+            try
+            {
+                var commercialProfile =
+                    ProjectCommercialProcurementSupplyPinnedProjectProfile.Capture(project, now);
+                _ = commercialProfile.ValidateForRun(
+                    actor.TenantId,
+                    projectId,
+                    asOfUtc,
+                    now);
+                pinnedProjectProfileJson = CanonicalJson.Serialize(commercialProfile);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
+            }
+        }
 
         var permissionPreview = await permissionService.PreviewProjectPermissionsAsync(
             actor.TenantId,
@@ -1269,7 +1287,8 @@ internal static class ReportingEndpoints
             definition.Code == ProjectPeriodicReportRuntimeContract.DefinitionCode ||
                 definition.Code == ExecutiveProjectStateReportRuntimeContract.DefinitionCode ||
                 definition.Code == ProjectProgressReportRuntimeContract.DefinitionCode ||
-                definition.Code == ProjectFinancialPositionReportRuntimeContract.DefinitionCode
+                definition.Code == ProjectFinancialPositionReportRuntimeContract.DefinitionCode ||
+                definition.Code == ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode
                 ? [
                     ReportDataStatus.Available,
                     ReportDataStatus.NoData,
@@ -1476,6 +1495,8 @@ internal static class ReportingEndpoints
                 ParseProjectProgressParameters(parameters),
             ProjectFinancialPositionReportRuntimeContract.DefinitionCode =>
                 ParseProjectFinancialPositionParameters(parameters),
+            ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode =>
+                ParseProjectCommercialProcurementSupplyParameters(parameters),
             _ => null
         };
 
@@ -1495,6 +1516,12 @@ internal static class ReportingEndpoints
         JsonElement parameters) =>
         parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
             ? new ProjectFinancialPositionReportParameters()
+            : null;
+
+    private static ProjectCommercialProcurementSupplyReportParameters?
+        ParseProjectCommercialProcurementSupplyParameters(JsonElement parameters) =>
+        parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
+            ? new ProjectCommercialProcurementSupplyReportParameters()
             : null;
 
     private static ProjectPeriodicReportParameters? ParsePeriodicParameters(JsonElement parameters)
@@ -1534,6 +1561,8 @@ internal static class ReportingEndpoints
         ExecutiveProjectStateReportParameters executive => CanonicalJson.Serialize(executive),
         ProjectProgressReportParameters progress => CanonicalJson.Serialize(progress),
         ProjectFinancialPositionReportParameters financial => CanonicalJson.Serialize(financial),
+        ProjectCommercialProcurementSupplyReportParameters commercial =>
+            CanonicalJson.Serialize(commercial),
         _ => throw new InvalidOperationException("Unsupported reporting parameters.")
     };
 

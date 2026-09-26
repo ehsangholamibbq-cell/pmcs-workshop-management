@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.Commercial.Contracts;
 using Pmcs.Modules.Documents.Contracts;
 using Pmcs.Modules.Documents.Domain;
 using Pmcs.Modules.FieldOperations.Contracts;
@@ -438,6 +439,44 @@ internal sealed partial class ReportGenerationWorker(
                 run.CreatedAt,
                 builtAt);
         }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            _ = DeserializeStored<ProjectCommercialProcurementSupplyReportParameters>(
+                run.ParametersJson,
+                "reporting.parameters.invalid",
+                permissionSnapshotJson);
+            var pinnedProject =
+                DeserializeStored<ProjectCommercialProcurementSupplyPinnedProjectProfile>(
+                    run.PinnedProjectProfileJson,
+                    "reporting.project_commercial_procurement_supply.project_scope.invalid",
+                    permissionSnapshotJson);
+            var timeZone = pinnedProject.ValidateForRun(
+                run.TenantId,
+                run.ProjectId,
+                run.AsOfUtc,
+                run.CreatedAt);
+            var cutoffLocalDate = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
+            var source = await services
+                .GetRequiredService<IProjectCommercialProcurementSupplyReportingSource>()
+                .LoadAsync(
+                    run.TenantId,
+                    run.ProjectId,
+                    cutoffLocalDate,
+                    run.AsOfUtc,
+                    cancellationToken);
+            snapshot = ProjectCommercialProcurementSupplyReportSnapshotBuilder.Build(
+                run.Id,
+                run.TenantId,
+                pinnedProject,
+                run.AsOfUtc,
+                source,
+                run.CreatedAt,
+                builtAt);
+        }
         else
         {
             throw new ReportProcessingException(
@@ -493,6 +532,8 @@ internal sealed partial class ReportGenerationWorker(
         var progressRendererRegistry = services.GetRequiredService<ProjectProgressReportRendererRegistry>();
         var financialRendererRegistry =
             services.GetRequiredService<ProjectFinancialPositionReportRendererRegistry>();
+        var commercialRendererRegistry = services
+            .GetRequiredService<ProjectCommercialProcurementSupplyReportRendererRegistry>();
         var publisher = services.GetRequiredService<IGeneratedDocumentPublisher>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
         var clock = services.GetRequiredService<IClock>();
@@ -536,6 +577,7 @@ internal sealed partial class ReportGenerationWorker(
         ExecutiveProjectStateReportSemanticSnapshot? executiveRenderSnapshot = null;
         ProjectProgressReportSemanticSnapshot? progressRenderSnapshot = null;
         ProjectFinancialPositionReportSemanticSnapshot? financialRenderSnapshot = null;
+        ProjectCommercialProcurementSupplyReportSemanticSnapshot? commercialRenderSnapshot = null;
         if (string.Equals(
                 run.DefinitionCode,
                 ReportDefinitionRuntimePolicy.DailyDefinitionCode,
@@ -575,6 +617,15 @@ internal sealed partial class ReportGenerationWorker(
         {
             financialRenderSnapshot = ProjectFinancialPositionReportRenderSnapshot.Parse(snapshot.PayloadJson);
             VerifyRenderSnapshot(financialRenderSnapshot, snapshot, run);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            commercialRenderSnapshot =
+                ProjectCommercialProcurementSupplyReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(commercialRenderSnapshot, snapshot, run);
         }
         else
         {
@@ -659,7 +710,9 @@ internal sealed partial class ReportGenerationWorker(
                         ? ReportArtifactIdentity.FileName(executiveRenderSnapshot, format)
                         : progressRenderSnapshot is not null
                             ? ReportArtifactIdentity.FileName(progressRenderSnapshot, format)
-                            : ReportArtifactIdentity.FileName(financialRenderSnapshot!, format);
+                            : financialRenderSnapshot is not null
+                                ? ReportArtifactIdentity.FileName(financialRenderSnapshot, format)
+                                : ReportArtifactIdentity.FileName(commercialRenderSnapshot!, format);
             RenderedReportArtifact artifact;
             if (dailyRenderSnapshot is not null)
             {
@@ -751,7 +804,7 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.SourceCutoffUtc,
                         progressRenderSnapshot));
             }
-            else
+            else if (financialRenderSnapshot is not null)
             {
                 artifact = financialRendererRegistry.Require(format).Render(
                     new ProjectFinancialPositionReportRenderRequest(
@@ -772,7 +825,30 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.Sha256,
                         snapshot.SourceManifestSha256,
                         snapshot.SourceCutoffUtc,
-                        financialRenderSnapshot!));
+                        financialRenderSnapshot));
+            }
+            else
+            {
+                artifact = commercialRendererRegistry.Require(format).Render(
+                    new ProjectCommercialProcurementSupplyReportRenderRequest(
+                        run.Id,
+                        outputId,
+                        snapshot.Id,
+                        template.Id,
+                        run.DefinitionCode,
+                        ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionVersion,
+                        run.TemplateVersion,
+                        template.ContentDigest,
+                        template.RendererContractVersion,
+                        template.LayoutContractVersion,
+                        format,
+                        fileName,
+                        manifest.VerificationCode,
+                        manifest.Sha256,
+                        snapshot.Sha256,
+                        snapshot.SourceManifestSha256,
+                        snapshot.SourceCutoffUtc,
+                        commercialRenderSnapshot!));
             }
             VerifyRenderedArtifact(artifact, manifest, fileName, format);
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
@@ -1455,6 +1531,32 @@ internal sealed partial class ReportGenerationWorker(
             !string.Equals(
                 renderSnapshot.DefinitionVersion,
                 ProjectFinancialPositionReportRuntimeContract.DefinitionVersion,
+                StringComparison.Ordinal) ||
+            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
+            !string.Equals(
+                renderSnapshot.SourceManifestSha256,
+                snapshot.SourceManifestSha256,
+                StringComparison.Ordinal))
+        {
+            throw new ReportProcessingException(
+                "reporting.snapshot.integrity_failed",
+                transient: false,
+                permissionSnapshotJson: null);
+        }
+    }
+
+    private static void VerifyRenderSnapshot(
+        ProjectCommercialProcurementSupplyReportSemanticSnapshot renderSnapshot,
+        ReportSnapshot snapshot,
+        ReportRun run)
+    {
+        if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
+            !string.Equals(
+                renderSnapshot.DefinitionVersion,
+                ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
             renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||

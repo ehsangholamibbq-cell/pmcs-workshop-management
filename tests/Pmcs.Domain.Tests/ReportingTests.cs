@@ -106,6 +106,29 @@ public sealed class ReportingTests
     }
 
     [Fact]
+    public void RuntimePolicyRequiresEveryProjectCommercialProcurementSupplySourcePermission()
+    {
+        var expected = new[]
+        {
+            "commercial-state.read",
+            "commercial.parties.read",
+            "contracts.read",
+            "procurement.requests.read",
+            "procurement.orders.read",
+            "supply.read"
+        };
+
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
+            ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode,
+            out var permissions));
+        Assert.Equal(expected, permissions);
+        Assert.Equal(
+            expected,
+            ReportDefinitionRuntimePolicy.RequireSourcePermissions(
+                ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode));
+    }
+
+    [Fact]
     public void RuntimePolicyRejectsUnknownDefinition()
     {
         Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(

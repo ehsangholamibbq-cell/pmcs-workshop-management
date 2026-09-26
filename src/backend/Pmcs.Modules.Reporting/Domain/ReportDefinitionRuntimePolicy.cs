@@ -12,6 +12,12 @@ internal static class ReportDefinitionRuntimePolicy
     public const string FinanceRecordSourcePermission = "finance.records.read";
     public const string FinanceObligationSourcePermission = "finance.obligations.read";
     public const string BudgetBaselineSourcePermission = "budget.baselines.read";
+    public const string CommercialStateSourcePermission = "commercial-state.read";
+    public const string CommercialPartySourcePermission = "commercial.parties.read";
+    public const string ContractSourcePermission = "contracts.read";
+    public const string ProcurementRequestSourcePermission = "procurement.requests.read";
+    public const string ProcurementOrderSourcePermission = "procurement.orders.read";
+    public const string SupplySourcePermission = "supply.read";
 
     private static readonly string[] DailyReportSourcePermissions =
         [DailyReportSourcePermission];
@@ -30,6 +36,15 @@ internal static class ReportDefinitionRuntimePolicy
         FinanceObligationSourcePermission,
         BudgetBaselineSourcePermission
     ];
+    private static readonly string[] ProjectCommercialProcurementSupplySourcePermissions =
+    [
+        CommercialStateSourcePermission,
+        CommercialPartySourcePermission,
+        ContractSourcePermission,
+        ProcurementRequestSourcePermission,
+        ProcurementOrderSourcePermission,
+        SupplySourcePermission
+    ];
 
     public static readonly string[] SupportedDefinitionCodes =
     [
@@ -37,7 +52,8 @@ internal static class ReportDefinitionRuntimePolicy
         ProjectPeriodicReportRuntimeContract.DefinitionCode,
         ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
         ProjectProgressReportRuntimeContract.DefinitionCode,
-        ProjectFinancialPositionReportRuntimeContract.DefinitionCode
+        ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
+        ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode
     ];
 
     public static bool TryGetSourcePermissions(
@@ -52,6 +68,8 @@ internal static class ReportDefinitionRuntimePolicy
             ProjectProgressReportRuntimeContract.DefinitionCode => ProjectProgressSourcePermissions,
             ProjectFinancialPositionReportRuntimeContract.DefinitionCode =>
                 ProjectFinancialPositionSourcePermissions,
+            ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode =>
+                ProjectCommercialProcurementSupplySourcePermissions,
             _ => Array.Empty<string>()
         };
         return permissions.Count > 0;

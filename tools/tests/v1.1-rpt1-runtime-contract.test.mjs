@@ -18,6 +18,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     `${moduleRoot}/Migrations/ExecutiveProjectStateReportCatalogMigration.cs`,
     `${moduleRoot}/Migrations/ProjectProgressReportCatalogMigration.cs`,
     `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
+    `${moduleRoot}/Migrations/ProjectCommercialProcurementSupplyReportCatalogMigration.cs`,
     `${moduleRoot}/Services/ReportGenerationWorker.cs`,
     `${moduleRoot}/Services/ReportingWorkerHealthCheck.cs`,
     `${moduleRoot}/Services/ReportingWorkerTelemetry.cs`,
@@ -33,6 +34,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
     "src/backend/Pmcs.TestHarness/ReportingExecutiveProjectStateVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingProjectProgressVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingProjectFinancialPositionVerification.cs",
+    "src/backend/Pmcs.TestHarness/ReportingProjectCommercialProcurementSupplyVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingObjectSecurityVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingOrphanRemediationVerification.cs",
     "src/backend/Pmcs.TestHarness/ReportingRecoveryVerification.cs",
@@ -74,7 +76,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migrations 42 through 47 own reporting schema and the connected F02/F03/F04/F05 catalogs", () => {
+test("migrations 42 through 48 own reporting schema and the connected F02/F03/F04/F05/F06 catalogs", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
   const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
@@ -86,6 +88,9 @@ test("migrations 42 through 47 own reporting schema and the connected F02/F03/F0
   );
   const financialMigration = read(
     `${moduleRoot}/Migrations/ProjectFinancialPositionReportCatalogMigration.cs`,
+  );
+  const commercialMigration = read(
+    `${moduleRoot}/Migrations/ProjectCommercialProcurementSupplyReportCatalogMigration.cs`,
   );
   const dbContext = read(`${moduleRoot}/Persistence/ReportingDbContext.cs`);
   assert.match(migration, /public long Order => 1200/u);
@@ -134,9 +139,22 @@ test("migrations 42 through 47 own reporting schema and the connected F02/F03/F0
   assert.match(financialMigration, /"finance\.obligations\.read"/u);
   assert.match(financialMigration, /"budget\.baselines\.read"/u);
   assert.match(financialMigration, /'Landscape'/u);
+  assert.match(commercialMigration, /public long Order => 1206/u);
+  assert.match(commercialMigration, /public string Version => "20260926-007"/u);
+  assert.match(commercialMigration, /project-commercial-procurement-supply-certified/u);
+  assert.match(commercialMigration, /pmcs\.reporting\.project-commercial-procurement-supply\.parameters\/v1/u);
+  assert.match(commercialMigration, /pmcs\.reporting\.project-commercial-procurement-supply\.renderer\/v1/u);
+  assert.match(commercialMigration, /'Confidential'/u);
+  assert.match(commercialMigration, /"commercial-state\.read"/u);
+  assert.match(commercialMigration, /"commercial\.parties\.read"/u);
+  assert.match(commercialMigration, /"contracts\.read"/u);
+  assert.match(commercialMigration, /"procurement\.requests\.read"/u);
+  assert.match(commercialMigration, /"procurement\.orders\.read"/u);
+  assert.match(commercialMigration, /"supply\.read"/u);
+  assert.match(commercialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"47"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"48"/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 
@@ -1876,7 +1894,7 @@ test("RPT1-F06 keeps the commercial procurement and supply contract aligned with
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
 });
 
-test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwired", () => {
+test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and connected only through its certified path", () => {
   const applicationContract = read(
     "src/backend/Pmcs.Modules.Commercial/Contracts/IProjectCommercialProcurementSupplyReportingSource.cs",
   );
@@ -1903,6 +1921,16 @@ test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwire
   const reportingModule = read(`${moduleRoot}/ReportingModule.cs`);
   const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
   const endpoints = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const migration = read(
+    `${moduleRoot}/Migrations/ProjectCommercialProcurementSupplyReportCatalogMigration.cs`,
+  );
+  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
+  const readService = read(`${moduleRoot}/Services/ReportingReadService.cs`);
+  const harness = read(
+    "src/backend/Pmcs.TestHarness/ReportingProjectCommercialProcurementSupplyVerification.cs",
+  );
+  const harnessProgram = read("src/backend/Pmcs.TestHarness/Program.cs");
+  const diagnostics = read("tools/qa/seed-diagnostics.sh");
   const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
 
   assert.match(runtime, /PMCS-RPT1-F06-SEMANTIC-001/u);
@@ -1962,12 +1990,36 @@ test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwire
   assert.match(reportingProject, /Pmcs\.Modules\.Commercial\/Pmcs\.Modules\.Commercial\.csproj/u);
   assert.match(commercialModule, /IProjectCommercialProcurementSupplyReportingSource/u);
 
-  for (const wiredSurface of [reportingModule, worker, endpoints]) {
-    assert.doesNotMatch(
-      wiredSurface,
-      /ProjectCommercialProcurementSupply|project-commercial-procurement-supply-certified/u,
-    );
-  }
+  assert.match(migration, /public long Order => 1206/u);
+  assert.match(migration, /public string Version => "20260926-007"/u);
+  assert.match(migration, /project-commercial-procurement-supply-certified/u);
+  assert.match(migration, /e5966e5910ff9d875151b3e0c5891fb2c36027e8608771d34ee0a5d67120efb5/u);
+  assert.match(migration, /commercial-state\.read/u);
+  assert.match(migration, /commercial\.parties\.read/u);
+  assert.match(migration, /contracts\.read/u);
+  assert.match(migration, /procurement\.requests\.read/u);
+  assert.match(migration, /procurement\.orders\.read/u);
+  assert.match(migration, /supply\.read/u);
+  assert.match(policy, /ProjectCommercialProcurementSupplySourcePermissions/u);
+  assert.match(policy, /ProjectCommercialProcurementSupplyReportRuntimeContract\.DefinitionCode/u);
+  assert.match(reportingModule, /IProjectCommercialProcurementSupplyReportRenderer,[\s\S]*ProjectCommercialProcurementSupplyReportPdfRenderer/u);
+  assert.match(reportingModule, /IProjectCommercialProcurementSupplyReportRenderer,[\s\S]*ProjectCommercialProcurementSupplyReportXlsxRenderer/u);
+  assert.match(reportingModule, /ProjectCommercialProcurementSupplyReportCatalogMigration/u);
+  assert.match(worker, /IProjectCommercialProcurementSupplyReportingSource/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportRendererRegistry/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportRenderRequest/u);
+  assert.match(endpoints, /ParseProjectCommercialProcurementSupplyParameters/u);
+  assert.match(endpoints, /ProjectCommercialProcurementSupplyPinnedProjectProfile\.Capture/u);
+  assert.match(endpoints, /HasAllPermissionsAsync/u);
+  assert.match(readService, /RequireSourcePermissions/u);
+  assert.match(readService, /HasSourcePermissionAsync/u);
+  assert.match(harness, /VerifyReportingProjectCommercialProcurementSupplyAsync/u);
+  assert.match(harness, /requires-all-source-permissions/u);
+  assert.match(harness, /strict-empty-object/u);
+  assert.match(harnessProgram, /verify-reporting-project-commercial-procurement-supply/u);
+  assert.match(diagnostics, /verify-reporting-project-commercial-procurement-supply/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -1975,7 +2027,7 @@ test("RPT1-F06 bounded Runtime Core is versioned cutoff-aware and remains unwire
   assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
 });
 
-test("RPT1-F06 certified renderer is versioned deterministic and remains outside connected wiring", () => {
+test("RPT1-F06 certified renderer is versioned deterministic and connected through the pinned registry", () => {
   const identity = read(
     `${moduleRoot}/Domain/ProjectCommercialProcurementSupplyReportRuntimeContract.cs`,
   );
@@ -2070,12 +2122,11 @@ test("RPT1-F06 certified renderer is versioned deterministic and remains outside
     /CommercialDbContext|IProjectCommercialProcurementSupplyReportingSource/u,
   );
 
-  for (const source of [module, worker, endpoints]) {
-    assert.doesNotMatch(
-      source,
-      /ProjectCommercialProcurementSupply|project-commercial-procurement-supply-certified/u,
-    );
-  }
+  assert.match(module, /IProjectCommercialProcurementSupplyReportRenderer,[\s\S]*ProjectCommercialProcurementSupplyReportPdfRenderer/u);
+  assert.match(module, /IProjectCommercialProcurementSupplyReportRenderer,[\s\S]*ProjectCommercialProcurementSupplyReportXlsxRenderer/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportRendererRegistry/u);
+  assert.match(worker, /ProjectCommercialProcurementSupplyReportRenderRequest/u);
+  assert.match(endpoints, /ProjectCommercialProcurementSupplyReportRuntimeContract\.DefinitionCode/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
