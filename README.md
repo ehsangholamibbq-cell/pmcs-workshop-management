@@ -7,9 +7,9 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint جاری `PMCS-V1.1-RPT1-S07-MS28-C1` با Run 231، Source مالک و
-Runtime Core محدود Quality/HSE خانواده F08 را بست. گام بعدی MS29 فقط Renderer/Golden
-قطعی F08 است؛ اتصال F08، F09/F10، UI/Production بازند.
+Safe Checkpoint جاری `PMCS-V1.1-RPT1-S07-MS29-C1` با Run 235، Renderer/Golden
+PDF/XLSX قطعی Quality/HSE خانواده F08 را بست. گام بعدی MS30 فقط اتصال Catalog/API/Worker
+و Qualification مستقل F08 است؛ F09/F10، UI/Production بازند.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` با Run 222، Catalog/API/Worker و
 Qualification مستقل `RPT1-F07` را متصل کرد. F01 تا F07 End-to-End checkpointed هستند؛
 legacy بدون backfill حدسی `InsufficientData` و count نامعلوم می‌ماند. F08 تا F10 بازند؛
@@ -290,5 +290,6 @@ npm run check
 - F07 Connected Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms26-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms26-candidate.md)
 - F08 Semantic Contract Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms27-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms27-candidate.md)
 - F08 Runtime Core Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms28-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms28-candidate.md)
+- F08 Renderer/Golden Safe Checkpoint: [`docs/checkpoints/v1.1-rpt1-slice-07-ms29-candidate.md`](docs/checkpoints/v1.1-rpt1-slice-07-ms29-candidate.md)
 
 Blueprint محصول خارج از کد نگهداری می‌شود و Repository باید در هر Vertical Slice با Acceptance Criteria آن هم‌راستا بماند.

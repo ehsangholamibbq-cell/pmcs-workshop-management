@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.42.0`
-- وضعیت: `S07-MS28 F08 Runtime Core safe checkpoint | Renderer/Golden/wiring/F09-F10/UI/Production open`
+- نسخه: `1.43.0`
+- وضعیت: `S07-MS29 F08 Renderer/Golden safe checkpoint | wiring/F09-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -885,3 +885,11 @@ pin، تاریخچهٔ فاقد transition را `InsufficientData` و دادهٔ
 رد می‌کند. Snapshot سازندهٔ Reporting فقط Application Contract را مصرف می‌کند و
 manifest/semantic digest، status، شمارش و classification را پیش از ذخیره اعتبارسنجی
 می‌کند. Run 231 (`36308573306`) هشت Job سبز؛ Renderer و wiring همچنان بازند.
+
+Slice 07 Micro-Step 29 دو Renderer مستقل F08 را به Snapshot معتبر Quality/HSE
+محدود کرد. PDF دو صفحهٔ RTL فارسی و XLSX چهار Sheet با status/count/reason و
+classification مستقل، metadata/hash/version پین‌شده و متن spreadsheet امن عرضه می‌شوند.
+Unknown count به صفر یا نرخ حادثهٔ ساختگی تبدیل نمی‌شود. Golden binary و دو صفحهٔ
+visual در Checkpoint ثبت و Run 235 (`36309751881`) با هشت Job سبز شد. Template
+`1.0.0` digest `5bd7a0ea06984076cfbfed7715329a59b1afeffbcade4378afefc1413c287a61`؛
+Catalog/API/Worker و Qualification متصل فقط در MS30 پیگیری می‌شوند.

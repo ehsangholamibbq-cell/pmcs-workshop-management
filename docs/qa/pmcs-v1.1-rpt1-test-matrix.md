@@ -1,7 +1,7 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.45.0`
+- نسخه: `1.46.0`
 - وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract و Runtime Core بسته؛ Renderer/Golden/wiring و F09–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
@@ -1260,3 +1260,19 @@ Candidate `36682da970d0489569ed62a1d02684b5d6c588e9`، tree
 هر هشت Job سبز داشتند؛ `99/99` Node و validator `426` فایل پاس شدند.
 Checkpoint `PMCS-V1.1-RPT1-S07-MS28-C1` Runtime Core را می‌بندد؛ گام بعد
 Renderer/Golden F08 در `S07-MS29` است. Wiring، F09/F10 و Production بازند.
+
+## ۵۱. Renderer/Golden خانواده F08 — Slice 07 Micro-Step 29 Safe Checkpoint
+
+- parser و request pin برای Snapshot schema/semantic/hash/classification و دو section
+  Quality/HSE مستقل؛ دست‌کاری version/digest/status/Project باید رد شود؛
+- PDF دوصفحه‌ای فارسی/RTL و XLSX چهار Sheet `Metadata/Coverage/Quality/HSE`،
+  count نامعلوم و نرخ حادثهٔ فاقد denominator آشکار بمانند؛
+- متن spreadsheet بدون formula، ترتیب/فرمت قطعی، Golden PDF/XLSX و visual digest
+  برای هر دو صفحه، budget و license/font gate در QA آزموده شوند.
+
+Candidate `68a8c49311d05480824f3c7ec58933510877c8e6`، tree
+`14fe30b65d983c553cf3675dc202b682d90f5c9d` و Run 235 (`36309751881`)
+هر هشت Job سبز، backend `530/530` و Full Node `100/100` داشتند. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS29-C1` Renderer/Golden را می‌بندد؛ گام بعد فقط اتصال
+Catalog/API/Worker و Qualification مستقل F08 در `S07-MS30` است. Migration همچنان
+`50` و همهٔ defaultها خاموش‌اند؛ F09/F10 و UI/Production بازند.

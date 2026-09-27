@@ -81,6 +81,10 @@ Gate خروج ده‌گانه همچنان باز و گام بعد DoR/قرار�
 F08 با Run 231 و هشت Job سبز شدند. Renderer/Golden و wiring هنوز بازند؛ F01–F07
 متصل، F09/F10 و Gate ده‌گانه باز و همهٔ defaults خاموش‌اند.
 
+در `PMCS-V1.1-RPT1-S07-MS29-C1`، Renderer/Golden مستقل Quality/HSE با PDF/XLSX
+و status/count/classification دو section در Run 235 واجد Evidence شدند؛
+Catalog/API/Worker و Qualification متصل F08 در MS30 باز می‌مانند.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.62.0`
+- نسخه سند: `1.63.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -759,6 +759,15 @@ fail-closed ارائه می‌کند. Quality/HSE مستقل می‌مانند �
 Contract مالک می‌سازد. Run 231 (`36308573306`) هر هشت Job را سبز کرد. Safe Resume
 `S07-MS28`؛ گام بعد فقط Renderer/Golden قطعی F08 در MS29 است؛ wiring، F09/F10 و
 UI/Production باز، defaults خاموش‌اند.
+
+**F08 Quality/HSE Renderer/Golden — Slice 07 Micro-Step 29 Safe Checkpoint:**
+PDF دو بخش و XLSX چهار Sheet قطعی با status/count/classification مستقل، متن امن و
+عدم نمایش نرخ حادثهٔ بدون denominator در Template `1.0.0` پین شدند. Golden PDF/XLSX
+و دو صفحهٔ visual در Checkpoint MS29 ثبت شدند. Source
+`68a8c49311d05480824f3c7ec58933510877c8e6`، tree
+`14fe30b65d983c553cf3675dc202b682d90f5c9d` و Run 235 (`36309751881`)
+هر هشت Job را سبز کردند. Safe Resume `S07-MS29`؛ گام بعد فقط اتصال Catalog/API/Worker
+و Qualification مستقل F08 در MS30 است. F09/F10، UI/Production باز و defaults خاموش‌اند.
 Renderer/Catalog/API/Worker، F09/F10 و UI/Production باز و defaultها خاموش‌اند.
 
 ### `V1.1-COL1` — Project Collaboration
@@ -1065,3 +1074,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.60.0` | ثبت Connected Safe Checkpoint `S07-MS26` و Evidence سبز Run 222 برای Catalog/API/Worker و Qualification مستقل F07؛ F08–F10/UI/Production باز است |
 | `1.61.0` | ثبت Safe Checkpoint `S07-MS27` و Evidence سبز Run 224 برای DoR/قرارداد معنایی مستقل F08؛ Runtime/Renderer/wiring و F09–F10/UI/Production باز است |
 | `1.62.0` | ثبت Safe Checkpoint `S07-MS28` و Evidence سبز Run 231 برای Runtime Core و Source مالک F08؛ Renderer/Golden/wiring و F09–F10/UI/Production باز است |
+| `1.63.0` | ثبت Safe Checkpoint `S07-MS29` و Evidence سبز Run 235 برای Renderer/Golden قطعی F08؛ Catalog/API/Worker و F09–F10/UI/Production باز است |
