@@ -87,6 +87,14 @@ internal static class ProjectQualityHseReportSnapshotBuilder
             manifest.Classification != source.Classification ||
             manifest.QualityEnabled && project.Quality != Pmcs.Modules.Projects.Contracts.ProjectFeatureState.Active ||
             manifest.HseEnabled && project.Hse != Pmcs.Modules.Projects.Contracts.ProjectFeatureState.Active ||
+            manifest.QualityEnabled && (!manifest.QualityReady || !manifest.QualityMatrixVersionId.HasValue ||
+                source.Quality.Status == QualityHseReportingStatus.NotConfigured) ||
+            manifest.HseEnabled && (!manifest.HseReady || !manifest.HseMatrixVersionId.HasValue ||
+                source.Hse.Status == QualityHseReportingStatus.NotConfigured) ||
+            !manifest.QualityEnabled && (source.Quality.Status is
+                QualityHseReportingStatus.NoData or QualityHseReportingStatus.Available) ||
+            !manifest.HseEnabled && (source.Hse.Status is
+                QualityHseReportingStatus.NoData or QualityHseReportingStatus.Available) ||
             manifest.QualitySafetyConfigurationRevision is > 1 &&
                 (source.Quality.Status != QualityHseReportingStatus.InsufficientData ||
                  source.Hse.Status != QualityHseReportingStatus.InsufficientData) ||

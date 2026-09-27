@@ -64,8 +64,8 @@ public sealed class ProjectQualityHseReportingTests
         var manifest = new ProjectQualityHseSourceManifest(
             ProjectQualityHseReportingContract.ManifestVersion, ProjectQualityHseReportingContract.Version,
             ProjectQualityHseReportingContract.PolicyVersion, Tenant, Project, Date,
-            Cutoff, Cutoff, 1, Cutoff.AddDays(-30), null, null,
-            null, null, false, false, null, null, false, false,
+            Cutoff, Cutoff, 1, Cutoff.AddDays(-30), 1, Cutoff.AddDays(-30),
+            "FullV1", "FullV1", true, true, Id(8), Id(9), true, true,
             QualityHseReportingClassification.Confidential, registers);
         var status = quality.Status == QualityHseReportingStatus.InsufficientData ||
             hse.Status == QualityHseReportingStatus.InsufficientData
@@ -85,7 +85,7 @@ public sealed class ProjectQualityHseReportingTests
         Cutoff.AddDays(-30), ProjectStatus.Active, ContractModel.NotConfigured,
         PlanningMode.None, ProjectFeatureState.NotConfigured,
         ProjectFeatureState.NotConfigured, ProjectFeatureState.NotConfigured,
-        ProjectFeatureState.NotConfigured, ProjectFeatureState.NotConfigured,
+        ProjectFeatureState.Active, ProjectFeatureState.Active,
         ProjectFeatureState.NotConfigured, ProjectFeatureState.NotConfigured,
         new ProjectCalendarProfile(ProjectCalendarConfigurationState.NotConfigured, null), 1);
 }

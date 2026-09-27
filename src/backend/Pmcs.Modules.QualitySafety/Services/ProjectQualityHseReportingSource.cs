@@ -150,6 +150,8 @@ internal sealed class ProjectQualityHseReportingSource(
         var hseMatrixValid = configuration?.HseMatrixVersionId is { } hMatrix &&
             matrices.Any(x => x.Id == hMatrix && x.Area == ControlArea.Hse && x.EffectiveFrom <= cutoff);
         var qualityIncomplete = configurationUnproven || futureTests ||
+            (project.Quality is ProjectFeatureState.SetupRequired or ProjectFeatureState.Suspended) ||
+            project.Quality == ProjectFeatureState.Active && configuration is null ||
             qualityEnabled && (configuration is null || !configuration.QualityReady || !qualityMatrixValid) ||
             intakes.Any(x => x.IsQuality && x.Status != IntakeStatus.Captured) ||
             inspections.Any(x => x.Status != InspectionStatus.Requested &&
@@ -157,6 +159,8 @@ internal sealed class ProjectQualityHseReportingSource(
             ncrs.Length > 0 || defects.Length > 0 ||
             actions.Any(x => x.SourceArea == ControlArea.Quality);
         var hseIncomplete = configurationUnproven || futureTalks || futureExposure ||
+            (project.Hse is ProjectFeatureState.SetupRequired or ProjectFeatureState.Suspended) ||
+            project.Hse == ProjectFeatureState.Active && configuration is null ||
             hseEnabled && (configuration is null || !configuration.HseReady || !hseMatrixValid) ||
             intakes.Any(x => x.IsHse && x.Status != IntakeStatus.Captured) ||
             incidents.Length > 0 || permits.Length > 0 || competencies.Length > 0 ||
