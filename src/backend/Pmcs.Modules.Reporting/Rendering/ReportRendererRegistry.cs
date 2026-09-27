@@ -90,3 +90,17 @@ internal sealed class ProjectCommercialProcurementSupplyReportRendererRegistry(
                 transient: false,
                 $"No certified project-commercial-procurement-supply renderer is registered for {format}.");
 }
+
+internal sealed class ProjectTechnicalOfficeReportRendererRegistry(
+    IEnumerable<IProjectTechnicalOfficeReportRenderer> renderers)
+{
+    private readonly Dictionary<ReportFormat, IProjectTechnicalOfficeReportRenderer>
+        byFormat = renderers.ToDictionary(renderer => renderer.Format);
+
+    public IProjectTechnicalOfficeReportRenderer Require(ReportFormat format) =>
+        byFormat.TryGetValue(format, out var renderer)
+            ? renderer
+            : throw new ReportRenderingException(
+                "reporting.format.unsupported", transient: false,
+                $"No certified project-technical-office renderer is registered for {format}.");
+}

@@ -11,6 +11,14 @@ public static class ProjectTechnicalOfficeReportRuntimeContract
     public const string DefinitionVersion = "1.0.0";
     public const string ParameterSchemaVersion = "pmcs.reporting.project-technical-office.parameters/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.project-technical-office.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    // SHA-256 of the pinned F07 template identity and section/status layout contract.
+    public const string TemplateContentDigest =
+        "e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7";
+    public const string RendererContractVersion =
+        "pmcs.reporting.project-technical-office.renderer/v1";
+    public const string LayoutContractVersion =
+        "pmcs.reporting.project-technical-office.layout/v1";
     public const string PinnedProjectProfileSchemaVersion = "pmcs.reporting.project-technical-office.project-profile/v1";
     public static readonly IReadOnlyCollection<string> RequiredSourcePermissions =
         ["technical.read", "technical.confidential.read"];
