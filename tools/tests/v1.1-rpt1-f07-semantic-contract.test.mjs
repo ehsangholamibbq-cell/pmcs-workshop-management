@@ -29,7 +29,7 @@ test("F07 distinguishes four owner lifecycles and rejects current-state historic
 });
 
 test("F07 pins strict input, both technical read permissions and no unsafe joins", () => {
-  assert.match(contract, /دقیقاً JSON object خالی `{}`/u);
+  assert.ok(contract.includes("دقیقاً JSON object خالی `{}`"));
   assert.match(contract, /technical\.read` و `technical\.confidential\.read`/u);
   assert.match(endpoints, /"technical\.read"/u);
   assert.match(endpoints, /"technical\.confidential\.read"/u);
