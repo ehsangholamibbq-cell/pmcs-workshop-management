@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.52.0`
+- نسخه: `1.53.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F10 MS41 Tenant API Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F10 MS42 Worker Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,10 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `c22f08778a4c9b523d926f1aedc9f8d9142655d4`؛ tree `3e5c6f93fae75200f3abba18b292eac4a17d3069` |
-| Current evidence-bearing source checkpoint | `c22f08778a4c9b523d926f1aedc9f8d9142655d4`؛ tree `3e5c6f93fae75200f3abba18b292eac4a17d3069`؛ Run 266 سبز |
-| Source lineage | S07-MS41 فرزند Checkpoint MS40 روی `b203eb95dfa15230f51dd3c6de97d558456c5a59` و tree `d8dc13f68d2661000a39bd9ddf219dc3d912ae0c` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS41-C1`؛ F01 تا F09 متصل، F10 Catalog/Tenant API ready |
+| آخرین Source Candidate واجد Evidence | `7a8a560fec6da560aa6982f1b9f11fc253dafef4`؛ tree `0683b1cbe844a321862e3e25fe2aa4e01e93174c` |
+| Current evidence-bearing source checkpoint | `7a8a560fec6da560aa6982f1b9f11fc253dafef4`؛ tree `0683b1cbe844a321862e3e25fe2aa4e01e93174c`؛ Run 272 سبز |
+| Source lineage | S07-MS42 فرزند Checkpoint MS41 روی `b714b146f206fa3622cc313d6902840da1803f12` و tree `8ca2c359b75187c04e19d25449da79ce5d21cbcb` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS42-C1`؛ F01 تا F09 متصل، F10 Worker تولید PDF/XLSX دارد |
 | Migration count | Safe Resume: `56` و Restore Drill سبز |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -188,7 +188,7 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS41-C1` است. روی این
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS42-C1` است. روی این
 Checkpoint، Catalog/API/Worker و qualification متصل F01 تا F09 بسته شده‌اند.
 Migration 48،
 Definition/Template seed، strict empty-object API، Project profile pin، مجوز منبع definition-aware و
@@ -398,6 +398,14 @@ Project route جدا نگه می‌دارد. Candidate `c22f08778a4c9b523d926f1a
 (`36343299949`) هشت Job، C# `553/553`، Node `126/126`، Web `139/139`،
 Restore ۵۶ و Qualification `7/7` را سبز کرد. Worker/OutputAccess باز است.
 
+در `S07-MS42`، Worker مستقل Portfolio با claim/lease و recheck cohort/mask،
+Snapshot و دو Output PDF/XLSX Tenant را به سند `TenantReportOutput` متصل کرد.
+cutoff در دقت میکروثانیهٔ DB پین و JSONB پیش از Hash canonical می‌شود. Candidate
+`7a8a560fec6da560aa6982f1b9f11fc253dafef4`، tree `0683b1cbe844a321862e3e25fe2aa4e01e93174c`
+در Run 272 (`36349571188`) هشت Job، C# `554/554`، Node `128/128`،
+Web `139/139`، Restore ۵۶ و QA متصل F10 `4/4` را سبز کرد. OutputAccess و
+Qualification کامل F10 در MS43 باز است.
+
 ## Remaining Work
 
 1. خانواده‌های `RPT1-F01` تا `RPT1-F09` متصل و checkpointed هستند.
@@ -410,7 +418,7 @@ Restore ۵۶ و Qualification `7/7` را سبز کرد. Worker/OutputAccess با
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | F01 تا F09 متصل‌اند؛ F10 Tenant API دارد | MS42 Worker؛ سپس MS43 OutputAccess/Qualification متصل |
+| Implementation | F01 تا F09 متصل‌اند؛ F10 Worker تولید دارد | MS43 OutputAccess/Qualification متصل |
 | Temporal source | endpoint جاری Planning زمان‌های Approval/Supersede، target و configuration تاریخی کافی ندارد | Contract/selector نسخه‌دار و compatibility producer متصل‌اند؛ history غیرقابل‌اثبات fail-closed است و توسعهٔ تاریخچهٔ کامل باید Slice دامنه‌ای مستقل باشد |
 | Finance temporal source | read modelها و serviceهای legacy Finance cutoff تاریخی، postedAt/approvedAt مستقل، Budget supersession history و Aging دوطرفهٔ کامل ندارند | Contract/selector/compatibility source نسخه‌دار F05 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
 | Commercial temporal source | source و endpointهای legacy current-state/truncated هستند؛ activation history، Party/Item snapshot، conversion version و completeness cutoff کامل ندارند | Contract/selector/compatibility source نسخه‌دار F06 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
@@ -634,12 +642,16 @@ Restore ۵۶ و Qualification `7/7` را سبز کرد. Worker/OutputAccess با
 - F10 Tenant API MS41: `c22f08778a4c9b523d926f1aedc9f8d9142655d4`؛ tree `3e5c6f93fae75200f3abba18b292eac4a17d3069`؛ Run 266 (`36343299949`)
   هشت Job و Qualification `7/7`؛ artifact `10940021865`
   (`sha256:2d4bb99532b8cb2d34cfac8e6f2f0b5715023ec1d2f515c365bd597de9649498`).
+- F10 Worker MS42: `7a8a560fec6da560aa6982f1b9f11fc253dafef4`؛ tree
+  `0683b1cbe844a321862e3e25fe2aa4e01e93174c`؛ Run 272 (`36349571188`)
+  هشت Job و QA متصل `4/4`؛ artifact `10942071124`
+  (`sha256:10c07cd9b8060792561902140ff9f83ef67538143c9913fa9c152fe1f3c82de3`).
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده برای Source: Run 266 (`36343299949`) — هر ۸ Job
+- آخرین CI بررسی‌شده برای Source: Run 272 (`36349571188`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
@@ -656,7 +668,7 @@ Restore ۵۶ و Qualification `7/7` را سبز کرد. Worker/OutputAccess با
 
 ## Exact Next Micro-Step
 
-**گام بعدی `S07-MS42` فقط Worker تولید Snapshot/Output Portfolio خانوادهٔ F10 است.**
+**گام بعدی `S07-MS43` OutputAccess، Retry/Cancel و Qualification کامل خانوادهٔ F10 است.**
 UI/UX2، Production enablement و Report Designer همچنان بازند.
 
 ## Resume Rule

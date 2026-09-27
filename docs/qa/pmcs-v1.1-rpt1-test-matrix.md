@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.58.0`
-- وضعیت: F01–F09 connected؛ F10 Catalog/Tenant API ready، Worker/OutputAccess/UI/Production باز
+- نسخه: `1.59.0`
+- وضعیت: F01–F09 connected؛ F10 Worker PDF/XLSX ready، OutputAccess/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1476,3 +1476,16 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
 - Run 266 (`36343299949`) هشت Job، C# `553/553`، Node `126/126`، Web
   `139/139`، پنج مرورگر، Restore `56` و Qualification `7/7` سبز؛ artifact
   `10940021865`، `sha256:2d4bb99532b8cb2d34cfac8e6f2f0b5715023ec1d2f515c365bd597de9649498`.
+
+## ۶۴. F10 MS42 Portfolio Worker
+
+- claim فقط Scope Portfolio/Definition F10، lease، retry محدود و isolation
+  Worker پروژه‌ای در DB و QA متصل کنترل شد.
+- JSONB Snapshot canonical digest، cutoff microsecond، cohort/mask pin و
+  permission recheck پیش و پس از Source/Render کنترل شد؛ دو سند Tenant
+  `TenantReportOutput` با SHA و retention LongTerm ثبت شدند.
+- Run 272 (`36349571188`) هشت Job، C# `554/554`، Node `128/128`، Web
+  `139/139`، پنج مرورگر، QA F10 `4/4`، Restore `56` و Qualification `7/7`
+  سبز؛ artifact `10942071124`،
+  `sha256:10c07cd9b8060792561902140ff9f83ef67538143c9913fa9c152fe1f3c82de3`.
+- MS43 OutputAccess، Retry/Cancel و Qualification End-to-End F10 باز است.

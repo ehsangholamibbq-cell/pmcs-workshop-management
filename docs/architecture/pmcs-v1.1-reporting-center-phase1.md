@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.55.0`
-- وضعیت: `S07-MS41 F10 Tenant API Safe Checkpoint | Worker/OutputAccess/UI/Production open`
+- نسخه: `1.56.0`
+- وضعیت: `S07-MS42 F10 Worker Safe Checkpoint | OutputAccess/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -999,3 +999,14 @@ permissionهای reporting، Create strict `{}`، pinned cohort/mask و replay
 و مجوزهای مالی/تجاری را بدون re-filter افزایش می‌سنجد. List/Get فقط requester
 یا TenantAdministrator با recheck کامل cohort را نشان می‌دهد. Worker/OutputAccess
 در MS42/MS43 جدا هستند. Run 266 (`36343299949`) هشت Job و Restore ۵۶ سبز.
+
+## F10 S07-MS42 Portfolio Snapshot/Output Worker
+
+Worker مستقل تنها Portfolio F10 را با `FOR UPDATE SKIP LOCKED`، lease و retry
+محدود claim می‌کند. permissionهای Tenant و همهٔ cohort/maskهای پین‌شده پیش
+از خواندن، پس از Snapshot و پیش/پس از انتشار سند recheck می‌شوند. cutoff
+به دقت microsecond PostgreSQL پین می‌شود؛ payload و manifest JSONB پس از
+canonicalize با SHA-256 سنجیده می‌شوند. شناسهٔ خروجی/سند قطعی و owner
+`TenantReportOutput` است؛ دو Output در یک commit تراکنشی Report/Audit/Outbox
+ثبت می‌شوند. Run 272 (`36349571188`) هشت Job، QA متصل `4/4`، Restore ۵۶
+و Qualification `7/7` را سبز کرد. MS43 فقط دسترسی و Qualification نهایی است.
