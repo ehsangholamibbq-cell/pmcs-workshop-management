@@ -137,7 +137,9 @@ public sealed class ReportingTests
         Assert.Equal(expected, permissions);
         Assert.Equal(expected, ProjectTechnicalOfficeReportRuntimeContract.RequiredSourcePermissions);
         Assert.True(ProjectPermissionService.GrantsRole("TechnicalOffice", expected[0]));
-        Assert.True(ProjectPermissionService.GrantsRole("TechnicalOffice", expected[1]));
+        Assert.False(ProjectPermissionService.GrantsRole("TechnicalOffice", expected[1]));
+        Assert.True(ProjectPermissionService.GrantsRole("ContractAdministrator", expected[0]));
+        Assert.True(ProjectPermissionService.GrantsRole("ContractAdministrator", expected[1]));
         Assert.False(ProjectPermissionService.GrantsRole("FinanceManager", expected[1]));
     }
 

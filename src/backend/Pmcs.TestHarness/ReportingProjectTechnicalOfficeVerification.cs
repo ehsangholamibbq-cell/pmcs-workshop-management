@@ -21,6 +21,7 @@ internal static partial class Program
         var key = ReadRequiredEnvironment("PMCS_QA_AUTH_KEY");
         using var client = CreateClient();
         var assertions = new List<VerificationAssertion>();
+        var contractAdministrator = Actor("contract-administrator");
         var technicalOffice = Actor("technical-office");
         var financeManager = Actor("finance-manager");
         var projectController = Actor("project-controller");
@@ -36,7 +37,7 @@ internal static partial class Program
         var catalog = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Get,
             $"{reportingPath}/catalog");
         var definition = FindCatalogDefinition(
@@ -96,10 +97,20 @@ internal static partial class Program
                 "project-progress-certified").HasValue,
             $"http={(int)partiallyPermittedCatalog.StatusCode}");
 
+        var technicalRoleCatalog = await SendAsync(
+            client, key, technicalOffice, HttpMethod.Get, $"{reportingPath}/catalog");
+        Record(
+            assertions,
+            "reporting.project-technical-office.catalog.technical-role-needs-confidential-read",
+            technicalRoleCatalog.StatusCode == HttpStatusCode.OK &&
+            !FindCatalogDefinition(technicalRoleCatalog.Payload,
+                ProjectTechnicalOfficeDefinitionCode).HasValue,
+            $"http={(int)technicalRoleCatalog.StatusCode}");
+
         var malformed = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Post,
             $"{reportingPath}/runs",
             request with
@@ -137,7 +148,7 @@ internal static partial class Program
         var created = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Post,
             $"{reportingPath}/runs",
             request,
@@ -156,7 +167,7 @@ internal static partial class Program
         var replay = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Post,
             $"{reportingPath}/runs",
             request,
@@ -171,7 +182,7 @@ internal static partial class Program
         var conflict = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Post,
             $"{reportingPath}/runs",
             request with { Formats = ProjectTechnicalOfficeXlsxFormat },
@@ -185,7 +196,7 @@ internal static partial class Program
         var succeeded = await WaitForFinalRunAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             reportingPath,
             ProjectTechnicalOfficeRunId);
         var outputs = succeeded.Payload.ValueKind == JsonValueKind.Object &&
@@ -211,7 +222,7 @@ internal static partial class Program
         var visibleRuns = await SendAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             HttpMethod.Get,
             $"{reportingPath}/runs?definitionCode={ProjectTechnicalOfficeDefinitionCode}&limit=100");
         Record(
@@ -231,7 +242,7 @@ internal static partial class Program
         await VerifyProjectTechnicalOfficeOutputAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             reportingPath,
             succeeded.Payload,
             "Pdf",
@@ -239,7 +250,7 @@ internal static partial class Program
         await VerifyProjectTechnicalOfficeOutputAsync(
             client,
             key,
-            technicalOffice,
+            contractAdministrator,
             reportingPath,
             succeeded.Payload,
             "Xlsx",
