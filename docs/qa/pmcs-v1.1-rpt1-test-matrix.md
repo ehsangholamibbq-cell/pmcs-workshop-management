@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.42.0`
-- وضعیت: F01–F06 connected؛ F07 bounded Runtime/Renderer/history producer ready / wiring باز؛ F08–F10/UI/Production باز
+- نسخه: `1.43.0`
+- وضعیت: F01–F07 connected؛ F08–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1216,3 +1216,21 @@ Candidate `b2cc811e9202b49dd643972bde547c105fd9dc02` با tree
 browser scenario، validator `420` فایل، Restore ۴۹ Migration و Qualification `7/7`.
 Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1` فقط producer را می‌بندد؛ MS26 مسیر متصل
 Catalog/API/Worker و qualification مستقل F07 است.
+
+## ۴۸. اتصال Catalog/API/Worker خانواده F07 — Slice 07 Micro-Step 26 Safe Checkpoint
+
+- Definition/Template مستقل با digest پین‌شده، Migration 50 و catalog فقط برای دارندهٔ
+  `technical.read` و `technical.confidential.read`؛ `TechnicalOffice` فاقد مجوز دوم deny شود؛
+- strict `{}`، scope پین‌شدهٔ Tenant/Project/cutoff، idempotent create/replay/conflict و
+  List/Get/Download/Verify با همان gateها؛ Worker فقط Application Contract مالک را بخواند؛
+- PDF چهار بخش و XLSX شش Sheet، integrity/hash/verification و `NoData` قابل اثبات متصل؛
+  legacy RFI/Submittal بدون ledger کامل همچنان `InsufficientData` و count نامعلوم؛
+- تمام defaults خاموش، هیچ UI/UX2، F08، Production enablement یا Designer وارد نشود.
+
+Candidate `b7a44b35eb7f498bf4382990324e3253033c0284`، tree
+`bb6ebad2d3435caf4e085a65e08a085a2271761f` و PR merge
+`a771d7113286a06606d89c55c1894d181cc29406` با همان tree در Run 222
+(`36305583760`) هشت Job سبز داد: `523/523` C#، `94/94` Node، `139/139` Web، پنج
+browser scenario، validator `421` فایل، Restore ۵۰ Migration، F07 connected `17/17`
+و Qualification `7/7`. Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` خانواده F07 را
+End-to-End می‌بندد؛ گام بعد فقط DoR و قرارداد معنایی F08 در `S07-MS27` است.

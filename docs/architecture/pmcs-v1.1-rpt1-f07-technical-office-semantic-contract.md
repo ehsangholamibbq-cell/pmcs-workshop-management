@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F07-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F07`
-- وضعیت: `Semantic Contract Locked | MS25 Runtime/Renderer/historical producer Ready / wiring open | F08-F10/UI/Production open`
+- وضعیت: `Semantic Contract Locked | MS26 Runtime/Renderer/historical producer connected | F08-F10/UI/Production open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS21-C1`
 - Safe checkpoint: `PMCS-V1.1-RPT1-S07-MS22-C1`
 - مرز: `Document / RFI / Submittal / Transmittal`
@@ -310,3 +310,16 @@ Migration `technical-office/20260927-002` ledger nullable رخدادهای کم�
 calculator فقط رخدادهای `<= cutoff` را نمایش می‌دهد. متون آزاد/شناسهٔ Actor در ledger گزارش
 نیستند. Run 219 (`36304170407`) هر هشت Job و `522/522` تست C# را سبز کرد. Checkpoint
 `PMCS-V1.1-RPT1-S07-MS25-C1` فقط producer را می‌بندد؛ Catalog/API/Worker و F08 بازند.
+
+## پیوست Safe Checkpoint S07-MS26 — اتصال مستقل
+
+Migration `reporting/20260927-008` Definition محرمانه و Template نسخهٔ `1.0.0` را با همان
+digest پین‌شده منتشر می‌کند. Catalog، API و Worker برای F07 هر دو Source permission
+`technical.read` و `technical.confidential.read` را require می‌کنند؛ `TechnicalOffice`
+به‌تنهایی مجوز دوم ندارد و `ContractAdministrator` از نقش‌های موجود واجد هر دو است.
+Create فقط `{}`، Project profile و cutoff پین‌شده را می‌پذیرد. Worker فقط از
+`IProjectTechnicalOfficeReportingSource` می‌خواند و Snapshot/Renderer PDF/XLSX نسخه‌دار را
+dispatch می‌کند؛ source قدیمی ناقص همچنان fail-closed/`InsufficientData` است و output ناقص
+به‌عنوان صفر عرضه نمی‌شود. Run 222 (`36305583760`) هر هشت Job، connected `17/17`،
+Restore ۵۰ Migration و Qualification `7/7` را سبز کرد. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS26-C1` اتصال F07 را می‌بندد؛ F08–F10/UI/Production بازند.

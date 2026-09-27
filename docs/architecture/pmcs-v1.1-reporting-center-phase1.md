@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.39.0`
-- وضعیت: `S07-MS25 F07 bounded historical producer safe checkpoint | wiring/F08-F10/UI/Production open`
+- نسخه: `1.40.0`
+- وضعیت: `S07-MS26 F07 connected safe checkpoint | F08-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `bd0fe62f0d28954f95566db96fc22b42f2c36594`
-- Parent checkpoint tree: `dcd618dd5715b591e5688d25b486771db148c485`
-- Candidate source: `b2cc811e9202b49dd643972bde547c105fd9dc02`
-- Candidate source tree: `1673d1b48ca41fd425199da9235ec87c712d81b2`
-- PR validation merge: `a5843ace11e1546a472e76633fc13354c0570e3c`؛ همان tree
-- Full evidence: Run 219 (`36304170407`) — `success`
+- Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
+- Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
+- Candidate source: `b7a44b35eb7f498bf4382990324e3253033c0284`
+- Candidate source tree: `bb6ebad2d3435caf4e085a65e08a085a2271761f`
+- PR validation merge: `a771d7113286a06606d89c55c1894d181cc29406`؛ همان tree
+- Full evidence: Run 222 (`36305583760`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -857,3 +857,15 @@ legacy ناقص را `InsufficientData` نگه می‌دارد، اما برای
 UTC، status و response/outcome را در دقت PostgreSQL اعتبارسنجی و در cutoff انتخاب می‌کند.
 Migration 49، Run 219 (`36304170407`) و Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1` با هشت Job
 سبز این مرز را می‌بندند. Definition/API/Worker هنوز متصل نیستند و MS26 مستقل است.
+
+Slice 07 Micro-Step 26 کاتالوگ F07 را با Migration 50 و Definition/Template digest ثابت
+منتشر کرد. Runtime policy هر دو `technical.read` و `technical.confidential.read` را برای
+کل Definition الزام می‌کند؛ Endpoint پارامتر `{}`، Project profile و cutoff را پین و
+Worker Source مالک TechnicalOffice، Snapshot و Rendererهای PDF/XLSX را dispatch می‌کند.
+هیچ join مستقیم به جدول TechnicalOffice یا backfill برای legacy انجام نشد. QA متصل با نقش
+واجد هر دو مجوز (`ContractAdministrator`) و deny برای `TechnicalOffice` فاقد confidential
+read، `17/17` assertion، PDF/XLSX download/hash/verify و پایگاه ۵۰ Migration را پاس کرد.
+Source `b7a44b35eb7f498bf4382990324e3253033c0284`، tree
+`bb6ebad2d3435caf4e085a65e08a085a2271761f`، Run 222 (`36305583760`) با
+هر هشت Job سبز و Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` این مرز را می‌بندند.
+F08 تا F10، UI/UX2، Production enablement و Report Designer بازند؛ defaults خاموش ماندند.

@@ -66,6 +66,13 @@ history ناقص همچنان `InsufficientData` و count نامعلوم‌ان�
 کرد؛ F07 هنوز Catalog/API/Worker و Qualification متصل ندارد. Scope ده‌گانه و defaultهای خاموش
 تغییر نکرده‌اند؛ MS26 گام اتصال مستقل F07 است.
 
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1`، Definition/Template و مسیر
+Catalog/API/Worker F07 با Migration 50، هر دو مجوز Technical read، Source مالک و
+Rendererهای پین‌شده متصل شد. Run 222 (`36305583760`) هر هشت Job و آزمون متصل F07
+`17/17` را سبز کرد؛ نقش فاقد `technical.confidential.read` دسترسی ندارد و defaultهای
+Production خاموش‌اند. بنابراین F01 تا F07 End-to-End checkpointed و F08 تا F10 بازند؛
+Gate خروج ده‌گانه همچنان باز و گام بعد DoR/قرارداد معنایی مستقل F08 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.59.0`
+- نسخه سند: `1.60.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -728,6 +728,20 @@ PostgreSQL تطبیق می‌دهد و cutoff را از eventها می‌ساز�
 Safe Resume `S07-MS25` و گام بعد `S07-MS26` فقط Catalog/API/Worker wiring و Qualification
 End-to-End مستقل F07 است؛ F08–F10/UI/Production و تمام defaultهای خاموش دست‌نخورده‌اند.
 
+**F07 Connected Catalog/API/Worker — Slice 07 Micro-Step 26 Safe Checkpoint:**
+Definition و Template تغییرناپذیر F07 با Migration شمارهٔ ۵۰ منتشر و فقط با دو Source permission
+`technical.read` و `technical.confidential.read` در Catalog/API نمایان شدند. Worker همان
+Application Contract مالک TechnicalOffice و Snapshot نسخه‌دار را به Rendererهای PDF/XLSX پین‌شده
+وصل می‌کند؛ پارامتر Client فقط `{}` است و legacy بدون ledger کامل همچنان `InsufficientData`
+می‌ماند. نقش `TechnicalOffice` به‌تنهایی مجوز confidential ندارد و deny مستقل دارد؛
+`ContractAdministrator` واجد هر دو مجوز مسیر موفق را qualify کرد. Candidate
+`b7a44b35eb7f498bf4382990324e3253033c0284`، tree
+`bb6ebad2d3435caf4e085a65e08a085a2271761f` و Run 222 (`36305583760`)
+هر هشت Job، `523/523` C#، `94/94` Node، `139/139` Web، پنج مرورگر، F07 connected
+`17/17`، Restore ۵۰ Migration و Qualification `7/7` را سبز کردند. Safe Resume
+`S07-MS26` است؛ گام بعد فقط DoR و قرارداد معنایی مستقل F08 برای Quality/HSE در
+`S07-MS27` است. F09/F10، UI/UX2، Production enablement و Report Designer بازند و defaults خاموش‌اند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1029,3 +1043,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.57.0` | ثبت Safe Checkpoint `S07-MS23` و Evidence سبز Run 211 برای Runtime Core محدود F07؛ Renderer/Golden، historical producer و wiring/F08–F10/UI/Production باز است |
 | `1.58.0` | ثبت Safe Checkpoint `S07-MS24` و Evidence سبز Run 215 برای Renderer/Golden قطعی محدود F07؛ historical producer و wiring/F08–F10/UI/Production باز است |
 | `1.59.0` | ثبت Safe Checkpoint `S07-MS25` و Evidence سبز Run 219 برای producer تاریخچهٔ RFI/Submittal بدون backfill؛ wiring F07 و F08–F10/UI/Production باز است |
+| `1.60.0` | ثبت Connected Safe Checkpoint `S07-MS26` و Evidence سبز Run 222 برای Catalog/API/Worker و Qualification مستقل F07؛ F08–F10/UI/Production باز است |
