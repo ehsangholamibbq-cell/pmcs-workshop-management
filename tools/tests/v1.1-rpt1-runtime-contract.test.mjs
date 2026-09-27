@@ -76,7 +76,7 @@ test("RPT1 runtime slice registers an independent certified reporting module", (
   assert.match(readService, /runtime\.OutputAccessEnabled/u);
 });
 
-test("migrations 42 through 48 own reporting schema and the connected F02/F03/F04/F05/F06 catalogs", () => {
+test("reporting catalogs and the F07 owner history migration keep the ledger verified", () => {
   const migration = read(`${moduleRoot}/Migrations/ReportingInitialMigration.cs`);
   const verificationMigration = read(`${moduleRoot}/Migrations/ReportingVerificationCodeIndexMigration.cs`);
   const periodicMigration = read(`${moduleRoot}/Migrations/ProjectPeriodicReportCatalogMigration.cs`);
@@ -154,7 +154,8 @@ test("migrations 42 through 48 own reporting schema and the connected F02/F03/F0
   assert.match(commercialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"48"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"49"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /technical reporting history migration identity/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
 

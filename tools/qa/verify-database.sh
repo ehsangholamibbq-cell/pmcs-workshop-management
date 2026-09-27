@@ -81,8 +81,13 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "48" \
+  "49" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "technical reporting history migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'technical-office' and version = '20260927-002';"
 
 expect_equal \
   "certified reporting migration identity" \
