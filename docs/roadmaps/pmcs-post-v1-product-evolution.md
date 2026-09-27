@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.60.0`
+- نسخه سند: `1.61.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -742,6 +742,16 @@ Application Contract مالک TechnicalOffice و Snapshot نسخه‌دار را
 `S07-MS26` است؛ گام بعد فقط DoR و قرارداد معنایی مستقل F08 برای Quality/HSE در
 `S07-MS27` است. F09/F10، UI/UX2، Production enablement و Report Designer بازند و defaults خاموش‌اند.
 
+**F08 Quality/HSE Semantic Contract — Slice 07 Micro-Step 27 Safe Checkpoint:**
+قرارداد `PMCS-RPT1-F08-SEMANTIC-001 v1.0.0` دو بخش مستقل Quality/HSE را با مالک
+QualitySafety، زمان/پیکربندی پین‌شده، Source کامل، وضعیت‌های NoData/InsufficientData/
+NotConfigured، سه permission خواندنی، سیاست fail-closed برای PersonalMedical/
+LegalInvestigation و ماتریس ۲۲ سناریو بست. Run 224 (`36307100818`) روی source
+`b72ab1c09376e0ec45b6b52a460660f4b807b15a` با tree
+`14334896b2155f6ebefe612a29123bd73bce3760` همهٔ هشت Job و `98/98` Node را
+سبز کرد. Safe Resume `S07-MS27`؛ گام بعد فقط Runtime Core محدود F08 در MS28 است.
+Renderer/Catalog/API/Worker، F09/F10 و UI/Production باز و defaultها خاموش‌اند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1044,3 +1054,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.58.0` | ثبت Safe Checkpoint `S07-MS24` و Evidence سبز Run 215 برای Renderer/Golden قطعی محدود F07؛ historical producer و wiring/F08–F10/UI/Production باز است |
 | `1.59.0` | ثبت Safe Checkpoint `S07-MS25` و Evidence سبز Run 219 برای producer تاریخچهٔ RFI/Submittal بدون backfill؛ wiring F07 و F08–F10/UI/Production باز است |
 | `1.60.0` | ثبت Connected Safe Checkpoint `S07-MS26` و Evidence سبز Run 222 برای Catalog/API/Worker و Qualification مستقل F07؛ F08–F10/UI/Production باز است |
+| `1.61.0` | ثبت Safe Checkpoint `S07-MS27` و Evidence سبز Run 224 برای DoR/قرارداد معنایی مستقل F08؛ Runtime/Renderer/wiring و F09–F10/UI/Production باز است |

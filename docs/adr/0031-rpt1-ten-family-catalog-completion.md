@@ -73,6 +73,10 @@ Rendererهای پین‌شده متصل شد. Run 222 (`36305583760`) هر هش�
 Production خاموش‌اند. بنابراین F01 تا F07 End-to-End checkpointed و F08 تا F10 بازند؛
 Gate خروج ده‌گانه همچنان باز و گام بعد DoR/قرارداد معنایی مستقل F08 است.
 
+در `PMCS-V1.1-RPT1-S07-MS27-C1`، قرارداد معنایی مستقل F08 با Run 224 و هشت Job سبز شد.
+این Checkpoint صرفاً DoR/Source/Classifications/Golden Matrix را می‌بندد؛ Runtime، Renderer
+و wiring F08 هنوز بازند. F01–F07 متصل، F09/F10 باز، Gate ده‌گانه و defaults خاموش ثابت‌اند.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

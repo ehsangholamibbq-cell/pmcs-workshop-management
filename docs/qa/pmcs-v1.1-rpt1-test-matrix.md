@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.43.0`
-- وضعیت: F01–F07 connected؛ F08–F10/UI/Production باز
+- نسخه: `1.44.0`
+- وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract بسته؛ F08 Runtime/Renderer/wiring و F09–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1234,3 +1234,13 @@ Candidate `b7a44b35eb7f498bf4382990324e3253033c0284`، tree
 browser scenario، validator `421` فایل، Restore ۵۰ Migration، F07 connected `17/17`
 و Qualification `7/7`. Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` خانواده F07 را
 End-to-End می‌بندد؛ گام بعد فقط DoR و قرارداد معنایی F08 در `S07-MS27` است.
+
+## ۴۹. DoR و قرارداد معنایی F08 — Slice 07 Micro-Step 27 Safe Checkpoint
+
+۲۲ سناریوی `F08-Q/H/C/P/S/B/X/R`، owner boundary، cutoff، configuration، classification،
+three-permission gate، تاریخچهٔ ناقص و نرخ حادثهٔ بدون denominator را پوشش می‌دهند.
+`b72ab1c09376e0ec45b6b52a460660f4b807b15a` با tree
+`14334896b2155f6ebefe612a29123bd73bce3760` و Run 224 (`36307100818`)
+هشت Job سبز و `98/98` Node داشت؛ سه تست F08 متمرکز پاس شدند. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS27-C1` هیچ Runtime/Renderer/Migration/Catalog/API/Worker را
+claim نمی‌کند. گام بعد فقط Runtime Core محدود F08 در `S07-MS28` است.

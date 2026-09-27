@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.40.0`
-- وضعیت: `S07-MS26 F07 connected safe checkpoint | F08-F10/UI/Production open`
+- نسخه: `1.41.0`
+- وضعیت: `S07-MS27 F08 semantic contract safe checkpoint | Runtime/Renderer/wiring/F09-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -869,3 +869,11 @@ Source `b7a44b35eb7f498bf4382990324e3253033c0284`، tree
 `bb6ebad2d3435caf4e085a65e08a085a2271761f`، Run 222 (`36305583760`) با
 هر هشت Job سبز و Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` این مرز را می‌بندند.
 F08 تا F10، UI/UX2، Production enablement و Report Designer بازند؛ defaults خاموش ماندند.
+
+Slice 07 Micro-Step 27 DoR و Semantic Contract مستقل F08 را برای دو section Quality/HSE
+در مالک `Pmcs.Modules.QualitySafety` بست. `/quality-safety/state` capped/current است؛
+Runtime باید Source مالک با transaction کامل و cutoff-aware بگیرد. Chronology میانی NCR/
+Defect/Incident/Permit/Action ناقص و legacy بدون proof `InsufficientData` است. سه Source
+permission whole-definition، Classification پزشکی/تحقیق حقوقی fail-closed و نرخ حادثه بدون
+Exposure معتبر null است. Run 224 (`36307100818`) هر هشت Job را سبز کرد؛ MS28 فقط Runtime
+Core محدود است و Renderer/Golden و wiring F08 مستقل می‌مانند.
