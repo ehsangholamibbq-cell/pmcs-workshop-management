@@ -16,7 +16,7 @@ using Pmcs.Modules.Reporting.Rendering;
 namespace Pmcs.Modules.Reporting.Services;
 
 /// <summary>Dedicated tenant worker; project-run claims remain in ReportGenerationWorker.</summary>
-internal sealed class PortfolioReportGenerationWorker(
+internal sealed partial class PortfolioReportGenerationWorker(
     IServiceScopeFactory scopeFactory, ReportingRuntimeOptions runtime,
     ReportingExecutionOptions execution, ILogger<PortfolioReportGenerationWorker> logger)
     : BackgroundService
@@ -37,7 +37,7 @@ internal sealed class PortfolioReportGenerationWorker(
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Portfolio report worker loop failed.");
+                LogLoopFailed(logger, exception);
             }
             await Task.Delay(runtime.PollingInterval, stoppingToken);
         }
@@ -85,7 +85,7 @@ internal sealed class PortfolioReportGenerationWorker(
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Portfolio report run {RunId} failed unexpectedly.", claimed.Id);
+            LogRunFailed(logger, exception, claimed.Id);
             await RecordFailureAsync(claimed.Id, claimed.SnapshotWork
                 ? "reporting.snapshot.transient" : "reporting.renderer.transient", true,
                 cancellationToken);
@@ -471,6 +471,14 @@ internal sealed class PortfolioReportGenerationWorker(
 
     private static DomainRuleException Invalid(string code) => new(code,
         "The certified Portfolio report failed its scope, access or integrity contract.");
+
+    [LoggerMessage(EventId = 4201, Level = LogLevel.Error,
+        Message = "Portfolio report worker loop failed.")]
+    private static partial void LogLoopFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 4202, Level = LogLevel.Error,
+        Message = "Portfolio report run {RunId} failed unexpectedly.")]
+    private static partial void LogRunFailed(ILogger logger, Exception exception, Guid runId);
 
     private sealed record Claimed(Guid Id, bool SnapshotWork);
     private sealed record Prepared(Guid OutputId, Guid DocumentId, RenderedReportArtifact Artifact);
