@@ -102,7 +102,7 @@ public sealed class ProjectTechnicalOfficeReportRenderingTests
         Assert.Single(XDocument.Parse(sheets[5]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("<f>", string.Concat(sheets), StringComparison.Ordinal);
         WriteQualificationArtifact("project-technical-office-golden.xlsx", first.Bytes);
-        Assert.True(first.Sha256 == "F07_XLSX_SHA256_TO_PIN",
+        Assert.True(first.Sha256 == "d25bc987e3411f159b7aba04f6daadc8c0d30758ac77c953e8c28edb9a709547",
             $"F07_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -144,8 +144,14 @@ public sealed class ProjectTechnicalOfficeReportRenderingTests
         WriteQualificationArtifact("project-technical-office-golden.pdf", first.Bytes);
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "F07_PDF_SHA256_TO_PIN" &&
-            visualDigests.SequenceEqual(new[] { "F07_PAGE1", "F07_PAGE2", "F07_PAGE3", "F07_PAGE4" }),
+        Assert.True(first.Sha256 == "2c149cd41d1765c960964816df13bf4054adb0f009fc827a7abfd49c4d513f43" &&
+            visualDigests.SequenceEqual(new[]
+            {
+                "7436cf1c07158a13d61bf0984c40a8008dd6bb081d8989ff2e1941a8ce1d22b1",
+                "c789e79abd262238ea8a9a39ce938fbac71fd5d6bde2f0a935d0101c39545a4c",
+                "c311f0571a42637cb1462c0033bb9ea3f168f61e7dd68b20f991d5099d5205df",
+                "40d55bd9871af6b3932e00dd5194c7d19f9ed6f7cf1f497134cef43c0a4032ab"
+            }),
             $"F07_PDF_GOLDEN_SHA256={first.Sha256}; F07_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
 
