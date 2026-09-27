@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.76.0`
+- نسخه سند: `1.77.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -873,6 +873,17 @@ Exact Next MS42 Worker تولید، سپس MS43 OutputAccess/Qualification اس�
 هشت Job، C# `554/554`، Node `128/128`، QA متصل `4/4` و Restore ۵۶ را سبز کرد.
 Exact Next MS43 OutputAccess، Retry/Cancel و Qualification End-to-End F10 است.
 
+در `S07-MS43`، Download/Verify اختصاصی Tenant سند `TenantReportOutput` را
+با cohort/mask permission recheck، مالکیت، digest Snapshot/manifest و byte/hash
+کنترل می‌کند. Retry خطای مجاز Snapshot را حفظ می‌کند و Cancel پیش از Render
+idempotent است. Candidate `84e4e76ca6173f834cec5ea481adc475e9dfd22f`، tree
+`033b2e4cc3652735b60b7fa9b849707906f8acc0` در Run 275 (`36352517816`)
+هر هشت Job، C# `554/554`، Node `130/130`، Web `139/139`، QA متصل F10
+`12/12`، Retry `3/3`، Cancel `4/4`، شش کنترل امنیت، Restore ۵۶ و
+Qualification `7/7` را سبز کرد. F01 تا F10 End-to-End متصل‌اند.
+Exact Next طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل است؛ UI اختصاصی
+Reporting در UX2 و Production enablement gateهای جدا و همچنان بازند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1191,3 +1202,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.74.0` | ثبت Safe Checkpoint `S07-MS40` و Evidence سبز Run 264 برای PDF/XLSX Renderer/Golden قطعی F10؛ MS41 Catalog/Tenant API باز است |
 | `1.75.0` | ثبت Safe Checkpoint `S07-MS41` و Evidence سبز Run 266 برای Catalog/Template و Tenant API F10؛ MS42 Worker و MS43 OutputAccess/Qualification باز است |
 | `1.76.0` | ثبت Safe Checkpoint `S07-MS42` و Evidence سبز Run 272 برای Worker و دو سند Tenant F10؛ MS43 OutputAccess/Qualification باز است |
+| `1.77.0` | ثبت Connected Safe Checkpoint `S07-MS43` و Evidence سبز Run 275 برای F10 End-to-End؛ گام بعد COL1 طبق ترتیب Roadmap، UX2/Production باز |

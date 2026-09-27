@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.56.0`
-- وضعیت: `S07-MS42 F10 Worker Safe Checkpoint | OutputAccess/UI/Production open`
+- نسخه: `1.57.0`
+- وضعیت: `S07-MS43 F10 Connected Safe Checkpoint | UX2/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -1010,3 +1010,19 @@ canonicalize با SHA-256 سنجیده می‌شوند. شناسهٔ خروجی/
 `TenantReportOutput` است؛ دو Output در یک commit تراکنشی Report/Audit/Outbox
 ثبت می‌شوند. Run 272 (`36349571188`) هشت Job، QA متصل `4/4`، Restore ۵۶
 و Qualification `7/7` را سبز کرد. MS43 فقط دسترسی و Qualification نهایی است.
+
+## F10 S07-MS43 Tenant OutputAccess and Connected Qualification
+
+Endpointهای Portfolio خروجی را فقط از Run/Snapshot/Output tenant-scoped و
+سند `TenantReportOutput` می‌خوانند؛ cohort/mask پین‌شده پیش و پس از خواندن
+دوباره مجوزسنجی و template، classification، cutoff، canonical JSONB digest،
+manifest، owner و SHA-256 byte کنترل می‌شوند. Verify/Download با tamper
+fail-closed و Audit ثبت می‌کنند. Retry پس از خطاهای allowlist با سقف attempt،
+Snapshot پیشین را نگه می‌دارد؛ Cancel فقط پیش از Rendering با row lock و
+receipt idempotent پذیرفته می‌شود. مسیر Project و generic Documents خروجی
+Tenant را نمایش نمی‌دهند.
+
+Run 275 (`36352517816`) هشت Job، QA متصل F10 `12/12`، Retry `3/3`،
+Cancel `4/4`، شش کنترل امنیت و Restore ۵۶ را سبز کرد. تمام ده خانوادهٔ
+استاندارد End-to-End متصل‌اند؛ UI Reporting در UX2 و Production enablement
+طبق Roadmap gateهای باز و مستقل‌اند.

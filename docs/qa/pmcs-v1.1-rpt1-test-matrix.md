@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.59.0`
-- وضعیت: F01–F09 connected؛ F10 Worker PDF/XLSX ready، OutputAccess/UI/Production باز
+- نسخه: `1.60.0`
+- وضعیت: F01–F10 End-to-End connected؛ UX2/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1489,3 +1489,19 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
   سبز؛ artifact `10942071124`،
   `sha256:10c07cd9b8060792561902140ff9f83ef67538143c9913fa9c152fe1f3c82de3`.
 - MS43 OutputAccess، Retry/Cancel و Qualification End-to-End F10 باز است.
+
+## ۶۵. F10 MS43 OutputAccess/Retry/Cancel End-to-End
+
+- Tenant OutputAccess هر دو PDF/XLSX را با ETag، no-store، no-sniff، attachment،
+  SHA-256 و محتوای واقعی PDF/XLSX `12/12` تأیید می‌کند؛ Verify و Project route
+  isolation همان Run را کنترل می‌کنند.
+- license Unconfigured `2/2`، retry دستی `3/3` با Snapshot محفوظ و یک سند
+  Tenant، cancel صف `4/4` و receipt idempotent، SQL مستقل و شش کنترل امنیت
+  شامل anonymous/foreign tenant، generic Documents deny، tamper 502 و restore
+  200 در PostgreSQL/Object Storage متصل پاس شدند.
+- Run 275 (`36352517816`) هر هشت Job، C# `554/554`، Node `130/130`، Web
+  `139/139`، پنج browser scenario، Restore Drill ۵۶ Migration و Qualification
+  `7/7` سبز؛ artifact `10942892666` با digest
+  `sha256:fab4c0d3cfa0086f6ebd4dd14db9b344866c30c626b248722f37671fa4d3586b`.
+- F01 تا F10 متصل‌اند؛ RPT1 با UI اختصاصی UX2 و Production enablement
+  پیش‌فرض خاموش باز می‌ماند. Exact Next طبق Roadmap، COL1 DoR مستقل است.
