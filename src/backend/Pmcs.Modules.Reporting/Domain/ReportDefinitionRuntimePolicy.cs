@@ -49,6 +49,8 @@ internal static class ReportDefinitionRuntimePolicy
         ["technical.read", "technical.confidential.read"];
     private static readonly string[] ProjectQualityHseSourcePermissions =
         ["quality.read", "hse.read", "hse.confidential.read"];
+    private static readonly string[] ProjectGovernanceActionSourcePermissions =
+        ["governance.read", "governance.sensitive.read", "actions.read"];
 
     public static readonly string[] SupportedDefinitionCodes =
     [
@@ -59,7 +61,8 @@ internal static class ReportDefinitionRuntimePolicy
         ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
         ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode,
         ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode,
-        ProjectQualityHseReportRuntimeContract.DefinitionCode
+        ProjectQualityHseReportRuntimeContract.DefinitionCode,
+        ProjectGovernanceActionReportRuntimeContract.DefinitionCode
     ];
 
     public static bool TryGetSourcePermissions(
@@ -80,6 +83,8 @@ internal static class ReportDefinitionRuntimePolicy
                 ProjectTechnicalOfficeSourcePermissions,
             ProjectQualityHseReportRuntimeContract.DefinitionCode =>
                 ProjectQualityHseSourcePermissions,
+            ProjectGovernanceActionReportRuntimeContract.DefinitionCode =>
+                ProjectGovernanceActionSourcePermissions,
             _ => Array.Empty<string>()
         };
         return permissions.Count > 0;

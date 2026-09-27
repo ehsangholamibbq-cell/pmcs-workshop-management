@@ -43,6 +43,7 @@ reporting_project_financial_position_run_id="7a000000-0000-4000-8000-00000000000
 reporting_project_commercial_procurement_supply_run_id="7b000000-0000-4000-8000-000000000001"
 reporting_project_technical_office_run_id="7c000000-0000-4000-8000-000000000001"
 reporting_project_quality_hse_run_id="7d000000-0000-4000-8000-000000000001"
+reporting_project_governance_action_run_id="7e000000-0000-4000-8000-000000000001"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -83,7 +84,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "52" \
+  "53" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -135,6 +136,16 @@ expect_equal \
   "project-quality-hse reporting catalog migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-009';"
+
+expect_equal \
+  "project-governance-action reporting catalog migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-010';"
+
+expect_equal \
+  "project-governance-action certified definition and immutable template are published" \
+  "Active|Confidential|pmcs.reporting.project-governance-action.parameters/v1|true|1.0.0|pmcs.reporting.project-governance-action.renderer/v1|pmcs.reporting.project-governance-action.layout/v1|7fcb7af589562b09850491fe88d7067b0e20297d8fdb03148b0408db97b52a01|Landscape" \
+  "select definition.status || '|' || definition.classification || '|' || definition.parameter_schema_version || '|' || (definition.required_permissions = '[\"governance.read\",\"governance.sensitive.read\",\"actions.read\"]'::jsonb)::text || '|' || template.version || '|' || template.renderer_contract_version || '|' || template.layout_contract_version || '|' || template.content_digest || '|' || template.orientation from reporting.report_definitions definition join reporting.report_template_versions template on template.id = definition.current_template_version_id and template.definition_id = definition.id where definition.code = 'project-governance-action-certified' and template.retired_at is null;"
 
 expect_equal \
   "project-quality-hse certified definition and immutable template are published" \
@@ -445,6 +456,26 @@ expect_equal \
   "project-quality-hse PDF and XLSX outputs are governed and complete" \
   "2|Pdf,Xlsx|2|2|0" \
   "select count(*)::text || '|' || string_agg(format, ',' order by format) || '|' || count(*) filter (where classification in ('Confidential','Restricted'))::text || '|' || count(*) filter (where retention_policy = 'LongTerm' and archive_state = 'Active')::text || '|' || count(*) filter (where size_bytes <= 0 or sha256 !~ '^[0-9a-f]{64}$' or manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_quality_hse_run_id}';"
+
+expect_equal \
+  "project-governance-action run completed from a pinned project profile" \
+  "Succeeded|Complete|1|2|project-governance-action-certified|pmcs.reporting.project-governance-action.project-profile/v1|true" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || (pinned_project_profile->>'schemaVersion') || '|' || ((pinned_project_profile->>'id') = project_id::text and (pinned_project_profile->>'tenantId') = tenant_id::text and (pinned_project_profile->>'timeZone') = project_time_zone)::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_project_governance_action_run_id}';"
+
+expect_equal \
+  "project-governance-action permission snapshots require reporting and all three source reads" \
+  "4|4|true|4|4|true" \
+  "select jsonb_array_length(request_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(request_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','governance.read','governance.sensitive.read','actions.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(request_permission_snapshot->'decisions') decision)::text || '|' || jsonb_array_length(processing_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(processing_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','governance.read','governance.sensitive.read','actions.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(processing_permission_snapshot->'decisions') decision)::text from reporting.report_runs where id = '${reporting_project_governance_action_run_id}';"
+
+expect_equal \
+  "project-governance-action semantic snapshot preserves five independent sections and cutoff" \
+  "pmcs.reporting.project-governance-action.snapshot/v1|project-governance-action-certified|NoData|Confidential|NoData|NoData|NoData|NoData|NoData|0|0|0|0|0|true" \
+  "select schema_version || '|' || (payload_json->>'definitionCode') || '|' || data_status || '|' || (payload_json->>'classification') || '|' || (payload_json#>>'{issues,status}') || '|' || (payload_json#>>'{risks,status}') || '|' || (payload_json#>>'{decisions,status}') || '|' || (payload_json#>>'{escalations,status}') || '|' || (payload_json#>>'{actions,status}') || '|' || (payload_json#>>'{issues,officialCount}') || '|' || (payload_json#>>'{risks,officialCount}') || '|' || (payload_json#>>'{decisions,officialCount}') || '|' || (payload_json#>>'{escalations,officialCount}') || '|' || (payload_json#>>'{actions,officialCount}') || '|' || ((payload_json#>>'{cutoff,sourceCutoffUtc}')::timestamptz = source_cutoff_utc)::text from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_governance_action_run_id}';"
+
+expect_equal \
+  "project-governance-action PDF and XLSX outputs are governed and complete" \
+  "2|Pdf,Xlsx|2|2|0" \
+  "select count(*)::text || '|' || string_agg(format, ',' order by format) || '|' || count(*) filter (where classification in ('Confidential','Restricted'))::text || '|' || count(*) filter (where retention_policy = 'LongTerm' and archive_state = 'Active')::text || '|' || count(*) filter (where size_bytes <= 0 or sha256 !~ '^[0-9a-f]{64}$' or manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_governance_action_run_id}';"
 
 expect_equal \
   "project-commercial-procurement-supply permission snapshots require reporting and all six Commercial reads" \
