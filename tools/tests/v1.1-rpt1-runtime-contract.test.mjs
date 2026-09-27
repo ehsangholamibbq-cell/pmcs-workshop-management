@@ -2998,7 +2998,7 @@ test("RPT1-F07 semantic contract records the S07-MS22 safe checkpoint without Ru
   assert.match(checkpoint, /sha256:71a282aa29c53b3c6dc9179cfc552666a4374d08ef1a6f486f8464962d8cf4a1/u);
   assert.match(checkpoint, /Runtime \/ Renderer \/ Migration \/ Catalog \/ API \/ Worker change: None/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS22-C1`/u);
-  assert.match(checkpoint, /گام بعدی `S07-MS23` فقط Runtime Core محدود F07/u);
+  assert.match(checkpoint, /گام بعدی `S07-MS23` فقط Runtime Core\s+محدود F07/u);
   assert.match(contract, /Contract Ready \/ Runtime Not Implemented/u);
   assert.equal((contract.match(/^\| `F07-[A-Z]\d{2}` \|/gmu) ?? []).length, 27);
   assert.match(roadmap, /نسخه سند: `1\.56\.0`/u);
