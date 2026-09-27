@@ -206,9 +206,9 @@ internal sealed class ProjectQualityHseReportingSource(
             return new(QualityHseReportingStatus.InsufficientData, null, [],
                 [configurationUnproven ? QualityHseReportingReason.ConfigurationHistoryUnavailable :
                     QualityHseReportingReason.HistoricalTransitionUnavailable], classification);
-        return facts.Count == 0
+        return facts.Length == 0
             ? new(QualityHseReportingStatus.NoData, 0, [], [noFactReason], classification)
-            : new(QualityHseReportingStatus.Available, facts.Count, facts, [], classification);
+            : new(QualityHseReportingStatus.Available, facts.Length, facts, [], classification);
     }
 
     private static DomainRuleException Invalid(string code, string message) =>
