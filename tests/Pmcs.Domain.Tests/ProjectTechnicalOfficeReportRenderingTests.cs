@@ -186,6 +186,49 @@ public sealed class ProjectTechnicalOfficeReportRenderingTests
     }
 
     [Fact]
+    public void F07CompleteSyntheticHistoryRendersDistinctRfiAndSubmittalFactsWithoutFormulas()
+    {
+        var projection = ProjectionWithPartialHistory();
+        var rfi = projection.Rfis.Single() with
+        {
+            Number = "=SUM(A1:A2)",
+            Events = [Event(1, TechnicalReportingEventType.InternalReview, -5),
+                Event(2, TechnicalReportingEventType.Issued, -4),
+                Event(3, TechnicalReportingEventType.ResponseReceived, -3) with
+                { ResponseClassification = RfiResponseClassification.ChangePotential,
+                    ChangePotential = true },
+                Event(4, TechnicalReportingEventType.ResponseAccepted, -2)]
+        };
+        var submittal = projection.Submittals.Single() with
+        {
+            Events = [Event(1, TechnicalReportingEventType.Submitted, -4),
+                Event(2, TechnicalReportingEventType.UnderReview, -3),
+                Event(3, TechnicalReportingEventType.Reviewed, -2) with
+                { ReviewOutcome = SubmittalReviewOutcome.ForInformation }]
+        };
+        var request = Request(Build(projection with
+        {
+            Rfis = [rfi], Submittals = [submittal],
+            RfiCompleteness = TechnicalReportingCompleteness.Complete,
+            SubmittalCompleteness = TechnicalReportingCompleteness.Complete
+        }), ReportFormat.Xlsx);
+        Assert.Equal(ReportDataStatus.Available, request.Snapshot.DataStatus);
+        Assert.Equal(1, request.Snapshot.Rfis.OfficialCount);
+        Assert.Equal(1, request.Snapshot.Submittals.OfficialCount);
+        var artifact = new ProjectTechnicalOfficeReportXlsxRenderer(
+            ReportingExecutionOptions.Default).Render(request);
+        using var stream = new MemoryStream(artifact.Bytes, writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        var rfiSheet = ReadEntry(archive, "xl/worksheets/sheet5.xml");
+        var submittalSheet = ReadEntry(archive, "xl/worksheets/sheet6.xml");
+        Assert.Contains("'=SUM(A1:A2)", rfiSheet, StringComparison.Ordinal);
+        Assert.Contains("ResponseAccepted", rfiSheet, StringComparison.Ordinal);
+        Assert.Contains("ChangePotential", rfiSheet, StringComparison.Ordinal);
+        Assert.Contains("ForInformation", submittalSheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("<f>", rfiSheet + submittalSheet, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void F07RejectsNonCanonicalRowsOversizedTextBudgetAndWrongFormat()
     {
         var snapshot = Build(ProjectionWithPartialHistory());
