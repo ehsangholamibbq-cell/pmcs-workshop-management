@@ -57,7 +57,11 @@ public sealed class ProjectTechnicalOfficeReportingTests
             Event(2, TechnicalReportingEventType.Approved, -1),
             Event(3, TechnicalReportingEventType.Issued, 1)], 21) with
         { Code = "B", SupersedesRevisionId = original.Id };
-        var a = Transmittal() with { Events = [Event(1, TechnicalReportingEventType.Issued, -3)] };
+        var a = Transmittal() with
+        {
+            CreatedAtUtc = Cutoff.AddDays(-4),
+            Events = [Event(1, TechnicalReportingEventType.Issued, -3)]
+        };
         var b = Transmittal(21, [replacement.Id], [Event(1, TechnicalReportingEventType.Issued, 1)]);
         var initial = Calculate(Projection(documents: [Document()], revisions: [original, replacement],
             transmittals: [a, b]));
