@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.50.0`
-- وضعیت: F01–F08 connected؛ F09 Renderer/Golden MS33 checkpointed؛ producer/wiring F09 و F10/UI/Production باز
+- نسخه: `1.51.0`
+- وضعیت: F01–F08 connected؛ F09 owner producer MS34 checkpointed؛ selector/wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1373,3 +1373,15 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
 و XLSX `7b41d33ea7db98fada6a041b9fd6bc5c265a8ab8400513fe643ca830d27efb1f`
 به‌همراه پنج visual digest ثابت‌اند. `PMCS-V1.1-RPT1-S07-MS33-C1` فقط Renderer
 را می‌بندد؛ MS34 producer تاریخچه است.
+
+## ۵۶. F09 MS34 Owner Transition Producer
+
+- Create و هر transition شش Aggregate رویداد دارای sequence/UTC و فقط دادهٔ
+  لازم برای cutoff تولید می‌کنند؛ متن/نام/Evidence حساس در ledger نیست.
+- بازگشت زمان reject می‌شود؛ Decision verbal در `RecordedAt` ظاهر می‌شود؛
+  Supersede و EffectReview زمان مستقل دارند؛ Touch/Ack/Close سه واقعیت جدا هستند.
+- Migration `action-control/20260927-003` nullable است؛ legacy بدون backfill و
+  بدون ارتقا در mutation بعدی باقی می‌ماند؛ Restore Drill ۵۲ migration را می‌سنجد.
+- Run 248 (`36327282876`) هشت Job سبز، C# `540/540`، Node `109/109`،
+  Web `139/139` و پنج مرورگر را ثبت کرد. Source selector و connected E2E
+  در MS35/MS36 Gateهای باز هستند.

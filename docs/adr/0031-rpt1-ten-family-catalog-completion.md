@@ -105,6 +105,11 @@ Renderer/Golden مستقل F09 است.
 (`36324102914`) هشت Job سبز گرفتند. Producer تاریخچه و wiring هنوز باز است؛ F10،
 Gate ده‌گانه و defaults خاموش تغییری ندارند. MS34 فقط producer مالک است.
 
+در `PMCS-V1.1-RPT1-S07-MS34-C1`، تاریخچهٔ تازهٔ شش Aggregate مالک با
+Migration nullable شمارهٔ ۵۲ و بدون backfill در Run 248 (`36327282876`)
+هشت Job سبز گرفت. Source selector/wiring و F10 بازند؛ Scope ده‌گانه و
+defaultهای خاموش ثابت‌اند. MS35 فقط مصرف تاریخچهٔ cutoff-aware است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

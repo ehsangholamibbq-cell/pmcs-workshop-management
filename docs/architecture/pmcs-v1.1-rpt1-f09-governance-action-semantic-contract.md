@@ -205,3 +205,11 @@ byte/visual در Run 245 (`36324102914`) هر هشت Job را سبز کرد. Tem
 `7fcb7af589562b09850491fe88d7067b0e20297d8fdb03148b0408db97b52a01`
 برای Layout نسخه‌دار F09 pin شد. Producer تاریخچه و wiring هنوز بازند؛ MS34 فقط
 transitionهای تازهٔ owner را بدون backfill حدسی ثبت می‌کند.
+
+## ۱۰. تحقق Producer در MS34
+
+`PMCS-V1.1-RPT1-S07-MS34-C1` شش ledger nullable و زمان‌دار مالک را با
+Migration ۵۲ در Run 248 (`36327282876`) و هشت Job سبز بست. Legacy null
+به‌صورت حدسی پر نمی‌شود و transition جدید آن را کامل نمی‌کند. این تنها
+تولید تاریخچه است؛ Source selector cutoff-aware در MS35 و wiring/Qualification
+متصل در MS36 گام‌های جدا هستند.

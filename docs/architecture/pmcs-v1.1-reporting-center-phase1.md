@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.47.0`
-- وضعیت: `S07-MS33 F09 Renderer/Golden Safe Checkpoint | producer/wiring F09 و F10/UI/Production open`
+- نسخه: `1.48.0`
+- وضعیت: `S07-MS34 F09 Owner History Safe Checkpoint | selector/wiring F09 و F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -922,3 +922,10 @@ F09، validation مستقل status/count/classification و Golden byte/visual ث
 اضافه کرد. Run 245 (`36324102914`) هر هشت Job را سبز کرد؛ C# `538/538`.
 هیچ Migration/Definition، Catalog/API/Worker یا enablement اضافه نشد؛ MS34
 فقط producer تاریخچهٔ owner بدون backfill حدسی است و سپس wiring متصل می‌آید.
+
+در `S07-MS34`، شش ledger owner برای Issue/Risk/Decision Request/Decision Record/
+Escalation/Action در همان Aggregate و transaction با timestamp UTC و sequence
+تولید می‌شوند. Migration nullable شمارهٔ ۵۲ legacy را بدون backfill نگه می‌دارد؛
+transition بعدی legacy را معتبر جلوه نمی‌دهد. Run 248 (`36327282876`) هر هشت
+Job و C# `540/540` را سبز کرد. مصرف cutoff-aware و تطبیق ledger با revision/
+current state کار مستقل MS35 است؛ Catalog/API/Worker در MS36 باقی می‌ماند.

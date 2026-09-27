@@ -10,6 +10,9 @@
 Safe Checkpoint جاری `PMCS-V1.1-RPT1-S07-MS33-C1` با Run 245، PDF/XLSX Renderer و
 Golden مستقل F09 را بست. F01 تا F08 End-to-End متصل‌اند؛ گام بعدی MS34 فقط
 producer تاریخچهٔ مالک F09 است. Wiring، F10 و UI/Production بازند.
+Safe Checkpoint جدید `PMCS-V1.1-RPT1-S07-MS34-C1` با Run 248 producer تاریخچهٔ
+مالک F09 را بدون backfill بست. Migration ۵۲ است؛ گام بعد MS35 فقط selector
+cutoff-aware و سپس MS36 wiring/Qualification متصل F09 است. F10 باز است.
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1` با Run 222، Catalog/API/Worker و
 Qualification مستقل `RPT1-F07` را متصل کرد. F01 تا F07 End-to-End checkpointed هستند؛
 legacy بدون backfill حدسی `InsufficientData` و count نامعلوم می‌ماند. F08 تا F10 بازند؛
