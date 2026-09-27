@@ -196,7 +196,7 @@ internal sealed class ProjectQualityHseReportingSource(
 
     private static QualityHseReportingSection Section(
         bool enabled, bool hasRecords, bool incomplete,
-        IReadOnlyCollection<QualityHseReportingFact> facts,
+        QualityHseReportingFact[] facts,
         QualityHseReportingReason disabledReason, QualityHseReportingReason noFactReason,
         bool configurationUnproven, QualityHseReportingClassification classification)
     {
