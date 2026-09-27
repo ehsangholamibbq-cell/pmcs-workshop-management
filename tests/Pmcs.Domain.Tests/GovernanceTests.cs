@@ -185,13 +185,13 @@ public sealed class GovernanceTests
     {
         var issue = Issue();
         issue.Transition(1, IssueStatus.UnderAssessment, null, null, Guid.NewGuid(), At.AddHours(1));
-        Assert.Equal(new[] { "Open", "UnderAssessment" }, issue.ReportingHistory!.Select(x => x.State));
+        Assert.Equal("Open,UnderAssessment", string.Join(',', issue.ReportingHistory!.Select(x => x.State)));
         Assert.Equal(issue.Revision, issue.ReportingHistory!.Last().Sequence);
 
         var risk = AssessedRisk();
         risk.Activate(2, Guid.NewGuid(), At.AddHours(2));
         var riskStates = risk.ReportingHistory!.ToArray();
-        Assert.Equal(new[] { "Proposed", "Assessed", "Active" }, riskStates.Select(x => x.State));
+        Assert.Equal("Proposed,Assessed,Active", string.Join(',', riskStates.Select(x => x.State)));
         Assert.Equal("High", riskStates[1].Rating); // 3 x 4 = 12, pinned at assessment.
         Assert.Equal(1, riskStates[1].MatrixVersion);
         Assert.Equal(new DateOnly(2026, 9, 20), riskStates[1].DueDate);
@@ -203,9 +203,9 @@ public sealed class GovernanceTests
             null, DecisionChannel.VerbalRecordedLater, At, null, Guid.NewGuid(), "مدیر", null, At.AddHours(3));
         request.LinkDecision(3, record.Id, Guid.NewGuid(), At.AddHours(3));
         record.ReviewEffect(1, "نتیجه بررسی", ["evidence:1"], At.AddHours(4));
-        Assert.Equal(new[] { "Draft", "ReadyForDecision", "InDecision", "Decided" },
-            request.ReportingHistory!.Select(x => x.State));
-        Assert.Equal(new[] { "Recorded", "EffectReviewed" }, record.ReportingHistory!.Select(x => x.State));
+        Assert.Equal("Draft,ReadyForDecision,InDecision,Decided",
+            string.Join(',', request.ReportingHistory!.Select(x => x.State)));
+        Assert.Equal("Recorded,EffectReviewed", string.Join(',', record.ReportingHistory!.Select(x => x.State)));
         Assert.Equal(At.AddHours(3), record.ReportingHistory!.First().AtUtc);
         Assert.DoesNotContain("توجیه", record.ReportingHistoryJson, StringComparison.Ordinal);
         Assert.DoesNotContain("evidence:1", record.ReportingHistoryJson, StringComparison.Ordinal);
@@ -216,7 +216,7 @@ public sealed class GovernanceTests
         thread.Touch(At.AddHours(1));
         thread.Acknowledge(2, Guid.NewGuid(), "یادداشت حساس", At.AddHours(2));
         thread.CloseFromSource(At.AddHours(3));
-        Assert.Equal(new int?[] { 1, 2, 2, 2 }, thread.ReportingHistory!.Select(x => x.OccurrenceCount));
+        Assert.Equal("1,2,2,2", string.Join(',', thread.ReportingHistory!.Select(x => x.OccurrenceCount)));
         Assert.Equal("ClosedBySourceResolution", thread.ReportingHistory!.Last().State);
         Assert.DoesNotContain("یادداشت حساس", thread.ReportingHistoryJson, StringComparison.Ordinal);
 
@@ -225,7 +225,7 @@ public sealed class GovernanceTests
             new DateOnly(2026, 9, 20), ActionPriority.High, Guid.NewGuid(), At);
         action.Transition(1, ManagementActionStatus.Blocked, Guid.NewGuid(), At.AddHours(1));
         action.Transition(2, ManagementActionStatus.Done, Guid.NewGuid(), At.AddHours(2));
-        Assert.Equal(new[] { "Open", "Blocked", "Done" }, action.ReportingHistory!.Select(x => x.State));
+        Assert.Equal("Open,Blocked,Done", string.Join(',', action.ReportingHistory!.Select(x => x.State)));
         Assert.DoesNotContain("کار حساس", action.ReportingHistoryJson, StringComparison.Ordinal);
     }
 
