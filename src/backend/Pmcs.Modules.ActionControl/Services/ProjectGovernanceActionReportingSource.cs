@@ -249,7 +249,7 @@ internal sealed class ProjectGovernanceActionReportingSource(
     }
 
     private static DateTimeOffset? CertifiedSla(Guid? id, DateTimeOffset? dueAt,
-        IReadOnlyDictionary<Guid, SlaRuleVersion> rules, ProjectControlProfile project)
+        Dictionary<Guid, SlaRuleVersion> rules, ProjectControlProfile project)
     {
         if (!id.HasValue || !rules.TryGetValue(id.Value, out var rule) ||
             rule.DurationUnit == SlaDurationUnit.ProjectWorkingDays &&
@@ -260,7 +260,7 @@ internal sealed class ProjectGovernanceActionReportingSource(
 
     private static GovernanceActionReportingSection WithSlaReasons(
         GovernanceActionReportingSection section, IEnumerable<Guid?> pinnedIds,
-        IReadOnlyDictionary<Guid, SlaRuleVersion> rules, ProjectControlProfile project)
+        Dictionary<Guid, SlaRuleVersion> rules, ProjectControlProfile project)
     {
         if (section.Status == GovernanceActionReportingStatus.InsufficientData) return section;
         var ids = pinnedIds.Where(x => x.HasValue).Select(x => x!.Value).ToArray();
