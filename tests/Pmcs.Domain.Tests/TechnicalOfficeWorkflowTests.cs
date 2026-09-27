@@ -1,5 +1,7 @@
 using Pmcs.BuildingBlocks.Domain;
 using Pmcs.Modules.TechnicalOffice.Domain;
+using Pmcs.Modules.TechnicalOffice.Contracts;
+using Pmcs.Modules.TechnicalOffice.Services;
 
 namespace Pmcs.Domain.Tests;
 
@@ -79,7 +81,7 @@ public sealed class TechnicalOfficeWorkflowTests
     public void RfiNeedsEvidenceBeforeInternalReview()
     {
         var rfi = CreateRfi([]);
-        Assert.Throws<DomainRuleException>(() => rfi.SubmitForInternalReview(1));
+        Assert.Throws<DomainRuleException>(() => rfi.SubmitForInternalReview(1, Now));
     }
 
     [Fact]
@@ -129,12 +131,12 @@ public sealed class TechnicalOfficeWorkflowTests
     {
         var submittal = CreateSubmittal();
         submittal.Submit(1, Now.AddMinutes(1));
-        submittal.BeginReview(2);
-        submittal.RecordReview(3, SubmittalReviewOutcome.Approved, UserId, Now.AddMinutes(2), null);
+        submittal.BeginReview(2, Now.AddMinutes(2));
+        submittal.RecordReview(3, SubmittalReviewOutcome.Approved, UserId, Now.AddMinutes(3), null);
 
         Assert.Equal(SubmittalStatus.Approved, submittal.Status);
         Assert.Null(submittal.ClosedAt);
-        submittal.Close(4, Now.AddMinutes(3));
+        submittal.Close(4, Now.AddMinutes(4));
         Assert.Equal(SubmittalStatus.Closed, submittal.Status);
     }
 
@@ -143,7 +145,7 @@ public sealed class TechnicalOfficeWorkflowTests
     {
         var submittal = CreateSubmittal();
         submittal.Submit(1, Now);
-        submittal.BeginReview(2);
+        submittal.BeginReview(2, Now);
         Assert.Throws<DomainRuleException>(() => submittal.RecordReview(
             3, SubmittalReviewOutcome.ReviseAndResubmit, UserId, Now, null));
     }
@@ -155,6 +157,60 @@ public sealed class TechnicalOfficeWorkflowTests
             Guid.NewGuid(), TenantId, ProjectId, "مصالح نما", TechnicalSubmittalType.MaterialOrProductData,
             "معماری", "پیمانکار", "مشاور", null, null, null, null, null, null, null, null,
             1, null, [Guid.NewGuid()], null, UserId, Now));
+    }
+
+    [Fact]
+    public void RfiTransitionHistoryIsSequencedAndContainsNoPrivateResponseText()
+    {
+        var rfi = IssuedRfi();
+        rfi.RecordResponse(3, "متن پاسخ محرمانه", "مشاور", Now.AddMinutes(2),
+            RfiResponseClassification.ChangePotential, true, null, UserId);
+        rfi.RequireClarification(4, UserId, Now.AddMinutes(3), "جزئیات لازم است");
+        rfi.RecordResponse(5, "پاسخ دوم", "مشاور", Now.AddMinutes(4),
+            RfiResponseClassification.InformationOnly, false, null, UserId);
+        rfi.AcceptResponse(6, UserId, Now.AddMinutes(5), null);
+        rfi.Close(7, Now.AddMinutes(6));
+
+        Assert.Equal(7, rfi.ReportingHistory!.Count);
+        Assert.Equal(Enumerable.Range(1, 7).Select(i => (long)i), rfi.ReportingHistory.Select(e => e.Sequence));
+        Assert.Equal(TechnicalReportingEventType.Closed, rfi.ReportingHistory.Last().Type);
+        Assert.Equal(7, ProjectTechnicalOfficeReportingSource.RfiHistory(rfi)!.Length);
+        Assert.DoesNotContain("متن پاسخ محرمانه", rfi.ReportingHistoryJson);
+        Assert.DoesNotContain("جزئیات لازم است", rfi.ReportingHistoryJson);
+    }
+
+    [Fact]
+    public void SubmittalHistoryPreservesReviewOutcomeAndRejectsBackwardTime()
+    {
+        var item = CreateSubmittal();
+        Assert.Empty(item.ReportingHistory!);
+        item.Submit(1, Now.AddMinutes(1));
+        item.BeginReview(2, Now.AddMinutes(2));
+        item.RecordReview(3, SubmittalReviewOutcome.ForInformation, UserId, Now.AddMinutes(3), null);
+        item.Close(4, Now.AddMinutes(4));
+
+        Assert.Equal(4, item.ReportingHistory!.Count);
+        Assert.Equal(SubmittalReviewOutcome.ForInformation, item.ReportingHistory.ElementAt(2).ReviewOutcome);
+        Assert.Equal(TechnicalReportingEventType.Closed, item.ReportingHistory.Last().Type);
+        Assert.Equal(4, ProjectTechnicalOfficeReportingSource.SubmittalHistory(item)!.Length);
+        var other = CreateSubmittal();
+        Assert.Throws<DomainRuleException>(() => other.Submit(1, Now.AddMinutes(-1)));
+    }
+
+    [Fact]
+    public void MissingOrContradictoryTransitionLedgerDoesNotBecomeCertifiedHistory()
+    {
+        var rfi = IssuedRfi();
+        typeof(TechnicalRfi).GetProperty(nameof(TechnicalRfi.ReportingHistoryJson))!.SetValue(rfi, null);
+        rfi.RecordResponse(3, "پاسخ بعدی", "مشاور", Now.AddMinutes(2),
+            RfiResponseClassification.InformationOnly, false, null, UserId);
+        Assert.Null(rfi.ReportingHistoryJson); // A legacy row is never promoted by later transitions.
+        Assert.Null(ProjectTechnicalOfficeReportingSource.RfiHistory(rfi));
+
+        var submittal = CreateSubmittal();
+        submittal.Submit(1, Now.AddMinutes(1));
+        typeof(TechnicalSubmittal).GetProperty(nameof(TechnicalSubmittal.ReportingHistoryJson))!.SetValue(submittal, "[]");
+        Assert.Null(ProjectTechnicalOfficeReportingSource.SubmittalHistory(submittal));
     }
 
     private static TechnicalDocument CreateDocument() => TechnicalDocument.Create(
@@ -177,7 +233,7 @@ public sealed class TechnicalOfficeWorkflowTests
     private static TechnicalRfi IssuedRfi()
     {
         var rfi = CreateRfi(["evidence:photo-1"]);
-        rfi.SubmitForInternalReview(1);
+        rfi.SubmitForInternalReview(1, Now);
         rfi.Issue(2, Now.AddMinutes(1));
         return rfi;
     }

@@ -23,6 +23,7 @@ public sealed class TechnicalOfficeModule : IModule
         services.AddDbContext<TechnicalOfficeDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IProjectTechnicalOfficeReportingSource, ProjectTechnicalOfficeReportingSource>();
         services.AddSingleton<IDatabaseMigration, TechnicalOfficeInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, TechnicalReportingHistoryMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapTechnicalOfficeEndpoints();

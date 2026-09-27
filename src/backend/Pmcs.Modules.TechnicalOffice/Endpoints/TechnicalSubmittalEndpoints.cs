@@ -81,7 +81,7 @@ internal static partial class TechnicalOfficeEndpoints
         IClock clock, ITransactionalSideEffectWriter effects, IIdempotencyStore idempotency,
         CancellationToken cancellationToken) => TransitionSubmittalAsync(
             projectId, submittalId, request, context, actor, permissions, db, clock, effects, idempotency,
-            "technical.submittals.review", "begin-review", (item, _) => item.BeginReview(request.BaseRevision),
+            "technical.submittals.review", "begin-review", (item, at) => item.BeginReview(request.BaseRevision, at),
             "SubmittalReviewStarted", cancellationToken);
 
     private static async Task<IResult> ReviewSubmittalAsync(

@@ -68,7 +68,7 @@ internal static partial class TechnicalOfficeEndpoints
         IClock clock, ITransactionalSideEffectWriter effects, IIdempotencyStore idempotency,
         CancellationToken cancellationToken) => TransitionRfiAsync(
             projectId, rfiId, request, context, actor, permissions, db, clock, effects, idempotency,
-            "technical.rfis.submit", "internal-review", (item, _) => item.SubmitForInternalReview(request.BaseRevision),
+            "technical.rfis.submit", "internal-review", (item, at) => item.SubmitForInternalReview(request.BaseRevision, at),
             "RfiInternalReviewRequested", cancellationToken);
 
     private static async Task<IResult> ReturnRfiAsync(

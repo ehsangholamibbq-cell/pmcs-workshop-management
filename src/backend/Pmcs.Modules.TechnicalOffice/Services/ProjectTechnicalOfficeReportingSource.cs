@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Pmcs.Modules.Projects.Contracts;
 using Pmcs.Modules.TechnicalOffice.Contracts;
@@ -61,6 +62,8 @@ internal sealed class ProjectTechnicalOfficeReportingSource(
             .Where(item => item.TenantId == tenantId && item.ProjectId == projectId && item.CreatedAt <= cutoff)
             .OrderBy(item => item.Id).Take(ProjectTechnicalOfficeReportingContract.MaximumSubmittals + 1)
             .ToArrayAsync(cancellationToken);
+        var rfiHistories = rfis.Select(RfiHistory).ToArray();
+        var submittalHistories = submittals.Select(SubmittalHistory).ToArray();
         var projection = new ProjectTechnicalOfficeReportingProjection(
             ProjectTechnicalOfficeReportingContract.Version, tenantId, projectId, cutoffLocalDate, cutoff,
             project.ConfigurationVersion, project.ConfigurationChangedAt.Value.ToUniversalTime(), true,
@@ -72,17 +75,17 @@ internal sealed class ProjectTechnicalOfficeReportingSource(
             transmittals.Select(item => new TechnicalReportingTransmittal(
                 item.Id, item.TenantId, item.ProjectId, item.Number,
                 item.RevisionIds, item.DueResponseDate, item.CreatedAt, TransmittalEvents(item))).ToArray(),
-            rfis.Select(item => new TechnicalReportingRfi(
+            rfis.Select((item, index) => new TechnicalReportingRfi(
                 item.Id, item.TenantId, item.ProjectId, item.Number, item.RaisedDate,
                 item.RequiredByDate, item.IsBlocking, item.PotentialImpact,
-                item.RelatedRevisionIds, item.CreatedAt, [])).ToArray(),
-            submittals.Select(item => new TechnicalReportingSubmittal(
+                item.RelatedRevisionIds, item.CreatedAt, rfiHistories[index] ?? [])).ToArray(),
+            submittals.Select((item, index) => new TechnicalReportingSubmittal(
                 item.Id, item.TenantId, item.ProjectId, item.Number, item.Type,
                 item.Discipline, item.ReviewDueDate, item.ResubmissionNumber,
-                item.SupersedesSubmittalId, item.RevisionIds, item.CreatedAt, [])).ToArray(),
+                item.SupersedesSubmittalId, item.RevisionIds, item.CreatedAt, submittalHistories[index] ?? [])).ToArray(),
             TechnicalReportingCompleteness.Complete, TechnicalReportingCompleteness.Complete,
-            rfis.Length == 0 ? TechnicalReportingCompleteness.Complete : TechnicalReportingCompleteness.Incomplete,
-            submittals.Length == 0 ? TechnicalReportingCompleteness.Complete : TechnicalReportingCompleteness.Incomplete);
+            rfiHistories.All(item => item is not null) ? TechnicalReportingCompleteness.Complete : TechnicalReportingCompleteness.Incomplete,
+            submittalHistories.All(item => item is not null) ? TechnicalReportingCompleteness.Complete : TechnicalReportingCompleteness.Incomplete);
         var result = ProjectTechnicalOfficeReportingCalculator.Calculate(projection);
         await transaction.CommitAsync(cancellationToken);
         var current = await projects.FindProfileAsync(tenantId, projectId, cancellationToken);
@@ -101,6 +104,82 @@ internal sealed class ProjectTechnicalOfficeReportingSource(
         _ => throw ProjectTechnicalOfficeReportingSelector.Invalid(
             "classification.unknown", "Document classification has no approved versioned mapping.")
     };
+
+    // A null ledger is pre-migration evidence, not a draft. Never infer missing events
+    // from mutable status or response rows, even when their timestamps appear plausible.
+    internal static TechnicalReportingEvent[]? RfiHistory(TechnicalRfi item)
+    {
+        try
+        {
+            var events = item.ReportingHistory?.ToArray();
+            if (events is null || events.Length != item.Revision - 1) return null;
+            var state = events.LastOrDefault()?.Type;
+            var status = state switch
+            {
+                null or TechnicalReportingEventType.ReturnToDraft => RfiStatus.Draft,
+                TechnicalReportingEventType.InternalReview => RfiStatus.InternalReview,
+                TechnicalReportingEventType.Issued => RfiStatus.Submitted,
+                TechnicalReportingEventType.ResponseReceived => RfiStatus.Answered,
+                TechnicalReportingEventType.ResponseAccepted => RfiStatus.ResponseAccepted,
+                TechnicalReportingEventType.ClarificationRequired => RfiStatus.ClarificationRequired,
+                TechnicalReportingEventType.Closed => RfiStatus.Closed,
+                _ => (RfiStatus)0
+            };
+            var issued = events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Issued);
+            var closed = events.LastOrDefault(e => e.Type == TechnicalReportingEventType.Closed);
+            var responseEvents = events.Where(e => e.Type is TechnicalReportingEventType.ResponseReceived
+                or TechnicalReportingEventType.ReturnToDraft).ToArray();
+            var responses = item.Responses.ToArray();
+            if (status != item.Status || issued?.AtUtc != item.SubmittedAt || closed?.AtUtc != item.ClosedAt ||
+                responseEvents.Length != responses.Length) return null;
+            for (var index = 0; index < responses.Length; index++)
+            {
+                var response = responses[index];
+                var evidence = responseEvents[index];
+                if (response.Sequence != index + 1 || response.RespondedAt.ToUniversalTime() != evidence.AtUtc ||
+                    (response.Source == "ExternalResponse") != (evidence.Type == TechnicalReportingEventType.ResponseReceived) ||
+                    response.Source == "ExternalResponse" &&
+                    (response.Classification != evidence.ResponseClassification || response.ChangePotential != evidence.ChangePotential))
+                    return null;
+            }
+            return events;
+        }
+        catch (JsonException) { return null; }
+    }
+
+    internal static TechnicalReportingEvent[]? SubmittalHistory(TechnicalSubmittal item)
+    {
+        try
+        {
+            var events = item.ReportingHistory?.ToArray();
+            if (events is null || events.Length != item.Revision - 1) return null;
+            var state = events.LastOrDefault()?.Type;
+            var status = state switch
+            {
+                null => SubmittalStatus.Draft,
+                TechnicalReportingEventType.Submitted => SubmittalStatus.Submitted,
+                TechnicalReportingEventType.UnderReview => SubmittalStatus.UnderReview,
+                TechnicalReportingEventType.Closed => SubmittalStatus.Closed,
+                TechnicalReportingEventType.Reviewed => item.ReviewOutcome switch
+                {
+                    SubmittalReviewOutcome.Approved => SubmittalStatus.Approved,
+                    SubmittalReviewOutcome.ApprovedAsNoted or SubmittalReviewOutcome.ForInformation => SubmittalStatus.ApprovedAsNoted,
+                    SubmittalReviewOutcome.ReviseAndResubmit => SubmittalStatus.ReviseAndResubmit,
+                    SubmittalReviewOutcome.Rejected => SubmittalStatus.Rejected,
+                    _ => (SubmittalStatus)0
+                },
+                _ => (SubmittalStatus)0
+            };
+            if (status != item.Status ||
+                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Submitted)?.AtUtc != item.SubmittedAt ||
+                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Reviewed)?.AtUtc != item.ReviewedAt ||
+                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Reviewed)?.ReviewOutcome != item.ReviewOutcome ||
+                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Closed)?.AtUtc != item.ClosedAt)
+                return null;
+            return events;
+        }
+        catch (JsonException) { return null; }
+    }
 
     private static TechnicalReportingRevision Revision(TechnicalDocumentRevision item)
     {
