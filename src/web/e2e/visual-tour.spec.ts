@@ -10,7 +10,7 @@ async function capture(page: Page, fileName: string): Promise<void> {
 }
 
 test("capture the actual authenticated PMCS interface with isolated QA data", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(240_000);
   await mkdir(tourDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -23,6 +23,9 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await expect(page.getByRole("heading", { name: "مرکز فرمان سبد پروژه‌ها" })).toBeVisible();
   await expect(page.getByRole("link", { name: "ورود به مرکز فرمان پروژه" })).toBeVisible();
   await capture(page, "03-portfolio.png");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await capture(page, "20-mobile-portfolio.png");
+  await page.setViewportSize({ width: 1440, height: 900 });
 
   await page.goto(projectPath);
   await expect(page.getByRole("heading", { name: "مرکز فرمان پروژه" })).toBeVisible();
@@ -51,6 +54,16 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
     await capture(page, fileName);
   }
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#pulse").evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await capture(page, "21-mobile-project.png");
+
+  // The preceding full project visit loads many independent API panels. Allow the
+  // isolated fixture's short API rate window to clear before opening admin pages.
+  await page.goto("about:blank");
+  await page.waitForTimeout(65_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   await page.goto("/profile");
   await expect(page.getByRole("heading", { name: "مشخصات کاری من" })).toBeVisible();
   await capture(page, "16-profile.png");
@@ -66,13 +79,4 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await page.goto("/project-bootstraps");
   await expect(page.getByRole("heading", { name: "ساخت از روی پروژهٔ موجود" })).toBeVisible();
   await capture(page, "19-project-bootstrap.png");
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/portfolio");
-  await expect(page.getByRole("heading", { name: "مرکز فرمان سبد پروژه‌ها" })).toBeVisible();
-  await capture(page, "20-mobile-portfolio.png");
-
-  await page.goto(projectPath);
-  await expect(page.getByRole("heading", { name: "مرکز فرمان پروژه" })).toBeVisible();
-  await capture(page, "21-mobile-project.png");
 });
