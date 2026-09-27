@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.39.0`
-- وضعیت: F01–F06 connected؛ F07 semantic contract ready / runtime absent؛ F08–F10/UI/Production باز
+- نسخه: `1.40.0`
+- وضعیت: F01–F06 connected؛ F07 bounded Runtime Core ready / Renderer و wiring باز؛ F08–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1147,3 +1147,28 @@ Qualification artifact `10918957644` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` قرارداد F07 را می‌بندد؛
 Runtime/Renderer/Migration/Catalog/API/Worker، F08–F10، UI/UX2 و Production
 بازند. Micro-Step بعدی فقط Runtime Core محدود F07 است.
+
+## ۴۵. Runtime Core محدود F07 دفتر فنی — Slice 07 Micro-Step 23 Safe Checkpoint
+
+- ۱۵ تست مستقل F07 روی Draft/Approved بدون Issue، cutoff Issue/Ack، supersession،
+  duplicate Document در Issue، تفاوت RFI Answered/Accepted/Closed، Submittal ForInformation،
+  due date برابر cutoff، scope/lineage/gap/cycle، classification/Restricted، budget و hash قطعی؛
+- Source مالک TechnicalOffice با Tenant/Project و repeatable-read، `Take(max+1)` و deadline؛
+  manifest شامل completeness/count/range/event count/hash و نسخه policy؛
+- RFI/Submittal legacy با تاریخچهٔ میانی ناقص: `InsufficientData`، official count برابر null
+  و ردیف خالی؛ Document/Transmittal مستقل سالم حفظ می‌شوند؛ no-fact با proof برابر `NoData`؛
+- Snapshot Builder pinned identity/config/time-zone، cutoff محلی، classification حداقل
+  Confidential، manifest/semantic SHA را دوباره validate می‌کند؛ متن خام و فایل حذف می‌شوند؛
+- Renderer/Golden binary، Migration، Catalog/API/Worker، UI/UX2 و Production در این Gate ممنوع.
+
+Candidate source `7f66113d3fe091829747d1f5059eb8f16c82cb88` با tree
+`88ba4957b76c6803893afa04d618b22c47c919e9` و PR merge
+`22ec3d66aeeb5f7e15070bfdaa3ba2f6b1c17cf2` دارای همان tree در Run 211
+(`36296626010`) همهٔ هشت Job را پاس کرد: `512/512` C#، `90/90` Node،
+`139/139` Web، پنج browser scenario، validator `415` فایل، audit `274/204/5`،
+Restore `48` Migration و Qualification `7/7` Suite/`12/12` Command با صفر failure.
+Qualification artifact `10924710423` با digest
+`sha256:eab1a3e9b2c803691df9c807e7199051e3c71cca6e7baae981d46e3ec0d7339d` ثبت شد.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS23-C1` Runtime Core محدود F07 را می‌بندد؛
+Renderer/Golden در `S07-MS24` و historical producer/wiring در Micro-Stepهای مستقل بعدی باز است.

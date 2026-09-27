@@ -49,6 +49,12 @@ DoR و قرارداد مستقل `PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` با Eviden
 `Contract Ready / Runtime Not Implemented` است؛ F08 تا F10 هنوز
 `Required / Not Implemented` و Gate خروج RPT1 بازند. گام بعد فقط Runtime Core محدود F07 است.
 
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS23-C1`، Runtime Core محدود F07 با Run 211
+(`36296626010`) و تمام هشت Job سبز شد. چهار دفتر در Application Contract نسخه‌دار قرار گرفتند؛
+RFI/Submittal با history میانی ناقص صریحاً `InsufficientData` هستند. F07 هنوز Renderer/Golden،
+historical producer کامل و Catalog/API/Worker ندارد و End-to-End یا Qualified نیست. F08 تا F10
+بازند؛ تصمیم ده‌گانه و Gate خروج این ADR تغییر نکرده است. گام بعد فقط Renderer/Golden F07 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01–F06 connected؛ F07 contract ready / runtime absent؛ F08–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01–F06 connected؛ F07 bounded Runtime Core ready / Catalog/API/Worker absent؛ F08–F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -173,6 +173,16 @@ Classification حداقل `Confidential` است. `GET /technical-office/state` c
 در MS22 هیچ Definition/Template seed، parser/route F07، Migration یا Worker dispatch
 اضافه نشده؛ Catalog فعلی هنوز F07 را ارائه نمی‌کند. Runtime Core F07 فقط در MS23
 طبق قرارداد مالک TechnicalOffice توسعه خواهد یافت. Run 205 هر هشت Gate را سبز کرد.
+
+### ۱.۱۱ Runtime Core F07 — هنوز بدون Route و Catalog
+
+در Safe Checkpoint `S07-MS23`، Application Contract خواندنی TechnicalOffice و Snapshot
+Builder نسخه‌دار اضافه شدند. Source در نبود transition history کامل RFI/Submittal،
+`InsufficientData` و count نامعلوم می‌دهد؛ خروجی قابل انتشار ساخته نمی‌شود. Definition/Template
+F07 در Catalog seed نشده، parser/route `project-technical-office-certified` متصل نشده،
+Worker dispatch و Download/Verify وجود ندارد. دو Permission منبع در Runtime Contract
+ثابت‌اند؛ enforcement API/Worker در Micro-Step مستقل بعدی لازم است. Run 211 هر هشت Gate
+را سبز کرد؛ MS24 فقط Renderer/Golden محدود F07 است.
 
 ## ۲. Catalog
 

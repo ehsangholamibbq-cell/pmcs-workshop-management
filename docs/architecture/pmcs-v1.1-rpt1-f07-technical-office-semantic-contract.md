@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F07-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F07`
-- وضعیت: `Contract Ready / Runtime Not Implemented | F08-F10/UI/Production open`
+- وضعیت: `Semantic Contract Locked | MS23 Runtime Core Ready / Renderer and Wiring Open | F08-F10/UI/Production open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS21-C1`
 - Safe checkpoint: `PMCS-V1.1-RPT1-S07-MS22-C1`
 - مرز: `Document / RFI / Submittal / Transmittal`
@@ -270,3 +270,17 @@ DoR و semantic contract مستقل F07 checkpoint شده‌اند. F01 تا F06
 ندارد. RPT1 و PMCS V1.1 همچنان فعال و خارج از Qualified/Final/Locked هستند. Feature flagها،
 Worker و Production defaults خاموش، `PdfLicense=Unconfigured` و
 `OrphanRemediationMode=Disabled` باقی می‌مانند.
+
+## ۱۵. وضعیت اجرای مستقل پس از قرارداد — S07-MS23
+
+بخش‌های ۱۲ تا ۱۴ Evidence تاریخی MS22 هستند. در Checkpoint
+`PMCS-V1.1-RPT1-S07-MS23-C1`، Runtime Core محدود با
+`IProjectTechnicalOfficeReportingSource`، manifest نسخه‌دار، selector/calculator و Snapshot
+Builder پیاده شد. Document/Transmittal با eventهای ثبت‌شده و cutoff قابل اثبات‌اند؛ RFI و
+Submittal موجود چون history میانی کامل ندارند، در Adapter فعلی `InsufficientData` با null
+count می‌شوند. Source راه endpoint current/capped را دور نمی‌زند؛ producer تاریخی تازه یا
+Migration در MS23 افزوده نشد. Run 211 (`36296626010`) هر هشت Job را سبز کرد.
+
+Renderer/Golden، Catalog/API/Worker wiring و permission enforcement عملیاتی F07 هنوز بازند.
+گام بعدی `S07-MS24` فقط Renderer/Golden محدود F07 است؛ نتیجهٔ
+`InsufficientData` باید صریح حفظ شود. RPT1 و PMCS V1.1 همچنان فعال‌اند.

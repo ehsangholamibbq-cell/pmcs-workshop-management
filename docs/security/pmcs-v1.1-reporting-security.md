@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.21.0`
-- وضعیت: F01–F06 connected؛ F07 contract ready / runtime absent؛ F08–F10 open؛ Production disabled
+- نسخه: `1.22.0`
+- وضعیت: F01–F06 connected؛ F07 bounded Runtime Core ready / wiring absent؛ F08–F10 open؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -221,6 +221,15 @@ fail-closed می‌شود. Client فقط `{}` می‌فرستد و Source cutoff
 پذیرفته نمی‌شوند. F07 هنوز Runtime، Catalog یا Worker اجرایی ندارد؛ این policy تنها برای
 Micro-Stepهای بعدی pin شده است. Candidate `11168534372487bff3cc798861ca036489b3dea0`
 در Run 205 همهٔ Gateها را پاس کرد؛ Feature defaults خاموش‌اند.
+
+در `S07-MS23` Source و Snapshot Builder محدود F07 فقط factهای allowlist شده را حمل می‌کنند؛
+شناسه‌های Tenant/Project و پیوند revision/submittal در selector fail-closed می‌شوند. Hash
+manifest/semantic و pinned configuration دوباره validate می‌شود. هر Document با classification
+ناشناخته رد و Restricted بدون policy تأییدشده رد می‌شود؛ دو Source permission در Runtime Contract
+ثبت‌اند، اما هنوز Catalog/API/Worker/Output gate اجرایی F07 ندارند. Source legacy برای RFI و
+Submittal دارای رکورد، نبود history را `InsufficientData` و null count گزارش می‌کند و count
+محرمانه در Snapshot منتشر نمی‌شود. Run 211 (`36296626010`) هر هشت Job را سبز کرد. Publication
+F07 و production enablement همچنان ممنوع‌اند.
 
 ## ۴. Threat model
 

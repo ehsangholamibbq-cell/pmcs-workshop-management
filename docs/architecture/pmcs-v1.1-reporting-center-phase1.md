@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.36.0`
-- وضعیت: `S07-MS22 F07 semantic safe checkpoint | F07 Runtime/F08-F10/UI/Production open`
+- نسخه: `1.37.0`
+- وضعیت: `S07-MS23 F07 bounded Runtime Core safe checkpoint | Renderer/wiring/F08-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `32772e1f19c9c9d8023947654a3402f53ee0f6b6`
 - Parent checkpoint tree: `5eadc44c115ffb6e44cc57b52a44ec0ea5bddc55`
@@ -813,3 +813,22 @@ Candidate source `11168534372487bff3cc798861ca036489b3dea0` با tree
 Qualification `7/7` را سبز کرد. Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` فقط قرارداد معنایی
 F07 را می‌بندد؛ گام بعد فقط Runtime Core محدود F07 است.
 
+Slice 07 Micro-Step 23 Runtime Core محدود F07 را بر همان قرارداد پیاده کرد. Source خواندنی
+`IProjectTechnicalOfficeReportingSource` فقط در TechnicalOffice از یک repeatable-read snapshot
+با Tenant/Project scope و bound صریح استفاده می‌کند؛ status جاری endpoint یا join F05/F06
+وارد Reporting نمی‌شود. Event lineage Document/Transmittal برای Issue، Ack و supersession در
+cutoff validate می‌شود. RFI/Submittal چون transitionهای میانی تاریخی را کامل ذخیره نمی‌کنند،
+در صورت وجود رکورد `InsufficientData` با null count می‌مانند؛ هیچ current-only نتیجهٔ Certified
+نمی‌سازد. Semantic/Snapshot schema و manifest نسخه‌دار، hash قطعی، limit تعداد/event/lineage/bytes
+و pinned Project profile اضافه شدند. Classification حداقل Confidential و Restricted بدون policy
+معتبر fail-closed است؛ دو permission منبع در Runtime Contract پین و enforcement متصل هنوز باز است.
+
+Candidate source `7f66113d3fe091829747d1f5059eb8f16c82cb88` با tree
+`88ba4957b76c6803893afa04d618b22c47c919e9` و PR merge
+`22ec3d66aeeb5f7e15070bfdaa3ba2f6b1c17cf2` دارای همان tree در Run 211
+(`36296626010`) هر هشت Job، `512/512` C# شامل ۱۵ تست جدید F07، `90/90` Node،
+`139/139` Web، پنج browser scenario، validator `415` فایل، audit `274/204/5`، Restore
+۴۸ Migration و Qualification `7/7` را سبز کرد. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS23-C1` فقط Runtime Core را می‌بندد؛ گام بعد Renderer/Golden
+محدود F07 در MS24 است. Historical producer کامل RFI/Submittal، Migration/Catalog/API/Worker،
+UI/Production و F08 خارج از MS23 ماندند.

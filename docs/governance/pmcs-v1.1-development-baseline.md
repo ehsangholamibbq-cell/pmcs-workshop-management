@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F06 متصل؛ F07 قرارداد معنایی آماده و Runtime باز؛ F08–F10/UI باز |
+| Product runtime implementation | F01 تا F06 متصل؛ F07 قرارداد و Runtime Core محدود آماده، Renderer/wiring باز؛ F08–F10/UI باز |
 | Database migration | ۴۸ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -402,6 +402,20 @@ Document/RFI/Submittal/Transmittal بست. Source candidate
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` فقط قرارداد را می‌بندد؛
 Runtime/Renderer/Catalog/API/Worker F07، UI/UX2 و Production بازند. گام بعد
 `S07-MS23` فقط Runtime Core محدود F07 است.
+
+### Slice 07 Micro-Step 23 — Runtime Core محدود F07
+
+Source `7f66113d3fe091829747d1f5059eb8f16c82cb88` با tree
+`88ba4957b76c6803893afa04d618b22c47c919e9` و PR merge
+`22ec3d66aeeb5f7e15070bfdaa3ba2f6b1c17cf2` در Run 211 (`36296626010`)
+هشت Job، `512/512` C#، `90/90` Node، `139/139` Web، پنج browser scenario،
+validator `415` فایل، audit `274/204/5`، Restore ۴۸ Migration و Qualification `7/7`
+را پاس کرد. `IProjectTechnicalOfficeReportingSource`، selector/calculator و Snapshot
+نسخه‌دار با bounded repeatable-read و completeness/hash اضافه شدند. RFI/Submittal بدون
+transition history به‌جای current fallback، `InsufficientData` و null count هستند.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS23-C1` فقط این Runtime Core را می‌بندد؛
+Renderer/Golden، producer تاریخی کامل، Catalog/API/Worker، UI/UX2 و Production بازند.
+گام بعد `S07-MS24` فقط Renderer/Golden محدود F07 است.
 
 ## ۳. قرارداد شاخه و ادغام
 
