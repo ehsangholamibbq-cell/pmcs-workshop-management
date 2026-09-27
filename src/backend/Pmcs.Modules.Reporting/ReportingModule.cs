@@ -155,6 +155,7 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IDatabaseMigration, PortfolioReportScopeMigration>();
         services.AddSingleton<IDatabaseMigration, PortfolioSummaryReportCatalogMigration>();
         services.AddHostedService<ReportGenerationWorker>();
+        services.AddHostedService<PortfolioReportGenerationWorker>();
         services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(
             "reporting-worker",

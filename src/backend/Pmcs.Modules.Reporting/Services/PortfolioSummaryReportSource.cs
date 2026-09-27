@@ -10,8 +10,8 @@ using Pmcs.Modules.Reporting.Domain;
 namespace Pmcs.Modules.Reporting.Services;
 
 /// <summary>
-/// Read-only owner orchestration. An accepted Run is wired in a later micro-step;
-/// this source never lists an unrestricted tenant and filters afterwards.
+/// Read-only owner orchestration for the pinned tenant cohort. The source scopes
+/// profile reads before enrichment and never filters an unrestricted result afterwards.
 /// </summary>
 internal sealed class PortfolioSummaryReportSource(
     IProjectPermissionService permissions,

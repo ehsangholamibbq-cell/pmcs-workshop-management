@@ -44,6 +44,7 @@ reporting_project_commercial_procurement_supply_run_id="7b000000-0000-4000-8000-
 reporting_project_technical_office_run_id="7c000000-0000-4000-8000-000000000001"
 reporting_project_quality_hse_run_id="7d000000-0000-4000-8000-000000000001"
 reporting_project_governance_action_run_id="7e000000-0000-4000-8000-000000000001"
+reporting_portfolio_summary_run_id="7f000000-0000-4000-8000-000000000001"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -163,9 +164,14 @@ expect_equal \
   "select count(*) from foundation.schema_migrations where module = 'documents' and version = '20260927-001';"
 
 expect_equal \
-  "project report rows retain their scope and project identity" \
+  "report rows retain their scope and project identity" \
   "0" \
-  "select count(*) from reporting.report_runs where scope <> 'Project' or project_id is null;"
+  "select count(*) from reporting.report_runs where (scope = 'Project' and project_id is null) or (scope = 'Portfolio' and project_id is not null) or scope not in ('Project','Portfolio');"
+
+expect_equal \
+  "portfolio worker persists a tenant snapshot and two tenant outputs" \
+  "Succeeded|Complete|2|1|2|2" \
+  "select run.status || '|' || run.pipeline_stage || '|' || run.output_count::text || '|' || (select count(*) from reporting.report_snapshots snapshot where snapshot.run_id = run.id and snapshot.scope = 'Portfolio' and snapshot.project_id is null and snapshot.tenant_id = run.tenant_id and snapshot.sha256 ~ '^[0-9a-f]{64}$')::text || '|' || (select count(*) from reporting.report_outputs output where output.run_id = run.id and output.scope = 'Portfolio' and output.project_id is null and output.tenant_id = run.tenant_id and output.sha256 ~ '^[0-9a-f]{64}$')::text || '|' || (select count(*) from reporting.report_outputs output join documents.assets asset on asset.id = output.generated_document_id and asset.tenant_id = output.tenant_id and asset.project_id is null and asset.owner_type = 'TenantReportOutput' and asset.owner_id = output.id and asset.sha256 = output.sha256 and asset.status = 'Released' and asset.scan_verdict = 'Clean' where output.run_id = run.id)::text from reporting.report_runs run where run.id = '${reporting_portfolio_summary_run_id}' and run.tenant_id = '${tenant_id}' and run.project_id is null and run.scope = 'Portfolio';"
 
 expect_equal \
   "portfolio scope constraints exist on all three reporting stores" \
