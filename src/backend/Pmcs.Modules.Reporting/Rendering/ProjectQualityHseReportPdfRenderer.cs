@@ -11,6 +11,9 @@ internal sealed class ProjectQualityHseReportPdfRenderer(
     ReportingRendererOptions options, ReportingExecutionOptions execution)
     : IProjectQualityHseReportRenderer
 {
+    private static readonly string[] FactHeaders =
+        ["شماره", "نوع", "وضعیت/نتیجه", "زمان UTC", "ساعت تأییدشده"];
+
     public ReportFormat Format => ReportFormat.Pdf;
 
     public RenderedReportArtifact Render(ProjectQualityHseReportRenderRequest request)
@@ -131,7 +134,7 @@ internal sealed class ProjectQualityHseReportPdfRenderer(
                     });
                     table.Header(header =>
                     {
-                        foreach (var heading in new[] { "شماره", "نوع", "وضعیت/نتیجه", "زمان UTC", "ساعت تأییدشده" })
+                        foreach (var heading in FactHeaders)
                             header.Cell().Background("#DCE8F5").Border(0.5f)
                                 .BorderColor("#AFC3DE").Padding(3).Text(heading).SemiBold();
                     });

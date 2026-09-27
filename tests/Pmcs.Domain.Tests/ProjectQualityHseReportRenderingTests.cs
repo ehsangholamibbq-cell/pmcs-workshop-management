@@ -16,6 +16,9 @@ public sealed class ProjectQualityHseReportRenderingTests
     private static readonly Guid Project = Id(2);
     private static readonly Guid Run = Id(500);
     private static readonly DateTimeOffset Cutoff = new(2026, 9, 27, 8, 0, 0, TimeSpan.Zero);
+    private static readonly string[] SheetNames = ["Metadata", "Coverage", "Quality", "HSE"];
+    private static readonly string[] ExpectedVisualDigests =
+        ["__PIN_F08_PAGE_1__", "__PIN_F08_PAGE_2__"];
 
     [Fact]
     public void F08RendererPinsTemplateSnapshotAndWholeClassification()
@@ -57,7 +60,7 @@ public sealed class ProjectQualityHseReportRenderingTests
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         Assert.Equal(11, archive.Entries.Count);
         var workbook = Read(archive, "xl/workbook.xml");
-        foreach (var name in new[] { "Metadata", "Coverage", "Quality", "HSE" })
+        foreach (var name in SheetNames)
             Assert.Contains(name, workbook, StringComparison.Ordinal);
         var sheets = Enumerable.Range(1, 4).Select(index => Read(archive,
             $"xl/worksheets/sheet{index}.xml")).ToArray();
@@ -100,8 +103,8 @@ public sealed class ProjectQualityHseReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "__PIN_F08_PDF__" && visualDigests.SequenceEqual(
-                new[] { "__PIN_F08_PAGE_1__", "__PIN_F08_PAGE_2__" }),
+        Assert.True(first.Sha256 == "__PIN_F08_PDF__" &&
+                visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F08_PDF_GOLDEN_SHA256={first.Sha256}; F08_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
 
