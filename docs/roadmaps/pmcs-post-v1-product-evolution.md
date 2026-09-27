@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.63.0`
+- نسخه سند: `1.64.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -768,7 +768,16 @@ PDF دو بخش و XLSX چهار Sheet قطعی با status/count/classification
 `14fe30b65d983c553cf3675dc202b682d90f5c9d` و Run 235 (`36309751881`)
 هر هشت Job را سبز کردند. Safe Resume `S07-MS29`؛ گام بعد فقط اتصال Catalog/API/Worker
 و Qualification مستقل F08 در MS30 است. F09/F10، UI/Production باز و defaults خاموش‌اند.
-Renderer/Catalog/API/Worker، F09/F10 و UI/Production باز و defaultها خاموش‌اند.
+
+**F08 Quality/HSE Connected — Slice 07 Micro-Step 30 Safe Checkpoint:**
+Migration 51، Catalog/API strict `{}` و Worker با سه permission whole-definition
+`quality.read`، `hse.read` و `hse.confidential.read` به Source مالک و Rendererهای
+قطعی MS29 متصل شدند. Run 237 (`36310745011`) هر هشت Job، هارنس `20/20`، Restore Drill
+۵۱ Migration، PDF/XLSX download/verify و Qualification `7/7` را سبز کرد. Source
+`786f032e5ce91ceffa80599c4ce02ba23f30bb1d`، tree
+`9adcf1558c1bcab8a40a242c49efdf4df816a2dc`. Safe Resume `S07-MS30`؛ F01
+تا F08 End-to-End بسته‌اند. گام بعد فقط DoR/قرارداد معنایی F09 برای Issue/Risk/
+Decision/Escalation/Action در MS31 است؛ F10، UI/Production باز و defaults خاموش‌اند.
 
 ### `V1.1-COL1` — Project Collaboration
 
@@ -1075,3 +1084,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.61.0` | ثبت Safe Checkpoint `S07-MS27` و Evidence سبز Run 224 برای DoR/قرارداد معنایی مستقل F08؛ Runtime/Renderer/wiring و F09–F10/UI/Production باز است |
 | `1.62.0` | ثبت Safe Checkpoint `S07-MS28` و Evidence سبز Run 231 برای Runtime Core و Source مالک F08؛ Renderer/Golden/wiring و F09–F10/UI/Production باز است |
 | `1.63.0` | ثبت Safe Checkpoint `S07-MS29` و Evidence سبز Run 235 برای Renderer/Golden قطعی F08؛ Catalog/API/Worker و F09–F10/UI/Production باز است |
+| `1.64.0` | ثبت Connected Safe Checkpoint `S07-MS30` و Evidence سبز Run 237 برای Catalog/API/Worker و Qualification مستقل F08؛ F09–F10/UI/Production باز است |

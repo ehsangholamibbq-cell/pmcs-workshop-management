@@ -1,7 +1,7 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.46.0`
+- نسخه: `1.47.0`
 - وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract و Runtime Core بسته؛ Renderer/Golden/wiring و F09–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
@@ -1276,3 +1276,21 @@ Candidate `68a8c49311d05480824f3c7ec58933510877c8e6`، tree
 `PMCS-V1.1-RPT1-S07-MS29-C1` Renderer/Golden را می‌بندد؛ گام بعد فقط اتصال
 Catalog/API/Worker و Qualification مستقل F08 در `S07-MS30` است. Migration همچنان
 `50` و همهٔ defaultها خاموش‌اند؛ F09/F10 و UI/Production بازند.
+
+## ۵۲. اتصال End-to-End خانواده F08 — Slice 07 Micro-Step 30 Safe Checkpoint
+
+- Migration 51 و Template digest/version immutable، Catalog فقط برای دارندهٔ
+  `quality.read`، `hse.read` و `hse.confidential.read`؛ deny برای QualityController،
+  HseOfficer و ProjectController با مجموعهٔ ناقص؛
+- strict `{}`، Project profile/cutoff pinned، idempotent create/replay/conflict،
+  recheck مجوز پیش از Snapshot و انتشار Storage؛
+- Snapshot مستقل Quality/HSE با unknown count برای وضعیت ناقص/پیکربندی‌نشده،
+  PDF دو صفحه و XLSX چهار Sheet، metadata/hash/download/verify متصل؛
+- Full CI، DB/Audit/Output، Restore Drill ۵۱ Migration و defaults خاموش.
+
+Candidate `786f032e5ce91ceffa80599c4ce02ba23f30bb1d`، tree
+`9adcf1558c1bcab8a40a242c49efdf4df816a2dc` و Run 237 (`36310745011`)
+هر هشت Job سبز، C# `530/530`، Node `102/102`، هارنس F08 `20/20` و
+Qualification `7/7` داشتند. Checkpoint `PMCS-V1.1-RPT1-S07-MS30-C1` خانواده F08 را
+End-to-End می‌بندد. Exact Next در `S07-MS31` فقط DoR/قرارداد معنایی مستقل F09
+برای Issue/Risk/Decision/Escalation/Action است؛ F10/UI/Production بازند.

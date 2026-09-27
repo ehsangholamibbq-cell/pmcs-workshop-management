@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.43.0`
-- وضعیت: `S07-MS29 F08 Renderer/Golden safe checkpoint | wiring/F09-F10/UI/Production open`
+- نسخه: `1.44.0`
+- وضعیت: `S07-MS30 F08 Connected Safe Checkpoint | F09-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -893,3 +893,11 @@ Unknown count به صفر یا نرخ حادثهٔ ساختگی تبدیل نم�
 visual در Checkpoint ثبت و Run 235 (`36309751881`) با هشت Job سبز شد. Template
 `1.0.0` digest `5bd7a0ea06984076cfbfed7715329a59b1afeffbcade4378afefc1413c287a61`؛
 Catalog/API/Worker و Qualification متصل فقط در MS30 پیگیری می‌شوند.
+
+Slice 07 Micro-Step 30 با Migration 51 Definition/Template immutable F08 را منتشر کرد.
+Runtime Policy تمام سه permission خواندنی Quality/HSE را whole-definition اعمال
+می‌کند؛ API فقط `{}` را می‌پذیرد و Project profile/cutoff را pin می‌کند. Worker
+مجوزها را دوباره کنترل، Source مالک QualitySafety و Snapshot builder مستقل را
+dispatch و PDF/XLSX را از Registry MS29 به Generated Documents می‌رساند.
+QA متصل `20/20` assertion، Restore Drill ۵۱ Migration و Run 237 (`36310745011`)
+هر هشت Job را سبز کردند. F01 تا F08 متصل‌اند؛ F09/F10 و UX2/Production بازند.

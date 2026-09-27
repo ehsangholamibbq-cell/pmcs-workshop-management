@@ -85,6 +85,11 @@ F08 با Run 231 و هشت Job سبز شدند. Renderer/Golden و wiring هنو
 و status/count/classification دو section در Run 235 واجد Evidence شدند؛
 Catalog/API/Worker و Qualification متصل F08 در MS30 باز می‌مانند.
 
+در `PMCS-V1.1-RPT1-S07-MS30-C1`، Migration 51 و Catalog/API/Worker خانواده F08
+با سه مجوز whole-definition و Qualification متصل `20/20` در Run 237 بسته شدند.
+F01–F08 End-to-End واجد Evidence هستند؛ F09/F10، UI/Production و Gate ده‌گانه
+باز، defaultها خاموش باقی می‌مانند. MS31 فقط DoR/قرارداد معنایی مستقل F09 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

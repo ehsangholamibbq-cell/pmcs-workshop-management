@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01–F06 connected؛ F07 bounded Runtime Core ready / Catalog/API/Worker absent؛ F08–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01–F08 connected و checkpointed؛ F09/F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -183,6 +183,25 @@ F07 در Catalog seed نشده، parser/route `project-technical-office-certifie
 Worker dispatch و Download/Verify وجود ندارد. دو Permission منبع در Runtime Contract
 ثابت‌اند؛ enforcement API/Worker در Micro-Step مستقل بعدی لازم است. Run 211 هر هشت Gate
 را سبز کرد؛ MS24 فقط Renderer/Golden محدود F07 است.
+
+### ۱.۱۲ خانواده F07/F08 روی API متصل — Safe Checkpoint
+
+F07 در MS26 با Migration 50، Definition `project-technical-office-certified`،
+Template `1.0.0`، دو permission `technical.read` و `technical.confidential.read`،
+strict `{}` و Worker مالک TechnicalOffice متصل و در Run 222 qualify شد. تاریخچهٔ
+legacy بدون transition کامل همچنان `InsufficientData` با count نامعلوم است.
+
+F08 در MS30 با Migration 51، Definition `project-quality-hse-certified` و Template
+`1.0.0` به همان routeهای موجود وصل شد. Client فقط `{}` می‌فرستد؛ Server پروفایل
+Project و cutoff را pin می‌کند. Catalog و مسیرهای Create/List/Get/Retry/Cancel/
+Download/Verify هر سه permission `quality.read`، `hse.read` و
+`hse.confidential.read` را whole-definition لازم دارند. Roleهای QualityController
+و HseOfficer به‌تنهایی دیدن Definition یا ایجاد Run را ندارند. Worker مجوزها را
+دوباره کنترل و `IProjectQualityHseReportingSource` مالک را با Snapshot و Rendererهای
+PDF/XLSX قطعی مصرف می‌کند. وضعیت Quality/HSE و count نامعلوم مستقل می‌مانند؛
+`NotConfigured`/`InsufficientData` صفر یا نرخ حادثهٔ ساختگی نیستند. Run 237 هشت Job،
+هارنس F08 `20/20` و Restore Drill ۵۱ Migration را سبز کرد. همهٔ defaultهای
+Reporting و PDF license همچنان خاموش/`Unconfigured` هستند.
 
 ## ۲. Catalog
 
