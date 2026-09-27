@@ -43,8 +43,17 @@ internal static partial class Program
                 HasGuid(replay.Payload, "id", PortfolioSummaryRunId),
                 $"http={(int)replay.StatusCode}");
 
-            var completed = await WaitForFinalRunAsync(
-                client, key, actor, path, PortfolioSummaryRunId);
+            var completed = await SendAsync(client, key, actor, HttpMethod.Get,
+                $"{path}/runs/{PortfolioSummaryRunId}");
+            for (var attempt = 0; attempt < 60 &&
+                 !HasString(completed.Payload, "status", "Succeeded") &&
+                 !HasString(completed.Payload, "status", "Failed") &&
+                 !HasString(completed.Payload, "status", "Cancelled"); attempt++)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                completed = await SendAsync(client, key, actor, HttpMethod.Get,
+                    $"{path}/runs/{PortfolioSummaryRunId}");
+            }
             var outputs = completed.Payload.ValueKind == JsonValueKind.Object &&
                 completed.Payload.TryGetProperty("outputs", out var array) &&
                 array.ValueKind == JsonValueKind.Array
@@ -61,6 +70,8 @@ internal static partial class Program
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
                 $"http={(int)completed.StatusCode};" +
                 $"status={ReadOptionalString(completed.Payload, "status")};" +
+                $"stage={ReadOptionalString(completed.Payload, "pipelineStage")};" +
+                $"attempts={ReadInt64(completed.Payload, "attemptCount")};" +
                 $"diagnostic={ReadOptionalString(completed.Payload, "diagnosticCode")};" +
                 $"outputs={outputs}");
         }
