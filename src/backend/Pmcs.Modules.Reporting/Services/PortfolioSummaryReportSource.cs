@@ -29,52 +29,67 @@ internal sealed class PortfolioSummaryReportSource(
         "procurement.requests.read", "procurement.orders.read", "supply.read"
     ];
 
-    public async Task<PortfolioSummarySelection> LoadAsync(
+    public Task<PortfolioSummarySelection> LoadAsync(
+        Guid tenantId, Guid requestedBy, DateTimeOffset sourceCutoffUtc,
+        CancellationToken cancellationToken = default) =>
+        LoadCoreAsync(tenantId, requestedBy, sourceCutoffUtc, null, cancellationToken);
+
+    public async Task<PortfolioPinnedCohort> PinAsync(
         Guid tenantId, Guid requestedBy, DateTimeOffset sourceCutoffUtc,
         CancellationToken cancellationToken = default)
     {
-        if (tenantId == Guid.Empty || requestedBy == Guid.Empty || sourceCutoffUtc == default ||
-            !await permissions.HasTenantPermissionAsync(
-                tenantId, requestedBy, "portfolio.read", cancellationToken))
-        {
-            throw Invalid("permission.denied");
-        }
+        var profiles = await SelectProfilesAsync(
+            tenantId, requestedBy, null, cancellationToken);
+        var pinned = new PortfolioPinnedCohort(
+            PortfolioPinnedCohort.Version, tenantId, requestedBy,
+            sourceCutoffUtc.ToUniversalTime(), profiles.Select(item => new PortfolioPinnedProject(
+                item.Profile.Id, item.FinancialAllowed, item.CommercialAllowed,
+                item.PolicyVersion)).ToArray());
+        pinned.Validate();
+        return pinned;
+    }
 
-        var scope = await permissions.GetProjectScopeAsync(
-            tenantId, requestedBy, "project-state.read", cancellationToken);
-        if (scope is null || (!scope.AllProjects &&
-            scope.ProjectIds.Count > PortfolioSummaryReportRuntimeContract.MaximumProjects))
-        {
-            throw Invalid("cohort.limit_exceeded");
-        }
-        var allowedIds = scope.AllProjects ? null : scope.ProjectIds.Order().ToArray();
-        var profiles = allowedIds is { Length: 0 }
-            ? Array.Empty<ProjectControlProfile>()
-            : (await projects.ListProfilesAsync(tenantId, allowedIds, cancellationToken)).ToArray();
-        if (profiles.Length > PortfolioSummaryReportRuntimeContract.MaximumProjects ||
-            profiles.Any(item => item.TenantId != tenantId || item.Id == Guid.Empty) ||
-            profiles.Select(item => item.Id).Distinct().Count() != profiles.Length ||
-            (allowedIds is not null && profiles.Any(item => !scope.ProjectIds.Contains(item.Id))))
-        {
-            throw Invalid("cohort.invalid");
-        }
+    public Task<PortfolioSummarySelection> LoadPinnedAsync(
+        PortfolioPinnedCohort pinned, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(pinned);
+        pinned.Validate();
+        return LoadCoreAsync(pinned.TenantId, pinned.RequestedBy, pinned.AsOfUtc,
+            pinned, cancellationToken);
+    }
 
+    public async Task<bool> CanAccessPinnedAsync(
+        PortfolioPinnedCohort pinned, Guid actorUserId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            pinned.Validate();
+            if (actorUserId != pinned.RequestedBy &&
+                !await permissions.HasTenantPermissionAsync(pinned.TenantId,
+                    actorUserId, "reporting.template.publish", cancellationToken))
+                return false;
+            _ = await SelectProfilesAsync(pinned.TenantId, actorUserId, pinned, cancellationToken);
+            return true;
+        }
+        catch (DomainRuleException)
+        {
+            return false;
+        }
+    }
+
+    private async Task<PortfolioSummarySelection> LoadCoreAsync(
+        Guid tenantId, Guid requestedBy, DateTimeOffset sourceCutoffUtc,
+        PortfolioPinnedCohort? pinned, CancellationToken cancellationToken)
+    {
+        var profiles = await SelectProfilesAsync(tenantId, requestedBy, pinned, cancellationToken);
         var cutoff = sourceCutoffUtc.ToUniversalTime();
         var selected = new List<PortfolioProjectSelection>(profiles.Length);
-        foreach (var profile in profiles.OrderBy(item => item.Id))
+        foreach (var authorized in profiles)
         {
-            var preview = await permissions.PreviewProjectPermissionsAsync(
-                tenantId, requestedBy, profile.Id,
-                operations: ["project-state.read", .. FinancialPermissions, .. CommercialPermissions],
-                cancellationToken: cancellationToken);
-            if (preview.UserId != requestedBy || preview.ProjectId != profile.Id ||
-                string.IsNullOrWhiteSpace(preview.PolicyVersion) ||
-                !Allowed(preview, "project-state.read"))
-            {
-                throw Invalid("permission.revoked");
-            }
-            var financialAllowed = FinancialPermissions.All(operation => Allowed(preview, operation));
-            var commercialAllowed = CommercialPermissions.All(operation => Allowed(preview, operation));
+            var profile = authorized.Profile;
+            var financialAllowed = authorized.FinancialAllowed;
+            var commercialAllowed = authorized.CommercialAllowed;
             var timeZone = FindTimeZone(profile.TimeZone);
             var localDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(cutoff, timeZone).DateTime);
             var proven = profile.ConfigurationVersion > 0 &&
@@ -93,7 +108,7 @@ internal sealed class PortfolioSummaryReportSource(
                     proven ? profile.BaseCurrencyCode : null,
                     proven ? profile.ConfigurationVersion : null,
                     proven ? profile.ConfigurationChangedAt?.ToUniversalTime() : null,
-                    proven, preview.PolicyVersion,
+                    proven, authorized.PolicyVersion,
                     status, null, null, null, null, null, null, null, null,
                     proven ? "project.lifecycle" : "project.configuration_history_unavailable",
                     financialAllowed ? UnknownFinancial(status) : HiddenFinancial(),
@@ -128,7 +143,7 @@ internal sealed class PortfolioSummaryReportSource(
                 profile.Id, profile.Code, profile.Name, profile.Status, localDate,
                 profile.TimeZone, profile.BaseCurrencyCode, profile.ConfigurationVersion,
                 profile.ConfigurationChangedAt?.ToUniversalTime(),
-                true, preview.PolicyVersion, operationalStatus,
+                true, authorized.PolicyVersion, operationalStatus,
                 state?.OperationalStatus, state?.CoverageStatus, state?.FreshnessStatus,
                 state?.ConfidenceStatus, state?.IsPartial, state?.SnapshotId,
                 state?.CalculatedAt.ToUniversalTime(),
@@ -138,6 +153,76 @@ internal sealed class PortfolioSummaryReportSource(
         }
         return new PortfolioSummarySelection(tenantId, requestedBy, cutoff, selected);
     }
+
+    private async Task<AuthorizedProfile[]> SelectProfilesAsync(
+        Guid tenantId, Guid requestedBy, PortfolioPinnedCohort? pinned,
+        CancellationToken cancellationToken)
+    {
+        if (pinned is not null && pinned.TenantId != tenantId)
+            throw Invalid("cohort.invalid");
+        if (tenantId == Guid.Empty || requestedBy == Guid.Empty ||
+            !await permissions.HasTenantPermissionAsync(
+                tenantId, requestedBy, "portfolio.read", cancellationToken))
+        {
+            throw Invalid("permission.denied");
+        }
+
+        var scope = await permissions.GetProjectScopeAsync(
+            tenantId, requestedBy, "project-state.read", cancellationToken);
+        if (scope is null || (pinned is null && !scope.AllProjects &&
+            scope.ProjectIds.Count > PortfolioSummaryReportRuntimeContract.MaximumProjects))
+        {
+            throw Invalid("cohort.limit_exceeded");
+        }
+        var allowedIds = pinned is null
+            ? scope.AllProjects ? null : scope.ProjectIds.Order().ToArray()
+            : pinned.Projects.Select(item => item.ProjectId).ToArray();
+        if (pinned is not null && !scope.AllProjects &&
+            allowedIds!.Any(id => !scope.ProjectIds.Contains(id)))
+            throw Invalid("permission.revoked");
+        var profiles = allowedIds is { Length: 0 }
+            ? Array.Empty<ProjectControlProfile>()
+            : (await projects.ListProfilesAsync(tenantId, allowedIds, cancellationToken)).ToArray();
+        if (profiles.Length > PortfolioSummaryReportRuntimeContract.MaximumProjects ||
+            profiles.Any(item => item.TenantId != tenantId || item.Id == Guid.Empty) ||
+            profiles.Select(item => item.Id).Distinct().Count() != profiles.Length ||
+            (allowedIds is not null && profiles.Any(item => !allowedIds.Contains(item.Id))) ||
+            (pinned is not null && profiles.Length != pinned.Projects.Count))
+        {
+            throw Invalid("cohort.invalid");
+        }
+        var selected = new List<AuthorizedProfile>(profiles.Length);
+        foreach (var profile in profiles.OrderBy(item => item.Id))
+        {
+            var preview = await permissions.PreviewProjectPermissionsAsync(
+                tenantId, requestedBy, profile.Id,
+                operations: ["project-state.read", .. FinancialPermissions, .. CommercialPermissions],
+                cancellationToken: cancellationToken);
+            if (preview.UserId != requestedBy || preview.ProjectId != profile.Id ||
+                string.IsNullOrWhiteSpace(preview.PolicyVersion) ||
+                !Allowed(preview, "project-state.read"))
+            {
+                throw Invalid("permission.revoked");
+            }
+            var financialAllowed = FinancialPermissions.All(operation => Allowed(preview, operation));
+            var commercialAllowed = CommercialPermissions.All(operation => Allowed(preview, operation));
+            if (pinned is not null)
+            {
+                var entry = pinned.Projects.Single(item => item.ProjectId == profile.Id);
+                if (entry.FinancialAuthorized && !financialAllowed ||
+                    entry.CommercialAuthorized && !commercialAllowed)
+                    throw Invalid("permission.revoked");
+                financialAllowed &= entry.FinancialAuthorized;
+                commercialAllowed &= entry.CommercialAuthorized;
+            }
+            selected.Add(new AuthorizedProfile(profile, financialAllowed,
+                commercialAllowed, preview.PolicyVersion));
+        }
+        return selected.ToArray();
+    }
+
+    private sealed record AuthorizedProfile(ProjectControlProfile Profile,
+        bool FinancialAllowed, bool CommercialAllowed, string PolicyVersion);
 
     private async Task<PortfolioFinancialDimension> LoadFinancialAsync(
         Guid tenantId, ProjectControlProfile profile, DateOnly localDate,

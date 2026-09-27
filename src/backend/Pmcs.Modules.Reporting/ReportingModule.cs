@@ -153,6 +153,7 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IDatabaseMigration, ProjectQualityHseReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectGovernanceActionReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, PortfolioReportScopeMigration>();
+        services.AddSingleton<IDatabaseMigration, PortfolioSummaryReportCatalogMigration>();
         services.AddHostedService<ReportGenerationWorker>();
         services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(
@@ -160,5 +161,9 @@ public sealed class ReportingModule : IModule
             tags: ["ready"]);
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapReportingEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapReportingEndpoints();
+        endpoints.MapPortfolioReportingEndpoints();
+    }
 }

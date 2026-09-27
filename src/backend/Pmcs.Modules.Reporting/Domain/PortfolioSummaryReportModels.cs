@@ -79,6 +79,31 @@ internal sealed record PortfolioSummarySelection(
     DateTimeOffset SourceCutoffUtc,
     IReadOnlyCollection<PortfolioProjectSelection> Projects);
 
+internal sealed record PortfolioPinnedProject(
+    Guid ProjectId, bool FinancialAuthorized, bool CommercialAuthorized,
+    string PermissionPolicyVersion);
+
+internal sealed record PortfolioPinnedCohort(
+    string SchemaVersion, Guid TenantId, Guid RequestedBy, DateTimeOffset AsOfUtc,
+    IReadOnlyCollection<PortfolioPinnedProject> Projects)
+{
+    public const string Version = "pmcs.reporting.portfolio-summary.pinned-cohort/v1";
+
+    public void Validate()
+    {
+        if (SchemaVersion != Version || TenantId == Guid.Empty || RequestedBy == Guid.Empty ||
+            AsOfUtc == default || AsOfUtc.Offset != TimeSpan.Zero || Projects is null ||
+            Projects.Count > PortfolioSummaryReportRuntimeContract.MaximumProjects ||
+            Projects.Any(item => item is null || item.ProjectId == Guid.Empty ||
+                string.IsNullOrWhiteSpace(item.PermissionPolicyVersion)) ||
+            Projects.Select(item => item.ProjectId).Distinct().Count() != Projects.Count ||
+            !Projects.Select(item => item.ProjectId).SequenceEqual(
+                Projects.Select(item => item.ProjectId).Order()))
+            throw new Pmcs.BuildingBlocks.Domain.DomainRuleException(
+                "reporting.portfolio.cohort.invalid", "Pinned Portfolio cohort is invalid.");
+    }
+}
+
 internal sealed record PortfolioCurrencyGroup(
     string CurrencyCode,
     int FinancialContributorCount,

@@ -13,6 +13,24 @@ public sealed class PortfolioSummaryReportingTests
     private static readonly Guid TenantId = Guid.Parse("a1000000-0000-4000-8000-000000000001");
 
     [Fact]
+    public void PinnedCohortRejectsDuplicateAndUnsortedIds()
+    {
+        var first = new PortfolioPinnedProject(Guid.Parse("a2000000-0000-4000-8000-000000000001"),
+            true, false, "policy-v1");
+        var second = first with { ProjectId = Guid.Parse("a2000000-0000-4000-8000-000000000002") };
+        new PortfolioPinnedCohort(PortfolioPinnedCohort.Version, TenantId,
+            Guid.NewGuid(), Cutoff, [first, second]).Validate();
+        Assert.Equal("reporting.portfolio.cohort.invalid",
+            Assert.Throws<DomainRuleException>(() => new PortfolioPinnedCohort(
+                PortfolioPinnedCohort.Version, TenantId, Guid.NewGuid(), Cutoff,
+                [first, first]).Validate()).Code);
+        Assert.Equal("reporting.portfolio.cohort.invalid",
+            Assert.Throws<DomainRuleException>(() => new PortfolioPinnedCohort(
+                PortfolioPinnedCohort.Version, TenantId, Guid.NewGuid(), Cutoff,
+                [second, first]).Validate()).Code);
+    }
+
+    [Fact]
     public void EmptyAuthorizedCohortDoesNotExposeTenantProjectCount()
     {
         var snapshot = Build([]);

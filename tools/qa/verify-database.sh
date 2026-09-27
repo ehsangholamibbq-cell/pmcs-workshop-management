@@ -84,7 +84,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "55" \
+  "56" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -146,6 +146,16 @@ expect_equal \
   "portfolio reporting scope migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-011';"
+
+expect_equal \
+  "portfolio summary catalog migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-012';"
+
+expect_equal \
+  "portfolio summary certified definition and template are tenant scoped" \
+  "Portfolio|Active|Confidential|pmcs.reporting.portfolio-summary.parameters/v1|true|1.0.0|pmcs.reporting.portfolio-summary.renderer/v1|pmcs.reporting.portfolio-summary.layout/v1|9a2df8c64c6f4d461130f00cd106822d529e713de0a97b9ee72c90468bd8115f" \
+  "select definition.scope || '|' || definition.status || '|' || definition.classification || '|' || definition.parameter_schema_version || '|' || (definition.required_permissions = '[\"portfolio.read\",\"project-state.read\"]'::jsonb)::text || '|' || template.version || '|' || template.renderer_contract_version || '|' || template.layout_contract_version || '|' || template.content_digest from reporting.report_definitions definition join reporting.report_template_versions template on template.id = definition.current_template_version_id and template.definition_id = definition.id where definition.code = 'portfolio-summary-certified' and template.retired_at is null;"
 
 expect_equal \
   "tenant-owned generated report output migration identity" \
