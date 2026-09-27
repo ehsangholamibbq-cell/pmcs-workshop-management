@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.56.0`
-- وضعیت: F01–F09 connected؛ F10 Source/Runtime Core ready، Renderer/UI/Production باز
+- نسخه: `1.57.0`
+- وضعیت: F01–F09 connected؛ F10 Renderer/Golden ready، wiring/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1452,3 +1452,16 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
   `139/139`، پنج مرورگر، Restore `55` و Qualification `7/7` سبز؛ artifact
   `10938470711` با digest
   `sha256:981dfc244427999078e9e4e9c13d281197fb9e721520cc421e0b5f1820cda122`.
+
+## ۶۲. F10 MS40 PDF/XLSX Golden
+
+- Replay immutable Snapshot/Source Manifest، identity/template digest، classification
+  و tamper قبل از Render fail-closed؛ هیچ خواندن owner/DB در Render نیست.
+- PDF سه صفحه RTL برای Summary/Projects/Dimensions و XLSX شش sheet RTL/frozen
+  با formula escape، IRR/USD مستقل، `InsufficientData` در برابر صفر رسمی و
+  `NotAuthorized` بدون رقم. Byte replay و PNG visual digest قطعی پین شدند.
+- PDF `a441575ad5f561d44a37d767dd2ef0c9ad16489edf26bee3a5f57aa297b09db9`؛
+  XLSX `6f221d2f8de5c4af8079aaec65a9d0c11c669036a5777767b3b263cdd69834ec`.
+- Run 264 (`36340600926`) هشت Job، C# `552/552`، Node `123/123`، Web
+  `139/139`، پنج مرورگر، Restore `55` و Qualification `7/7` سبز؛ artifact
+  `10938752849`، `sha256:fc9031bdc74b7fbc5b5c92fb2edcf19093c48e0b396c2dc18760349522961706`.

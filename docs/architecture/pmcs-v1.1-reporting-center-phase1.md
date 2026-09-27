@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.53.0`
-- وضعیت: `S07-MS39 F10 Runtime Safe Checkpoint | Renderer/UI/Production open`
+- نسخه: `1.54.0`
+- وضعیت: `S07-MS40 F10 Renderer Safe Checkpoint | wiring/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -978,3 +978,14 @@ Builderهای Certified موجود validate می‌شوند. Snapshot Portfolio 
 mask، classification و hash منبع است. Run 261 (`36338179481`) هشت Job،
 C# `549/549` و Restore ۵۵ را سبز کرد. MS40 فقط Renderer/Golden است؛
 Catalog/API/Worker و Production هنوز بازند.
+
+## F10 S07-MS40 Immutable PDF/XLSX Renderer and Golden
+
+`PortfolioSummaryReportRenderingContract` Source Manifest را همراه Snapshot
+بازسازی و identity/template digest، cutoff، currency subtotal، permission mask
+و classification را پیش از Render تطبیق می‌دهد. PDF سه بخش Summary/Projects/
+Dimensions و XLSX شش sheet با RTL، تاریخ شمسی per-project، عدد مجهول مجزا و
+metadata deterministic دارد. هیچ تماس DB/owner Source در Renderer نیست.
+Run 264 (`36340600926`) هشت Job، C# `552/552`، Node `123/123`، پنج مرورگر
+و Restore ۵۵ را سبز کرد. MS41 فقط Catalog/Template و Tenant API است؛
+Worker/OutputAccess در Micro-Step بعدی و defaults خاموش باقی‌اند.

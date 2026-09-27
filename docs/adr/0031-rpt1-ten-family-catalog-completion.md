@@ -184,3 +184,8 @@ defaultهای خاموش ثابت‌اند.
 در `PMCS-V1.1-RPT1-S07-MS39-C1`، Source/Runtime Core محدود F10 با
 Run 261 (`36338179481`) هشت Job سبز گرفت. Renderer/Golden و wiring/
 Qualification هنوز بازند؛ Scope ده‌گانه و defaults خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS40-C1`، PDF/XLSX و Golden قطعی F10 در Run 264
+(`36340600926`) هشت Job سبز گرفت. Renderer فقط Snapshot/Manifest immutable را
+مصرف می‌کند؛ Catalog/Tenant API و Worker/OutputAccess هنوز بازند. Scope ده‌گانه،
+PR Draft و defaults خاموش ثابت‌اند.

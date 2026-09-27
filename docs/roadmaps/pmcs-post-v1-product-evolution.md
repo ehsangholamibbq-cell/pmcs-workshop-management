@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.73.0`
+- نسخه سند: `1.74.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -851,6 +851,14 @@ Migration را سبز کرد. Exact Next MS39 فقط Source/Runtime Core F10؛ R
 هشت Job، C# `549/549`، Node `120/120` و Restore ۵۵ را سبز کرد.
 Exact Next MS40 PDF/XLSX Renderer/Golden؛ wiring/Qualification بعدی باز است.
 
+در `S07-MS40`، Rendererهای PDF/XLSX F10 مدل Snapshot/Manifest immutable را
+replay و identity/template/classification را fail-closed اعتبارسنجی می‌کنند.
+Golden PDF سه صفحه و XLSX شش sheet با دو ارز مستقل و پوشش ناقص پین است.
+Candidate `d57f73611e647d352ec5c59a19cd996e589d0fe2`، tree
+`52daac29eff755e3a95c132d581fa7de37ef6387` در Run 264 (`36340600926`)
+هشت Job، C# `552/552`، Node `123/123` و Restore ۵۵ را سبز کرد.
+Exact Next MS41 Catalog/Template و Tenant API؛ Worker/OutputAccess بعدی باز است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1166,3 +1174,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.71.0` | ثبت Safe Checkpoint `S07-MS37` و Evidence سبز Run 254 برای DoR/قرارداد معنایی مستقل F10؛ MS38 Tenant-scope و Runtime/Renderer/wiring بعدی باز است |
 | `1.72.0` | ثبت Safe Checkpoint `S07-MS38` و Evidence سبز Run 256 برای زیرساخت واقعی Tenant-scope و Documents owner؛ MS39 Source/Runtime Core F10 باز است |
 | `1.73.0` | ثبت Safe Checkpoint `S07-MS39` و Evidence سبز Run 261 برای Source مالک و Runtime Core محدود F10؛ MS40 Renderer/Golden باز است |
+| `1.74.0` | ثبت Safe Checkpoint `S07-MS40` و Evidence سبز Run 264 برای PDF/XLSX Renderer/Golden قطعی F10؛ MS41 Catalog/Tenant API باز است |
