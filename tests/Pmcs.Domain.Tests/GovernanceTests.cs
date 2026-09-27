@@ -246,6 +246,78 @@ public sealed class GovernanceTests
         Assert.Equal("governance.reporting_history.chronology", exception.Code);
     }
 
+    [Fact]
+    public void CutoffSelectorReconstructsIntermediateStatesWithoutLatestRowFallback()
+    {
+        var issue = Issue();
+        var resolver = Guid.NewGuid();
+        issue.Transition(1, IssueStatus.UnderAssessment, null, null, resolver, At.AddHours(1));
+        issue.Transition(2, IssueStatus.ResponseInProgress, null, null, resolver, At.AddHours(2));
+        issue.Transition(3, IssueStatus.Resolved, "حل شد", null, resolver, At.AddHours(3));
+        issue.Transition(4, IssueStatus.Closed, "تأیید شد", ["evidence:1"], Guid.NewGuid(), At.AddHours(4));
+        issue.Transition(5, IssueStatus.Reopened, null, null, Guid.NewGuid(), At.AddHours(5));
+        Assert.Equal("Resolved", GovernanceReportingHistory.Select(issue.ReportingHistory,
+            issue.Revision, issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(3))!.State);
+        Assert.Equal("Closed", GovernanceReportingHistory.Select(issue.ReportingHistory,
+            issue.Revision, issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(4))!.State);
+        Assert.Equal("Reopened", GovernanceReportingHistory.Select(issue.ReportingHistory,
+            issue.Revision, issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(5))!.State);
+
+        var risk = AssessedRisk();
+        risk.Activate(2, Guid.NewGuid(), At.AddHours(2));
+        Assert.Null(GovernanceReportingHistory.Select(risk.ReportingHistory, risk.Revision,
+            risk.CreatedAt, RiskStatus.Proposed, risk.Status, At)?.MatrixVersion);
+        Assert.Equal(1, GovernanceReportingHistory.Select(risk.ReportingHistory, risk.Revision,
+            risk.CreatedAt, RiskStatus.Proposed, risk.Status, At.AddHours(1))?.MatrixVersion);
+
+        var request = Decision(["گزینه الف", "گزینه ب"]);
+        request.Submit(1, Guid.NewGuid(), At.AddHours(1));
+        request.BeginDecision(2, Guid.NewGuid(), At.AddHours(2));
+        Assert.Equal("Draft", GovernanceReportingHistory.Select(request.ReportingHistory, request.Revision,
+            request.CreatedAt, DecisionRequestStatus.Draft, request.Status, At)!.State);
+        Assert.Equal("ReadyForDecision", GovernanceReportingHistory.Select(request.ReportingHistory,
+            request.Revision, request.CreatedAt, DecisionRequestStatus.Draft, request.Status,
+            At.AddHours(1))!.State);
+
+        var action = ManagementAction.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid(), "اقدام", null, Guid.NewGuid(), "مسئول", new DateOnly(2026, 9, 20),
+            ActionPriority.High, Guid.NewGuid(), At);
+        action.Transition(1, ManagementActionStatus.Blocked, Guid.NewGuid(), At.AddHours(1));
+        var beforeLaterChange = GovernanceReportingHistory.Select(action.ReportingHistory, action.Revision,
+            action.CreatedAt, ManagementActionStatus.Open, action.Status, At.AddHours(1));
+        action.Transition(2, ManagementActionStatus.Done, Guid.NewGuid(), At.AddHours(2));
+        var asOfBlocked = GovernanceReportingHistory.Select(action.ReportingHistory, action.Revision,
+            action.CreatedAt, ManagementActionStatus.Open, action.Status, At.AddHours(1));
+        Assert.Equal("Blocked", asOfBlocked?.State);
+        Assert.Equal(beforeLaterChange, asOfBlocked);
+    }
+
+    [Fact]
+    public void CutoffSelectorRejectsGapsTamperAndLegacyRemainsUnknown()
+    {
+        var issue = Issue();
+        issue.Transition(1, IssueStatus.UnderAssessment, null, null, Guid.NewGuid(), At.AddHours(1));
+        Assert.Null(GovernanceReportingHistory.Select<IssueStatus>(null, 2,
+            issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(1)));
+        Assert.Equal("governance.reporting_history.integrity", Assert.Throws<DomainRuleException>(() =>
+            GovernanceReportingHistory.Select(issue.ReportingHistory!.Skip(1).ToArray(),
+                issue.Revision, issue.CreatedAt, IssueStatus.Open, issue.Status,
+                At.AddHours(1))).Code);
+        Assert.Equal("governance.reporting_history.integrity", Assert.Throws<DomainRuleException>(() =>
+            GovernanceReportingHistory.Select(issue.ReportingHistory!.ToArray(),
+                issue.Revision + 1, issue.CreatedAt, IssueStatus.Open, issue.Status,
+                At.AddHours(1))).Code);
+        var forged = issue.ReportingHistory!.ToArray();
+        forged[1] = forged[1] with { State = "Closed" };
+        Assert.Equal("governance.reporting_history.integrity", Assert.Throws<DomainRuleException>(() =>
+            GovernanceReportingHistory.Select(forged, issue.Revision,
+                issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(1))).Code);
+        forged[1] = issue.ReportingHistory!.Last() with { AtUtc = At.AddHours(-1) };
+        Assert.Equal("governance.reporting_history.integrity", Assert.Throws<DomainRuleException>(() =>
+            GovernanceReportingHistory.Select(forged, issue.Revision,
+                issue.CreatedAt, IssueStatus.Open, issue.Status, At.AddHours(1))).Code);
+    }
+
     private static ProjectRisk Risk(Guid? tenantId = null, Guid? projectId = null) => ProjectRisk.Propose(
         Guid.NewGuid(), tenantId ?? Guid.NewGuid(), projectId ?? Guid.NewGuid(), RiskType.Threat,
         "تأخیر در بازبینی", "عدم دریافت نقشه", "توقف جبهه کاری", "فنی", Guid.NewGuid(),

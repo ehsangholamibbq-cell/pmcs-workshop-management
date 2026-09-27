@@ -10,18 +10,18 @@ public sealed record GovernanceReportingEvent(
     DateOnly? DueDate = null, string? Rating = null, int? MatrixVersion = null,
     Guid? RelatedId = null, int? OccurrenceCount = null);
 
-internal static class GovernanceReportingHistory
+public static class GovernanceReportingHistory
 {
-    public static string Start(DateTimeOffset at, string state, DateOnly? dueDate = null,
+    internal static string Start(DateTimeOffset at, string state, DateOnly? dueDate = null,
         string? rating = null, int? matrixVersion = null, Guid? relatedId = null,
         int? occurrenceCount = null) =>
         JsonSerializer.Serialize(new[] { new GovernanceReportingEvent(1, at.ToUniversalTime(),
             state, dueDate, rating, matrixVersion, relatedId, occurrenceCount) });
 
-    public static IReadOnlyCollection<GovernanceReportingEvent>? Read(string? json) =>
+    internal static IReadOnlyCollection<GovernanceReportingEvent>? Read(string? json) =>
         json is null ? null : JsonSerializer.Deserialize<GovernanceReportingEvent[]>(json);
 
-    public static string? Append(string? json, DateTimeOffset at, string state,
+    internal static string? Append(string? json, DateTimeOffset at, string state,
         DateOnly? dueDate = null, string? rating = null, int? matrixVersion = null,
         Guid? relatedId = null, int? occurrenceCount = null)
     {
@@ -35,5 +35,35 @@ internal static class GovernanceReportingHistory
         return JsonSerializer.Serialize(events.Append(new GovernanceReportingEvent(events.Length + 1,
             at.ToUniversalTime(), state, dueDate, rating, matrixVersion, relatedId,
             occurrenceCount)).ToArray());
+    }
+
+    // A null result is reserved for legacy rows with no complete ledger. Malformed ledgers
+    // fail the whole read; they must never be reported as an empty or partial register.
+    public static GovernanceReportingEvent? Select<TState>(
+        IReadOnlyCollection<GovernanceReportingEvent>? events, long revision,
+        DateTimeOffset createdAt, TState initialState, TState currentState,
+        DateTimeOffset cutoff)
+        where TState : struct, Enum
+    {
+        if (events is null) return null;
+        var ordered = events.ToArray();
+        if (revision < 1 || ordered.Length != revision || ordered.Length is < 1 or > 20_000 ||
+            !string.Equals(ordered[0].State, initialState.ToString(), StringComparison.Ordinal) ||
+            !string.Equals(ordered[^1].State, currentState.ToString(), StringComparison.Ordinal) ||
+            Microseconds(ordered[0].AtUtc) != Microseconds(createdAt) ||
+            ordered.Where((item, index) => item.Sequence != index + 1 ||
+                item.AtUtc == default || item.AtUtc.Offset != TimeSpan.Zero ||
+                string.IsNullOrWhiteSpace(item.State) ||
+                !Enum.TryParse<TState>(item.State, false, out var state) || !Enum.IsDefined(state) ||
+                index > 0 && item.AtUtc < ordered[index - 1].AtUtc).Any())
+            throw new DomainRuleException("governance.reporting_history.integrity",
+                "The owner transition chronology cannot be verified.");
+        return ordered.LastOrDefault(item => Microseconds(item.AtUtc) <= Microseconds(cutoff));
+    }
+
+    private static DateTimeOffset Microseconds(DateTimeOffset value)
+    {
+        var utc = value.ToUniversalTime();
+        return utc.AddTicks(-(utc.Ticks % 10));
     }
 }
