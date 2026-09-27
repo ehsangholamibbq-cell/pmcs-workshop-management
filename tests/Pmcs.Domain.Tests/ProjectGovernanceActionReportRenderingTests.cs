@@ -18,7 +18,14 @@ public sealed class ProjectGovernanceActionReportRenderingTests
     private static readonly DateOnly Date = new(2026, 9, 27);
     private static readonly string[] SheetNames =
         ["Metadata", "Coverage", "Issue", "Risk", "Decision", "Escalation", "Action"];
-    private static readonly string[] ExpectedVisualDigests = ["pending"];
+    private static readonly string[] ExpectedVisualDigests =
+    [
+        "6cf11dd7ef26b414355e7619a26c934c8d1d25c38ec45c4edb1da28544bd56fb",
+        "b1814cefff50d40d1e4ead503d5e68db12bce5e5e1663bb3d6b4212dca2eeab5",
+        "4b9e1f3aa6403475cdb060c1e816d1bcad3189eb1a96ca4678d2b39127978ccf",
+        "673d82016d65bc9220dcdd97b575e2cd6001dfc75afb4fc352e5c006c548c1bc",
+        "161c61d90f75da2d8cb2b3c31a203c0b2876305b472c5331e8b8e056acb54f4b"
+    ];
 
     [Fact]
     public void F09RendererPinsTemplateSnapshotAndFiveSections()
@@ -79,7 +86,8 @@ public sealed class ProjectGovernanceActionReportRenderingTests
         Assert.Single(XDocument.Parse(sheets[4]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("SourceFactId", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("AssigneeDisplayName", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
-        Assert.True(first.Sha256 == "pending", $"F09_XLSX_GOLDEN_SHA256={first.Sha256}");
+        Assert.True(first.Sha256 == "7b41d33ea7db98fada6a041b9fd6bc5c265a8ab8400513fe643ca830d27efb1f",
+            $"F09_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
     [Fact]
@@ -102,7 +110,8 @@ public sealed class ProjectGovernanceActionReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "pending" && visualDigests.SequenceEqual(ExpectedVisualDigests),
+        Assert.True(first.Sha256 == "85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1" &&
+                visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F09_PDF_GOLDEN_SHA256={first.Sha256}; F09_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
 
