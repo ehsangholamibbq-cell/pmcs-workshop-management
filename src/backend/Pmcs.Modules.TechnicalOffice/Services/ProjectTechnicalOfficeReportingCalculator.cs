@@ -191,13 +191,13 @@ internal static class ProjectTechnicalOfficeReportingCalculator
 
     private static ProjectTechnicalOfficeSourceManifest Manifest(ProjectTechnicalOfficeReportingProjection source)
     {
-        TechnicalReportingManifestCollection Collection<T>(
+        TechnicalReportingManifestRegister Collection<T>(
             string name, TechnicalReportingCompleteness completeness, IReadOnlyCollection<T> values,
             Func<T, Guid> id, Func<T, int> eventCount)
         {
             var entries = values.Select(item => new TechnicalReportingManifestEntry(
                 id(item), TechnicalReportingHash.Compute(item))).OrderBy(item => item.Id).ToArray();
-            return new TechnicalReportingManifestCollection(name, completeness,
+            return new TechnicalReportingManifestRegister(name, completeness,
                 entries.Length, values.Sum(eventCount), entries.FirstOrDefault()?.Id,
                 entries.LastOrDefault()?.Id, entries);
         }

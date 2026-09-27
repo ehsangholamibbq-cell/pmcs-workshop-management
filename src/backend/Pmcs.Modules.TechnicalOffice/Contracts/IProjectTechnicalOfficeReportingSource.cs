@@ -123,7 +123,7 @@ public sealed record TechnicalReportingSection<T>(
     IReadOnlyCollection<T> Rows, IReadOnlyCollection<TechnicalReportingReason> Reasons);
 
 public sealed record TechnicalReportingManifestEntry(Guid Id, string FactSha256);
-public sealed record TechnicalReportingManifestCollection(
+public sealed record TechnicalReportingManifestRegister(
     string Name, TechnicalReportingCompleteness Completeness,
     int SourceCount, int EventCount, Guid? FirstId, Guid? LastId,
     IReadOnlyCollection<TechnicalReportingManifestEntry> Entries);
@@ -134,7 +134,7 @@ public sealed record ProjectTechnicalOfficeSourceManifest(
     DateTimeOffset ConfigurationEffectiveAtUtc, bool SourceEnabled,
     TechnicalReportingClassification Classification, bool RestrictedPublicationApproved,
     DateTimeOffset WatermarkUtc,
-    IReadOnlyCollection<TechnicalReportingManifestCollection> Collections);
+    IReadOnlyCollection<TechnicalReportingManifestRegister> Collections);
 
 public sealed record ProjectTechnicalOfficeReportingResult(
     string ContractVersion, string PolicyVersion, Guid TenantId, Guid ProjectId,
