@@ -108,6 +108,12 @@ Unknown confidentiality و نسخهٔ policy نامعتبر failure هستند. 
 General ممنوع است. Permission اضافهٔ HSE/Finance از پیوندها حدس زده نمی‌شود؛ هیچ
 محتوای آن منابع به F09 وارد نمی‌شود.
 
+در Runtime محدود MS32، policy مالک `all-management-actions-restricted/v1` به هر Action
+به‌صورت یکنواخت `Restricted` می‌دهد و version آن در manifest ثبت می‌شود. این
+classification محافظه‌کارانه به `SourceFactId` یا محتوای Daily Fact اتکا ندارد؛
+متن Action، نام اشخاص و SourceFactId به renderer عبور نمی‌کنند. تغییر این policy
+فقط با نسخه/Golden و gate امنیتی مستقل مجاز است.
+
 Snapshot/Renderer فقط Number/Id رسمی، وضعیت، زمان/موعد، severity/rating نسخه‌دار و
 aggregate مجاز را دریافت می‌کند. Facts/Assumptions/Predictions، narrative حساس،
 Evidence URI/bytes، selected option/rationale، recipient/assignee/authority name،

@@ -1322,3 +1322,23 @@ Candidate `67b60c00779d51ea9479dee4d887c810d572d485`، tree
 همهٔ هشت Job را سبز کردند؛ Node `106/106` شامل سه تست قراردادی F09 بود.
 Checkpoint `PMCS-V1.1-RPT1-S07-MS31-C1` فقط DoR و Semantic Contract F09 است؛
 Migration همچنان ۵۱ و Runtime/Renderer/wiring F09 باز است.
+
+## ۵۴. Source مالک و Runtime Core محدود F09 — Slice 07 Micro-Step 32 Candidate
+
+- ActionControl هشت register مالک را در یک transaction repeatable-read با scope
+  Tenant/Project، cutoff، bound کامل و digest مرتب می‌خواند؛ endpointهای capped یا
+  دادهٔ ماژول دیگر را مصرف نمی‌کند. پیوند نامعتبر، شناسهٔ تکراری و cycle رد می‌شود.
+- transitionهای legacy پس از cutoff در بخش مستقل `InsufficientData` و count=`null`
+  قرار می‌گیرند؛ Request فقط با اولین Submit اثبات‌پذیر رسمی می‌شود، و وضعیت
+  DecisionRecord پس از ثبت بدون chronology به گذشته تعمیم داده نمی‌شود.
+- Action با policy نسخه‌دار `all-management-actions-restricted/v1` طبقه‌بندی می‌شود؛
+  متن، اشخاص، Evidence و SourceFactId از Source semantic خارج می‌مانند.
+- Snapshot پنج بخش را با status/count، Project/timezone/cutoff pinned، manifest و
+  semantic digest اعتبارسنجی می‌کند؛ tamper در hash، scope، count یا classification
+  و overflow ردیف/byte رد می‌شود.
+- آزمون Unit متمرکز F09، Node contract، repository validator، Full Regression و
+  Full GitHub CI هشت Job روی Candidate ثابت، Gate قبل از Checkpoint هستند.
+
+MS32 هیچ Renderer/Golden، Migration، Definition، Catalog/API/Worker، F10 یا
+enablement ندارد. نقص تاریخچهٔ legacy برای مرحلهٔ producer/versioned migration
+و qualification متصل باز می‌ماند.

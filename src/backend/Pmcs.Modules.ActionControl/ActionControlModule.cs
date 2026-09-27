@@ -24,6 +24,7 @@ public sealed class ActionControlModule : IModule
         services.AddScoped<IAttentionDispositionSource, AttentionDispositionSource>();
         services.AddScoped<IPortfolioActionSource, PortfolioActionSource>();
         services.AddScoped<IManagementActionWorkSource, ManagementActionWorkSource>();
+        services.AddScoped<IProjectGovernanceActionReportingSource, ProjectGovernanceActionReportingSource>();
         services.AddHostedService<GovernanceDeadlineWorker>();
         services.AddSingleton<IDatabaseMigration, ActionControlInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ActionGovernanceMigration>();
