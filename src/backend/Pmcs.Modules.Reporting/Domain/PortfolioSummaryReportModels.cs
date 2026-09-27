@@ -15,6 +15,14 @@ internal static class PortfolioSummaryReportRuntimeContract
     public const string SnapshotSchemaVersion = "pmcs.reporting.portfolio-summary.snapshot/v1";
     public const string SourceManifestVersion = "pmcs.reporting.portfolio-summary.source-manifest/v1";
     public const int MaximumProjects = 200;
+
+    // PostgreSQL timestamptz stores microseconds; the pinned JSON cutoff must
+    // use the same precision as report_runs.as_of_utc before either is written.
+    public static DateTimeOffset NormalizeCutoff(DateTimeOffset value)
+    {
+        var utc = value.ToUniversalTime();
+        return new DateTimeOffset(utc.Ticks - utc.Ticks % 10, TimeSpan.Zero);
+    }
 }
 
 internal enum PortfolioDimensionStatus

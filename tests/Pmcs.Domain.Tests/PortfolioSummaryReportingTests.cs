@@ -13,6 +13,24 @@ public sealed class PortfolioSummaryReportingTests
     private static readonly Guid TenantId = Guid.Parse("a1000000-0000-4000-8000-000000000001");
 
     [Fact]
+    public void PinnedCutoffMatchesPersistedPostgresMicrosecondPrecision()
+    {
+        var requested = new DateTimeOffset(2026, 9, 27, 12, 0, 0, TimeSpan.Zero)
+            .AddTicks(1234567);
+        var normalized = PortfolioSummaryReportRuntimeContract.NormalizeCutoff(requested);
+        var pinned = new PortfolioPinnedCohort(PortfolioPinnedCohort.Version, TenantId,
+            Guid.NewGuid(), normalized, []);
+        pinned.Validate();
+        var persisted = new DateTimeOffset(normalized.Ticks - normalized.Ticks % 10,
+            TimeSpan.Zero);
+        Assert.Equal(0, normalized.Ticks % 10);
+        Assert.Equal(requested.AddTicks(-7), normalized);
+        Assert.Equal(persisted, pinned.AsOfUtc);
+        Assert.Equal(persisted, JsonSerializer.Deserialize<PortfolioPinnedCohort>(
+            CanonicalJson.Serialize(pinned), CanonicalJson.SerializerOptions)!.AsOfUtc);
+    }
+
+    [Fact]
     public void PinnedCohortRejectsDuplicateAndUnsortedIds()
     {
         var first = new PortfolioPinnedProject(Guid.Parse("a2000000-0000-4000-8000-000000000001"),

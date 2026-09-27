@@ -81,10 +81,11 @@ internal static class PortfolioReportingEndpoints
             return Problem(StatusCodes.Status400BadRequest, "reporting.format.unsupported",
                 "Requested format is unsupported.");
         var now = clock.UtcNow.ToUniversalTime();
-        var asOfUtc = request.AsOfUtc?.ToUniversalTime() ?? now;
-        if (asOfUtc > now)
+        var requestedCutoff = request.AsOfUtc?.ToUniversalTime() ?? now;
+        if (requestedCutoff > now)
             return Problem(StatusCodes.Status400BadRequest, "reporting.as_of.future",
                 "Report cutoff cannot be in the future.");
+        var asOfUtc = PortfolioSummaryReportRuntimeContract.NormalizeCutoff(requestedCutoff);
 
         var definition = await ActiveDefinitionAsync(db, cancellationToken);
         if (definition is null)
