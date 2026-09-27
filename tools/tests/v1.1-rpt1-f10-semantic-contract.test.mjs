@@ -15,8 +15,8 @@ test("F10 owns a tenant-scoped portfolio rather than a disguised project report"
   assert.match(contract, /PMCS-RPT1-F10-SEMANTIC-001[\s\S]*scope=Portfolio/u);
   assert.match(contract, /ProjectId` آن \*\*nullable\*\*[\s\S]*GUID ساختگی/u);
   assert.match(contract, /\/api\/v1\/portfolio\/reports/u);
-  assert.match(run, /public Guid ProjectId/u);
-  assert.match(publisher, /Guid ProjectId/u);
+  assert.match(run, /public Guid\? ProjectId/u);
+  assert.match(publisher, /Guid\? ProjectId/u);
   assert.match(contract, /MS37 contract-only Runtime \/ Renderer \/ Migration \/ Catalog \/ API \/ Worker change: None/u);
 });
 

@@ -10,7 +10,8 @@ public sealed class ReportRun : AggregateRoot
 
     public Guid Id { get; private set; }
     public Guid TenantId { get; private set; }
-    public Guid ProjectId { get; private set; }
+    public Guid? ProjectId { get; private set; }
+    public ReportDefinitionScope Scope { get; private set; }
     public Guid DefinitionId { get; private set; }
     public string DefinitionCode { get; private set; } = string.Empty;
     public Guid TemplateVersionId { get; private set; }
@@ -21,6 +22,7 @@ public sealed class ReportRun : AggregateRoot
     public DateTimeOffset AsOfUtc { get; private set; }
     public string ProjectTimeZone { get; private set; } = string.Empty;
     public string? PinnedProjectProfileJson { get; private set; }
+    public string? PinnedPortfolioCohortJson { get; private set; }
     public Guid RequestedBy { get; private set; }
     public string RequestPermissionSnapshotJson { get; private set; } = string.Empty;
     public string? ProcessingPermissionSnapshotJson { get; private set; }
@@ -70,6 +72,7 @@ public sealed class ReportRun : AggregateRoot
             Id = id,
             TenantId = tenantId,
             ProjectId = projectId,
+            Scope = ReportDefinitionScope.Project,
             DefinitionId = definitionId,
             DefinitionCode = Required(definitionCode, 120, "reporting.definition.invalid"),
             TemplateVersionId = templateVersionId,
@@ -86,6 +89,49 @@ public sealed class ReportRun : AggregateRoot
             RequestPermissionSnapshotJson = RequiredJson(
                 requestPermissionSnapshotJson,
                 "reporting.permission_snapshot.invalid"),
+            CorrelationId = Required(correlationId, 160, "reporting.correlation.invalid"),
+            IdempotencyKeyHash = RequiredHash(idempotencyKeyHash, "reporting.idempotency.invalid"),
+            Status = ReportRunStatus.Queued,
+            PipelineStage = ReportPipelineStage.Queued,
+            CreatedAt = createdAt.ToUniversalTime(),
+            Revision = 1
+        };
+    }
+
+    public static ReportRun QueuePortfolio(
+        Guid id, Guid tenantId, Guid definitionId, string definitionCode,
+        Guid templateVersionId, string templateVersion, string parametersJson,
+        string parametersHash, string requestedFormatsJson, DateTimeOffset asOfUtc,
+        string pinnedPortfolioCohortJson, Guid requestedBy,
+        string requestPermissionSnapshotJson, string correlationId,
+        string idempotencyKeyHash, DateTimeOffset createdAt)
+    {
+        if (id == Guid.Empty || tenantId == Guid.Empty || definitionId == Guid.Empty ||
+            templateVersionId == Guid.Empty || requestedBy == Guid.Empty)
+        {
+            throw new DomainRuleException("reporting.run.identity.required", "Report run identities are required.");
+        }
+
+        return new ReportRun
+        {
+            Id = id,
+            TenantId = tenantId,
+            ProjectId = null,
+            Scope = ReportDefinitionScope.Portfolio,
+            DefinitionId = definitionId,
+            DefinitionCode = Required(definitionCode, 120, "reporting.definition.invalid"),
+            TemplateVersionId = templateVersionId,
+            TemplateVersion = Required(templateVersion, 40, "reporting.template.invalid"),
+            ParametersJson = RequiredJson(parametersJson, "reporting.parameters.invalid"),
+            ParametersHash = RequiredHash(parametersHash, "reporting.parameters.invalid"),
+            RequestedFormatsJson = RequiredJson(requestedFormatsJson, "reporting.format.unsupported"),
+            AsOfUtc = asOfUtc.ToUniversalTime(),
+            ProjectTimeZone = string.Empty,
+            PinnedPortfolioCohortJson = RequiredJson(
+                pinnedPortfolioCohortJson, "reporting.portfolio.cohort.invalid"),
+            RequestedBy = requestedBy,
+            RequestPermissionSnapshotJson = RequiredJson(
+                requestPermissionSnapshotJson, "reporting.permission_snapshot.invalid"),
             CorrelationId = Required(correlationId, 160, "reporting.correlation.invalid"),
             IdempotencyKeyHash = RequiredHash(idempotencyKeyHash, "reporting.idempotency.invalid"),
             Status = ReportRunStatus.Queued,

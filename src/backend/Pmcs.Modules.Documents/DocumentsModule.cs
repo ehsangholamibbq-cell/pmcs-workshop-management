@@ -77,6 +77,7 @@ public sealed class DocumentsModule : IModule
         services.AddScoped<IGeneratedDocumentPublisher, GeneratedDocumentPublisher>();
         services.AddScoped<IGeneratedDocumentOrphanRemediator, GeneratedDocumentOrphanRemediator>();
         services.AddSingleton<IDatabaseMigration, DocumentsInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, TenantReportOutputOwnerMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapDocumentEndpoints();

@@ -84,7 +84,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "53" \
+  "55" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -141,6 +141,31 @@ expect_equal \
   "project-governance-action reporting catalog migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-010';"
+
+expect_equal \
+  "portfolio reporting scope migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-011';"
+
+expect_equal \
+  "tenant-owned generated report output migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'documents' and version = '20260927-001';"
+
+expect_equal \
+  "project report rows retain their scope and project identity" \
+  "0" \
+  "select count(*) from reporting.report_runs where scope <> 'Project' or project_id is null;"
+
+expect_equal \
+  "portfolio scope constraints exist on all three reporting stores" \
+  "3" \
+  "select count(*) from pg_constraint where conname in ('ck_reporting_run_scope_project', 'ck_reporting_snapshot_scope_project', 'ck_reporting_output_scope_project');"
+
+expect_equal \
+  "tenant report document owner scope constraint exists" \
+  "1" \
+  "select count(*) from pg_constraint where conname = 'ck_documents_owner_scope' and conrelid = 'documents.assets'::regclass;"
 
 expect_equal \
   "project-governance-action certified definition and immutable template are published" \

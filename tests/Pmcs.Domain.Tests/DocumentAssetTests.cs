@@ -12,6 +12,18 @@ public sealed class DocumentAssetTests
     private static readonly DateTimeOffset CreatedAt = new(2026, 9, 18, 8, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public void TenantReportOutputHasNoProjectAndCannotBeUploadedAsProjectDocument()
+    {
+        var output = Create(ownerType: DocumentOwnerType.TenantReportOutput, projectId: null);
+        Assert.Null(output.ProjectId);
+        Assert.False(DocumentAsset.RequiresProject(DocumentOwnerType.TenantReportOutput));
+        Assert.Equal("documents.project.not_allowed",
+            Assert.Throws<DomainRuleException>(() => Create(
+                ownerType: DocumentOwnerType.TenantReportOutput,
+                projectId: Guid.NewGuid())).Code);
+    }
+
+    [Fact]
     public void ProjectDocumentStartsPendingWithServerRetentionAndVersion()
     {
         var asset = Create();

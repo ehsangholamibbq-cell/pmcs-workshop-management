@@ -24,6 +24,32 @@ public sealed class ReportingTests
     private static readonly DateTimeOffset Cutoff = new(2026, 9, 18, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public void PortfolioIdentityKeepsProjectIdNullAcrossRunSnapshotAndOutput()
+    {
+        var tenantId = Guid.NewGuid();
+        var runId = Guid.NewGuid();
+        var run = ReportRun.QueuePortfolio(runId, tenantId, Guid.NewGuid(),
+            "portfolio-summary-certified", Guid.NewGuid(), "1.0.0", "{}",
+            new string('a', 64), "[\"Pdf\"]", Cutoff, "{\"projects\":[]}",
+            Guid.NewGuid(), "{}", "test-correlation", new string('b', 64), Cutoff);
+        var snapshot = ReportSnapshot.CreatePortfolio(Guid.NewGuid(), runId, tenantId,
+            "pmcs.reporting.portfolio/v1", ReportDataStatus.NoData, "{\"projects\":[]}",
+            "{\"sources\":[]}", ReportClassification.Confidential, Cutoff, Cutoff);
+        var output = ReportOutput.CreatePortfolio(Guid.NewGuid(), runId, snapshot.Id,
+            Guid.NewGuid(), tenantId, ReportFormat.Pdf, "application/pdf", "portfolio.pdf",
+            Guid.NewGuid(), 1_024, new string('c', 64), "RPT-TEST-PORTFOLIO",
+            new string('d', 64), ReportClassification.Confidential, "LongTerm", Cutoff);
+
+        Assert.Equal(ReportDefinitionScope.Portfolio, run.Scope);
+        Assert.Equal(ReportDefinitionScope.Portfolio, snapshot.Scope);
+        Assert.Equal(ReportDefinitionScope.Portfolio, output.Scope);
+        Assert.Null(run.ProjectId);
+        Assert.Null(snapshot.ProjectId);
+        Assert.Null(output.ProjectId);
+        Assert.Equal("{\"projects\":[]}", run.PinnedPortfolioCohortJson);
+    }
+
+    [Fact]
     public void DescriptorPublishesCertifiedReportingAndReadOnlyAgentContracts()
     {
         var descriptor = new ReportingModule().Descriptor;

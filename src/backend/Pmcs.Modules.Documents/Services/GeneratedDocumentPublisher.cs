@@ -68,7 +68,9 @@ internal sealed class GeneratedDocumentPublisher(
             request.DocumentId,
             request.TenantId,
             request.ProjectId,
-            DocumentOwnerType.ReportOutput,
+            request.ProjectId.HasValue
+                ? DocumentOwnerType.ReportOutput
+                : DocumentOwnerType.TenantReportOutput,
             request.OwnerId,
             VersionNumber,
             request.FileName,
@@ -171,7 +173,9 @@ internal sealed class GeneratedDocumentPublisher(
         CancellationToken cancellationToken)
     {
         var matches = asset.ProjectId == request.ProjectId &&
-            asset.OwnerType == DocumentOwnerType.ReportOutput &&
+            asset.OwnerType == (request.ProjectId.HasValue
+                ? DocumentOwnerType.ReportOutput
+                : DocumentOwnerType.TenantReportOutput) &&
             asset.OwnerId == request.OwnerId &&
             asset.VersionNumber == VersionNumber &&
             string.Equals(asset.OriginalFileName, request.FileName, StringComparison.Ordinal) &&
@@ -262,14 +266,17 @@ internal sealed class GeneratedDocumentPublisher(
     {
         var extension = DocumentContentPolicy.CanonicalExtension(
             request.ContentType.Trim().ToLowerInvariant());
-        return $"tenants/{request.TenantId:N}/projects/{request.ProjectId:N}/documents/" +
+        var scope = request.ProjectId.HasValue
+            ? $"projects/{request.ProjectId.Value:N}"
+            : "portfolio";
+        return $"tenants/{request.TenantId:N}/{scope}/documents/" +
             $"{request.DocumentId:N}/v{VersionNumber}{extension}";
     }
 
     private static GeneratedDocumentReference ToReference(DocumentAsset asset) => new(
         asset.Id,
         asset.TenantId,
-        asset.ProjectId!.Value,
+        asset.ProjectId,
         asset.OwnerId,
         asset.OriginalFileName,
         asset.ContentType,

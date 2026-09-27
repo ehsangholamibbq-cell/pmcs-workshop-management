@@ -523,7 +523,7 @@ internal static class ReportingEndpoints
         var take = Math.Clamp(limit ?? 50, 1, 100);
         var query = dbContext.Runs.AsNoTracking()
             .Where(run => run.TenantId == actor.TenantId &&
-                run.ProjectId == projectId &&
+                run.ProjectId!.Value == projectId &&
                 permittedDefinitionCodes.Contains(run.DefinitionCode));
         if (status.HasValue)
         {
@@ -1157,7 +1157,7 @@ internal static class ReportingEndpoints
                 output.TenantId == tenantId &&
                 output.ProjectId == projectId &&
                 run.TenantId == tenantId &&
-                run.ProjectId == projectId &&
+                run.ProjectId!.Value == projectId &&
                 run.Status == ReportRunStatus.Succeeded
             select new { Output = output, Run = run })
             .SingleOrDefaultAsync(cancellationToken);
@@ -1225,7 +1225,7 @@ internal static class ReportingEndpoints
         };
         var valid = content.Document.Id == context.Output.GeneratedDocumentId &&
             content.Document.TenantId == context.Output.TenantId &&
-            content.Document.ProjectId == context.Output.ProjectId &&
+            content.Document.ProjectId == context.Output.ProjectId!.Value &&
             content.Document.OwnerType == DocumentOwnerType.ReportOutput &&
             content.Document.OwnerId == context.Output.Id &&
             content.Document.VersionNumber == 1 &&
@@ -1257,7 +1257,7 @@ internal static class ReportingEndpoints
         CancellationToken cancellationToken) => auditTrail.WriteAsync(
         new AuditEntry(
             actor.TenantId,
-            context.Output.ProjectId,
+            context.Output.ProjectId!.Value,
             actor.UserId,
             "CertifiedReportOutputIntegrityFailed",
             "ReportOutput",
@@ -1349,11 +1349,11 @@ internal static class ReportingEndpoints
             ? await dbContext.Snapshots.AsNoTracking().SingleOrDefaultAsync(
                 item => item.Id == run.SnapshotId.Value &&
                     item.TenantId == run.TenantId &&
-                    item.ProjectId == run.ProjectId,
+                    item.ProjectId == run.ProjectId!.Value,
                 cancellationToken)
             : null;
         var outputs = await dbContext.Outputs.AsNoTracking()
-            .Where(item => item.RunId == run.Id && item.TenantId == run.TenantId && item.ProjectId == run.ProjectId)
+            .Where(item => item.RunId == run.Id && item.TenantId == run.TenantId && item.ProjectId == run.ProjectId!.Value)
             .OrderBy(item => item.Format)
             .Select(item => new ReportOutputMetadataResponse(
                 item.Id,
@@ -1363,7 +1363,7 @@ internal static class ReportingEndpoints
                 item.SizeBytes,
                 item.Sha256,
                 item.VerificationCode,
-                $"/api/v1/projects/{run.ProjectId}/reports/outputs/{item.Id}/content"))
+                $"/api/v1/projects/{run.ProjectId!.Value}/reports/outputs/{item.Id}/content"))
             .ToArrayAsync(cancellationToken);
         return ToRunResponse(run, snapshot, outputs);
     }
@@ -1373,7 +1373,7 @@ internal static class ReportingEndpoints
         ReportSnapshot? snapshot,
         IReadOnlyCollection<ReportOutputMetadataResponse> outputs) => new(
         run.Id,
-        run.ProjectId,
+        run.ProjectId!.Value,
         run.DefinitionCode,
         run.TemplateVersion,
         run.Status,
@@ -1388,7 +1388,7 @@ internal static class ReportingEndpoints
         run.DiagnosticCode,
         snapshot?.Sha256,
         outputs,
-        new ReportRunLinks($"/api/v1/projects/{run.ProjectId}/reports/runs/{run.Id}"));
+        new ReportRunLinks($"/api/v1/projects/{run.ProjectId!.Value}/reports/runs/{run.Id}"));
 
     internal static string SerializePermissionSnapshot(EffectivePermissionPreview preview) =>
         CanonicalJson.Serialize(new ReportPermissionSnapshot(

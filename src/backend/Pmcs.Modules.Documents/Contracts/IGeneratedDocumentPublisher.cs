@@ -5,7 +5,7 @@ namespace Pmcs.Modules.Documents.Contracts;
 public sealed record GeneratedDocumentPublishRequest(
     Guid DocumentId,
     Guid TenantId,
-    Guid ProjectId,
+    Guid? ProjectId,
     Guid OwnerId,
     string FileName,
     string ContentType,
@@ -21,7 +21,7 @@ public sealed record GeneratedDocumentPublishRequest(
 public sealed record GeneratedDocumentReference(
     Guid DocumentId,
     Guid TenantId,
-    Guid ProjectId,
+    Guid? ProjectId,
     Guid OwnerId,
     string FileName,
     string ContentType,

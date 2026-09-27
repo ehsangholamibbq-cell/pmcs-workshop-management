@@ -3,7 +3,8 @@ namespace Pmcs.Modules.Reporting.Domain;
 public enum ReportDefinitionScope
 {
     Project = 1,
-    Tenant = 2
+    Tenant = 2,
+    Portfolio = 3
 }
 
 public enum ReportClassification

@@ -429,7 +429,8 @@ public enum DocumentOwnerType
     ReportOutput = 3,
     TechnicalDocument = 4,
     MemberProfile = 5,
-    LoginExperience = 6
+    LoginExperience = 6,
+    TenantReportOutput = 7
 }
 
 public enum DocumentClassification

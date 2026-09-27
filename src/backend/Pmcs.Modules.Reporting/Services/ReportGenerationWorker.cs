@@ -284,7 +284,7 @@ internal sealed partial class ReportGenerationWorker(
                 permissionSnapshotJson);
             var chain = await services.GetRequiredService<IDailyReportReportingSource>().LoadChainAsync(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 parameters.DailyReportId,
                 run.AsOfUtc,
                 cancellationToken);
@@ -312,7 +312,7 @@ internal sealed partial class ReportGenerationWorker(
                 permissionSnapshotJson);
             pinnedProject.ValidateForRun(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 run.ProjectTimeZone,
                 run.CreatedAt);
             var period = ProjectPeriodicReportPeriodResolver.Resolve(
@@ -322,7 +322,7 @@ internal sealed partial class ReportGenerationWorker(
                 run.CreatedAt);
             var source = await services.GetRequiredService<IDailyReportPeriodReportingSource>().LoadPeriodAsync(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 period.PeriodStartLocalDate,
                 period.PeriodEndLocalDateExclusive,
                 period.SourceCutoffUtc,
@@ -352,14 +352,14 @@ internal sealed partial class ReportGenerationWorker(
                 permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 run.AsOfUtc,
                 run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectStateReportingSource>().LoadAsync(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 cutoffLocalDate,
                 run.AsOfUtc,
                 cancellationToken);
@@ -387,14 +387,14 @@ internal sealed partial class ReportGenerationWorker(
                 permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 run.AsOfUtc,
                 run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectProgressReportingSource>().LoadAsync(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 cutoffLocalDate,
                 run.AsOfUtc,
                 cancellationToken);
@@ -422,14 +422,14 @@ internal sealed partial class ReportGenerationWorker(
                 permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 run.AsOfUtc,
                 run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectFinancialPositionReportingSource>().LoadAsync(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 cutoffLocalDate,
                 run.AsOfUtc,
                 cancellationToken);
@@ -458,7 +458,7 @@ internal sealed partial class ReportGenerationWorker(
                     permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 run.AsOfUtc,
                 run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
@@ -467,7 +467,7 @@ internal sealed partial class ReportGenerationWorker(
                 .GetRequiredService<IProjectCommercialProcurementSupplyReportingSource>()
                 .LoadAsync(
                     run.TenantId,
-                    run.ProjectId,
+                    run.ProjectId!.Value,
                     cutoffLocalDate,
                     run.AsOfUtc,
                     cancellationToken);
@@ -491,11 +491,11 @@ internal sealed partial class ReportGenerationWorker(
                 run.PinnedProjectProfileJson,
                 "reporting.project_technical_office.project_scope.invalid", permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
-                run.TenantId, run.ProjectId, run.AsOfUtc, run.CreatedAt);
+                run.TenantId, run.ProjectId!.Value, run.AsOfUtc, run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectTechnicalOfficeReportingSource>()
-                .LoadAsync(run.TenantId, run.ProjectId, cutoffLocalDate, run.AsOfUtc, cancellationToken);
+                .LoadAsync(run.TenantId, run.ProjectId!.Value, cutoffLocalDate, run.AsOfUtc, cancellationToken);
             snapshot = ProjectTechnicalOfficeReportSnapshotBuilder.Build(
                 run.Id, run.TenantId, pinnedProject, run.AsOfUtc, source, run.CreatedAt, builtAt);
         }
@@ -510,11 +510,11 @@ internal sealed partial class ReportGenerationWorker(
                 run.PinnedProjectProfileJson,
                 "reporting.project_quality_hse.project_scope.invalid", permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
-                run.TenantId, run.ProjectId, run.AsOfUtc, run.CreatedAt);
+                run.TenantId, run.ProjectId!.Value, run.AsOfUtc, run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectQualityHseReportingSource>()
-                .LoadAsync(run.TenantId, run.ProjectId, cutoffLocalDate, run.AsOfUtc, cancellationToken);
+                .LoadAsync(run.TenantId, run.ProjectId!.Value, cutoffLocalDate, run.AsOfUtc, cancellationToken);
             snapshot = ProjectQualityHseReportSnapshotBuilder.Build(
                 run.Id, run.TenantId, pinnedProject, run.AsOfUtc, source, run.CreatedAt, builtAt);
         }
@@ -529,11 +529,11 @@ internal sealed partial class ReportGenerationWorker(
                 run.PinnedProjectProfileJson,
                 "reporting.project_governance_action.project_scope.invalid", permissionSnapshotJson);
             var timeZone = pinnedProject.ValidateForRun(
-                run.TenantId, run.ProjectId, run.AsOfUtc, run.CreatedAt);
+                run.TenantId, run.ProjectId!.Value, run.AsOfUtc, run.CreatedAt);
             var cutoffLocalDate = DateOnly.FromDateTime(
                 TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
             var source = await services.GetRequiredService<IProjectGovernanceActionReportingSource>()
-                .LoadAsync(run.TenantId, run.ProjectId, cutoffLocalDate, run.AsOfUtc, cancellationToken);
+                .LoadAsync(run.TenantId, run.ProjectId!.Value, cutoffLocalDate, run.AsOfUtc, cancellationToken);
             snapshot = ProjectGovernanceActionReportSnapshotBuilder.Build(
                 run.Id, run.TenantId, pinnedProject, run.AsOfUtc, source, run.CreatedAt, builtAt);
         }
@@ -629,7 +629,7 @@ internal sealed partial class ReportGenerationWorker(
             item.Id == run.SnapshotId.Value &&
             item.RunId == run.Id &&
             item.TenantId == run.TenantId &&
-            item.ProjectId == run.ProjectId,
+            item.ProjectId == run.ProjectId!.Value,
             cancellationToken) ?? throw new ReportProcessingException(
                 "reporting.snapshot.missing",
                 transient: false,
@@ -751,7 +751,7 @@ internal sealed partial class ReportGenerationWorker(
                 startTransaction.GetDbTransaction(),
                 new AuditEntry(
                     run.TenantId,
-                    run.ProjectId,
+                    run.ProjectId!.Value,
                     SystemActorId,
                     resumed ? "CertifiedReportRenderingResumed" : "CertifiedReportRenderingStarted",
                     "ReportRun",
@@ -1004,7 +1004,7 @@ internal sealed partial class ReportGenerationWorker(
                 new GeneratedDocumentPublishRequest(
                     item.DocumentId,
                     run.TenantId,
-                    run.ProjectId,
+                    run.ProjectId!.Value,
                     item.OutputId,
                     item.Artifact.FileName,
                     item.Artifact.ContentType,
@@ -1018,7 +1018,7 @@ internal sealed partial class ReportGenerationWorker(
                     CorrelationId: run.CorrelationId),
                 cancellationToken);
             if (document.DocumentId != item.DocumentId || document.OwnerId != item.OutputId ||
-                document.TenantId != run.TenantId || document.ProjectId != run.ProjectId ||
+                document.TenantId != run.TenantId || document.ProjectId != run.ProjectId!.Value ||
                 !string.Equals(document.FileName, item.Artifact.FileName, StringComparison.Ordinal) ||
                 document.SizeBytes != item.Artifact.Bytes.LongLength ||
                 !string.Equals(document.Sha256, item.Artifact.Sha256, StringComparison.Ordinal) ||
@@ -1047,7 +1047,7 @@ internal sealed partial class ReportGenerationWorker(
                 snapshot.Id,
                 template.Id,
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 item.Artifact.Format,
                 item.Artifact.ContentType,
                 item.Artifact.FileName,
@@ -1064,7 +1064,7 @@ internal sealed partial class ReportGenerationWorker(
         var eventPayload = CanonicalJson.Serialize(new
         {
             runId = run.Id,
-            projectId = run.ProjectId,
+            projectId = run.ProjectId!.Value,
             definitionCode = run.DefinitionCode,
             templateVersion = run.TemplateVersion,
             dataStatus = snapshot.DataStatus,
@@ -1087,7 +1087,7 @@ internal sealed partial class ReportGenerationWorker(
             new TransactionalEventBatch(
                 new AuditEntry(
                     run.TenantId,
-                    run.ProjectId,
+                    run.ProjectId!.Value,
                     SystemActorId,
                     "CertifiedReportRunCompleted",
                     "ReportRun",
@@ -1108,7 +1108,7 @@ internal sealed partial class ReportGenerationWorker(
                 new OutboxEnvelope(
                     Guid.NewGuid(),
                     run.TenantId,
-                    run.ProjectId,
+                    run.ProjectId!.Value,
                     "reporting.report.completed.v1",
                     1,
                     completedAt,
@@ -1132,7 +1132,8 @@ internal sealed partial class ReportGenerationWorker(
             """
             select candidate.id
             from reporting.report_runs candidate
-            where candidate.attempt_count >= @maximum_attempts
+            where candidate.scope = 'Project'
+              and candidate.attempt_count >= @maximum_attempts
               and candidate.output_count = 0
               and (
                   (candidate.status = 'Queued' and
@@ -1175,7 +1176,7 @@ internal sealed partial class ReportGenerationWorker(
             transaction.GetDbTransaction(),
             new AuditEntry(
                 run.TenantId,
-                run.ProjectId,
+                run.ProjectId!.Value,
                 SystemActorId,
                 "CertifiedReportRunFailed",
                 "ReportRun",
@@ -1220,7 +1221,8 @@ internal sealed partial class ReportGenerationWorker(
                    candidate.as_of_utc, candidate.attempt_count,
                    candidate.correlation_id, candidate.created_at
             from reporting.report_runs candidate
-            where candidate.snapshot_id is null
+            where candidate.scope = 'Project'
+              and candidate.snapshot_id is null
               and candidate.attempt_count < @maximum_attempts
               and (
                   (candidate.status = 'Queued' and
@@ -1329,7 +1331,8 @@ internal sealed partial class ReportGenerationWorker(
                    (candidate.pipeline_stage = 'Rendering' or
                        candidate.diagnostic_code is not null) as retry_attempt
             from reporting.report_runs candidate
-            where candidate.status = 'Processing'
+            where candidate.scope = 'Project'
+              and candidate.status = 'Processing'
               and candidate.snapshot_id is not null
               and candidate.output_count = 0
               and (
@@ -1564,7 +1567,7 @@ internal sealed partial class ReportGenerationWorker(
         if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
             !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
             !string.Equals(renderSnapshot.TemplateVersion, run.TemplateVersion, StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.AsOfUtc != run.AsOfUtc ||
             !string.Equals(renderSnapshot.SourceManifestSha256, snapshot.SourceManifestSha256, StringComparison.Ordinal))
         {
@@ -1586,7 +1589,7 @@ internal sealed partial class ReportGenerationWorker(
                 renderSnapshot.DefinitionVersion,
                 ProjectPeriodicReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Period.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
@@ -1612,7 +1615,7 @@ internal sealed partial class ReportGenerationWorker(
                 renderSnapshot.DefinitionVersion,
                 ExecutiveProjectStateReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
@@ -1638,7 +1641,7 @@ internal sealed partial class ReportGenerationWorker(
                 renderSnapshot.DefinitionVersion,
                 ProjectProgressReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
@@ -1664,7 +1667,7 @@ internal sealed partial class ReportGenerationWorker(
                 renderSnapshot.DefinitionVersion,
                 ProjectFinancialPositionReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
@@ -1690,7 +1693,7 @@ internal sealed partial class ReportGenerationWorker(
                 renderSnapshot.DefinitionVersion,
                 ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionVersion,
                 StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(
@@ -1714,7 +1717,7 @@ internal sealed partial class ReportGenerationWorker(
             !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
             !string.Equals(renderSnapshot.DefinitionVersion,
                 ProjectTechnicalOfficeReportRuntimeContract.DefinitionVersion, StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
             !string.Equals(renderSnapshot.SourceManifestSha256,
@@ -1734,7 +1737,7 @@ internal sealed partial class ReportGenerationWorker(
             !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
             !string.Equals(renderSnapshot.DefinitionVersion,
                 ProjectQualityHseReportRuntimeContract.DefinitionVersion, StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Classification != snapshot.Classification ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
@@ -1755,7 +1758,7 @@ internal sealed partial class ReportGenerationWorker(
             !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
             !string.Equals(renderSnapshot.DefinitionVersion,
                 ProjectGovernanceActionReportRuntimeContract.DefinitionVersion, StringComparison.Ordinal) ||
-            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.Project.Id != run.ProjectId!.Value || renderSnapshot.Project.TenantId != run.TenantId ||
             renderSnapshot.DataStatus != snapshot.DataStatus ||
             renderSnapshot.Classification != snapshot.Classification ||
             renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||

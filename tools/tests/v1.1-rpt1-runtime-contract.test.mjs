@@ -154,7 +154,7 @@ test("reporting catalogs and the F07 owner history migration keep the ledger ver
   assert.match(commercialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"53"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"55"/u);
   assert.match(read("tools/qa/verify-database.sh"), /technical reporting history migration identity/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
@@ -180,7 +180,7 @@ test("reporting reads daily report lineage only through its application contract
 test("generic Documents routes fail closed for ReportOutput", () => {
   const endpoints = read("src/backend/Pmcs.Modules.Documents/Endpoints/DocumentEndpoints.cs");
   assert.match(endpoints, /asset\.OwnerType != DocumentOwnerType\.ReportOutput/u);
-  assert.match(endpoints, /asset\.OwnerType == DocumentOwnerType\.ReportOutput[\s\S]*?return false/u);
+  assert.match(endpoints, /asset\.OwnerType is DocumentOwnerType\.ReportOutput or DocumentOwnerType\.TenantReportOutput[\s\S]*?return false/u);
   assert.match(endpoints, /documents\.report_output\.generated_only/u);
 });
 
@@ -3163,7 +3163,7 @@ test("RPT1-F07 connected pipeline pins its own catalog permissions source and re
   assert.match(harness, /create\.requires-all-source-permissions/u);
   assert.match(harness, /worker\.succeeded/u);
   assert.match(qa, /verify-reporting-project-technical-office/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"53"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"55"/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3279,7 +3279,7 @@ test("RPT1-F08 connected catalog, permission policy, API, worker and QA remain d
   assert.match(harness, /"quality-only"[\s\S]*"hse-only"/u);
   assert.match(harness, /worker\.succeeded[\s\S]*download\.integrity/u);
   assert.match(qa, /verify-reporting-project-quality-hse/u);
-  assert.match(db, /canonical migration ledger size[\s\S]*?"53"[\s\S]*project-quality-hse semantic snapshot/u);
+  assert.match(db, /canonical migration ledger size[\s\S]*?"55"[\s\S]*project-quality-hse semantic snapshot/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3307,7 +3307,7 @@ test("RPT1-F09 connected catalog, permissions, worker and QA preserve default-of
   assert.match(worker, /governanceRendererRegistry\.Require\(format\)\.Render/u);
   assert.match(harness, /sensitive-denied[\s\S]*worker\.succeeded[\s\S]*download\.integrity/u);
   assert.match(qa, /verify-reporting-project-governance-action/u);
-  assert.match(db, /canonical migration ledger size[\s\S]*?"53"[\s\S]*project-governance-action semantic snapshot/u);
+  assert.match(db, /canonical migration ledger size[\s\S]*?"55"[\s\S]*project-governance-action semantic snapshot/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);

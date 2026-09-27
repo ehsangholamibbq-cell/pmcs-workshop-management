@@ -13,7 +13,8 @@ public sealed class ReportOutput
     public Guid SnapshotId { get; private set; }
     public Guid TemplateVersionId { get; private set; }
     public Guid TenantId { get; private set; }
-    public Guid ProjectId { get; private set; }
+    public Guid? ProjectId { get; private set; }
+    public ReportDefinitionScope Scope { get; private set; }
     public ReportFormat Format { get; private set; }
     public string ContentType { get; private set; } = string.Empty;
     public string FileName { get; private set; } = string.Empty;
@@ -45,10 +46,25 @@ public sealed class ReportOutput
         string manifestSha256,
         ReportClassification classification,
         string retentionPolicy,
+        DateTimeOffset createdAt) => CreateCore(
+            id, runId, snapshotId, templateVersionId, tenantId, projectId,
+            ReportDefinitionScope.Project, format, contentType, fileName,
+            generatedDocumentId, sizeBytes, sha256, verificationCode, manifestSha256,
+            classification, retentionPolicy, createdAt);
+
+    private static ReportOutput CreateCore(
+        Guid id, Guid runId, Guid snapshotId, Guid templateVersionId,
+        Guid tenantId, Guid? projectId, ReportDefinitionScope scope,
+        ReportFormat format, string contentType, string fileName,
+        Guid generatedDocumentId, long sizeBytes, string sha256,
+        string verificationCode, string manifestSha256,
+        ReportClassification classification, string retentionPolicy,
         DateTimeOffset createdAt)
     {
         if (id == Guid.Empty || runId == Guid.Empty || snapshotId == Guid.Empty ||
-            templateVersionId == Guid.Empty || tenantId == Guid.Empty || projectId == Guid.Empty ||
+            templateVersionId == Guid.Empty || tenantId == Guid.Empty ||
+            (scope == ReportDefinitionScope.Project && (!projectId.HasValue || projectId.Value == Guid.Empty)) ||
+            (scope == ReportDefinitionScope.Portfolio && projectId.HasValue) ||
             generatedDocumentId == Guid.Empty)
         {
             throw new DomainRuleException("reporting.output.identity.required", "Report output identities are required.");
@@ -94,6 +110,7 @@ public sealed class ReportOutput
             TemplateVersionId = templateVersionId,
             TenantId = tenantId,
             ProjectId = projectId,
+            Scope = scope,
             Format = format,
             ContentType = normalizedContentType,
             FileName = normalizedFileName,
@@ -107,6 +124,20 @@ public sealed class ReportOutput
             ArchiveState = ReportOutputArchiveState.Active,
             CreatedAt = createdAt.ToUniversalTime()
         };
+    }
+
+    public static ReportOutput CreatePortfolio(
+        Guid id, Guid runId, Guid snapshotId, Guid templateVersionId,
+        Guid tenantId, ReportFormat format, string contentType, string fileName,
+        Guid generatedDocumentId, long sizeBytes, string sha256,
+        string verificationCode, string manifestSha256,
+        ReportClassification classification, string retentionPolicy,
+        DateTimeOffset createdAt)
+    {
+        return CreateCore(id, runId, snapshotId, templateVersionId, tenantId,
+            null, ReportDefinitionScope.Portfolio, format, contentType, fileName,
+            generatedDocumentId, sizeBytes, sha256, verificationCode, manifestSha256,
+            classification, retentionPolicy, createdAt);
     }
 
     public void Archive(DateTimeOffset archivedAt)

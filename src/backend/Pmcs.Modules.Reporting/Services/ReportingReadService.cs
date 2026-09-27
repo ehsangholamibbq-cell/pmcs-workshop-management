@@ -178,7 +178,7 @@ internal sealed class ReportingReadService(
                 output.TenantId == tenantId &&
                 output.ProjectId == projectId &&
                 run.TenantId == tenantId &&
-                run.ProjectId == projectId
+                run.ProjectId!.Value == projectId
             select new { Output = output, run.DefinitionCode })
             .SingleOrDefaultAsync(cancellationToken);
         if (context is null || !await HasSourcePermissionAsync(
@@ -202,18 +202,18 @@ internal sealed class ReportingReadService(
             ? await dbContext.Snapshots.AsNoTracking().SingleOrDefaultAsync(
                 item => item.Id == run.SnapshotId.Value &&
                     item.TenantId == run.TenantId &&
-                    item.ProjectId == run.ProjectId,
+                    item.ProjectId == run.ProjectId!.Value,
                 cancellationToken)
             : null;
         var outputs = await dbContext.Outputs.AsNoTracking()
             .Where(item => item.RunId == run.Id &&
                 item.TenantId == run.TenantId &&
-                item.ProjectId == run.ProjectId)
+                item.ProjectId == run.ProjectId!.Value)
             .OrderBy(item => item.Format)
             .Select(item => new ReportingOutputMetadataRecord(
                 item.Id,
                 item.RunId,
-                item.ProjectId,
+                item.ProjectId!.Value,
                 item.Format,
                 item.FileName,
                 item.ContentType,
@@ -225,7 +225,7 @@ internal sealed class ReportingReadService(
             .ToArrayAsync(cancellationToken);
         return new ReportingRunStatusRecord(
             run.Id,
-            run.ProjectId,
+            run.ProjectId!.Value,
             run.DefinitionCode,
             run.TemplateVersion,
             run.Status,
@@ -321,7 +321,7 @@ internal sealed class ReportingReadService(
     private static ReportingOutputMetadataRecord MapOutput(ReportOutput output) => new(
         output.Id,
         output.RunId,
-        output.ProjectId,
+        output.ProjectId!.Value,
         output.Format,
         output.FileName,
         output.ContentType,

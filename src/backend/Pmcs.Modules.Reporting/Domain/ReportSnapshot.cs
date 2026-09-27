@@ -11,7 +11,8 @@ public sealed class ReportSnapshot
     public Guid Id { get; private set; }
     public Guid RunId { get; private set; }
     public Guid TenantId { get; private set; }
-    public Guid ProjectId { get; private set; }
+    public Guid? ProjectId { get; private set; }
+    public ReportDefinitionScope Scope { get; private set; }
     public string SchemaVersion { get; private set; } = string.Empty;
     public ReportDataStatus DataStatus { get; private set; }
     public string PayloadJson { get; private set; } = string.Empty;
@@ -56,6 +57,46 @@ public sealed class ReportSnapshot
             RunId = runId,
             TenantId = tenantId,
             ProjectId = projectId,
+            Scope = ReportDefinitionScope.Project,
+            SchemaVersion = Required(schemaVersion, 80, "reporting.snapshot.schema.invalid"),
+            DataStatus = dataStatus,
+            PayloadJson = normalizedPayload,
+            SourceManifestJson = normalizedManifest,
+            Sha256 = CanonicalJson.Sha256(normalizedPayload),
+            SourceManifestSha256 = CanonicalJson.Sha256(normalizedManifest),
+            Classification = classification,
+            BuiltAt = builtAt.ToUniversalTime(),
+            SourceCutoffUtc = sourceCutoffUtc.ToUniversalTime()
+        };
+    }
+
+    public static ReportSnapshot CreatePortfolio(
+        Guid id, Guid runId, Guid tenantId, string schemaVersion,
+        ReportDataStatus dataStatus, string payloadJson, string sourceManifestJson,
+        ReportClassification classification, DateTimeOffset builtAt,
+        DateTimeOffset sourceCutoffUtc)
+    {
+        if (id == Guid.Empty || runId == Guid.Empty || tenantId == Guid.Empty)
+        {
+            throw new DomainRuleException("reporting.snapshot.identity.required", "Snapshot identities are required.");
+        }
+
+        if (!Enum.IsDefined(dataStatus) || dataStatus == ReportDataStatus.Pending ||
+            !Enum.IsDefined(classification))
+        {
+            throw new DomainRuleException("reporting.snapshot.state.invalid", "Snapshot state is invalid.");
+        }
+
+        var normalizedPayload = CanonicalJson.Normalize(Parse(payloadJson, "reporting.snapshot.payload.invalid"));
+        var normalizedManifest = CanonicalJson.Normalize(Parse(
+            sourceManifestJson, "reporting.snapshot.source_manifest.invalid"));
+        return new ReportSnapshot
+        {
+            Id = id,
+            RunId = runId,
+            TenantId = tenantId,
+            ProjectId = null,
+            Scope = ReportDefinitionScope.Portfolio,
             SchemaVersion = Required(schemaVersion, 80, "reporting.snapshot.schema.invalid"),
             DataStatus = dataStatus,
             PayloadJson = normalizedPayload,

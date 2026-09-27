@@ -61,6 +61,7 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
             builder.Property(item => item.TenantId).HasColumnName("tenant_id");
             builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.Scope).HasColumnName("scope").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.DefinitionId).HasColumnName("definition_id");
             builder.Property(item => item.DefinitionCode).HasColumnName("definition_code").HasMaxLength(120);
             builder.Property(item => item.TemplateVersionId).HasColumnName("template_version_id");
@@ -72,6 +73,9 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.ProjectTimeZone).HasColumnName("project_time_zone").HasMaxLength(120);
             builder.Property(item => item.PinnedProjectProfileJson)
                 .HasColumnName("pinned_project_profile")
+                .HasColumnType("jsonb");
+            builder.Property(item => item.PinnedPortfolioCohortJson)
+                .HasColumnName("pinned_portfolio_cohort")
                 .HasColumnType("jsonb");
             builder.Property(item => item.RequestedBy).HasColumnName("requested_by");
             builder.Property(item => item.RequestPermissionSnapshotJson).HasColumnName("request_permission_snapshot").HasColumnType("jsonb");
@@ -104,6 +108,7 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.RunId).HasColumnName("run_id");
             builder.Property(item => item.TenantId).HasColumnName("tenant_id");
             builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.Scope).HasColumnName("scope").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.SchemaVersion).HasColumnName("schema_version").HasMaxLength(80);
             builder.Property(item => item.DataStatus).HasColumnName("data_status").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.PayloadJson).HasColumnName("payload_json").HasColumnType("jsonb");
@@ -127,6 +132,7 @@ internal sealed class ReportingDbContext(DbContextOptions<ReportingDbContext> op
             builder.Property(item => item.TemplateVersionId).HasColumnName("template_version_id");
             builder.Property(item => item.TenantId).HasColumnName("tenant_id");
             builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.Scope).HasColumnName("scope").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.Format).HasColumnName("format").HasConversion<string>().HasMaxLength(20);
             builder.Property(item => item.ContentType).HasColumnName("content_type").HasMaxLength(160);
             builder.Property(item => item.FileName).HasColumnName("file_name").HasMaxLength(255);
