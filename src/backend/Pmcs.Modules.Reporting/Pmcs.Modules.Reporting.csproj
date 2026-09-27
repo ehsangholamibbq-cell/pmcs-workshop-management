@@ -8,6 +8,7 @@
     <ProjectReference Include="../Pmcs.Modules.Planning/Pmcs.Modules.Planning.csproj" />
     <ProjectReference Include="../Pmcs.Modules.ProjectIntelligence/Pmcs.Modules.ProjectIntelligence.csproj" />
     <ProjectReference Include="../Pmcs.Modules.Projects/Pmcs.Modules.Projects.csproj" />
+    <ProjectReference Include="../Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <ProjectReference Include="../Pmcs.Modules.TechnicalOffice/Pmcs.Modules.TechnicalOffice.csproj" />
   </ItemGroup>
   <ItemGroup>
