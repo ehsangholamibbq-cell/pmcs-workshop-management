@@ -70,6 +70,7 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
 
   await page.goto("/admin/users");
   await expect(page.getByRole("heading", { name: "کاربران، دعوت‌ها و عضویت پروژه" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "دعوت‌های اخیر" })).toBeVisible();
   await capture(page, "17-users.png");
 
   await page.goto("/admin/login-experience");
@@ -78,5 +79,6 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
 
   await page.goto("/project-bootstraps");
   await expect(page.getByRole("heading", { name: "ساخت از روی پروژهٔ موجود" })).toBeVisible();
+  await expect(page.getByRole("option", { name: /پروژه نمونه ساختمان اداری–تجاری/u })).toBeAttached();
   await capture(page, "19-project-bootstrap.png");
 });
