@@ -18,7 +18,8 @@ public sealed class ProjectQualityHseReportRenderingTests
     private static readonly DateTimeOffset Cutoff = new(2026, 9, 27, 8, 0, 0, TimeSpan.Zero);
     private static readonly string[] SheetNames = ["Metadata", "Coverage", "Quality", "HSE"];
     private static readonly string[] ExpectedVisualDigests =
-        ["__PIN_F08_PAGE_1__", "__PIN_F08_PAGE_2__"];
+        ["54e9b27c34442fe5257d506e4fb9d8013d335569976d0f39932452ff1a01edec",
+            "fd8ed2eb21a3264ab08f853d9301ceeec6379d8b5a2d7d2beb963554d1b28a36"];
 
     [Fact]
     public void F08RendererPinsTemplateSnapshotAndWholeClassification()
@@ -80,7 +81,8 @@ public sealed class ProjectQualityHseReportRenderingTests
         Assert.Contains("PassWithObservation", sheets[2], StringComparison.Ordinal);
         Assert.Single(XDocument.Parse(sheets[3]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("PersonReference", string.Concat(sheets), StringComparison.Ordinal);
-        Assert.True(first.Sha256 == "__PIN_F08_XLSX__", $"F08_XLSX_GOLDEN_SHA256={first.Sha256}");
+        Assert.True(first.Sha256 == "8a22452579b105b2927184caa97ddc4c64c99b91b59d440961c4e0c733fcc626",
+            $"F08_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
     [Fact]
@@ -103,7 +105,7 @@ public sealed class ProjectQualityHseReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "__PIN_F08_PDF__" &&
+        Assert.True(first.Sha256 == "b7e4ed87273b5270c124cdb54d76cfee7e50492630c3d5425090c30958f54213" &&
                 visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F08_PDF_GOLDEN_SHA256={first.Sha256}; F08_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }
