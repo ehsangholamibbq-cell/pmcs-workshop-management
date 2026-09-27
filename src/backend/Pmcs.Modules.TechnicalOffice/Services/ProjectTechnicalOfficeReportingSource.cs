@@ -130,13 +130,14 @@ internal sealed class ProjectTechnicalOfficeReportingSource(
             var responseEvents = events.Where(e => e.Type is TechnicalReportingEventType.ResponseReceived
                 or TechnicalReportingEventType.ReturnToDraft).ToArray();
             var responses = item.Responses.ToArray();
-            if (status != item.Status || issued?.AtUtc != item.SubmittedAt || closed?.AtUtc != item.ClosedAt ||
+            if (status != item.Status || !SameInstant(issued?.AtUtc, item.SubmittedAt) ||
+                !SameInstant(closed?.AtUtc, item.ClosedAt) ||
                 responseEvents.Length != responses.Length) return null;
             for (var index = 0; index < responses.Length; index++)
             {
                 var response = responses[index];
                 var evidence = responseEvents[index];
-                if (response.Sequence != index + 1 || response.RespondedAt.ToUniversalTime() != evidence.AtUtc ||
+                if (response.Sequence != index + 1 || !SameInstant(response.RespondedAt, evidence.AtUtc) ||
                     (response.Source == "ExternalResponse") != (evidence.Type == TechnicalReportingEventType.ResponseReceived) ||
                     response.Source == "ExternalResponse" &&
                     (response.Classification != evidence.ResponseClassification || response.ChangePotential != evidence.ChangePotential))
@@ -171,15 +172,21 @@ internal sealed class ProjectTechnicalOfficeReportingSource(
                 _ => (SubmittalStatus)0
             };
             if (status != item.Status ||
-                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Submitted)?.AtUtc != item.SubmittedAt ||
-                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Reviewed)?.AtUtc != item.ReviewedAt ||
+                !SameInstant(events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Submitted)?.AtUtc, item.SubmittedAt) ||
+                !SameInstant(events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Reviewed)?.AtUtc, item.ReviewedAt) ||
                 events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Reviewed)?.ReviewOutcome != item.ReviewOutcome ||
-                events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Closed)?.AtUtc != item.ClosedAt)
+                !SameInstant(events.SingleOrDefault(e => e.Type == TechnicalReportingEventType.Closed)?.AtUtc, item.ClosedAt))
                 return null;
             return events;
         }
         catch (JsonException) { return null; }
     }
+
+    // PostgreSQL timestamptz persists microseconds; the JSON ledger may retain .NET's
+    // seventh fractional digit. Compare only representable UTC precision, never dates alone.
+    private static bool SameInstant(DateTimeOffset? left, DateTimeOffset? right) =>
+        left.HasValue == right.HasValue && (!left.HasValue ||
+            left.Value.ToUniversalTime().Ticks / 10 == right!.Value.ToUniversalTime().Ticks / 10);
 
     private static TechnicalReportingRevision Revision(TechnicalDocumentRevision item)
     {

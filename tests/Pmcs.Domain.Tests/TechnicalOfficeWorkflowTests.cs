@@ -213,6 +213,20 @@ public sealed class TechnicalOfficeWorkflowTests
         Assert.Null(ProjectTechnicalOfficeReportingSource.SubmittalHistory(submittal));
     }
 
+    [Fact]
+    public void ReportingHistoryToleratesOnlyDatabaseMicrosecondPrecision()
+    {
+        var item = CreateSubmittal();
+        var at = Now.AddTicks(17);
+        item.Submit(1, at);
+        typeof(TechnicalSubmittal).GetProperty(nameof(TechnicalSubmittal.SubmittedAt))!
+            .SetValue(item, at.AddTicks(-7));
+        Assert.Single(ProjectTechnicalOfficeReportingSource.SubmittalHistory(item)!);
+        typeof(TechnicalSubmittal).GetProperty(nameof(TechnicalSubmittal.SubmittedAt))!
+            .SetValue(item, at.AddTicks(-10));
+        Assert.Null(ProjectTechnicalOfficeReportingSource.SubmittalHistory(item));
+    }
+
     private static TechnicalDocument CreateDocument() => TechnicalDocument.Create(
         Guid.NewGuid(), TenantId, ProjectId, "نقشه مسیر کابل", TechnicalDocumentType.Drawing,
         "برق", "مشاور", null, "طبقه چهارم", null, null, null, UserId, Now);
