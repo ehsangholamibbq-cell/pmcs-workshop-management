@@ -11,6 +11,11 @@ public static class ProjectGovernanceActionReportRuntimeContract
     public const string DefinitionVersion = "1.0.0";
     public const string ParameterSchemaVersion = "pmcs.reporting.project-governance-action.parameters/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.project-governance-action.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "7fcb7af589562b09850491fe88d7067b0e20297d8fdb03148b0408db97b52a01";
+    public const string RendererContractVersion = "pmcs.reporting.project-governance-action.renderer/v1";
+    public const string LayoutContractVersion = "pmcs.reporting.project-governance-action.layout/v1";
     public const string PinnedProjectProfileSchemaVersion = "pmcs.reporting.project-governance-action.project-profile/v1";
     public static readonly IReadOnlyCollection<string> RequiredSourcePermissions =
         ["governance.read", "governance.sensitive.read", "actions.read"];

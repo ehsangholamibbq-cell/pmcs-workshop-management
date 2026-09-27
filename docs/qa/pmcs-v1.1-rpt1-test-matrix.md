@@ -1350,3 +1350,16 @@ Candidate اول `e3118c10a8c018d7a48e50e448263c9f350da908` در Run 241
 (`36321908108`) هر هشت Job را سبز کرد؛ C# `534/534`، Node `107/107` و
 Web `139/139`. `PMCS-V1.1-RPT1-S07-MS32-C1` فقط Source/Runtime Core را
 می‌بندد؛ MS33 Renderer/Golden مستقل F09 است.
+
+## ۵۵. Renderer/Golden پنج‌بخشی F09 — Slice 07 Micro-Step 33 Candidate
+
+- Snapshot و Render request باید schema/definition/template/semantic/hash/cutoff/
+  classification و پنج section مستقل را پیش از ساخت byte کنترل کنند؛ count ناقص
+  null بماند و Action Restricted به Confidential تنزل نیابد.
+- PDF پنج بخش جدا با صفحه‌آرایی فارسی/RTL و footer verification، XLSX هفت Sheet
+  `Metadata/Coverage/Issue/Risk/Decision/Escalation/Action` با freeze/RTL، متن
+  spreadsheet امن و بدون formula، وضعیت مستقل و شمارش نامعلوم آشکار داشته باشند.
+- hash Golden برای PDF/XLSX و visual digest پنج صفحه، خروجی تکرارپذیر، page/row
+  budget و license/font gate در آزمون C# متمرکز و Full Regression کنترل شوند.
+- MS33 به Migration/Definition، Catalog/API/Worker، producer تاریخچه، F10 یا
+  defaultهای Production دست نمی‌زند.
