@@ -154,7 +154,7 @@ test("reporting catalogs and the F07 owner history migration keep the ledger ver
   assert.match(commercialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"50"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"51"/u);
   assert.match(read("tools/qa/verify-database.sh"), /technical reporting history migration identity/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
@@ -3163,7 +3163,7 @@ test("RPT1-F07 connected pipeline pins its own catalog permissions source and re
   assert.match(harness, /create\.requires-all-source-permissions/u);
   assert.match(harness, /worker\.succeeded/u);
   assert.match(qa, /verify-reporting-project-technical-office/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"50"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"51"/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3252,6 +3252,34 @@ test("RPT1-F08 MS29 Renderer and Golden pin green checkpoint", () => {
   assert.match(xlsx, /ProjectQualityHseReport/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS29-C1`/u);
   assert.match(roadmap, /نسخه سند: `1\.63\.0`[\s\S]*S07-MS29/u);
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
+});
+
+test("RPT1-F08 connected catalog, permission policy, API, worker and QA remain default off", () => {
+  const migration = read("src/backend/Pmcs.Modules.Reporting/Migrations/ProjectQualityHseReportCatalogMigration.cs");
+  const module = read("src/backend/Pmcs.Modules.Reporting/ReportingModule.cs");
+  const policy = read("src/backend/Pmcs.Modules.Reporting/Domain/ReportDefinitionRuntimePolicy.cs");
+  const endpoints = read("src/backend/Pmcs.Modules.Reporting/Endpoints/ReportingEndpoints.cs");
+  const worker = read("src/backend/Pmcs.Modules.Reporting/Services/ReportGenerationWorker.cs");
+  const harness = read("src/backend/Pmcs.TestHarness/ReportingProjectQualityHseVerification.cs");
+  const qa = read("tools/qa/seed-diagnostics.sh");
+  const db = read("tools/qa/verify-database.sh");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+  assert.match(migration, /public long Order => 1208[\s\S]*20260927-009/u);
+  assert.match(migration, /project-quality-hse-certified[\s\S]*quality\.read[\s\S]*hse\.read[\s\S]*hse\.confidential\.read/u);
+  assert.match(module, /ProjectQualityHseReportCatalogMigration/u);
+  assert.match(policy, /ProjectQualityHseReportRuntimeContract\.DefinitionCode =>[\s\S]*ProjectQualityHseSourcePermissions/u);
+  assert.match(endpoints, /ParseProjectQualityHseParameters[\s\S]*ProjectQualityHseReportParameters/u);
+  assert.match(worker, /IProjectQualityHseReportingSource[\s\S]*ProjectQualityHseReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectQualityHseReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /qualityHseRendererRegistry\.Require\(format\)\.Render/u);
+  assert.match(harness, /"quality-only"[\s\S]*"hse-only"/u);
+  assert.match(harness, /worker\.succeeded[\s\S]*download\.integrity/u);
+  assert.match(qa, /verify-reporting-project-quality-hse/u);
+  assert.match(db, /canonical migration ledger size[\s\S]*?"51"[\s\S]*project-quality-hse semantic snapshot/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);

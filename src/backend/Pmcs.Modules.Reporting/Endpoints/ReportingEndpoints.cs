@@ -351,6 +351,19 @@ internal static class ReportingEndpoints
                 return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
             }
         }
+        else if (parameters is ProjectQualityHseReportParameters)
+        {
+            try
+            {
+                var qualityHseProfile = ProjectQualityHsePinnedProjectProfile.Capture(project, now);
+                _ = qualityHseProfile.ValidateForRun(actor.TenantId, projectId, asOfUtc, now);
+                pinnedProjectProfileJson = CanonicalJson.Serialize(qualityHseProfile);
+            }
+            catch (DomainRuleException exception)
+            {
+                return Problem(StatusCodes.Status409Conflict, exception.Code, exception.Message);
+            }
+        }
 
         var permissionPreview = await permissionService.PreviewProjectPermissionsAsync(
             actor.TenantId,
@@ -1302,7 +1315,8 @@ internal static class ReportingEndpoints
                 definition.Code == ProjectProgressReportRuntimeContract.DefinitionCode ||
                 definition.Code == ProjectFinancialPositionReportRuntimeContract.DefinitionCode ||
                 definition.Code == ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode ||
-                definition.Code == ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode
+                definition.Code == ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode ||
+                definition.Code == ProjectQualityHseReportRuntimeContract.DefinitionCode
                 ? [
                     ReportDataStatus.Available,
                     ReportDataStatus.NoData,
@@ -1513,6 +1527,8 @@ internal static class ReportingEndpoints
                 ParseProjectCommercialProcurementSupplyParameters(parameters),
             ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode =>
                 ParseProjectTechnicalOfficeParameters(parameters),
+            ProjectQualityHseReportRuntimeContract.DefinitionCode =>
+                ParseProjectQualityHseParameters(parameters),
             _ => null
         };
 
@@ -1544,6 +1560,12 @@ internal static class ReportingEndpoints
         ParseProjectTechnicalOfficeParameters(JsonElement parameters) =>
         parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
             ? new ProjectTechnicalOfficeReportParameters()
+            : null;
+
+    private static ProjectQualityHseReportParameters?
+        ParseProjectQualityHseParameters(JsonElement parameters) =>
+        parameters.ValueKind == JsonValueKind.Object && !parameters.EnumerateObject().Any()
+            ? new ProjectQualityHseReportParameters()
             : null;
 
     private static ProjectPeriodicReportParameters? ParsePeriodicParameters(JsonElement parameters)
@@ -1586,6 +1608,7 @@ internal static class ReportingEndpoints
         ProjectCommercialProcurementSupplyReportParameters commercial =>
             CanonicalJson.Serialize(commercial),
         ProjectTechnicalOfficeReportParameters technical => CanonicalJson.Serialize(technical),
+        ProjectQualityHseReportParameters qualityHse => CanonicalJson.Serialize(qualityHse),
         _ => throw new InvalidOperationException("Unsupported reporting parameters.")
     };
 

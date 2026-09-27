@@ -132,6 +132,9 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IProjectTechnicalOfficeReportRenderer, ProjectTechnicalOfficeReportPdfRenderer>();
         services.AddSingleton<IProjectTechnicalOfficeReportRenderer, ProjectTechnicalOfficeReportXlsxRenderer>();
         services.AddSingleton<ProjectTechnicalOfficeReportRendererRegistry>();
+        services.AddSingleton<IProjectQualityHseReportRenderer, ProjectQualityHseReportPdfRenderer>();
+        services.AddSingleton<IProjectQualityHseReportRenderer, ProjectQualityHseReportXlsxRenderer>();
+        services.AddSingleton<ProjectQualityHseReportRendererRegistry>();
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectPeriodicReportCatalogMigration>();
@@ -140,6 +143,7 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IDatabaseMigration, ProjectFinancialPositionReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectCommercialProcurementSupplyReportCatalogMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectTechnicalOfficeReportCatalogMigration>();
+        services.AddSingleton<IDatabaseMigration, ProjectQualityHseReportCatalogMigration>();
         services.AddHostedService<ReportGenerationWorker>();
         services.AddHostedService<ReportOutputOrphanRemediationWorker>();
         services.AddHealthChecks().AddCheck<ReportingWorkerHealthCheck>(
