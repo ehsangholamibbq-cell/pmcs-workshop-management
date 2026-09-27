@@ -101,6 +101,10 @@ F09 هنوز Runtime/Renderer/wiring ندارد، F10 باز است و Gate ده
 و F10 بازند، Scope ده خانواده و defaultهای خاموش تغییر نکرده‌اند. MS33 فقط
 Renderer/Golden مستقل F09 است.
 
+در `PMCS-V1.1-RPT1-S07-MS33-C1`، PDF/XLSX و Golden مستقل پنج‌بخشی F09 در Run 245
+(`36324102914`) هشت Job سبز گرفتند. Producer تاریخچه و wiring هنوز باز است؛ F10،
+Gate ده‌گانه و defaults خاموش تغییری ندارند. MS34 فقط producer مالک است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

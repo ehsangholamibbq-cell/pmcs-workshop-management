@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.46.0`
-- وضعیت: `S07-MS32 F09 Source/Runtime Core Safe Checkpoint | Renderer/producer/wiring F09 و F10/UI/Production open`
+- نسخه: `1.47.0`
+- وضعیت: `S07-MS33 F09 Renderer/Golden Safe Checkpoint | producer/wiring F09 و F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -916,3 +916,9 @@ digest و classification حداکثر را اعتبارسنجی می‌کند. R
 هر هشت Job و C# `534/534` را سبز کرد. با نبود ledger تاریخی، Decisionهای بالغ
 تا producer بعدی ناقص می‌مانند. MS33 فقط Renderer/Golden محدود PDF/XLSX است؛
 Migration/Definition، Catalog/API/Worker و F10 در این گام اضافه نشده‌اند.
+
+در `S07-MS33`، Render contract و PDF پنج صفحه‌ای/XLSX هفت Sheet برای پنج دفتر
+F09، validation مستقل status/count/classification و Golden byte/visual ثابت را
+اضافه کرد. Run 245 (`36324102914`) هر هشت Job را سبز کرد؛ C# `538/538`.
+هیچ Migration/Definition، Catalog/API/Worker یا enablement اضافه نشد؛ MS34
+فقط producer تاریخچهٔ owner بدون backfill حدسی است و سپس wiring متصل می‌آید.

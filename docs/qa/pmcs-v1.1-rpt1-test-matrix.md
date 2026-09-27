@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.49.0`
-- وضعیت: F01–F08 connected؛ F09 Source/Runtime Core MS32 checkpointed؛ Renderer/producer/wiring F09 و F10/UI/Production باز
+- نسخه: `1.50.0`
+- وضعیت: F01–F08 connected؛ F09 Renderer/Golden MS33 checkpointed؛ producer/wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1363,3 +1363,13 @@ Web `139/139`. `PMCS-V1.1-RPT1-S07-MS32-C1` فقط Source/Runtime Core را
   budget و license/font gate در آزمون C# متمرکز و Full Regression کنترل شوند.
 - MS33 به Migration/Definition، Catalog/API/Worker، producer تاریخچه، F10 یا
   defaultهای Production دست نمی‌زند.
+
+Candidate نخست `29c458a75dbc354f641e2eeb904b352a2b8cc5c3` در Run 244 فقط
+به‌علت placeholderهای Golden مردود شد. Candidate اصلاحی
+`0701a44155d1955a1b8e27db01d561c370b6be6e`، tree
+`db7347e04344394f219cd68257a23c27159fd200` در Run 245 (`36324102914`)
+هر هشت Job را سبز کرد؛ C# `538/538`، Node `108/108`، Web `139/139`.
+Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
+و XLSX `7b41d33ea7db98fada6a041b9fd6bc5c265a8ab8400513fe643ca830d27efb1f`
+به‌همراه پنج visual digest ثابت‌اند. `PMCS-V1.1-RPT1-S07-MS33-C1` فقط Renderer
+را می‌بندد؛ MS34 producer تاریخچه است.

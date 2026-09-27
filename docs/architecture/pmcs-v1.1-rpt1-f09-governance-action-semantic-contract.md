@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F09-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F09`
-- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime Core MS32 checkpointed | Renderer/producer/Catalog/API/Worker open`
+- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime MS32 و Renderer/Golden MS33 checkpointed | producer/Catalog/API/Worker open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS30-C1`
 - مرز مالکیت: `Pmcs.Modules.ActionControl` برای Issue، Risk، Decision Request/Record، Escalation Thread و Management Action
 - MS31 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
@@ -196,3 +196,12 @@ Decision Request پس از اولین Submit و DecisionRecord پس از transit
 تاریخی `InsufficientData` با count=`null` می‌شوند. هیچ تاریخ ساختگی برای legacy
 یا join به Fact انجام نشده است. Renderer/Golden در MS33 و producer تاریخچه و
 wiring در Micro-Stepهای مستقل بعدی باقی می‌مانند؛ Migration ۵۱ و defaults خاموش‌اند.
+
+## ۹. تحقق Renderer/Golden در MS33
+
+`PMCS-V1.1-RPT1-S07-MS33-C1` با PDF پنج صفحه و XLSX هفت Sheet، validation
+Snapshot/Template/Render request، status/count مستقل، Action Restricted و Golden
+byte/visual در Run 245 (`36324102914`) هر هشت Job را سبز کرد. Template digest
+`7fcb7af589562b09850491fe88d7067b0e20297d8fdb03148b0408db97b52a01`
+برای Layout نسخه‌دار F09 pin شد. Producer تاریخچه و wiring هنوز بازند؛ MS34 فقط
+transitionهای تازهٔ owner را بدون backfill حدسی ثبت می‌کند.
