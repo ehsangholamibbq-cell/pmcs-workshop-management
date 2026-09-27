@@ -17,7 +17,7 @@ internal static class ProjectTechnicalOfficeReportSnapshotBuilder
         var cutoff = sourceCutoffUtc.ToUniversalTime();
         var zone = project.ValidateForRun(tenantId, project.Id, cutoff, acceptedAtUtc);
         var localDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(cutoff, zone).DateTime);
-        Validate(source, project, tenantId, localDate, cutoff);
+        Validate(source, project, tenantId, project.Id, localDate, cutoff);
         var classification = source.Classification switch
         {
             TechnicalReportingClassification.Confidential => ReportClassification.Confidential,
