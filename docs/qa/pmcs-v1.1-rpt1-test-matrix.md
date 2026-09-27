@@ -2,7 +2,7 @@
 
 - شناسه: `PMCS-QA-RPT1-001`
 - نسخه: `1.47.0`
-- وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract و Runtime Core بسته؛ Renderer/Golden/wiring و F09–F10/UI/Production باز
+- وضعیت: F01–F08 connected؛ F09 DoR/Semantic Contract candidate در MS31؛ Runtime/Renderer/wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1294,3 +1294,25 @@ Candidate `786f032e5ce91ceffa80599c4ce02ba23f30bb1d`، tree
 Qualification `7/7` داشتند. Checkpoint `PMCS-V1.1-RPT1-S07-MS30-C1` خانواده F08 را
 End-to-End می‌بندد. Exact Next در `S07-MS31` فقط DoR/قرارداد معنایی مستقل F09
 برای Issue/Risk/Decision/Escalation/Action است؛ F10/UI/Production بازند.
+
+## ۵۳. DoR و قرارداد معنایی F09 — Slice 07 Micro-Step 31 Candidate
+
+Contract `PMCS-RPT1-F09-SEMANTIC-001 v1.0.0` در
+`docs/architecture/pmcs-v1.1-rpt1-f09-governance-action-semantic-contract.md`
+۲۷ fixture مستقل `F09-I/R/D/E/A/C/T/P/S/B/X/G` دارد. Gate متمرکز:
+
+- پنج دفتر ActionControl با وضعیت/count و lineage مستقل؛ Risk materialize به Issue،
+  Request به Decision، Reminder به Escalation و Action به Issue تبدیل ضمنی نشوند؛
+- Client فقط `{}`، Project/UTC cutoff/Time Zone pin و read-only Source bounded و
+  repeatable-read با شمارش، watermark و digest کامل؛ endpointهای capped رد شوند؛
+- transitionهای میانی legacy و Action بدون classification صریح fail-closed/unknown
+  شوند؛ NoData، NotConfigured، InsufficientData و security failure از هم جدا بمانند؛
+- هر سه Source permission `governance.read`، `governance.sensitive.read` و
+  `actions.read` whole-definition با classification حداکثر و بدون فیلتر خاموش؛
+- آزمون قرارداد Node متمرکز، architecture/contract/backend/web regression و
+  Full CI هشت‌Job روی Candidate ثابت؛ سپس فقط با CI سبز ثبت Safe Checkpoint.
+
+MS31 هیچ Runtime، Renderer/Golden اجرایی، Migration، Definition، Catalog/API/Worker،
+F10، UI/UX2 یا Production enablement ندارد. MS32 فقط Source مالک و Runtime Core محدود
+F09 را با Unit و contract tests مستقل آغاز می‌کند؛ پنج دفتر و موارد legacy/sensitive
+در آن Gate قابل آزمون خواهند بود.
