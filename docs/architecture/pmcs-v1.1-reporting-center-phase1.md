@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.51.0`
-- وضعیت: `S07-MS37 F10 Contract Safe Checkpoint | Runtime/UI/Production open`
+- نسخه: `1.52.0`
+- وضعیت: `S07-MS38 F10 Tenant Scope Safe Checkpoint | Source/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -956,3 +956,14 @@ permission با `NotAuthorized` پوشانده می‌شوند؛ ترکیب Over
 ۳۰ سناریوی مستقل پذیرش ثبت و Run 254 (`36333343004`) هر هشت Job را سبز کرد.
 هیچ Runtime/Renderer/Migration/Catalog/API/Worker در MS37 افزوده نشد؛ MS38
 زیرساخت Tenant-scope سازگار پیش از wiring F10 است.
+
+## F10 S07-MS38 Tenant Scope Infrastructure
+
+Migrationهای `documents/20260927-001` و `reporting/20260927-011` Scope واقعی
+Portfolio را با ProjectId تهی در Run/Snapshot/Output و Generated Document
+پشتیبانی می‌کنند. `TenantReportOutput` با object key مستقل و deny عمومی Documents
+از owner پروژه‌ای جداست. CHECKهای scope در SQL و factoryهای domain، مسیر Project
+F01–F09 را حفظ می‌کنند. Worker موجود فقط Project را claim می‌کند؛ نه Catalog/
+API/Worker F10 و نه Renderer در این Micro-Step متصل نشده‌اند. Run 256
+(`36335141253`) هشت Job و Restore ۵۵ Migration را سبز کرد. MS39 Source/
+Runtime Core محدود است.

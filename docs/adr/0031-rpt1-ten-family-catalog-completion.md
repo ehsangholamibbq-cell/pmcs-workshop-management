@@ -175,3 +175,8 @@ Done نمی‌کند. `RPT1-F01` نیز دوباره طراحی نمی‌شود 
 در Run 254 (`36333343004`) هشت Job سبز گرفت. F10 فقط Contract Ready است؛
 Tenant-scope infrastructure، Runtime، Renderer و wiring در Micro-Stepهای بعدی
 بازند. Scope ده‌گانه و defaultهای خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS38-C1`، زیرساخت Tenant-scope با ProjectId تهی و
+owner سند Tenant در Run 256 (`36335141253`) هشت Job و Restore ۵۵ را سبز کرد.
+F10 هنوز Source/Renderer/wiring و Qualification متصل ندارد؛ Scope ده‌گانه و
+defaultهای خاموش ثابت‌اند.

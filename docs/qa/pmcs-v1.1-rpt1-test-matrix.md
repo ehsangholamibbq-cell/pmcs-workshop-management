@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.54.0`
-- وضعیت: F01–F09 connected؛ F10 contract ready، Runtime/UI/Production باز
+- نسخه: `1.55.0`
+- وضعیت: F01–F09 connected؛ F10 tenant-scope infrastructure ready، Source/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1426,3 +1426,16 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
   `sha256:cecc6cf9a6e438789fd5a79dd91b8fda1a03cc1dd817d99464b87e1a6c697754`.
 - MS37 هیچ F10 Runtime/Renderer/Migration/Catalog/API/Worker ندارد. MS38 فقط
   زیرساخت tenant-scope با migration سازگار و تست fail-closed است.
+
+## ۶۰. F10 MS38 Tenant Scope Qualification
+
+- `ReportRun/ReportSnapshot/ReportOutput` Scope Portfolio و ProjectId nullable با
+  factory جدا دارند؛ Project factory identity قبلی را حفظ می‌کند. SQL CHECK برای
+  هر سه جدول و cohort JSON Run، owner مستقل TenantReportOutput و generic route
+  deny افزوده شد. Worker پروژه‌ای فقط Project را claim می‌کند.
+- Run 256 (`36335141253`) هر هشت Job، C# `544/544`، Node `117/117`، Web
+  `139/139`، پنج مرورگر، Restore Drill `55` و Qualification `7/7` سبز؛
+  artifact `10936753009` با digest
+  `sha256:e2cf47c1d4cfab57912daa7e525d5891dc3f31861b41d51eeced7cac7924c3cd`.
+- F10 هنوز Catalog/API/Worker/Renderer ندارد؛ MS39 Source/Runtime محدود،
+  سپس Golden و wiring متصل با Gate مستقل.
