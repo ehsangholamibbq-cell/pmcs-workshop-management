@@ -11,6 +11,11 @@ public static class ProjectQualityHseReportRuntimeContract
     public const string DefinitionVersion = "1.0.0";
     public const string ParameterSchemaVersion = "pmcs.reporting.project-quality-hse.parameters/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.project-quality-hse.snapshot/v1";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "5bd7a0ea06984076cfbfed7715329a59b1afeffbcade4378afefc1413c287a61";
+    public const string RendererContractVersion = "pmcs.reporting.project-quality-hse.renderer/v1";
+    public const string LayoutContractVersion = "pmcs.reporting.project-quality-hse.layout/v1";
     public const string PinnedProjectProfileSchemaVersion = "pmcs.reporting.project-quality-hse.project-profile/v1";
     public static readonly IReadOnlyCollection<string> RequiredSourcePermissions =
         ["quality.read", "hse.read", "hse.confidential.read"];

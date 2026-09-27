@@ -104,3 +104,17 @@ internal sealed class ProjectTechnicalOfficeReportRendererRegistry(
                 "reporting.format.unsupported", transient: false,
                 $"No certified project-technical-office renderer is registered for {format}.");
 }
+
+internal sealed class ProjectQualityHseReportRendererRegistry(
+    IEnumerable<IProjectQualityHseReportRenderer> renderers)
+{
+    private readonly Dictionary<ReportFormat, IProjectQualityHseReportRenderer>
+        byFormat = renderers.ToDictionary(renderer => renderer.Format);
+
+    public IProjectQualityHseReportRenderer Require(ReportFormat format) =>
+        byFormat.TryGetValue(format, out var renderer)
+            ? renderer
+            : throw new ReportRenderingException(
+                "reporting.format.unsupported", transient: false,
+                $"No certified project-quality-hse renderer is registered for {format}.");
+}
