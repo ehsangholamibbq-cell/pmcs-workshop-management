@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.54.0`
-- وضعیت: `S07-MS40 F10 Renderer Safe Checkpoint | wiring/UI/Production open`
+- نسخه: `1.55.0`
+- وضعیت: `S07-MS41 F10 Tenant API Safe Checkpoint | Worker/OutputAccess/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -989,3 +989,13 @@ metadata deterministic دارد. هیچ تماس DB/owner Source در Renderer �
 Run 264 (`36340600926`) هشت Job، C# `552/552`، Node `123/123`، پنج مرورگر
 و Restore ۵۵ را سبز کرد. MS41 فقط Catalog/Template و Tenant API است؛
 Worker/OutputAccess در Micro-Step بعدی و defaults خاموش باقی‌اند.
+
+## F10 S07-MS41 Portfolio Catalog and Tenant API
+
+Migration ۵۶ Definition/Template F10 را فقط Scope Portfolio seed می‌کند؛
+Project Catalog F01–F09 آن را نمی‌پذیرد. Tenant route با `portfolio.read` و
+permissionهای reporting، Create strict `{}`، pinned cohort/mask و replay
+همان client ID دارد. Source برای cohort پین‌شده scope را قبل از Directory
+و مجوزهای مالی/تجاری را بدون re-filter افزایش می‌سنجد. List/Get فقط requester
+یا TenantAdministrator با recheck کامل cohort را نشان می‌دهد. Worker/OutputAccess
+در MS42/MS43 جدا هستند. Run 266 (`36343299949`) هشت Job و Restore ۵۶ سبز.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.57.0`
-- وضعیت: F01–F09 connected؛ F10 Renderer/Golden ready، wiring/UI/Production باز
+- نسخه: `1.58.0`
+- وضعیت: F01–F09 connected؛ F10 Catalog/Tenant API ready، Worker/OutputAccess/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1465,3 +1465,14 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
 - Run 264 (`36340600926`) هشت Job، C# `552/552`، Node `123/123`، Web
   `139/139`، پنج مرورگر، Restore `55` و Qualification `7/7` سبز؛ artifact
   `10938752849`، `sha256:fc9031bdc74b7fbc5b5c92fb2edcf19093c48e0b396c2dc18760349522961706`.
+
+## ۶۳. F10 MS41 Tenant Catalog/API
+
+- Migration `reporting/20260927-012`، Scope Portfolio، digest قالب و ledger ۵۶
+  در DB متصل و Restore Drill کنترل شد؛ F10 در Project Catalog نمی‌آید.
+- Tenant API با strict `{}`، format allowlist، cutoff، idempotency وابسته به
+  cohort/mask، revoke deny و grant تازه بدون گسترش Run قبلی سنجیده شد؛ Worker
+  و OutputAccess هنوز بازند.
+- Run 266 (`36343299949`) هشت Job، C# `553/553`، Node `126/126`، Web
+  `139/139`، پنج مرورگر، Restore `56` و Qualification `7/7` سبز؛ artifact
+  `10940021865`، `sha256:2d4bb99532b8cb2d34cfac8e6f2f0b5715023ec1d2f515c365bd597de9649498`.

@@ -85,4 +85,5 @@
 | V1.1 RPT1 Slice 07 MS38 | source `ea5215e26ba382bdecd756adec1083dd3ef28d06` / tree `63e5542679e9d0427c6ec96ad7fa3404810f340d` / Run 256 F10 tenant-scope infrastructure passed / MS39 Source/Runtime and Renderer/wiring F10 open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS39 | source `c45b72be7bc913a6dc65b656bea0188f7da0dc8c` / tree `00ad037a2eec41c2d5dbacfe0c186e04c4584cce` / Run 261 F10 Source/Runtime Core passed / MS40 Renderer and wiring F10 open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS40 | source `d57f73611e647d352ec5c59a19cd996e589d0fe2` / tree `52daac29eff755e3a95c132d581fa7de37ef6387` / Run 264 F10 PDF/XLSX Renderer/Golden passed / MS41 Catalog/Tenant API and Worker/OutputAccess open، RPT1 active |
+| V1.1 RPT1 Slice 07 MS41 | source `c22f08778a4c9b523d926f1aedc9f8d9142655d4` / tree `3e5c6f93fae75200f3abba18b292eac4a17d3069` / Run 266 F10 Portfolio Catalog/Tenant API passed / MS42 Worker and MS43 OutputAccess open، RPT1 active |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

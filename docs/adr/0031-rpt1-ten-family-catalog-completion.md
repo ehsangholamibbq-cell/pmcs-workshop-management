@@ -189,3 +189,8 @@ Qualification هنوز بازند؛ Scope ده‌گانه و defaults خاموش
 (`36340600926`) هشت Job سبز گرفت. Renderer فقط Snapshot/Manifest immutable را
 مصرف می‌کند؛ Catalog/Tenant API و Worker/OutputAccess هنوز بازند. Scope ده‌گانه،
 PR Draft و defaults خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS41-C1`، Catalog/Template Portfolio و Tenant API
+F10 با cohort/mask پین‌شده در Run 266 (`36343299949`) هشت Job سبز گرفت.
+Worker/OutputAccess و qualification متصل F10 هنوز بازند؛ PR Draft و defaults
+خاموش باقی ماندند.
