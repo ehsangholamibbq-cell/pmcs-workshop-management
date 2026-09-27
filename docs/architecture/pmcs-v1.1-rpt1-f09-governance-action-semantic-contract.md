@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F09-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F09`
-- وضعیت: `DoR / Semantic Contract Locked | Runtime/Renderer/Catalog/API/Worker open`
+- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime Core MS32 checkpointed | Renderer/producer/Catalog/API/Worker open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS30-C1`
 - مرز مالکیت: `Pmcs.Modules.ActionControl` برای Issue، Risk، Decision Request/Record، Escalation Thread و Management Action
 - MS31 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
@@ -185,3 +185,14 @@ Micro-Step بعد `S07-MS32` فقط Source مالک و Runtime Core محدود �
 Candidate/CI جدا دارند. UI/UX2، Production enablement، F10 و Report Designer خارج از
 MS31 هستند. همهٔ defaultهای Reporting/OutputAccess/Worker خاموش و
 `PdfLicense=Unconfigured` باقی می‌مانند.
+
+## ۸. تحقق محدود Source/Runtime در MS32
+
+`PMCS-V1.1-RPT1-S07-MS32-C1` با Source مالک هشت register و Snapshot builder
+پنج‌بخشی در Run 242 (`36321908108`) هر هشت Job را سبز کرد. سقف خواندن
+`20,000` در هر register، `60,000` semantic fact و `8 MiB` برای JSON Snapshot
+است؛ identity/link/cycle، Project/cutoff، classification و digest کنترل می‌شوند.
+Decision Request پس از اولین Submit و DecisionRecord پس از transition بدون ledger
+تاریخی `InsufficientData` با count=`null` می‌شوند. هیچ تاریخ ساختگی برای legacy
+یا join به Fact انجام نشده است. Renderer/Golden در MS33 و producer تاریخچه و
+wiring در Micro-Stepهای مستقل بعدی باقی می‌مانند؛ Migration ۵۱ و defaults خاموش‌اند.

@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.48.0`
-- وضعیت: F01–F08 connected؛ F09 DoR/Semantic Contract MS31 checkpointed؛ Runtime/Renderer/wiring F09 و F10/UI/Production باز
+- نسخه: `1.49.0`
+- وضعیت: F01–F08 connected؛ F09 Source/Runtime Core MS32 checkpointed؛ Renderer/producer/wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1342,3 +1342,11 @@ Migration همچنان ۵۱ و Runtime/Renderer/wiring F09 باز است.
 MS32 هیچ Renderer/Golden، Migration، Definition، Catalog/API/Worker، F10 یا
 enablement ندارد. نقص تاریخچهٔ legacy برای مرحلهٔ producer/versioned migration
 و qualification متصل باز می‌ماند.
+
+Candidate اول `e3118c10a8c018d7a48e50e448263c9f350da908` در Run 241
+به سبب دو `CA1859` مردود شد و Checkpoint نگرفت. Candidate اصلاحی
+`2000b965dc31e6a83f0b1366c9a203ae809cee03`، tree
+`14e9b0c6bcc4c4a1b785e761c678e18f0d216a8c` در Run 242
+(`36321908108`) هر هشت Job را سبز کرد؛ C# `534/534`، Node `107/107` و
+Web `139/139`. `PMCS-V1.1-RPT1-S07-MS32-C1` فقط Source/Runtime Core را
+می‌بندد؛ MS33 Renderer/Golden مستقل F09 است.

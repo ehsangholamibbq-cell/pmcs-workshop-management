@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.45.0`
-- وضعیت: `S07-MS31 F09 Semantic Contract Safe Checkpoint | Runtime/Renderer/wiring F09 و F10/UI/Production open`
+- نسخه: `1.46.0`
+- وضعیت: `S07-MS32 F09 Source/Runtime Core Safe Checkpoint | Renderer/producer/wiring F09 و F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -907,3 +907,12 @@ ActionControl، Source محدود و cutoff-aware، permission سه‌گانه،
 محافظه‌کارانه و شکاف تاریخچهٔ legacy را با ۲۷ fixture pin کرد. Run 239
 (`36318261047`) هر هشت Job را سبز کرد؛ هیچ Runtime/Renderer/Migration/Catalog/API/Worker
 در این Micro-Step اضافه نشد. MS32 فقط Source مالک و Runtime Core محدود F09 است.
+
+در `S07-MS32`، `IProjectGovernanceActionReportingSource` در ActionControl،
+transaction تکرارپذیر هشت register، scope/cutoff/timezone، bound و manifest
+نسخه‌دار را تأمین می‌کند. `ProjectGovernanceActionReportSnapshotBuilder` پنج بخش
+Issue/Risk/Decision/Escalation/Action، count نامعلوم برای legacy incomplete،
+digest و classification حداکثر را اعتبارسنجی می‌کند. Run 242 (`36321908108`)
+هر هشت Job و C# `534/534` را سبز کرد. با نبود ledger تاریخی، Decisionهای بالغ
+تا producer بعدی ناقص می‌مانند. MS33 فقط Renderer/Golden محدود PDF/XLSX است؛
+Migration/Definition، Catalog/API/Worker و F10 در این گام اضافه نشده‌اند.

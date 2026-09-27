@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.65.0`
+- نسخه سند: `1.66.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -787,6 +787,14 @@ Issue/Risk/Decision/Escalation/Action بسته شد. Candidate
 Source مالک ActionControl و Runtime Core محدود را آغاز می‌کند. F10، UI/Production
 باز و همهٔ defaults خاموش‌اند.
 
+در `S07-MS32`، Source مالک ActionControl هشت register را bounded و repeatable-read
+می‌خواند و Snapshot Core محدود F09 پنج وضعیت مستقل، manifest/digest، classification
+محافظه‌کارانهٔ Action و legacy `InsufficientData` با count نامعلوم را حفظ می‌کند.
+Candidate `2000b965dc31e6a83f0b1366c9a203ae809cee03`، tree
+`14e9b0c6bcc4c4a1b785e761c678e18f0d216a8c` و Run 242 (`36321908108`)
+هر هشت Job را سبز کردند. Migration ۵۱ و defaultها ثابت‌اند؛ MS33 فقط
+Renderer/Golden محدود F09 است و producer تاریخچه، wiring، F10/UI/Production بازند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1094,3 +1102,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.63.0` | ثبت Safe Checkpoint `S07-MS29` و Evidence سبز Run 235 برای Renderer/Golden قطعی F08؛ Catalog/API/Worker و F09–F10/UI/Production باز است |
 | `1.64.0` | ثبت Connected Safe Checkpoint `S07-MS30` و Evidence سبز Run 237 برای Catalog/API/Worker و Qualification مستقل F08؛ F09–F10/UI/Production باز است |
 | `1.65.0` | ثبت Safe Checkpoint `S07-MS31` و Evidence سبز Run 239 برای DoR/قرارداد معنایی مستقل F09؛ Runtime/Renderer/wiring F09 و F10/UI/Production باز است |
+| `1.66.0` | ثبت Safe Checkpoint `S07-MS32` و Evidence سبز Run 242 برای Source مالک و Runtime Core محدود F09؛ Renderer/producer/wiring F09 و F10/UI/Production باز است |

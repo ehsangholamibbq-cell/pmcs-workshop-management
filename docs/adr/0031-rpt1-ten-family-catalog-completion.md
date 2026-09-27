@@ -95,6 +95,12 @@ F01–F08 End-to-End واجد Evidence هستند؛ F09/F10، UI/Production و G
 F09 هنوز Runtime/Renderer/wiring ندارد، F10 باز است و Gate ده‌گانه و defaults
 خاموش تغییر نکرده‌اند. MS32 Source مالک و Runtime Core محدود F09 است.
 
+در `PMCS-V1.1-RPT1-S07-MS32-C1`، Source مالک ActionControl و Snapshot Core
+محدود F09 در Run 242 (`36321908108`) با هشت Job سبز آماده شدند. تاریخچهٔ
+اثبات‌ناپذیر legacy با count نامعلوم باقی می‌ماند؛ Renderer/producer/wiring F09
+و F10 بازند، Scope ده خانواده و defaultهای خاموش تغییر نکرده‌اند. MS33 فقط
+Renderer/Golden مستقل F09 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های
