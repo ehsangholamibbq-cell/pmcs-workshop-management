@@ -61,6 +61,11 @@ history ناقص همچنان `InsufficientData` و count نامعلوم‌ان�
 و Catalog/API/Worker متصل باقی مانده‌اند؛ F07 End-to-End یا Qualified نیست و Gate خروج ده‌گانه
 باز است. گام بعد `S07-MS25` فقط producer تاریخی در مالک TechnicalOffice است.
 
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1`، producer تاریخچهٔ transitionهای RFI/Submittal
+برای رکوردهای تازه با Migration 49 و بدون backfill قدیمی افزوده شد. Run 219 هشت Job را سبز
+کرد؛ F07 هنوز Catalog/API/Worker و Qualification متصل ندارد. Scope ده‌گانه و defaultهای خاموش
+تغییر نکرده‌اند؛ MS26 گام اتصال مستقل F07 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

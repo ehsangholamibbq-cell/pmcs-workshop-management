@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.38.0`
-- وضعیت: `S07-MS24 F07 bounded Renderer/Golden safe checkpoint | historical producer/wiring/F08-F10/UI/Production open`
+- نسخه: `1.39.0`
+- وضعیت: `S07-MS25 F07 bounded historical producer safe checkpoint | wiring/F08-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `5a364cc252905415605eac575bbc8e5f8b2d1d13`
-- Parent checkpoint tree: `ba2501bc51eaed3d99c7f8746f16f77f8b732ca5`
-- Candidate source: `8a08d3a0876cb6307613cb3eb51d918ff0269564`
-- Candidate source tree: `ffa44deb661c4055f06fd32064bdfa8f61de425f`
-- PR validation merge: `121960696bb6c3fd4a7c490371ee20367840cb0b`؛ همان tree
-- Full evidence: Run 215 (`36301524177`) — `success`
+- Parent checkpoint commit: `bd0fe62f0d28954f95566db96fc22b42f2c36594`
+- Parent checkpoint tree: `dcd618dd5715b591e5688d25b486771db148c485`
+- Candidate source: `b2cc811e9202b49dd643972bde547c105fd9dc02`
+- Candidate source tree: `1673d1b48ca41fd425199da9235ec87c712d81b2`
+- PR validation merge: `a5843ace11e1546a472e76633fc13354c0570e3c`؛ همان tree
+- Full evidence: Run 219 (`36304170407`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -850,3 +850,10 @@ visual digest در Checkpoint MS24 پین شدند. Source candidate
 Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden را می‌بندد؛ historical RFI/Submittal
 transition producer در `S07-MS25` مستقل پیگیری می‌شود. Migration/Catalog/API/Worker و
 permission enforcement متصل، UI/Production، Report Designer و F08 همچنان بازند.
+
+Slice 07 Micro-Step 25 یک ledger nullable و forward-only برای transitionهای RFI/Submittal
+در مالک TechnicalOffice اضافه کرد. هیچ وضعیت کنونی به گذشته backfill نمی‌شود؛ Source بخش
+legacy ناقص را `InsufficientData` نگه می‌دارد، اما برای aggregate تازه sequence، timestamp
+UTC، status و response/outcome را در دقت PostgreSQL اعتبارسنجی و در cutoff انتخاب می‌کند.
+Migration 49، Run 219 (`36304170407`) و Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1` با هشت Job
+سبز این مرز را می‌بندند. Definition/API/Worker هنوز متصل نیستند و MS26 مستقل است.

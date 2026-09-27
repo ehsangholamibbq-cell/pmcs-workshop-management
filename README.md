@@ -7,10 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` با Run 215، Runtime و Renderer/Golden محدود
-`RPT1-F07` را روی قرارداد مستقل چهار دفتر TechnicalOffice بست. RFI/Submittal با history میانی
-ناقص `InsufficientData` و count نامعلوم می‌مانند؛ producer تاریخی و Catalog/API/Worker هنوز
-بازند. F01 تا F06 متصل و F08 تا F10 بازند. گام بعدی فقط producer تاریخی RFI/Submittal در MS25 است.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1` با Run 219، Runtime و Renderer/Golden و
+producer تاریخچهٔ transitionهای RFI/Submittal تازه را برای `RPT1-F07` بست. Legacy بدون
+backfill حدسی `InsufficientData` و count نامعلوم می‌ماند؛ Catalog/API/Worker هنوز باز است.
+F01 تا F06 متصل و F08 تا F10 بازند. گام بعدی MS26 اتصال و Qualification مستقل F07 است.
 Safe Checkpoint پیشین `PMCS-V1.1-RPT1-S07-MS21-C1` در Run 202، Catalog/API/Worker و qualification متصل
 `RPT1-F06` را روی Runtime و Rendererهای موجود قرارداد، اصلاحیه، خرید و تأمین بست. F01 تا F06
 checkpoint متصل دارند و F07 تا F10 باز هستند. همهٔ feature flagها، license و remediation در

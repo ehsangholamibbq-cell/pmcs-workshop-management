@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F07-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F07`
-- وضعیت: `Semantic Contract Locked | MS24 Runtime/Renderer Ready / historical producer and wiring open | F08-F10/UI/Production open`
+- وضعیت: `Semantic Contract Locked | MS25 Runtime/Renderer/historical producer Ready / wiring open | F08-F10/UI/Production open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS21-C1`
 - Safe checkpoint: `PMCS-V1.1-RPT1-S07-MS22-C1`
 - مرز: `Document / RFI / Submittal / Transmittal`
@@ -298,3 +298,15 @@ RTL/شمسی/formula escaping در Run 215 (`36301524177`) با همهٔ هشت 
 Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden را می‌بندد. گام بعد
 `S07-MS25` producer تاریخی transitionهای RFI/Submittal است؛ migration/backfill policy و
 wiring/permission enforcement عملیاتی جدا می‌مانند.
+
+## پیوست Safe Checkpoint S07-MS25 — producer تاریخی بدون backfill
+
+Migration `technical-office/20260927-002` ledger nullable رخدادهای کمینهٔ RFI/Submittal را
+می‌افزاید و هیچ دادهٔ قدیمی را backfill نمی‌کند. Aggregate تازه از Draft با ledger خالی قابل اثبات
+آغاز می‌شود و هر transition همراه UTC، sequence و classification/outcome همان transaction را
+تکمیل می‌کند. برای legacy با ledger null حتی transition بعدی اعتبار تاریخچه نمی‌سازد؛ Source
+بخش را `InsufficientData` با count null نگه می‌دارد. برای ledger جدید، revision، وضعیت نهایی،
+زمان‌های ذخیره‌شده در دقت میکروثانیه، response sequence و review outcome را تطبیق می‌دهد و
+calculator فقط رخدادهای `<= cutoff` را نمایش می‌دهد. متون آزاد/شناسهٔ Actor در ledger گزارش
+نیستند. Run 219 (`36304170407`) هر هشت Job و `522/522` تست C# را سبز کرد. Checkpoint
+`PMCS-V1.1-RPT1-S07-MS25-C1` فقط producer را می‌بندد؛ Catalog/API/Worker و F08 بازند.

@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.35.0`
+- نسخه: `1.36.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F07 Renderer/Golden Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F07 Historical Producer Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,11 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `8a08d3a0876cb6307613cb3eb51d918ff0269564`؛ tree `ffa44deb661c4055f06fd32064bdfa8f61de425f` |
-| Current evidence-bearing source checkpoint | `8a08d3a0876cb6307613cb3eb51d918ff0269564`؛ tree `ffa44deb661c4055f06fd32064bdfa8f61de425f`؛ Run 215 سبز |
-| Source lineage | S07-MS24 فرزند Checkpoint `5a364cc252905415605eac575bbc8e5f8b2d1d13` با tree `ba2501bc51eaed3d99c7f8746f16f77f8b732ca5` است؛ هیچ reset یا بازطراحی baseline انجام نشد |
-| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS24-C1`؛ F01 تا F06 متصل، F07 Runtime/Renderer آماده و history/wiring باز، F08 تا F10 بازند |
-| Migration count | Safe Resume: `48` و Restore Drill سبز |
+| آخرین Source Candidate واجد Evidence | `b2cc811e9202b49dd643972bde547c105fd9dc02`؛ tree `1673d1b48ca41fd425199da9235ec87c712d81b2` |
+| Current evidence-bearing source checkpoint | `b2cc811e9202b49dd643972bde547c105fd9dc02`؛ tree `1673d1b48ca41fd425199da9235ec87c712d81b2`؛ Run 219 سبز |
+| Source lineage | S07-MS25 فرزند Checkpoint `bd0fe62f0d28954f95566db96fc22b42f2c36594` با tree `dcd618dd5715b591e5688d25b486771db148c485` است؛ هیچ reset یا بازطراحی baseline انجام نشد |
+| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS25-C1`؛ F01 تا F06 متصل، F07 Runtime/Renderer/producer آماده و wiring باز، F08 تا F10 بازند |
+| Migration count | Safe Resume: `49` و Restore Drill سبز |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
 نیست. Baseline قفل‌شده V1 نیز باز نشده است.
@@ -36,7 +36,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.58.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.59.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -49,8 +49,8 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.57.0` | Superseded؛ `v1.58.0` مرجع جاری است |
-| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS24` را اثبات می‌کند |
+| Roadmap Post-V1 | نسخه‌های تا `v1.58.0` | Superseded؛ `v1.59.0` مرجع جاری است |
+| انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS25` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
 | UI | بسته‌شدن UX1 یعنی پایان بازطراحی | Superseded؛ UX1 فقط جهت بصری «مدیریت ممتاز» را بست؛ مهاجرت کامل در UX2 است |
@@ -188,7 +188,7 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS24-C1` است. روی این
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS25-C1` است. روی این
 Checkpoint، Catalog/API/Worker و qualification متصل F01 تا F06 بسته شده‌اند.
 Migration 48،
 Definition/Template seed، strict empty-object API، Project profile pin، مجوز منبع definition-aware و
@@ -198,7 +198,7 @@ digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=U
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است:
 `RPT1-F01` تا `RPT1-F06` checkpoint متصل دارند؛ `RPT1-F07` اکنون
-`Runtime + Renderer/Golden Ready / historical producer and wiring open` است و F08 تا F10
+`Runtime + Renderer/Golden + historical producer Ready / wiring open` است و F08 تا F10
 `Required / Not Implemented` هستند. قرارداد
 `PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` Runtime Core، Renderer/Golden و wiring checkpointed دارد:
 identity/schema نسخه‌دار، Project configuration pin، period source/resolver، semantic Snapshot،
@@ -276,10 +276,20 @@ XLSX شش Sheet قطعی با Coverage مستقل اضافه شدند. `Insuffic
 digest، bound و محافظت فرمول با Run 215، `518/518` C# و هشت Job سبز ثابت شدند. F07 هنوز
 historical transition producer و Catalog/API/Worker ندارد.
 
+در `S07-MS25` مالک TechnicalOffice زمان و sequence هر transition جدید RFI/Submittal را در ledger
+کمینهٔ JSON ثبت کرد. Migration 49 forward-only و nullable است؛ legacy بدون history کامل هیچ
+backfill حدسی ندارد و `InsufficientData` می‌ماند. Source رخدادهای تازه را با revision، وضعیت،
+response/outcome و timestamp ذخیره‌شده در دقت میکروثانیه می‌سنجد. Candidate
+`b2cc811e9202b49dd643972bde547c105fd9dc02`، tree
+`1673d1b48ca41fd425199da9235ec87c712d81b2` و PR merge
+`a5843ace11e1546a472e76633fc13354c0570e3c` با همان tree در Run 219 همهٔ هشت Job،
+`522/522` C#، `92/92` Node، `139/139` Web، پنج browser scenario و Restore ۴۹ Migration را
+سبز کردند. F07 هنوز مسیر Catalog/API/Worker و Qualification End-to-End ندارد.
+
 ## Remaining Work
 
-1. خانواده `RPT1-F07` قرارداد، Runtime و Renderer/Golden محدود checkpointed دارد؛ history
-   producer در `S07-MS25`، سپس wiring/Qualification مستقل در Micro-Step بعدی.
+1. خانواده `RPT1-F07` قرارداد، Runtime، Renderer/Golden و producer تاریخی محدود checkpointed دارد؛
+   wiring/Qualification End-to-End در `S07-MS26` مستقل است.
 2. سپس خانواده‌های `RPT1-F08` تا `RPT1-F10` با
    Micro-Slice و Qualification مستقل؛
    Scope ده‌گانه طبق ADR 0031 حفظ شده است.
@@ -290,11 +300,11 @@ historical transition producer و Catalog/API/Worker ندارد.
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | F01 تا F06 متصل‌اند؛ F07 Runtime و Renderer/Golden دارد؛ F08 تا F10 پیاده‌نشده‌اند | producer تاریخی F07، سپس wiring/Qualification مستقل |
+| Implementation | F01 تا F06 متصل‌اند؛ F07 Runtime، Renderer/Golden و producer دارد؛ F08 تا F10 پیاده‌نشده‌اند | wiring/Qualification مستقل F07 |
 | Temporal source | endpoint جاری Planning زمان‌های Approval/Supersede، target و configuration تاریخی کافی ندارد | Contract/selector نسخه‌دار و compatibility producer متصل‌اند؛ history غیرقابل‌اثبات fail-closed است و توسعهٔ تاریخچهٔ کامل باید Slice دامنه‌ای مستقل باشد |
 | Finance temporal source | read modelها و serviceهای legacy Finance cutoff تاریخی، postedAt/approvedAt مستقل، Budget supersession history و Aging دوطرفهٔ کامل ندارند | Contract/selector/compatibility source نسخه‌دار F05 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
 | Commercial temporal source | source و endpointهای legacy current-state/truncated هستند؛ activation history، Party/Item snapshot، conversion version و completeness cutoff کامل ندارند | Contract/selector/compatibility source نسخه‌دار F06 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
-| Technical temporal source | `/technical-office/state` current و capped است و مدل فعلی همهٔ زمان‌های transition تاریخی RFI/Submittal را ندارد | Source/Renderer در MS24 این بخش‌ها را با دلیل و count نامعلوم `InsufficientData` می‌کند؛ producer تاریخی و End-to-End هنوز باز است |
+| Technical temporal source | `/technical-office/state` current و capped است؛ legacy RFI/Submittal ledger کامل ندارد | MS25 رویدادهای تازه را ثبت می‌کند؛ legacy بدون backfill همچنان `InsufficientData` و End-to-End باز است |
 | Documentation | متن PR #2 هنوز Roadmap `v1.14.0`، head قدیمی و gateهای MS03–MS05 را باز نشان می‌دهد | PR body با این مرجع و Roadmap فعال همگام شود؛ کد/CI متأثر نیست |
 | Traceability | دو ADR با شماره `0027` وجود دارد | بدون renumber شتاب‌زده، یک تصمیم نسخه‌دار برای شناسه یکتا ثبت شود |
 | Ownership | اسناد، UI Reporting را هم «gate باز RPT1» و هم کار UX2 می‌خوانند | مالک gate بسته‌شدن RPT1/UX2 باید در Roadmap صریح شود |
@@ -444,6 +454,11 @@ historical transition producer و Catalog/API/Worker ندارد.
   موفق، `518/518` C# شامل شش case Renderer تازه، `91/91` Node، `139/139` Web، پنج browser
   scenario، validator `419` فایل، audit `274/204/5`، Restore ۴۸ Migration و Qualification `7/7`؛
   historical producer و Catalog/API/Worker هنوز بازند.
+- F07 Historical Producer Source MS25: `b2cc811e9202b49dd643972bde547c105fd9dc02`؛ tree
+  `1673d1b48ca41fd425199da9235ec87c712d81b2`؛ PR validation merge
+  `a5843ace11e1546a472e76633fc13354c0570e3c` با همان tree؛ Run 219 (`36304170407`) هشت
+  Job موفق، `522/522` C#، `92/92` Node، `139/139` Web، پنج browser scenario، validator `420`
+  فایل، Restore ۴۹ Migration و Qualification `7/7`؛ wiring F07 و F08–F10/UI/Production بازند.
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.

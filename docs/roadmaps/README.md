@@ -69,4 +69,5 @@
 | V1.1 RPT1 Slice 07 MS22 | source `11168534372487bff3cc798861ca036489b3dea0` / tree `af7e9e48c706c23f50521dbf715e6027e1512194` / Run 205 F07 semantic contract passed / F07 Runtime و F08–F10/UI/Production open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS23 | source `7f66113d3fe091829747d1f5059eb8f16c82cb88` / tree `88ba4957b76c6803893afa04d618b22c47c919e9` / Run 211 bounded F07 Runtime Core passed / Renderer/Golden، historical producer، wiring و F08–F10/UI/Production open، RPT1 active |
 | V1.1 RPT1 Slice 07 MS24 | source `8a08d3a0876cb6307613cb3eb51d918ff0269564` / tree `ffa44deb661c4055f06fd32064bdfa8f61de425f` / Run 215 bounded F07 PDF/XLSX Renderer/Golden passed / historical producer، wiring و F08–F10/UI/Production open، RPT1 active |
+| V1.1 RPT1 Slice 07 MS25 | source `b2cc811e9202b49dd643972bde547c105fd9dc02` / tree `1673d1b48ca41fd425199da9235ec87c712d81b2` / Run 219 F07 historical transition producer passed / Catalog/API/Worker wiring و F08–F10/UI/Production open، RPT1 active |
 | Active stage | `V1.1-RPT1 — Reporting Center Phase 1` |

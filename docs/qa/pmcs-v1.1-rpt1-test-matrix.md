@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.41.0`
-- وضعیت: F01–F06 connected؛ F07 bounded Runtime/Renderer ready / history و wiring باز؛ F08–F10/UI/Production باز
+- نسخه: `1.42.0`
+- وضعیت: F01–F06 connected؛ F07 bounded Runtime/Renderer/history producer ready / wiring باز؛ F08–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1197,3 +1197,22 @@ Migration و Qualification `7/7` Suite/`12/12` Command. Qualification artifact
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden F07 را می‌بندد. گام بعد
 `S07-MS25` producer تاریخی transitionهای RFI/Submittal در مالک TechnicalOffice است؛
 wiring و Qualification متصل باید Micro-Step جدا باشند.
+
+## ۴۷. Producer تاریخچهٔ RFI/Submittal — Slice 07 Micro-Step 25 Safe Checkpoint
+
+- Aggregate تازه ledger کمینه را از Draft خالی شروع کند؛ InternalReview، ReturnToDraft، Issue،
+  ResponseReceived/Accepted/Clarification/Closed و Submitted/UnderReview/Reviewed/Closed با ترتیب،
+  UTC و classification/outcome مستقل ثبت شوند؛ متن آزاد وارد ledger نشود؛
+- legacy با ستون nullable و بدون backfill حتی پس از transition جدید `InsufficientData` و count
+  null بماند؛ ledger جدید ناقص یا متناقض به صفر/Available تبدیل نشود؛
+- Source status/revision/response/outcome/timestamp را با دقت میکروثانیه PostgreSQL تطبیق دهد؛
+  cutoff تاریخی فقط رخداد واجد cutoff را انتخاب کند؛ migration replay امن و Restore Drill ۴۹ باشد؛
+- هیچ Catalog/API/Worker یا تغییر defaults، UI/Production، F08 و Report Designer رخ ندهد.
+
+Candidate `b2cc811e9202b49dd643972bde547c105fd9dc02` با tree
+`1673d1b48ca41fd425199da9235ec87c712d81b2` و PR merge
+`a5843ace11e1546a472e76633fc13354c0570e3c` دارای همان tree در Run 219
+(`36304170407`) همهٔ هشت Job سبز داد: `522/522` C#، `92/92` Node، `139/139` Web، پنج
+browser scenario، validator `420` فایل، Restore ۴۹ Migration و Qualification `7/7`.
+Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1` فقط producer را می‌بندد؛ MS26 مسیر متصل
+Catalog/API/Worker و qualification مستقل F07 است.
