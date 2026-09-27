@@ -129,6 +129,19 @@ public sealed class ReportingTests
     }
 
     [Fact]
+    public void RuntimePolicyRequiresBothTechnicalOfficeReadPermissions()
+    {
+        var expected = new[] { "technical.read", "technical.confidential.read" };
+        Assert.True(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(
+            ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode, out var permissions));
+        Assert.Equal(expected, permissions);
+        Assert.Equal(expected, ProjectTechnicalOfficeReportRuntimeContract.RequiredSourcePermissions);
+        Assert.True(ProjectPermissionService.GrantsRole("TechnicalOffice", expected[0]));
+        Assert.True(ProjectPermissionService.GrantsRole("TechnicalOffice", expected[1]));
+        Assert.False(ProjectPermissionService.GrantsRole("FinanceManager", expected[1]));
+    }
+
+    [Fact]
     public void RuntimePolicyRejectsUnknownDefinition()
     {
         Assert.False(ReportDefinitionRuntimePolicy.TryGetSourcePermissions(

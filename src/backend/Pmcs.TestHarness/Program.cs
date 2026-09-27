@@ -70,6 +70,8 @@ internal static partial class Program
                     await VerifyReportingProjectFinancialPositionAsync(),
                 "verify-reporting-project-commercial-procurement-supply" =>
                     await VerifyReportingProjectCommercialProcurementSupplyAsync(),
+                "verify-reporting-project-technical-office" =>
+                    await VerifyReportingProjectTechnicalOfficeAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
@@ -500,6 +502,7 @@ internal static partial class Program
             "verify-reporting-project-progress|" +
             "verify-reporting-project-financial-position|" +
             "verify-reporting-project-commercial-procurement-supply|" +
+            "verify-reporting-project-technical-office|" +
             "verify-reporting-cancellation|" +
             "verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +

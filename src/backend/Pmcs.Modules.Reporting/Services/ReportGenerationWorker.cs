@@ -21,6 +21,7 @@ using Pmcs.Modules.Reporting.Domain;
 using Pmcs.Modules.Reporting.Endpoints;
 using Pmcs.Modules.Reporting.Persistence;
 using Pmcs.Modules.Reporting.Rendering;
+using Pmcs.Modules.TechnicalOffice.Contracts;
 
 namespace Pmcs.Modules.Reporting.Services;
 
@@ -477,6 +478,25 @@ internal sealed partial class ReportGenerationWorker(
                 run.CreatedAt,
                 builtAt);
         }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            _ = DeserializeStored<ProjectTechnicalOfficeReportParameters>(
+                run.ParametersJson, "reporting.parameters.invalid", permissionSnapshotJson);
+            var pinnedProject = DeserializeStored<ProjectTechnicalOfficePinnedProjectProfile>(
+                run.PinnedProjectProfileJson,
+                "reporting.project_technical_office.project_scope.invalid", permissionSnapshotJson);
+            var timeZone = pinnedProject.ValidateForRun(
+                run.TenantId, run.ProjectId, run.AsOfUtc, run.CreatedAt);
+            var cutoffLocalDate = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(run.AsOfUtc, timeZone).DateTime);
+            var source = await services.GetRequiredService<IProjectTechnicalOfficeReportingSource>()
+                .LoadAsync(run.TenantId, run.ProjectId, cutoffLocalDate, run.AsOfUtc, cancellationToken);
+            snapshot = ProjectTechnicalOfficeReportSnapshotBuilder.Build(
+                run.Id, run.TenantId, pinnedProject, run.AsOfUtc, source, run.CreatedAt, builtAt);
+        }
         else
         {
             throw new ReportProcessingException(
@@ -534,6 +554,7 @@ internal sealed partial class ReportGenerationWorker(
             services.GetRequiredService<ProjectFinancialPositionReportRendererRegistry>();
         var commercialRendererRegistry = services
             .GetRequiredService<ProjectCommercialProcurementSupplyReportRendererRegistry>();
+        var technicalRendererRegistry = services.GetRequiredService<ProjectTechnicalOfficeReportRendererRegistry>();
         var publisher = services.GetRequiredService<IGeneratedDocumentPublisher>();
         var sideEffectWriter = services.GetRequiredService<ITransactionalSideEffectWriter>();
         var clock = services.GetRequiredService<IClock>();
@@ -578,6 +599,7 @@ internal sealed partial class ReportGenerationWorker(
         ProjectProgressReportSemanticSnapshot? progressRenderSnapshot = null;
         ProjectFinancialPositionReportSemanticSnapshot? financialRenderSnapshot = null;
         ProjectCommercialProcurementSupplyReportSemanticSnapshot? commercialRenderSnapshot = null;
+        ProjectTechnicalOfficeReportSemanticSnapshot? technicalRenderSnapshot = null;
         if (string.Equals(
                 run.DefinitionCode,
                 ReportDefinitionRuntimePolicy.DailyDefinitionCode,
@@ -626,6 +648,14 @@ internal sealed partial class ReportGenerationWorker(
             commercialRenderSnapshot =
                 ProjectCommercialProcurementSupplyReportRenderSnapshot.Parse(snapshot.PayloadJson);
             VerifyRenderSnapshot(commercialRenderSnapshot, snapshot, run);
+        }
+        else if (string.Equals(
+                     run.DefinitionCode,
+                     ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode,
+                     StringComparison.Ordinal))
+        {
+            technicalRenderSnapshot = ProjectTechnicalOfficeReportRenderSnapshot.Parse(snapshot.PayloadJson);
+            VerifyRenderSnapshot(technicalRenderSnapshot, snapshot, run);
         }
         else
         {
@@ -712,7 +742,9 @@ internal sealed partial class ReportGenerationWorker(
                             ? ReportArtifactIdentity.FileName(progressRenderSnapshot, format)
                             : financialRenderSnapshot is not null
                                 ? ReportArtifactIdentity.FileName(financialRenderSnapshot, format)
-                                : ReportArtifactIdentity.FileName(commercialRenderSnapshot!, format);
+                                : commercialRenderSnapshot is not null
+                                    ? ReportArtifactIdentity.FileName(commercialRenderSnapshot, format)
+                                    : ReportArtifactIdentity.FileName(technicalRenderSnapshot!, format);
             RenderedReportArtifact artifact;
             if (dailyRenderSnapshot is not null)
             {
@@ -827,7 +859,7 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.SourceCutoffUtc,
                         financialRenderSnapshot));
             }
-            else
+            else if (commercialRenderSnapshot is not null)
             {
                 artifact = commercialRendererRegistry.Require(format).Render(
                     new ProjectCommercialProcurementSupplyReportRenderRequest(
@@ -848,7 +880,19 @@ internal sealed partial class ReportGenerationWorker(
                         snapshot.Sha256,
                         snapshot.SourceManifestSha256,
                         snapshot.SourceCutoffUtc,
-                        commercialRenderSnapshot!));
+                        commercialRenderSnapshot));
+            }
+            else
+            {
+                artifact = technicalRendererRegistry.Require(format).Render(
+                    new ProjectTechnicalOfficeReportRenderRequest(
+                        run.Id, outputId, snapshot.Id, template.Id, run.DefinitionCode,
+                        ProjectTechnicalOfficeReportRuntimeContract.DefinitionVersion,
+                        run.TemplateVersion, template.ContentDigest,
+                        template.RendererContractVersion, template.LayoutContractVersion,
+                        format, fileName, manifest.VerificationCode, manifest.Sha256,
+                        snapshot.Sha256, snapshot.SourceManifestSha256, snapshot.SourceCutoffUtc,
+                        technicalRenderSnapshot!));
             }
             VerifyRenderedArtifact(artifact, manifest, fileName, format);
             rendered.Add(new PreparedArtifact(outputId, documentId, artifact));
@@ -1570,6 +1614,26 @@ internal sealed partial class ReportGenerationWorker(
                 "reporting.snapshot.integrity_failed",
                 transient: false,
                 permissionSnapshotJson: null);
+        }
+    }
+
+    private static void VerifyRenderSnapshot(
+        ProjectTechnicalOfficeReportSemanticSnapshot renderSnapshot,
+        ReportSnapshot snapshot,
+        ReportRun run)
+    {
+        if (!string.Equals(renderSnapshot.SchemaVersion, snapshot.SchemaVersion, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionCode, run.DefinitionCode, StringComparison.Ordinal) ||
+            !string.Equals(renderSnapshot.DefinitionVersion,
+                ProjectTechnicalOfficeReportRuntimeContract.DefinitionVersion, StringComparison.Ordinal) ||
+            renderSnapshot.Project.Id != run.ProjectId || renderSnapshot.Project.TenantId != run.TenantId ||
+            renderSnapshot.DataStatus != snapshot.DataStatus ||
+            renderSnapshot.Cutoff.SourceCutoffUtc.ToUniversalTime() != run.AsOfUtc.ToUniversalTime() ||
+            !string.Equals(renderSnapshot.SourceManifestSha256,
+                snapshot.SourceManifestSha256, StringComparison.Ordinal))
+        {
+            throw new ReportProcessingException(
+                "reporting.snapshot.integrity_failed", transient: false, permissionSnapshotJson: null);
         }
     }
 

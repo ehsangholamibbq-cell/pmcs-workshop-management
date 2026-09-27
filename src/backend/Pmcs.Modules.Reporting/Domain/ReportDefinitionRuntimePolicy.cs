@@ -45,6 +45,8 @@ internal static class ReportDefinitionRuntimePolicy
         ProcurementOrderSourcePermission,
         SupplySourcePermission
     ];
+    private static readonly string[] ProjectTechnicalOfficeSourcePermissions =
+        ["technical.read", "technical.confidential.read"];
 
     public static readonly string[] SupportedDefinitionCodes =
     [
@@ -53,7 +55,8 @@ internal static class ReportDefinitionRuntimePolicy
         ExecutiveProjectStateReportRuntimeContract.DefinitionCode,
         ProjectProgressReportRuntimeContract.DefinitionCode,
         ProjectFinancialPositionReportRuntimeContract.DefinitionCode,
-        ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode
+        ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode,
+        ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode
     ];
 
     public static bool TryGetSourcePermissions(
@@ -70,6 +73,8 @@ internal static class ReportDefinitionRuntimePolicy
                 ProjectFinancialPositionSourcePermissions,
             ProjectCommercialProcurementSupplyReportRuntimeContract.DefinitionCode =>
                 ProjectCommercialProcurementSupplySourcePermissions,
+            ProjectTechnicalOfficeReportRuntimeContract.DefinitionCode =>
+                ProjectTechnicalOfficeSourcePermissions,
             _ => Array.Empty<string>()
         };
         return permissions.Count > 0;

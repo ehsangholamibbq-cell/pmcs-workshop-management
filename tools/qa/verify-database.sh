@@ -41,6 +41,7 @@ reporting_periodic_run_id="77000000-0000-4000-8000-000000000001"
 reporting_project_progress_run_id="79000000-0000-4000-8000-000000000001"
 reporting_project_financial_position_run_id="7a000000-0000-4000-8000-000000000001"
 reporting_project_commercial_procurement_supply_run_id="7b000000-0000-4000-8000-000000000001"
+reporting_project_technical_office_run_id="7c000000-0000-4000-8000-000000000001"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -81,7 +82,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "49" \
+  "50" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -118,6 +119,16 @@ expect_equal \
   "project-commercial-procurement-supply reporting catalog migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260926-007';"
+
+expect_equal \
+  "project-technical-office reporting catalog migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'reporting' and version = '20260927-008';"
+
+expect_equal \
+  "project-technical-office certified definition and immutable template are published" \
+  "Active|Confidential|pmcs.reporting.project-technical-office.parameters/v1|true|1.0.0|pmcs.reporting.project-technical-office.renderer/v1|pmcs.reporting.project-technical-office.layout/v1|e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7|Landscape" \
+  "select definition.status || '|' || definition.classification || '|' || definition.parameter_schema_version || '|' || (definition.required_permissions = '[\"technical.read\",\"technical.confidential.read\"]'::jsonb)::text || '|' || template.version || '|' || template.renderer_contract_version || '|' || template.layout_contract_version || '|' || template.content_digest || '|' || template.orientation from reporting.report_definitions definition join reporting.report_template_versions template on template.id = definition.current_template_version_id and template.definition_id = definition.id where definition.code = 'project-technical-office-certified' and template.retired_at is null;"
 
 expect_equal \
   "project-periodic certified definition and immutable template are published" \
@@ -378,6 +389,26 @@ expect_equal \
   "project-commercial-procurement-supply run completed from a pinned project profile" \
   "Succeeded|Complete|1|2|project-commercial-procurement-supply-certified|pmcs.reporting.project-commercial-procurement-supply.project-profile/v1|true" \
   "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || (pinned_project_profile->>'schemaVersion') || '|' || ((pinned_project_profile->>'id') = project_id::text and (pinned_project_profile->>'tenantId') = tenant_id::text and (pinned_project_profile->>'timeZone') = project_time_zone and (pinned_project_profile->>'baseCurrencyCode') = 'IRR')::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_project_commercial_procurement_supply_run_id}';"
+
+expect_equal \
+  "project-technical-office run completed from a pinned project profile" \
+  "Succeeded|Complete|1|2|project-technical-office-certified|pmcs.reporting.project-technical-office.project-profile/v1|true" \
+  "select status || '|' || pipeline_stage || '|' || attempt_count::text || '|' || output_count::text || '|' || definition_code || '|' || (pinned_project_profile->>'schemaVersion') || '|' || ((pinned_project_profile->>'id') = project_id::text and (pinned_project_profile->>'tenantId') = tenant_id::text and (pinned_project_profile->>'timeZone') = project_time_zone)::text from reporting.report_runs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and id = '${reporting_project_technical_office_run_id}';"
+
+expect_equal \
+  "project-technical-office permission snapshots require reporting and both Technical reads" \
+  "3|3|true|3|3|true" \
+  "select jsonb_array_length(request_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(request_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','technical.read','technical.confidential.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(request_permission_snapshot->'decisions') decision)::text || '|' || jsonb_array_length(processing_permission_snapshot->'decisions')::text || '|' || (select count(distinct decision->>'operation') from jsonb_array_elements(processing_permission_snapshot->'decisions') decision where decision->>'operation' in ('reporting.run.create','technical.read','technical.confidential.read'))::text || '|' || (select bool_and((decision->>'allowed')::boolean) from jsonb_array_elements(processing_permission_snapshot->'decisions') decision)::text from reporting.report_runs where id = '${reporting_project_technical_office_run_id}';"
+
+expect_equal \
+  "project-technical-office semantic snapshot has four independently complete no-data sections" \
+  "pmcs.reporting.project-technical-office.snapshot/v1|NoData|project-technical-office-certified|Confidential|NoData|NoData|NoData|NoData|0|0|0|0" \
+  "select schema_version || '|' || data_status || '|' || (payload_json->>'definitionCode') || '|' || (payload_json->>'classification') || '|' || (payload_json#>>'{documents,status}') || '|' || (payload_json#>>'{transmittals,status}') || '|' || (payload_json#>>'{rfis,status}') || '|' || (payload_json#>>'{submittals,status}') || '|' || (payload_json#>>'{documents,officialCount}') || '|' || (payload_json#>>'{transmittals,officialCount}') || '|' || (payload_json#>>'{rfis,officialCount}') || '|' || (payload_json#>>'{submittals,officialCount}') from reporting.report_snapshots where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_technical_office_run_id}';"
+
+expect_equal \
+  "project-technical-office PDF and XLSX outputs are confidential governed and complete" \
+  "2|Pdf,Xlsx|2|2|0" \
+  "select count(*)::text || '|' || string_agg(format, ',' order by format) || '|' || count(*) filter (where classification = 'Confidential')::text || '|' || count(*) filter (where retention_policy = 'LongTerm' and archive_state = 'Active')::text || '|' || count(*) filter (where size_bytes <= 0 or sha256 !~ '^[0-9a-f]{64}$' or manifest_sha256 !~ '^[0-9a-f]{64}$')::text from reporting.report_outputs where tenant_id = '${tenant_id}' and project_id = '${project_id}' and run_id = '${reporting_project_technical_office_run_id}';"
 
 expect_equal \
   "project-commercial-procurement-supply permission snapshots require reporting and all six Commercial reads" \

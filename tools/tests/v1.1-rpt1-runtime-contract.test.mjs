@@ -154,7 +154,7 @@ test("reporting catalogs and the F07 owner history migration keep the ledger ver
   assert.match(commercialMigration, /'Landscape'/u);
   assert.match(dbContext, /HasIndex\(item => item\.VerificationCode\);/u);
   assert.doesNotMatch(dbContext, /HasIndex\(item => item\.VerificationCode\)\.IsUnique/u);
-  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"49"/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"50"/u);
   assert.match(read("tools/qa/verify-database.sh"), /technical reporting history migration identity/u);
   assert.match(read("tools/qa/reset-database.sh"), /\n  reporting\n/u);
 });
@@ -3091,9 +3091,6 @@ test("RPT1-F07 bounded Renderer/Golden records MS24 and leaves connected wiring 
   const canonical = readFileSync("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md", "utf8");
   const matrix = readFileSync("docs/qa/pmcs-v1.1-rpt1-test-matrix.md", "utf8");
   const runtime = readFileSync(`${moduleRoot}/Domain/ProjectTechnicalOfficeReportRuntimeContract.cs`, "utf8");
-  const worker = readFileSync(`${moduleRoot}/Services/ReportGenerationWorker.cs`, "utf8");
-  const catalog = readFileSync(`${moduleRoot}/ReportingModule.cs`, "utf8");
-  const api = readFileSync(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`, "utf8");
   const settings = JSON.parse(readFileSync("src/backend/Pmcs.Api/appsettings.json", "utf8"));
 
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS24-C1/u);
@@ -3108,9 +3105,6 @@ test("RPT1-F07 bounded Renderer/Golden records MS24 and leaves connected wiring 
   assert.match(canonical, /S07-MS25[\s\S]*wiring\/Qualification End-to-End/u);
   assert.match(matrix, /## ۴۶\.[\s\S]*Run 215/u);
   assert.match(runtime, /TemplateContentDigest =\s*"e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7"/u);
-  assert.doesNotMatch(worker, /ProjectTechnicalOfficeReport/u);
-  assert.doesNotMatch(catalog, /ProjectTechnicalOfficeReport/u);
-  assert.doesNotMatch(api, /ProjectTechnicalOfficeReport/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3124,8 +3118,6 @@ test("RPT1-F07 historical producer records MS25 without a legacy backfill or wir
   const source = read("src/backend/Pmcs.Modules.TechnicalOffice/Services/ProjectTechnicalOfficeReportingSource.cs");
   const rfi = read("src/backend/Pmcs.Modules.TechnicalOffice/Domain/TechnicalRfi.cs");
   const submittal = read("src/backend/Pmcs.Modules.TechnicalOffice/Domain/TechnicalSubmittal.cs");
-  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
-  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
   const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS25-C1/u);
   assert.match(checkpoint, /b2cc811e9202b49dd643972bde547c105fd9dc02/u);
@@ -3137,8 +3129,41 @@ test("RPT1-F07 historical producer records MS25 without a legacy backfill or wir
   assert.match(submittal, /if \(ReportingHistoryJson is null\) return/u);
   assert.match(source, /SameInstant\([\s\S]*Ticks \/ 10/u);
   assert.match(source, /rfiHistories\.All\(item => item is not null\)/u);
-  assert.doesNotMatch(worker, /ProjectTechnicalOfficeReport/u);
-  assert.doesNotMatch(policy, /ProjectTechnicalOfficeReport/u);
+  assert.match(checkpoint, /هیچ\s+Definition، API، Worker dispatch/u);
+  assert.equal(settings.ReportingCenter.Phase1Enabled, false);
+  assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
+  assert.equal(settings.ReportingCenter.WorkerEnabled, false);
+  assert.equal(settings.ReportingCenter.PdfLicense, "Unconfigured");
+});
+
+test("RPT1-F07 connected pipeline pins its own catalog permissions source and renderers", () => {
+  const migration = read(`${moduleRoot}/Migrations/ProjectTechnicalOfficeReportCatalogMigration.cs`);
+  const module = read(`${moduleRoot}/ReportingModule.cs`);
+  const policy = read(`${moduleRoot}/Domain/ReportDefinitionRuntimePolicy.cs`);
+  const api = read(`${moduleRoot}/Endpoints/ReportingEndpoints.cs`);
+  const worker = read(`${moduleRoot}/Services/ReportGenerationWorker.cs`);
+  const harness = read("src/backend/Pmcs.TestHarness/ReportingProjectTechnicalOfficeVerification.cs");
+  const qa = read("tools/qa/seed-diagnostics.sh");
+  const settings = JSON.parse(read("src/backend/Pmcs.Api/appsettings.json"));
+  assert.match(migration, /Order => 1207/u);
+  assert.match(migration, /20260927-008/u);
+  assert.match(migration, /project-technical-office-certified/u);
+  assert.match(migration, /"technical\.read","technical\.confidential\.read"/u);
+  assert.match(migration, /e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7/u);
+  assert.match(module, /ProjectTechnicalOfficeReportCatalogMigration/u);
+  assert.match(module, /ProjectTechnicalOfficeReportRendererRegistry/u);
+  assert.match(policy, /ProjectTechnicalOfficeSourcePermissions[\s\S]*"technical\.confidential\.read"/u);
+  assert.match(api, /ParseProjectTechnicalOfficeParameters/u);
+  assert.match(api, /ProjectTechnicalOfficePinnedProjectProfile\.Capture/u);
+  assert.match(worker, /IProjectTechnicalOfficeReportingSource/u);
+  assert.match(worker, /ProjectTechnicalOfficeReportSnapshotBuilder\.Build/u);
+  assert.match(worker, /ProjectTechnicalOfficeReportRenderSnapshot\.Parse/u);
+  assert.match(worker, /technicalRendererRegistry\.Require\(format\)\.Render/u);
+  assert.match(harness, /catalog\.permission-isolated/u);
+  assert.match(harness, /create\.requires-all-source-permissions/u);
+  assert.match(harness, /worker\.succeeded/u);
+  assert.match(qa, /verify-reporting-project-technical-office/u);
+  assert.match(read("tools/qa/verify-database.sh"), /canonical migration ledger size[\s\S]*?"50"/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
