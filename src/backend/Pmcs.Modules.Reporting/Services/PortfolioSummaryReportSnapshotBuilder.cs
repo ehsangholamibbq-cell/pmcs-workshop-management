@@ -149,9 +149,9 @@ internal static class PortfolioSummaryReportSnapshotBuilder
         }
     }
 
-    private static ReportDataStatus ResolveStatus(IReadOnlyCollection<PortfolioProjectSelection> projects)
+    private static ReportDataStatus ResolveStatus(PortfolioProjectSelection[] projects)
     {
-        if (projects.Count == 0) return ReportDataStatus.NoData;
+        if (projects.Length == 0) return ReportDataStatus.NoData;
         if (projects.Any(item => !item.ConfigurationProvenAtCutoff ||
             item.OperationalStatus == PortfolioDimensionStatus.InsufficientData ||
             item.Financial.Status == PortfolioDimensionStatus.InsufficientData ||
@@ -166,8 +166,8 @@ internal static class PortfolioSummaryReportSnapshotBuilder
             : ReportDataStatus.NoData;
     }
 
-    private static IReadOnlyCollection<PortfolioCurrencyGroup> CurrencyGroups(
-        IReadOnlyCollection<PortfolioProjectSelection> projects)
+    private static PortfolioCurrencyGroup[] CurrencyGroups(
+        PortfolioProjectSelection[] projects)
     {
         var codes = projects.SelectMany(item => new[] {
                 item.Financial.CurrencyCode, item.Commercial.CurrencyCode
