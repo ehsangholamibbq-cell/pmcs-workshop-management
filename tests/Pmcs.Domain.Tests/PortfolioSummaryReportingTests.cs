@@ -35,7 +35,9 @@ public sealed class PortfolioSummaryReportingTests
 
         Assert.Equal(new[] { irrA.ProjectId, irrB.ProjectId, usd.ProjectId },
             payload.Projects.Select(item => item.ProjectId));
-        Assert.Equal(new[] { "IRR", "USD" }, payload.CurrencyGroups.Select(item => item.CurrencyCode));
+        Assert.Equal(2, payload.CurrencyGroups.Count);
+        Assert.Equal("IRR", payload.CurrencyGroups.First().CurrencyCode);
+        Assert.Equal("USD", payload.CurrencyGroups.Last().CurrencyCode);
         Assert.Equal(30m, payload.CurrencyGroups.Single(item => item.CurrencyCode == "IRR").RecognizedSpendSubtotal);
         Assert.Equal(30m, payload.CurrencyGroups.Single(item => item.CurrencyCode == "USD").RecognizedSpendSubtotal);
         Assert.All(payload.CurrencyGroups, item => Assert.Null(item.TotalCommittedSubtotal));
