@@ -79,4 +79,53 @@ public sealed class CollaborationMessageTests
             item.Contains("private", StringComparison.OrdinalIgnoreCase));
         Assert.False(CollaborationRuntimeOptions.Create(new ConfigurationBuilder().Build()).Enabled);
     }
+
+    [Fact]
+    public void ReplyAndMentionsArePartOfTheStableRetryIdentity()
+    {
+        var reply = Guid.NewGuid();
+        var firstMention = Guid.NewGuid();
+        var secondMention = Guid.NewGuid();
+        var one = ProjectMessage.Create(Guid.NewGuid(), TenantId, ProjectId,
+            1, ActorId, Guid.NewGuid(), "پاسخ", DateTimeOffset.UtcNow,
+            reply, [firstMention, secondMention]);
+        var reordered = ProjectMessage.Create(Guid.NewGuid(), TenantId, ProjectId,
+            2, ActorId, Guid.NewGuid(), "پاسخ", DateTimeOffset.UtcNow,
+            reply, [secondMention, firstMention, firstMention]);
+        var changedTarget = ProjectMessage.Create(Guid.NewGuid(), TenantId, ProjectId,
+            3, ActorId, Guid.NewGuid(), "پاسخ", DateTimeOffset.UtcNow,
+            Guid.NewGuid(), [firstMention, secondMention]);
+
+        Assert.Equal(one.RequestHash, reordered.RequestHash);
+        Assert.NotEqual(one.RequestHash, changedTarget.RequestHash);
+        Assert.Equal(2, one.MentionedUserIds.Length);
+        Assert.Equal(reply, one.ReplyToMessageId);
+    }
+
+    [Fact]
+    public void InvalidMentionsAndUnknownReactionsFailClosed()
+    {
+        Assert.Throws<DomainRuleException>(() => ProjectMessage.NormalizeMentions([Guid.Empty], ActorId));
+        Assert.Throws<DomainRuleException>(() => ProjectMessage.NormalizeMentions([ActorId], ActorId));
+        Assert.Throws<DomainRuleException>(() => ProjectMessage.NormalizeMentions(
+            Enumerable.Range(0, 21).Select(_ => Guid.NewGuid()).ToArray(), ActorId));
+        Assert.Throws<DomainRuleException>(() => ProjectReaction.Create(Guid.NewGuid(),
+            TenantId, ProjectId, Guid.NewGuid(), ActorId, "🪙", DateTimeOffset.UtcNow));
+        Assert.Equal("👍", ProjectReaction.Create(Guid.NewGuid(), TenantId, ProjectId,
+            Guid.NewGuid(), ActorId, "👍", DateTimeOffset.UtcNow).Emoji);
+    }
+
+    [Fact]
+    public void PinAndUnpinPreserveAuthorAndOriginalContent()
+    {
+        var message = ProjectMessage.Create(Guid.NewGuid(), TenantId, ProjectId,
+            1, ActorId, Guid.NewGuid(), "اصل", DateTimeOffset.UtcNow);
+        var moderator = Guid.NewGuid();
+        message.SetPin(moderator, DateTimeOffset.UtcNow);
+        Assert.Equal(moderator, message.PinnedBy);
+        message.ClearPin();
+        Assert.Null(message.PinnedAt);
+        Assert.Equal("اصل", message.Body);
+        Assert.Equal(ActorId, message.AuthorUserId);
+    }
 }

@@ -13,7 +13,7 @@ using Pmcs.Modules.Projects.Contracts;
 
 namespace Pmcs.Modules.Collaboration.Endpoints;
 
-internal static class CollaborationEndpoints
+internal static partial class CollaborationEndpoints
 {
     private const string SendOperation = "collaboration.message.send";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -25,6 +25,13 @@ internal static class CollaborationEndpoints
         group.MapGet("", GetRoomAsync);
         group.MapGet("/messages", ListMessagesAsync);
         group.MapPost("/messages", SendMessageAsync);
+        group.MapGet("/messages/search", SearchMessagesAsync);
+        group.MapGet("/unread", GetUnreadAsync);
+        group.MapPut("/read-cursor", AdvanceReadCursorAsync);
+        group.MapPut("/messages/{messageId:guid}/reactions/{emoji}", AddReactionAsync);
+        group.MapDelete("/messages/{messageId:guid}/reactions/{emoji}", RemoveReactionAsync);
+        group.MapPut("/messages/{messageId:guid}/pin", PinMessageAsync);
+        group.MapDelete("/messages/{messageId:guid}/pin", UnpinMessageAsync);
     }
 
     private static async Task<IResult> GetRoomAsync(
@@ -75,6 +82,7 @@ internal static class CollaborationEndpoints
         IProjectCollaborationMembership membership, IProjectPermissionService permissions,
         IProjectDirectory projects, CollaborationDbContext db, IClock clock,
         IIdempotencyStore idempotency, ITransactionalSideEffectWriter sideEffects,
+        ITransactionalNotificationWriter notificationWriter,
         CancellationToken cancellationToken)
     {
         var gate = await GateAsync(projectId, "collaboration.send", runtime,
@@ -87,10 +95,11 @@ internal static class CollaborationEndpoints
             return Results.BadRequest(new { code = "collaboration.client_message_id.required" });
 
         var body = ProjectMessage.NormalizeBody(request.Body);
-        var bodyHash = ProjectMessage.HashBody(body);
+        var mentions = ProjectMessage.NormalizeMentions(request.MentionedUserIds, actor.UserId);
+        var payloadHash = ProjectMessage.HashRequest(body, request.ReplyToMessageId, mentions);
         var requestHash = RequestHash.Create(JsonSerializer.Serialize(new
         {
-            actor.TenantId, projectId, actor.UserId, request.ClientMessageId, bodyHash
+            actor.TenantId, projectId, actor.UserId, request.ClientMessageId, payloadHash
         }, JsonOptions));
         var operation = $"{SendOperation}:{projectId:N}:{actor.UserId:N}";
         var replay = await idempotency.FindAsync(actor.TenantId, key, operation,
@@ -118,7 +127,7 @@ internal static class CollaborationEndpoints
             item.AuthorUserId == actor.UserId && item.ClientMessageId == request.ClientMessageId,
             cancellationToken);
         if (duplicate is not null)
-            return duplicate.RequestHash == bodyHash
+            return duplicate.RequestHash == payloadHash
                 ? Results.Ok(ProjectMessageResponse.From(duplicate))
                 : Results.Conflict(new { code = "collaboration.client_message_id.reused" });
 
@@ -127,11 +136,26 @@ internal static class CollaborationEndpoints
                 projectId, "collaboration.send", cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
 
+        ProjectMessage? reply = null;
+        if (request.ReplyToMessageId.HasValue)
+        {
+            reply = await db.Messages.AsNoTracking().SingleOrDefaultAsync(item =>
+                item.Id == request.ReplyToMessageId.Value && item.TenantId == actor.TenantId &&
+                item.ProjectId == projectId, cancellationToken);
+            if (reply is null) return Results.NotFound(new { code = "collaboration.reply.not_found" });
+        }
+        foreach (var mentionedUserId in mentions)
+        {
+            if (!await membership.IsActiveAsync(actor.TenantId, projectId, mentionedUserId, cancellationToken))
+                return Results.BadRequest(new { code = "collaboration.mention.not_active_member" });
+        }
+
         var sequence = await db.Rooms.AsNoTracking()
             .Where(room => room.TenantId == actor.TenantId && room.ProjectId == projectId)
             .Select(room => room.LastSequence).SingleAsync(cancellationToken);
         var message = ProjectMessage.Create(Guid.NewGuid(), actor.TenantId, projectId,
-            sequence, actor.UserId, request.ClientMessageId, body, now);
+            sequence, actor.UserId, request.ClientMessageId, body, now,
+            request.ReplyToMessageId, mentions);
         db.Messages.Add(message);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -143,17 +167,33 @@ internal static class CollaborationEndpoints
                     "ProjectMessageCreated", "ProjectMessage", message.Id.ToString(), now,
                     new Dictionary<string, object?>
                     {
-                        ["sequence"] = sequence, ["bodyHash"] = bodyHash,
+                        ["sequence"] = sequence, ["requestHash"] = payloadHash,
+                        ["replyToMessageId"] = request.ReplyToMessageId,
+                        ["mentionCount"] = mentions.Length,
                         ["clientMessageId"] = request.ClientMessageId
                     }, http.TraceIdentifier),
                 new OutboxEnvelope(Guid.NewGuid(), actor.TenantId, projectId,
                     "collaboration.message.created", 1, now,
                     JsonSerializer.Serialize(new { message.Id, projectId, sequence,
-                        message.AuthorUserId, message.CreatedAt }, JsonOptions),
+                        message.AuthorUserId, message.CreatedAt, message.ReplyToMessageId,
+                        mentionedUserIds = mentions }, JsonOptions),
                     http.TraceIdentifier),
                 new IdempotencyReceipt(actor.TenantId, key, operation, requestHash,
                     StatusCodes.Status201Created, responseJson, now, now.AddDays(7))),
             cancellationToken);
+        var recipients = mentions.ToHashSet();
+        if (reply is not null && reply.AuthorUserId != actor.UserId &&
+            await membership.IsActiveAsync(actor.TenantId, projectId, reply.AuthorUserId, cancellationToken))
+            recipients.Add(reply.AuthorUserId);
+        var notifications = recipients.Select(recipient => new InAppNotificationDraft(
+            Guid.NewGuid(), actor.TenantId, projectId, recipient,
+            $"collaboration:{message.Id:N}:mention-reply:{recipient:N}",
+            mentions.Contains(recipient) ? "CollaborationMention" : "CollaborationReply",
+            "گفت‌وگوی پروژه", "پیام جدیدی در گفت‌وگوی پروژه برای شما ثبت شد.",
+            "ProjectMessage", message.Id, now)).ToArray();
+        if (notifications.Length > 0)
+            await notificationWriter.WriteAsync(db.Database.GetDbConnection(),
+                transaction.GetDbTransaction(), notifications, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return Results.Created($"/api/v1/projects/{projectId}/collaboration/messages/{message.Id}", response);
     }
@@ -175,13 +215,17 @@ internal static class CollaborationEndpoints
     }
 }
 
-internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? Body);
+internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? Body,
+    Guid? ReplyToMessageId = null, Guid[]? MentionedUserIds = null);
 internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
-    Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt)
+    Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
+    Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,
+    DateTimeOffset? PinnedAt, Guid? PinnedBy)
 {
     public static ProjectMessageResponse From(ProjectMessage message) => new(
         message.Id, message.ProjectId, message.Sequence, message.AuthorUserId,
-        message.ClientMessageId, message.Body, message.CreatedAt);
+        message.ClientMessageId, message.Body, message.CreatedAt,
+        message.ReplyToMessageId, message.MentionedUserIds, message.PinnedAt, message.PinnedBy);
 }
 internal sealed record MessagePageResponse(IReadOnlyList<ProjectMessageResponse> Messages, long NextSequence);

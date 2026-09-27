@@ -56,6 +56,7 @@ public sealed class CollaborationModule : IModule
         services.AddSingleton(CollaborationRuntimeOptions.Create(configuration));
         services.AddDbContext<CollaborationDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<IDatabaseMigration, CollaborationInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, CollaborationInteractionMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapCollaborationEndpoints();
