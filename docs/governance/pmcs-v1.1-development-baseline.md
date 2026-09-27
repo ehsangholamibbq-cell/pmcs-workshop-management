@@ -29,7 +29,7 @@
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
 | State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F06 متصل؛ F07–F10/UI باز |
+| Product runtime implementation | F01 تا F06 متصل؛ F07 قرارداد معنایی آماده و Runtime باز؛ F08–F10/UI باز |
 | Database migration | ۴۸ Migration در Safe Resume و Restore Drill متصل سبز است |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
@@ -391,6 +391,17 @@ browser scenario، validator روی `406` فایل، audit `274/204/5`، Restore
 `7/7` پاس کرد. Safe Checkpoint آن `PMCS-V1.1-RPT1-S07-MS21-C1` است. UI/UX2، Production enablement،
 Report Designer و F07 تغییر نکردند؛ Safe Resume اکنون MS21 و گام بعد فقط DoR/قرارداد معنایی مستقل
 F07 است.
+
+Slice 07 Micro-Step 22 فقط DoR و Semantic Contract مستقل
+`PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` را برای چهار دفتر
+Document/RFI/Submittal/Transmittal بست. Source candidate
+`11168534372487bff3cc798861ca036489b3dea0` با tree
+`af7e9e48c706c23f50521dbf715e6027e1512194` در Run 205
+(`36281376786`) هر هشت Job، `497/497` C#، `89/89` Node، `139/139` Web،
+پنج browser scenario، Restore ۴۸ Migration و Qualification `7/7` را پاس کرد.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` فقط قرارداد را می‌بندد؛
+Runtime/Renderer/Catalog/API/Worker F07، UI/UX2 و Production بازند. گام بعد
+`S07-MS23` فقط Runtime Core محدود F07 است.
 
 ## ۳. قرارداد شاخه و ادغام
 

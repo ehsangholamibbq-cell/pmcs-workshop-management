@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.38.0`
-- وضعیت: F01–F06 connected safe checkpoint؛ F07–F10/UI/Production باز
+- نسخه: `1.39.0`
+- وضعیت: F01–F06 connected؛ F07 semantic contract ready / runtime absent؛ F08–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1114,3 +1114,36 @@ Qualification artifact `10903829279` با digest
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS21-C1` اتصال End-to-End F06 را می‌بندد. F07 تا F10،
 UI/UX2 و Production enablement بازند؛ Micro-Step بعدی فقط DoR/قرارداد معنایی مستقل F07 برای دفتر
 فنی Document/RFI/Submittal/Transmittal است.
+
+
+## ۴۴. DoR و قرارداد معنایی F07 دفتر فنی — Slice 07 Micro-Step 22 Safe Checkpoint
+
+Candidate قرارداد `PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` باید مستقل از F05/F06
+و بدون Runtime این Gateها را ببندد:
+
+- انطباق Document/Revision، Transmittal، RFI و Submittal با Domain enum و Endpointهای مالک؛
+- اثبات اینکه Approval/Revision Purpose بدون Transmittal Issue ابلاغ رسمی نمی‌سازد؛
+  Ack، RFI Response/Acceptance/Closure و Submittal ReviewOutcome نیز یکی نیستند؛
+- رد current-only/endpoint `GET /state` با page cap (۵۰۰/۱۰۰۰/۵۰۰) برای history،
+  الزام Source version/coverage و `InsufficientData` یا failure امن برای Transitionهای مفقود؛
+- strict `{}`، cutoff UTC و local date، Tenant/Project، دو read Permission
+  `technical.read` و `technical.confidential.read`، Classification حداقل `Confidential`،
+  minimization و عدم نشت Cross-Project؛
+- Golden matrix مستقل ۲۷ سناریویی برای cutoff، history، status، confidentiality،
+  negative links، determinism و budget؛
+- اجرای Full Regression فعلی و ثابت‌ماندن defaults، migration count و نبود Definition/route F07.
+
+Candidate نهایی `11168534372487bff3cc798861ca036489b3dea0` با tree
+`af7e9e48c706c23f50521dbf715e6027e1512194` و PR validation merge
+`438ac2c4feeab006f850fe9be6c5641bbdcd5368` با همان tree در
+Run 205 (`36281376786`) همهٔ هشت Job را پاس کرد: `497/497` C#،
+`89/89` Node شامل سه تست F07، `139/139` Web، پنج browser scenario،
+validator `406` فایل، audit `274/204/5`، Restore `48` Migration و
+Qualification `7/7` Suite/`12/12` Command با صفر failure.
+Qualification artifact `10918957644` با digest
+`sha256:43eed49294540395c41cf991e6594d8afae2d585a6ba47a5be63017570f5908e`
+ثبت شد. Run 204 فقط test syntax تازه را رد کرد و قبل از این Checkpoint اصلاح شد.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` قرارداد F07 را می‌بندد؛
+Runtime/Renderer/Migration/Catalog/API/Worker، F08–F10، UI/UX2 و Production
+بازند. Micro-Step بعدی فقط Runtime Core محدود F07 است.

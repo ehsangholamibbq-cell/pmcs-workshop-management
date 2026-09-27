@@ -3,8 +3,9 @@
 - شناسه: `PMCS-RPT1-F07-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F07`
-- وضعیت: `Semantic Contract Candidate | Runtime Not Implemented | F08-F10/UI/Production open`
+- وضعیت: `Contract Ready / Runtime Not Implemented | F08-F10/UI/Production open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS21-C1`
+- Safe checkpoint: `PMCS-V1.1-RPT1-S07-MS22-C1`
 - مرز: `Document / RFI / Submittal / Transmittal`
 - Runtime / Renderer / Migration / Catalog / API / Worker change: None
 
@@ -252,9 +253,19 @@ selector/calculator/Snapshot builder و Unit/contract test. Runtime باید ش�
 مشخص‌شده در بخش ۳ را به‌صورت fail-closed حل کند. Renderer، Migration/Catalog/API/Worker wiring،
 UI/UX2، Production enablement، Report Designer و F08 در MS23 مجاز نیستند.
 
-## ۱۳. Gate statement
+## ۱۳. Evidence و Safe Checkpoint
 
-این متن فقط DoR و semantic contract مستقل F07 را candidate می‌کند. F01 تا F06
+Source نهایی `11168534372487bff3cc798861ca036489b3dea0` با tree
+`af7e9e48c706c23f50521dbf715e6027e1512194` و PR validation merge
+`438ac2c4feeab006f850fe9be6c5641bbdcd5368` دارای همان tree در Run 205
+(`36281376786`) هر هشت Job را پاس کرد: `497/497` تست C#، `89/89` تست قراردادی Node
+شامل سه تست جدید F07، `139/139` تست Web، پنج browser scenario، validator روی `406` فایل،
+audit `274/204/5`، Restore کامل `48` Migration و Qualification `7/7` Suite با صفر failure.
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` فقط DoR و قرارداد معنایی F07 را می‌بندد.
+
+## ۱۴. Gate statement
+
+DoR و semantic contract مستقل F07 checkpoint شده‌اند. F01 تا F06
 `Connected Safe Checkpoint` دارند؛ F07 هنوز Runtime، Renderer و مسیر اجرای Catalog/API/Worker
 ندارد. RPT1 و PMCS V1.1 همچنان فعال و خارج از Qualified/Final/Locked هستند. Feature flagها،
 Worker و Production defaults خاموش، `PdfLicense=Unconfigured` و

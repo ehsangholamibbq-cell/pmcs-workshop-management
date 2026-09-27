@@ -43,7 +43,11 @@ V1.2 یا Stage دیگری منتقل نمی‌شوند و RPT1 تا Qualificati
 `PMCS-V1.1-RPT1-S07-MS21-C1`، خانواده‌های `RPT1-F01` تا `RPT1-F06` قرارداد معنایی، Runtime،
 Renderer/Golden، Catalog/API/Worker و Qualification End-to-End مستقل دارند. `RPT1-F07` تا
 `RPT1-F10` همچنان `Required / Not Implemented` هستند؛ بنابراین Gate خروج RPT1 طبق همین ADR باز است.
-گام بعدی فقط DoR و قرارداد معنایی مستقل F07 برای Document/RFI/Submittal/Transmittal است.
+این Snapshot تاریخی MS21 باقی می‌ماند. در Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1`
+DoR و قرارداد مستقل `PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` با Evidence سبز Run 205
+برای Document/RFI/Submittal/Transmittal بسته شد. F07 اکنون
+`Contract Ready / Runtime Not Implemented` است؛ F08 تا F10 هنوز
+`Required / Not Implemented` و Gate خروج RPT1 بازند. گام بعد فقط Runtime Core محدود F07 است.
 
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 

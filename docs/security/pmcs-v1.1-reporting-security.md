@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.20.0`
-- وضعیت: F01–F06 connected؛ F07–F10 open؛ Production disabled
+- نسخه: `1.21.0`
+- وضعیت: F01–F06 connected؛ F07 contract ready / runtime absent؛ F08–F10 open؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -207,6 +207,20 @@ budget fail-closed بست. Checkpoint `S07-MS21` این policy را در هر س
 دور نمی‌زند و Actor ناقص Definition/Run/Output را نمی‌بیند. Source
 `df3879dd8b17403787154a398cc114b27c7172bc` در Run 202 هر هشت Job، `39/39` case متمرکز F06 و
 هارنس متصل `15/15` را پاس کرد؛ defaults همچنان خاموش/Unconfigured هستند.
+
+### قرارداد Permission/Classification مستقل F07
+
+در Safe Checkpoint `S07-MS22`، F07 روی Source مالک TechnicalOffice فقط هر دو
+`technical.read` و `technical.confidential.read` را برای کل Definition الزام می‌کند؛
+فیلترکردن خاموش Document محرمانه و انتشار count جانبی مجاز نیست. Classification حداقل
+`Confidential` و حداکثر سطح معتبر Source/Project است؛ `Restricted` نیاز به policy/permission
+معتبر دارد و `TechnicalDocument.Confidentiality` ناشناخته یا بدون mapping نسخه‌دار
+fail-closed می‌شود. Client فقط `{}` می‌فرستد و Source cutoff-aware و completeness manifest
+الزامی‌اند؛ Endpoint جاری TechnicalOffice برای history یا ردیف‌های بیش از page cap جایگزین
+آن نیست. URL/متن فایل، evidence، recipient، پاسخ آزاد و review comment در Snapshot/Output
+پذیرفته نمی‌شوند. F07 هنوز Runtime، Catalog یا Worker اجرایی ندارد؛ این policy تنها برای
+Micro-Stepهای بعدی pin شده است. Candidate `11168534372487bff3cc798861ca036489b3dea0`
+در Run 205 همهٔ Gateها را پاس کرد؛ Feature defaults خاموش‌اند.
 
 ## ۴. Threat model
 

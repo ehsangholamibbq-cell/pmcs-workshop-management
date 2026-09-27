@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01–F06 connected؛ F07–F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01–F06 connected؛ F07 contract ready / runtime absent؛ F08–F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -160,6 +160,19 @@ Create/List/Get/Retry/Cancel/Download/Verify و `IReportingReadService` همان
 validation و dispatch از Registry اختصاصی F06 را اجرا می‌کند. Run 202 هر هشت Job، هارنس `15/15`
 و Restore Drill کامل 48 Migration را سبز کرد؛ همهٔ Production defaults خاموش/Unconfigured باقی
 مانده‌اند.
+
+### ۱.۱۰ قرارداد معنایی F07 — بدون API اجرایی
+
+Safe Checkpoint `S07-MS22` فقط قرارداد مستقل
+`PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` برای Document/RFI/Submittal/Transmittal
+را می‌بندد. پارامتر معنایی Client در طراحی آینده دقیقاً `{}` است؛
+Tenant/Project/cutoff و source policy را Server pin می‌کند. هر دو Permission
+`technical.read` و `technical.confidential.read` برای کل Definition لازم‌اند؛
+Classification حداقل `Confidential` است. `GET /technical-office/state` current
+و capped است و جای Source cutoff-aware و completeness manifest را نمی‌گیرد.
+در MS22 هیچ Definition/Template seed، parser/route F07، Migration یا Worker dispatch
+اضافه نشده؛ Catalog فعلی هنوز F07 را ارائه نمی‌کند. Runtime Core F07 فقط در MS23
+طبق قرارداد مالک TechnicalOffice توسعه خواهد یافت. Run 205 هر هشت Gate را سبز کرد.
 
 ## ۲. Catalog
 

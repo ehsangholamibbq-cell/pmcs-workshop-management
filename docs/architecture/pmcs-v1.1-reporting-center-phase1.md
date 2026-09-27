@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.35.0`
-- وضعیت: `S07-MS21 F06 connected safe checkpoint | F07-F10/UI/Production open`
+- نسخه: `1.36.0`
+- وضعیت: `S07-MS22 F07 semantic safe checkpoint | F07 Runtime/F08-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `32772e1f19c9c9d8023947654a3402f53ee0f6b6`
 - Parent checkpoint tree: `5eadc44c115ffb6e44cc57b52a44ec0ea5bddc55`
@@ -84,6 +84,14 @@ calculator و semantic Snapshot builder را دارد؛ history غیرقابل�
 جاری Template/Renderer/Layout identity، render model canonical، PDF فارسی/RTL سه‌صفحه‌ای و XLSX
 ده-Sheet قطعی را از مسیر Migration 48، Catalog/strict API و Worker definition-aware متصل کرده است؛
 UI و Production defaults همچنان جدا و خاموش‌اند.
+
+قرارداد `PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` در
+`pmcs-v1.1-rpt1-f07-technical-office-semantic-contract.md`، چهار دفتر
+Document/Revision، Transmittal، RFI و Submittal را با cutoff و lineage مستقل تثبیت می‌کند.
+`GET /technical-office/state` current و capped است؛ برای گزارش تاریخی Certified،
+Application Contract نسخه‌دار با completeness manifest لازم خواهد بود. Client فقط `{}`
+می‌فرستد؛ هر دو `technical.read` و `technical.confidential.read` و Classification
+حداقل `Confidential` قطعی‌اند. MS22 فقط قرارداد/DoR را بسته است؛ F07 Runtime و مسیر خروجی ندارد.
 
 ## ۲. Non-Scope
 
@@ -788,3 +796,20 @@ Job، `497/497` تست C# شامل `39/39` case متمرکز F06، `85/85` تس�
 پنج browser scenario، validator روی `406` فایل، audit ثابت `274/204/5`، Restore کامل ۴۸ Migration
 و Qualification `7/7` Suite و `12/12` Command را پاس کرد. هیچ UI، Report Designer، F07 runtime یا
 Production default تغییر نکرد؛ گام بعد فقط DoR/قرارداد معنایی مستقل F07 است.
+
+Slice 07 Micro-Step 22 DoR و قرارداد معنایی مستقل F07 را روی چهار دفتر TechnicalOffice بست.
+ثبت/Approved شدن DocumentRevision پیش از Transmittal Issue ابلاغ رسمی نیست؛ RFI Answered،
+ResponseAccepted و Closed، و Submittal ForInformation/ApprovedAsNoted جدا می‌مانند.
+Source تاریخی نسخه‌دار و completeness proof برای مدل current/capped موجود شرط Runtime Core بعدی‌اند؛
+دادهٔ تاریخی نامعلوم به latest row یا خروجی Certified تبدیل نمی‌شود. پارامتر Client دقیقاً
+`{}`، مجوزها `technical.read` و `technical.confidential.read` و Classification حداقل
+`Confidential` هستند. Golden matrix ۲۷ سناریویی، NoData/InsufficientData و مرز F05/F06 را pin کرد.
+
+Candidate source `11168534372487bff3cc798861ca036489b3dea0` با tree
+`af7e9e48c706c23f50521dbf715e6027e1512194` و PR validation merge
+`438ac2c4feeab006f850fe9be6c5641bbdcd5368` دارای همان tree در Run 205
+(`36281376786`) هر هشت Job، `497/497` تست C#، `89/89` تست Node، `139/139` تست Web،
+پنج browser scenario، validator `406` فایل، audit `274/204/5`، Restore ۴۸ Migration و
+Qualification `7/7` را سبز کرد. Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1` فقط قرارداد معنایی
+F07 را می‌بندد؛ گام بعد فقط Runtime Core محدود F07 است.
+

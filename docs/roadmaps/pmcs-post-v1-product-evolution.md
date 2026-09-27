@@ -1,9 +1,9 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.55.0`
+- نسخه سند: `1.56.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
-- تاریخ ثبت: ۱۴۰۵/۰۷/۰۴ (۲۰۲۶-۰۹-۲۶)
+- تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -662,6 +662,29 @@ browser scenario، validator روی `406` فایل، audit `274/204/5`، Restore
 دفتر فنی Document/RFI/Submittal/Transmittal است؛ Runtime/Renderer/wiring F07 و UI/Production در آن
 Micro-Step خارج از Scope می‌مانند.
 
+**F07 Technical Office Semantic Contract — Slice 07 Micro-Step 22 Safe Checkpoint:** روی
+`PMCS-V1.1-RPT1-S07-MS21-C1`، قرارداد مستقل
+`PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` برای Document/Revision، Transmittal،
+RFI و Submittal بسته شد. Strict `{}`، cutoff UTC/local date و وضعیت‌های
+`NotConfigured/NoData/InsufficientData/Available`، هر دو Permission
+`technical.read` و `technical.confidential.read`، Classification حداقل
+`Confidential` و Golden matrix ۲۷ سناریویی قطعی شدند. Approval Revision قبل از
+Transmittal Issue ابلاغ رسمی نیست؛ RFI Answered/Accepted/Closed و
+Submittal ForInformation/ApprovedAsNoted یکی نیستند.
+
+Source جاری TechnicalOffice current و capped است و بخشی از event history برای cutoff
+قدیمی ندارد؛ Runtime بعدی فقط با Application Contract تاریخی، completeness manifest و
+failure امن برای تاریخچهٔ نامعلوم مجاز است. Candidate اولیه Run 204 به دلیل syntax تست
+تازه رد و همان assertion اصلاح شد. Source نهایی
+`11168534372487bff3cc798861ca036489b3dea0` با tree
+`af7e9e48c706c23f50521dbf715e6027e1512194` و PR validation merge
+`438ac2c4feeab006f850fe9be6c5641bbdcd5368` دارای همان tree در Run 205
+(`36281376786`) تمام هشت Job، `497/497` C#، `89/89` Node، `139/139` Web،
+پنج browser scenario، validator `406` فایل، audit `274/204/5`،
+Restore ۴۸ Migration و Qualification `7/7` را پاس کرد. Safe Resume اکنون
+`S07-MS22` و گام بعد فقط Runtime Core محدود F07 است. Renderer، Migration،
+Catalog/API/Worker wiring، UI/Production و F08 وارد این Micro-Step نشده‌اند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -959,3 +982,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.53.0` | ثبت Safe Checkpoint `S07-MS19` و Evidence سبز Run 192 برای Runtime Core F06؛ Renderer/Golden و wiring و F07–F10/UI/Production باز است |
 | `1.54.0` | ثبت Safe Checkpoint `S07-MS20` و Evidence سبز Run 196 برای Renderer/Golden قطعی F06؛ Catalog/API/Worker wiring و F07–F10/UI/Production باز است |
 | `1.55.0` | ثبت Connected Safe Checkpoint `S07-MS21` و Evidence سبز Run 202 برای اتصال End-to-End Catalog/API/Worker خانواده F06؛ F07–F10/UI/Production باز است |
+| `1.56.0` | ثبت Safe Checkpoint `S07-MS22` و Evidence سبز Run 205 برای DoR/قرارداد معنایی مستقل F07؛ Runtime/Renderer/wiring و F08–F10/UI/Production باز است |
