@@ -17,6 +17,12 @@ public sealed class PortfolioSummaryReportRenderingTests
     private static readonly Guid Run = Id(500);
     private static readonly DateTimeOffset Cutoff = new(2026, 9, 27, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly LocalDate = new(2026, 9, 27);
+    private static readonly string[] ExpectedVisualDigests =
+    [
+        "f0e127deefd3c240be0ff573e86a4c9ed386eb052ef09d1dbf95481de15aaa11",
+        "a2834b4d79ddcc90eed36b4cbcfcfef4fd40301bce2f998d109d9c333f693719",
+        "35d603e3354b3aa85eeb9532cb96cc219ff1af3ea0342853d3fbb73c9521f690"
+    ];
 
     [Fact]
     public void F10RenderContractReplaysImmutableSnapshotAndRejectsTamper()
@@ -86,7 +92,7 @@ public sealed class PortfolioSummaryReportRenderingTests
         Assert.Contains("داده ناکافی؛ صفر فرض نشود", sheets[4], StringComparison.Ordinal);
         Assert.Contains("بدون مجوز", sheets[5], StringComparison.Ordinal);
         Assert.DoesNotContain("TotalPortfolio", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
-        Assert.True(first.Sha256 == "F10_XLSX_GOLDEN_PENDING",
+        Assert.True(first.Sha256 == "6f221d2f8de5c4af8079aaec65a9d0c11c669036a5777767b3b263cdd69834ec",
             $"F10_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -109,7 +115,8 @@ public sealed class PortfolioSummaryReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var digests = images.Select(image => Convert.ToHexString(SHA256.HashData(image))
             .ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "F10_PDF_GOLDEN_PENDING",
+        Assert.True(first.Sha256 == "a441575ad5f561d44a37d767dd2ef0c9ad16489edf26bee3a5f57aa297b09db9" &&
+                digests.SequenceEqual(ExpectedVisualDigests),
             $"F10_PDF_GOLDEN_SHA256={first.Sha256}; F10_PDF_VISUAL_SHA256={string.Join(',', digests)}");
     }
 
