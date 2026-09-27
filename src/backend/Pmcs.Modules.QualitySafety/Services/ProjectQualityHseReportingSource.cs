@@ -23,6 +23,8 @@ internal sealed class ProjectQualityHseReportingSource(
         var project = await projects.FindProfileAsync(tenantId, projectId, token)
             ?? throw Invalid("project.not_found", "Project scope is missing.");
         if (cutoff == default || cutoff > DateTimeOffset.UtcNow ||
+            project.Status != ProjectStatus.Active ||
+            !Enum.IsDefined(project.Quality) || !Enum.IsDefined(project.Hse) ||
             project.ConfigurationVersion <= 0 || project.ConfigurationChangedAt is null ||
             project.ConfigurationChangedAt > cutoff)
             throw Invalid("configuration.history", "Project configuration is not provable at the cutoff.");
@@ -38,6 +40,9 @@ internal sealed class ProjectQualityHseReportingSource(
             x => x.TenantId == tenantId && x.ProjectId == projectId, token);
         if (configuration?.ChangedAt > cutoff)
             throw Invalid("configuration.history", "Current Quality/HSE configuration postdates the cutoff.");
+        if (configuration is not null &&
+            (!Enum.IsDefined(configuration.QualityMode) || !Enum.IsDefined(configuration.HseMode)))
+            throw Invalid("configuration.mode", "Owner configuration mode is unknown.");
 
         // These are full bounded owner reads under one PostgreSQL repeatable-read view.
         // The capped /state endpoint is never a reporting source.
@@ -55,6 +60,35 @@ internal sealed class ProjectQualityHseReportingSource(
         var competencies = await Read(db.CompetencyRecords.Where(x => x.TenantId == tenantId && x.ProjectId == projectId && x.CreatedAt <= cutoff), token);
         var exposure = await Read(db.ExposureHours.Where(x => x.TenantId == tenantId && x.ProjectId == projectId && x.ApprovedAt <= cutoff), token);
         var matrices = await Read(db.RiskMatrices.Where(x => x.TenantId == tenantId && x.ProjectId == projectId && x.CreatedAt <= cutoff), token);
+
+        // References are checked against this same complete owner view. A missing target
+        // could belong to another project or a later instant, so it cannot be certified.
+        var intakeIds = intakes.Select(x => x.Id).ToHashSet();
+        var inspectionIds = inspections.Select(x => x.Id).ToHashSet();
+        var ncrIds = ncrs.Select(x => x.Id).ToHashSet();
+        var defectIds = defects.Select(x => x.Id).ToHashSet();
+        var incidentIds = incidents.Select(x => x.Id).ToHashSet();
+        var planIds = plans.Select(x => x.Id).ToHashSet();
+        var matrixIds = matrices.Select(x => x.Id).ToHashSet();
+        var allIds = intakes.Select(x => x.Id).Concat(inspections.Select(x => x.Id))
+            .Concat(ncrs.Select(x => x.Id)).Concat(defects.Select(x => x.Id))
+            .Concat(incidents.Select(x => x.Id)).Concat(actions.Select(x => x.Id))
+            .Concat(permits.Select(x => x.Id)).Concat(talks.Select(x => x.Id))
+            .Concat(plans.Select(x => x.Id)).Concat(checklists.Select(x => x.Id))
+            .Concat(tests.Select(x => x.Id)).Concat(competencies.Select(x => x.Id))
+            .Concat(exposure.Select(x => x.Id)).Concat(matrices.Select(x => x.Id)).ToArray();
+        if (allIds.Any(x => x == Guid.Empty) || allIds.Distinct().Count() != allIds.Length)
+            throw Invalid("identity.duplicate", "Owner source identities are missing or duplicated.");
+        if (inspections.Any(x => !Linked(x.SourceIntakeId, intakeIds) ||
+                !Linked(x.InspectionTestPlanVersionId, planIds)) ||
+            ncrs.Any(x => !Linked(x.SourceIntakeId, intakeIds) || !Linked(x.InspectionId, inspectionIds)) ||
+            defects.Any(x => !Linked(x.SourceIntakeId, intakeIds)) ||
+            incidents.Any(x => !Linked(x.SourceIntakeId, intakeIds) || !matrixIds.Contains(x.MatrixVersionId)) ||
+            tests.Any(x => !Linked(x.InspectionId, inspectionIds)) ||
+            actions.Any(x => !ActionLinked(x, intakeIds, inspectionIds, ncrIds, defectIds, incidentIds)) ||
+            intakes.Any(x => x.Status == IntakeStatus.Converted &&
+                !ConversionLinked(x, intakeIds, ncrIds, defectIds, incidentIds)))
+            throw Invalid("linkage.invalid", "An owner reference does not resolve inside the pinned project scope.");
 
         foreach (var classification in intakes.Select(x => x.Classification)
                      .Concat(incidents.Select(x => x.Classification))
@@ -193,6 +227,31 @@ internal sealed class ProjectQualityHseReportingSource(
             {
                 Id = (Guid)x.GetType().GetProperty("Id")!.GetValue(x)!, x.Revision
             }).ToArray()));
+
+    private static bool Linked(Guid? id, HashSet<Guid> targets) => !id.HasValue || targets.Contains(id.Value);
+
+    private static bool ConversionLinked(QualitySafetyIntake intake, HashSet<Guid> intakes,
+        HashSet<Guid> ncrs, HashSet<Guid> defects, HashSet<Guid> incidents) =>
+        intake.ConvertedRecordId is { } id && (intake.ConversionType switch
+        {
+            IntakeConversionType.QualityObservation or IntakeConversionType.HseObservation => intakes.Contains(id) && id == intake.Id,
+            IntakeConversionType.Defect => defects.Contains(id),
+            IntakeConversionType.NonConformance => ncrs.Contains(id),
+            IntakeConversionType.Incident => incidents.Contains(id),
+            _ => false
+        });
+
+    private static bool ActionLinked(CorrectiveAction action, HashSet<Guid> intakes,
+        HashSet<Guid> inspections, HashSet<Guid> ncrs, HashSet<Guid> defects,
+        HashSet<Guid> incidents) => action.SourceArea switch
+        {
+            ControlArea.Quality when action.SourceRecordType.Equals("NCR", StringComparison.OrdinalIgnoreCase) => ncrs.Contains(action.SourceRecordId),
+            ControlArea.Quality when action.SourceRecordType.Equals("Defect", StringComparison.OrdinalIgnoreCase) => defects.Contains(action.SourceRecordId),
+            ControlArea.Quality when action.SourceRecordType.Equals("Inspection", StringComparison.OrdinalIgnoreCase) => inspections.Contains(action.SourceRecordId),
+            ControlArea.Hse when action.SourceRecordType.Equals("Incident", StringComparison.OrdinalIgnoreCase) => incidents.Contains(action.SourceRecordId),
+            ControlArea.Hse when action.SourceRecordType.Equals("Intake", StringComparison.OrdinalIgnoreCase) => intakes.Contains(action.SourceRecordId),
+            _ => false
+        };
 
     private static QualityHseReportingSection Section(
         bool enabled, bool hasRecords, bool incomplete,

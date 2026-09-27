@@ -1,5 +1,5 @@
 using Pmcs.Modules.QualitySafety.Contracts;
-using Pmcs.Modules.Projects.Domain;
+using Pmcs.Modules.Projects.Contracts;
 
 namespace Pmcs.Modules.Reporting.Domain;
 
