@@ -90,6 +90,11 @@ Catalog/API/Worker و Qualification متصل F08 در MS30 باز می‌مان�
 F01–F08 End-to-End واجد Evidence هستند؛ F09/F10، UI/Production و Gate ده‌گانه
 باز، defaultها خاموش باقی می‌مانند. MS31 فقط DoR/قرارداد معنایی مستقل F09 است.
 
+در `PMCS-V1.1-RPT1-S07-MS31-C1`، قرارداد مستقل F09 با ۲۷ سناریو و سه تست
+متمرکز در Run 239 (`36318261047`) و هشت Job سبز بسته شد. این فقط DoR است؛
+F09 هنوز Runtime/Renderer/wiring ندارد، F10 باز است و Gate ده‌گانه و defaults
+خاموش تغییر نکرده‌اند. MS32 Source مالک و Runtime Core محدود F09 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

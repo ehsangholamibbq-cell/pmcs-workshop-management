@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.47.0`
-- وضعیت: F01–F08 connected؛ F09 DoR/Semantic Contract candidate در MS31؛ Runtime/Renderer/wiring F09 و F10/UI/Production باز
+- نسخه: `1.48.0`
+- وضعیت: F01–F08 connected؛ F09 DoR/Semantic Contract MS31 checkpointed؛ Runtime/Renderer/wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1295,7 +1295,7 @@ Qualification `7/7` داشتند. Checkpoint `PMCS-V1.1-RPT1-S07-MS30-C1` خان
 End-to-End می‌بندد. Exact Next در `S07-MS31` فقط DoR/قرارداد معنایی مستقل F09
 برای Issue/Risk/Decision/Escalation/Action است؛ F10/UI/Production بازند.
 
-## ۵۳. DoR و قرارداد معنایی F09 — Slice 07 Micro-Step 31 Candidate
+## ۵۳. DoR و قرارداد معنایی F09 — Slice 07 Micro-Step 31 Safe Checkpoint
 
 Contract `PMCS-RPT1-F09-SEMANTIC-001 v1.0.0` در
 `docs/architecture/pmcs-v1.1-rpt1-f09-governance-action-semantic-contract.md`
@@ -1316,3 +1316,9 @@ MS31 هیچ Runtime، Renderer/Golden اجرایی، Migration، Definition، Ca
 F10، UI/UX2 یا Production enablement ندارد. MS32 فقط Source مالک و Runtime Core محدود
 F09 را با Unit و contract tests مستقل آغاز می‌کند؛ پنج دفتر و موارد legacy/sensitive
 در آن Gate قابل آزمون خواهند بود.
+
+Candidate `67b60c00779d51ea9479dee4d887c810d572d485`، tree
+`400add67f58dc03b559c3f1420d186fb6cf5ec15` و Run 239 (`36318261047`)
+همهٔ هشت Job را سبز کردند؛ Node `106/106` شامل سه تست قراردادی F09 بود.
+Checkpoint `PMCS-V1.1-RPT1-S07-MS31-C1` فقط DoR و Semantic Contract F09 است؛
+Migration همچنان ۵۱ و Runtime/Renderer/wiring F09 باز است.
