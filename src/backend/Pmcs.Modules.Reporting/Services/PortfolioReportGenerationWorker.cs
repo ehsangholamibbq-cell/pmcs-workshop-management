@@ -221,8 +221,11 @@ internal sealed partial class PortfolioReportGenerationWorker(
         if (snapshot.SchemaVersion != PortfolioSummaryReportRuntimeContract.SnapshotSchemaVersion ||
             snapshot.SourceCutoffUtc != run.AsOfUtc ||
             snapshot.Classification < ReportClassification.Confidential ||
-            CanonicalJson.Sha256(snapshot.PayloadJson) != snapshot.Sha256 ||
-            CanonicalJson.Sha256(snapshot.SourceManifestJson) != snapshot.SourceManifestSha256)
+            CanonicalJson.Sha256(CanonicalJson.Normalize(
+                JsonSerializer.Deserialize<JsonElement>(snapshot.PayloadJson))) != snapshot.Sha256 ||
+            CanonicalJson.Sha256(CanonicalJson.Normalize(
+                JsonSerializer.Deserialize<JsonElement>(snapshot.SourceManifestJson))) !=
+                snapshot.SourceManifestSha256)
             throw Invalid("reporting.snapshot.integrity_failed");
         var semantic = PortfolioSummaryReportRenderingContract.Parse(
             snapshot.PayloadJson, snapshot.SourceManifestJson);

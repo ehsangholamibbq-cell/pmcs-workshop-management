@@ -32,3 +32,12 @@ test("F10 document ownership cannot enter generic document routes or project wor
   assert.match(endpoints, /request\.OwnerType is DocumentOwnerType\.ReportOutput or DocumentOwnerType\.TenantReportOutput/u);
   assert.match(worker, /where candidate\.scope = 'Project'[\s\S]*where candidate\.scope = 'Project'/u);
 });
+
+test("F10 worker rechecks pinned access and canonicalizes JSONB before digest verification", () => {
+  const worker = read("src/backend/Pmcs.Modules.Reporting/Services/PortfolioReportGenerationWorker.cs");
+  assert.match(worker, /scope = 'Portfolio' and definition_code = 'portfolio-summary-certified'/u);
+  assert.match(worker, /RequirePermissionsAsync\(run, pinned, source,[\s\S]*LoadPinnedAsync\(pinned/u);
+  assert.match(worker, /CanonicalJson\.Sha256\(CanonicalJson\.Normalize\([\s\S]*snapshot\.PayloadJson/u);
+  assert.match(worker, /CanonicalJson\.Sha256\(CanonicalJson\.Normalize\([\s\S]*snapshot\.SourceManifestJson/u);
+  assert.match(worker, /DocumentRetentionPolicy\.LongTerm[\s\S]*ReportOutput\.CreatePortfolio/u);
+});
