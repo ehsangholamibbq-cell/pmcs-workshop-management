@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.44.0`
-- وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract بسته؛ F08 Runtime/Renderer/wiring و F09–F10/UI/Production باز
+- نسخه: `1.45.0`
+- وضعیت: F01–F07 connected؛ F08 DoR/Semantic Contract و Runtime Core بسته؛ Renderer/Golden/wiring و F09–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1244,3 +1244,19 @@ three-permission gate، تاریخچهٔ ناقص و نرخ حادثهٔ بدو�
 هشت Job سبز و `98/98` Node داشت؛ سه تست F08 متمرکز پاس شدند. Checkpoint
 `PMCS-V1.1-RPT1-S07-MS27-C1` هیچ Runtime/Renderer/Migration/Catalog/API/Worker را
 claim نمی‌کند. گام بعد فقط Runtime Core محدود F08 در `S07-MS28` است.
+
+## ۵۰. Source مالک و Runtime Core F08 — Slice 07 Micro-Step 28 Safe Checkpoint
+
+- خواندن ۱۴ دفتر مالک از transaction repeatable-read با `MaximumPerRegister+1`،
+  overflow و ID/linkage نامعتبر fail-closed؛ `/state` capped به‌عنوان Source رد شود؛
+- cutoff و Project configuration/time zone pin، `PersonalMedical`/`LegalInvestigation`
+  processing failure و دو section Quality/HSE با Classification مستقل؛
+- transition فاقد chronology، SetupRequired/Suspended یا readiness اثبات‌نشده
+  `InsufficientData` با count=`null`، هیچ معدل حادثهٔ ساختگی؛
+- Snapshot schema/hash/manifest/semantic digest و ناسازگاری status/count/tenant را رد کند.
+
+Candidate `36682da970d0489569ed62a1d02684b5d6c588e9`، tree
+`2f44542a094a86d5782b01a31bc8092a97b71b39` و Run 231 (`36308573306`)
+هر هشت Job سبز داشتند؛ `99/99` Node و validator `426` فایل پاس شدند.
+Checkpoint `PMCS-V1.1-RPT1-S07-MS28-C1` Runtime Core را می‌بندد؛ گام بعد
+Renderer/Golden F08 در `S07-MS29` است. Wiring، F09/F10 و Production بازند.

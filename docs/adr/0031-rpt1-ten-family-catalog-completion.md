@@ -77,6 +77,10 @@ Gate خروج ده‌گانه همچنان باز و گام بعد DoR/قرار�
 این Checkpoint صرفاً DoR/Source/Classifications/Golden Matrix را می‌بندد؛ Runtime، Renderer
 و wiring F08 هنوز بازند. F01–F07 متصل، F09/F10 باز، Gate ده‌گانه و defaults خاموش ثابت‌اند.
 
+در `PMCS-V1.1-RPT1-S07-MS28-C1`، Source مالک QualitySafety و Runtime/Snapshot محدود
+F08 با Run 231 و هشت Job سبز شدند. Renderer/Golden و wiring هنوز بازند؛ F01–F07
+متصل، F09/F10 و Gate ده‌گانه باز و همهٔ defaults خاموش‌اند.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

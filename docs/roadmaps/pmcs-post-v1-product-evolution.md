@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.61.0`
+- نسخه سند: `1.62.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -750,6 +750,15 @@ LegalInvestigation و ماتریس ۲۲ سناریو بست. Run 224 (`363071008
 `b72ab1c09376e0ec45b6b52a460660f4b807b15a` با tree
 `14334896b2155f6ebefe612a29123bd73bce3760` همهٔ هشت Job و `98/98` Node را
 سبز کرد. Safe Resume `S07-MS27`؛ گام بعد فقط Runtime Core محدود F08 در MS28 است.
+
+**F08 Quality/HSE Runtime Core — Slice 07 Micro-Step 28 Safe Checkpoint:**
+مالک `QualitySafety` قرارداد Source خواندنی نسخه‌دار را از ۱۴ دفتر bounded و
+repeatable-read با manifest/hash، cutoff، configuration pin، linkage و classification
+fail-closed ارائه می‌کند. Quality/HSE مستقل می‌مانند و legacy/SetupRequired/Suspended
+با count نامعلوم `InsufficientData` هستند. Reporting Snapshot را فقط از Application
+Contract مالک می‌سازد. Run 231 (`36308573306`) هر هشت Job را سبز کرد. Safe Resume
+`S07-MS28`؛ گام بعد فقط Renderer/Golden قطعی F08 در MS29 است؛ wiring، F09/F10 و
+UI/Production باز، defaults خاموش‌اند.
 Renderer/Catalog/API/Worker، F09/F10 و UI/Production باز و defaultها خاموش‌اند.
 
 ### `V1.1-COL1` — Project Collaboration
@@ -1055,3 +1064,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.59.0` | ثبت Safe Checkpoint `S07-MS25` و Evidence سبز Run 219 برای producer تاریخچهٔ RFI/Submittal بدون backfill؛ wiring F07 و F08–F10/UI/Production باز است |
 | `1.60.0` | ثبت Connected Safe Checkpoint `S07-MS26` و Evidence سبز Run 222 برای Catalog/API/Worker و Qualification مستقل F07؛ F08–F10/UI/Production باز است |
 | `1.61.0` | ثبت Safe Checkpoint `S07-MS27` و Evidence سبز Run 224 برای DoR/قرارداد معنایی مستقل F08؛ Runtime/Renderer/wiring و F09–F10/UI/Production باز است |
+| `1.62.0` | ثبت Safe Checkpoint `S07-MS28` و Evidence سبز Run 231 برای Runtime Core و Source مالک F08؛ Renderer/Golden/wiring و F09–F10/UI/Production باز است |

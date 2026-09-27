@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.41.0`
-- وضعیت: `S07-MS27 F08 semantic contract safe checkpoint | Runtime/Renderer/wiring/F09-F10/UI/Production open`
+- نسخه: `1.42.0`
+- وضعیت: `S07-MS28 F08 Runtime Core safe checkpoint | Renderer/Golden/wiring/F09-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -877,3 +877,11 @@ Defect/Incident/Permit/Action ناقص و legacy بدون proof `InsufficientDat
 permission whole-definition، Classification پزشکی/تحقیق حقوقی fail-closed و نرخ حادثه بدون
 Exposure معتبر null است. Run 224 (`36307100818`) هر هشت Job را سبز کرد؛ MS28 فقط Runtime
 Core محدود است و Renderer/Golden و wiring F08 مستقل می‌مانند.
+
+Slice 07 Micro-Step 28 مالک QualitySafety را به قرارداد خواندنی
+`IProjectQualityHseReportingSource` با ۱۴ دفتر، transaction repeatable-read و bound کامل
+وصل کرد. Source هویت Tenant/Project و linkage را fail-closed، cutoffs/configuration را
+pin، تاریخچهٔ فاقد transition را `InsufficientData` و دادهٔ حساس پزشکی/تحقیقاتی را
+رد می‌کند. Snapshot سازندهٔ Reporting فقط Application Contract را مصرف می‌کند و
+manifest/semantic digest، status، شمارش و classification را پیش از ذخیره اعتبارسنجی
+می‌کند. Run 231 (`36308573306`) هشت Job سبز؛ Renderer و wiring همچنان بازند.
