@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.50.0`
-- وضعیت: `S07-MS36 F09 Connected Safe Checkpoint | F10/UI/Production open`
+- نسخه: `1.51.0`
+- وضعیت: `S07-MS37 F10 Contract Safe Checkpoint | Runtime/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -946,3 +946,13 @@ API با strict `{}` پروفایل نسخه‌دار پروژه و cutoff را 
 می‌سپارد. Classification `Confidential/Restricted`، count نامعلوم legacy و hash
 Snapshot/Manifest حفظ می‌شوند. Run 252 (`36331528136`) هشت Job، هارنس F09
 `18/18` و Restore Drill ۵۳ Migration را سبز کرد. F10 و UI/Production بازند.
+
+## F10 S07-MS37 DoR و Semantic Contract
+
+`PMCS-RPT1-F10-SEMANTIC-001 v1.0.0` Portfolio tenant-scoped را با ProjectId
+nullable، cohort فقط از permissionهای مجاز، cutoff UTC/تاریخ محلی هر پروژه، Source
+مالک و manifest مستقل تثبیت می‌کند. Currencyها بدون FX جدا و dimensionهای فاقد
+permission با `NotAuthorized` پوشانده می‌شوند؛ ترکیب OverallHealth ممنوع است.
+۳۰ سناریوی مستقل پذیرش ثبت و Run 254 (`36333343004`) هر هشت Job را سبز کرد.
+هیچ Runtime/Renderer/Migration/Catalog/API/Worker در MS37 افزوده نشد؛ MS38
+زیرساخت Tenant-scope سازگار پیش از wiring F10 است.

@@ -170,3 +170,8 @@ Done نمی‌کند. `RPT1-F01` نیز دوباره طراحی نمی‌شود 
 در `PMCS-V1.1-RPT1-S07-MS36-C1`، F09 با Catalog/API/Worker و Qualification
 متصل Run 252 (`36331528136`) بسته شد؛ F01 تا F09 End-to-End هستند. F10 طبق
 همین تصمیم با DoR مستقل در MS37 آغاز می‌شود و RPT1 هنوز فعال است.
+
+در `PMCS-V1.1-RPT1-S07-MS37-C1`، DoR و قرارداد مستقل F10 با ۳۰ Gate پذیرش
+در Run 254 (`36333343004`) هشت Job سبز گرفت. F10 فقط Contract Ready است؛
+Tenant-scope infrastructure، Runtime، Renderer و wiring در Micro-Stepهای بعدی
+بازند. Scope ده‌گانه و defaultهای خاموش ثابت‌اند.

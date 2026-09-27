@@ -7,7 +7,10 @@
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
 خط توسعهٔ فعال: `PMCS V1.1 — Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active`.
-Safe Checkpoint جاری `PMCS-V1.1-RPT1-S07-MS36-C1` با Run 252، F09 را از
+Safe Checkpoint جاری `PMCS-V1.1-RPT1-S07-MS37-C1` با Run 254، DoR/قرارداد معنایی
+F10 را با scope واقعی Portfolio و ۳۰ Gate پذیرش بست. MS38 زیرساخت Tenant-scope
+است؛ Runtime/Renderer/wiring F10 و UI/Production بازند.
+Safe Checkpoint پیشین `PMCS-V1.1-RPT1-S07-MS36-C1` با Run 252، F09 را از
 Catalog/API/Worker تا PDF/XLSX و Qualification متصل بست. F01 تا F09 End-to-End
 checkpointed هستند؛ F10 با DoR مستقل در MS37 و سپس Micro-Stepهای خود ادامه دارد.
 Migration ۵۳ و defaultهای Reporting خاموش‌اند؛ PR #2 همچنان Draft است.

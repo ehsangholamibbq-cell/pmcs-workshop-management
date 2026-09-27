@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.53.0`
-- وضعیت: F01–F09 connected؛ F10/UI/Production باز
+- نسخه: `1.54.0`
+- وضعیت: F01–F09 connected؛ F10 contract ready، Runtime/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1414,3 +1414,15 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
   Qualification artifact `10936011116` با digest
   `sha256:044284ae2594b020e489b895f6bb1bef9801e21d0e3dca5ee1e6d09ef838efeb`.
   F09 End-to-End checkpointed؛ MS37 فقط DoR/قرارداد معنایی F10 است.
+
+## ۵۹. F10 MS37 Semantic Contract Qualification
+
+- قرارداد `PMCS-RPT1-F10-SEMANTIC-001 v1.0.0` ۳۰ شناسهٔ مستقل `F10-P/C/T/S/B/O/G`
+  برای cohort مجاز، revoke، zero/NotAuthorized، ارز جدا، cutoff محلی، source proof،
+  fail-closed bounds و خروجی Tenant-scope دارد.
+- آزمون متمرکز `3/3` و Node `114/114` قرارداد را می‌سنجند؛ Run 254 (`36333343004`)
+  هشت Job، C# `542/542`، Web `139/139`، پنج سناریوی مرورگر، Restore Drill ۵۳
+  و Qualification `7/7` Suite را سبز کرد. Artifact `10936771990` با digest
+  `sha256:cecc6cf9a6e438789fd5a79dd91b8fda1a03cc1dd817d99464b87e1a6c697754`.
+- MS37 هیچ F10 Runtime/Renderer/Migration/Catalog/API/Worker ندارد. MS38 فقط
+  زیرساخت tenant-scope با migration سازگار و تست fail-closed است.

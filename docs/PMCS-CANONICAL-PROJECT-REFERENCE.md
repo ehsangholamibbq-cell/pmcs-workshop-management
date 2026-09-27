@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.47.0`
+- نسخه: `1.48.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F09 Connected Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 RPT1 / F10 MS37 Contract Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,10 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-RPT1 — Reporting Center Phase 1` |
-| آخرین Source Candidate واجد Evidence | `2bb925b8cf8531442c5136e55811a9f8c31db655`؛ tree `3085dc51931b2b7965521b7b18fe0b9bfa55ec70` |
-| Current evidence-bearing source checkpoint | `2bb925b8cf8531442c5136e55811a9f8c31db655`؛ tree `3085dc51931b2b7965521b7b18fe0b9bfa55ec70`؛ Run 252 سبز |
-| Source lineage | S07-MS36 فرزند Checkpoint MS35 روی `a1211d1063e5c70ddbac20b4b2dfc7469eda5da0` و tree `fc9b9edc707e6d519bdc2efcedd4cb9f675a1479` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS36-C1`؛ F01 تا F09 متصل و checkpointed، F10 باز |
+| آخرین Source Candidate واجد Evidence | `bb17a37fa19b06d111443fad178c2589e376bb25`؛ tree `82eba0ffebc1c631281a78727f4b2325a50f0ecb` |
+| Current evidence-bearing source checkpoint | `bb17a37fa19b06d111443fad178c2589e376bb25`؛ tree `82eba0ffebc1c631281a78727f4b2325a50f0ecb`؛ Run 254 سبز |
+| Source lineage | S07-MS37 فرزند Checkpoint MS36 روی `d2feb48c64d9ddeba591c722a7deb6143c1e45fe` و tree `be164d12d70cc2e46cd3f226cc3de41d52eed0d8` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-RPT1-S07-MS37-C1`؛ F01 تا F09 متصل، F10 contract ready |
 | Migration count | Safe Resume: `53` و Restore Drill سبز |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
@@ -36,7 +36,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.70.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.71.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -49,7 +49,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.69.0` | Superseded؛ `v1.70.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.69.0` | Superseded؛ `v1.71.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS33` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -188,7 +188,7 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 
 ## Current In-Progress Work
 
-`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS36-C1` است. روی این
+`V1.1-RPT1` فعال است و Safe Resume Point قطعی فعلی آن `PMCS-V1.1-RPT1-S07-MS37-C1` است. روی این
 Checkpoint، Catalog/API/Worker و qualification متصل F01 تا F09 بسته شده‌اند.
 Migration 48،
 Definition/Template seed، strict empty-object API، Project profile pin، مجوز منبع definition-aware و
@@ -197,7 +197,7 @@ Worker/Renderer dispatch برای F03 در Run 156 qualify شده‌اند. تص
 digest و performance budget در Run 133 qualify شده‌اند. `PdfLicense=Unconfigured` و
 `Phase1Enabled/OutputAccessEnabled/WorkerEnabled=false` در defaults و `OrphanRemediationMode=Disabled`
 حفظ شده‌اند. ADR 0031 انتخاب صریح مالک محصول برای حفظ Scope ده‌گانه را ثبت کرده است:
-`RPT1-F01` تا `RPT1-F09` checkpoint متصل دارند و F10 `Required / Not Implemented` است. قرارداد
+`RPT1-F01` تا `RPT1-F09` checkpoint متصل دارند و F10 `Contract Ready / Runtime Not Implemented` است. قرارداد
 `PMCS-RPT1-F02-SEMANTIC-001 v1.3.1` Runtime Core، Renderer/Golden و wiring checkpointed دارد:
 identity/schema نسخه‌دار، Project configuration pin، period source/resolver، semantic Snapshot،
 render request/model fail-closed و PDF/XLSX قطعی. Migration 44، Definition/Template seed، strict
@@ -362,6 +362,13 @@ Candidate `2bb925b8cf8531442c5136e55811a9f8c31db655` با tree `3085dc51931b2b79
 هشت Job را سبز کرد؛ هارنس متصل `18/18`، C# `542/542`، Node `110/110`،
 Web `139/139` و Restore Drill ۵۳ موفق‌اند. F09 End-to-End بسته و F10 باز است.
 
+در `S07-MS37`، قرارداد `PMCS-RPT1-F10-SEMANTIC-001 v1.0.0` Portfolio واقعی
+با cohort permission، cutoff، currency جدا و ۳۰ سناریوی پذیرش تثبیت شد. Candidate
+`bb17a37fa19b06d111443fad178c2589e376bb25`، tree
+`82eba0ffebc1c631281a78727f4b2325a50f0ecb` در Run 254 (`36333343004`)
+هشت Job، C# `542/542`، Node `114/114`، Web `139/139`، پنج مرورگر و Restore ۵۳
+را سبز کرد. F10 Runtime/Renderer/wiring ندارد و MS38 زیرساخت Tenant-scope است.
+
 ## Remaining Work
 
 1. خانواده‌های `RPT1-F01` تا `RPT1-F09` متصل و checkpointed هستند.
@@ -374,7 +381,7 @@ Web `139/139` و Restore Drill ۵۳ موفق‌اند. F09 End-to-End بسته �
 
 | شدت | مورد | اثر/اقدام لازم |
 | --- | --- | --- |
-| Implementation | F01 تا F09 متصل‌اند؛ F10 پیاده‌نشده | DoR و قرارداد معنایی مستقل F10 در MS37 |
+| Implementation | F01 تا F09 متصل‌اند؛ F10 فقط قرارداد دارد | MS38 زیرساخت Tenant-scope و سپس Source/Runtime/Renderer/wiring مستقل |
 | Temporal source | endpoint جاری Planning زمان‌های Approval/Supersede، target و configuration تاریخی کافی ندارد | Contract/selector نسخه‌دار و compatibility producer متصل‌اند؛ history غیرقابل‌اثبات fail-closed است و توسعهٔ تاریخچهٔ کامل باید Slice دامنه‌ای مستقل باشد |
 | Finance temporal source | read modelها و serviceهای legacy Finance cutoff تاریخی، postedAt/approvedAt مستقل، Budget supersession history و Aging دوطرفهٔ کامل ندارند | Contract/selector/compatibility source نسخه‌دار F05 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
 | Commercial temporal source | source و endpointهای legacy current-state/truncated هستند؛ activation history، Party/Item snapshot، conversion version و completeness cutoff کامل ندارند | Contract/selector/compatibility source نسخه‌دار F06 متصل است و history غیرقابل‌اثبات را fail-closed رد می‌کند؛ producer تاریخی غنی‌تر در صورت نیاز Slice دامنه‌ای مستقل است |
@@ -579,12 +586,16 @@ Web `139/139` و Restore Drill ۵۳ موفق‌اند. F09 End-to-End بسته �
 - F09 Connected MS36: `2bb925b8cf8531442c5136e55811a9f8c31db655`؛ tree `3085dc51931b2b7965521b7b18fe0b9bfa55ec70`؛ Run 252 (`36331528136`)
   هشت Job، هارنس F09 `18/18`، Restore ۵۳ و Qualification `7/7`؛ artifact
   `10936011116` (`sha256:044284ae2594b020e489b895f6bb1bef9801e21d0e3dca5ee1e6d09ef838efeb`).
+- F10 Contract MS37: `bb17a37fa19b06d111443fad178c2589e376bb25`؛ tree
+  `82eba0ffebc1c631281a78727f4b2325a50f0ecb`؛ Run 254 (`36333343004`)
+  هشت Job و Qualification `7/7`؛ artifact `10936771990`
+  (`sha256:cecc6cf9a6e438789fd5a79dd91b8fda1a03cc1dd817d99464b87e1a6c697754`).
 - Catalog Decision Candidate: `d81ecc00762145210e1c688f8f5843f46d62fc04`؛ tree
   `5f40383ad506d94520c741eb69fcd00086283734`؛ Run 135 (`35466775368`) هر هشت Job موفق،
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده برای Source: Run 252 (`36331528136`) — هر ۸ Job
+- آخرین CI بررسی‌شده برای Source: Run 254 (`36333343004`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
@@ -601,8 +612,8 @@ Web `139/139` و Restore Drill ۵۳ موفق‌اند. F09 End-to-End بسته �
 
 ## Exact Next Micro-Step
 
-**گام بعدی فقط DoR و قرارداد معنایی مستقل `RPT1-F10`
-در `S07-MS37` است.**
+**گام بعدی `S07-MS38` فقط زیرساخت سازگار Tenant-scope برای
+Run/Snapshot/Output/Generated Document و Migration نسخه‌دار است.**
 UI/UX2، Production enablement و Report Designer همچنان بازند.
 
 ## Resume Rule

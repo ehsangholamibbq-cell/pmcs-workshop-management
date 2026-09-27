@@ -3,9 +3,9 @@
 - شناسه: `PMCS-RPT1-F10-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F10`
-- وضعیت: `DoR / Semantic Contract Candidate | Runtime/Renderer/Catalog/API/Worker open`
+- وضعیت: `DoR / Semantic Contract Safe Checkpoint MS37 | Runtime/Renderer/Catalog/API/Worker open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS36-C1`
-- مرجع: Roadmap `PMCS-RM-POST-V1-001 v1.70.0`، ADR 0010، ADR 0029 و ADR 0031
+- مرجع: Roadmap `PMCS-RM-POST-V1-001 v1.71.0`، ADR 0010، ADR 0029 و ADR 0031
 - MS37 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
 
 ## ۱. دامنه و هویت
