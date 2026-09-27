@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.40.0`
-- وضعیت: F01–F06 connected؛ F07 bounded Runtime Core ready / Renderer و wiring باز؛ F08–F10/UI/Production باز
+- نسخه: `1.41.0`
+- وضعیت: F01–F06 connected؛ F07 bounded Runtime/Renderer ready / history و wiring باز؛ F08–F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1172,3 +1172,28 @@ Qualification artifact `10924710423` با digest
 
 Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS23-C1` Runtime Core محدود F07 را می‌بندد؛
 Renderer/Golden در `S07-MS24` و historical producer/wiring در Micro-Stepهای مستقل بعدی باز است.
+
+## ۴۶. Renderer/Golden محدود F07 دفتر فنی — Slice 07 Micro-Step 24 Safe Checkpoint
+
+- Template/Renderer/Layout version و digest، Filename و Request/Snapshot hashها pin و tamper
+  fail-closed؛ `Csv`، format اشتباه، ردیف غیرمرتب، متن بزرگ‌تر از bound و row/page budget رد شوند؛
+- PDF چهار بخش RTL با Font/License/Image pin، برش شمسی/محلی، Classification، status/count/reason
+  هر بخش، verification و byte/page determinism؛ SHA PDF و چهار PNG visual Golden ثابت بمانند؛
+- XLSX شش Sheet با RTL/frozen headers، metadata/manifest، no formula و text escaping؛ SHA/ZIP/XML
+  مستقل parse و Golden ثابت بمانند؛
+- Document/Transmittal رسمی در کنار RFI/Submittal `InsufficientData` بدون شمارش/ردیف ساختگی،
+  `NoData` با صفر اثبات‌شده، و fixture تاریخی synthetic کامل برای Available RFI/Submittal بررسی شوند؛
+- هیچ Migration/Catalog/API/Worker/Production flag در این Gate تغییر نکند.
+
+Candidate source `8a08d3a0876cb6307613cb3eb51d918ff0269564` با tree
+`ffa44deb661c4055f06fd32064bdfa8f61de425f` و PR merge
+`121960696bb6c3fd4a7c490371ee20367840cb0b` دارای همان tree در Run 215
+(`36301524177`) هشت Job سبز داد: `518/518` C# شامل شش تست Renderer F07، `91/91` Node،
+`139/139` Web، پنج browser scenario، validator `419` فایل، audit `274/204/5`، Restore ۴۸
+Migration و Qualification `7/7` Suite/`12/12` Command. Qualification artifact
+`10926345475` با digest
+`sha256:ac2ebc7b3bea3f6097cfe0d3c67a1d86af3a021957ecce7fbc9ad9ae0f35e3e1` ثبت شد.
+
+Safe Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden F07 را می‌بندد. گام بعد
+`S07-MS25` producer تاریخی transitionهای RFI/Submittal در مالک TechnicalOffice است؛
+wiring و Qualification متصل باید Micro-Step جدا باشند.

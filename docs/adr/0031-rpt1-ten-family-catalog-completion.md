@@ -55,6 +55,12 @@ RFI/Submittal با history میانی ناقص صریحاً `InsufficientData` �
 historical producer کامل و Catalog/API/Worker ندارد و End-to-End یا Qualified نیست. F08 تا F10
 بازند؛ تصمیم ده‌گانه و Gate خروج این ADR تغییر نکرده است. گام بعد فقط Renderer/Golden F07 است.
 
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1`، PDF/XLSX Renderer محدود F07 و Goldenهای
+binary/visual با Run 215 (`36301524177`) و تمام هشت Job سبز شدند. RFI/Submittal legacy با
+history ناقص همچنان `InsufficientData` و count نامعلوم‌اند. Historical transition producer
+و Catalog/API/Worker متصل باقی مانده‌اند؛ F07 End-to-End یا Qualified نیست و Gate خروج ده‌گانه
+باز است. گام بعد `S07-MS25` فقط producer تاریخی در مالک TechnicalOffice است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

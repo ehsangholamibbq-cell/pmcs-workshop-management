@@ -1,15 +1,15 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.37.0`
-- وضعیت: `S07-MS23 F07 bounded Runtime Core safe checkpoint | Renderer/wiring/F08-F10/UI/Production open`
+- نسخه: `1.38.0`
+- وضعیت: `S07-MS24 F07 bounded Renderer/Golden safe checkpoint | historical producer/wiring/F08-F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
-- Parent checkpoint commit: `32772e1f19c9c9d8023947654a3402f53ee0f6b6`
-- Parent checkpoint tree: `5eadc44c115ffb6e44cc57b52a44ec0ea5bddc55`
-- Candidate source: `df3879dd8b17403787154a398cc114b27c7172bc`
-- Candidate source tree: `5483e684aaa220a32b3135ea0b2bb3b2136023be`
-- PR validation merge: `0900def8f237a8d282501a8ee4ae0be5676f2fda`؛ همان tree
-- Connected evidence: Run 202 (`36235821024`) — `success`
+- Parent checkpoint commit: `5a364cc252905415605eac575bbc8e5f8b2d1d13`
+- Parent checkpoint tree: `ba2501bc51eaed3d99c7f8746f16f77f8b732ca5`
+- Candidate source: `8a08d3a0876cb6307613cb3eb51d918ff0269564`
+- Candidate source tree: `ffa44deb661c4055f06fd32064bdfa8f61de425f`
+- PR validation merge: `121960696bb6c3fd4a7c490371ee20367840cb0b`؛ همان tree
+- Full evidence: Run 215 (`36301524177`) — `success`
 - مرجع تصمیم: ADR 0029، ADR 0030 و ADR 0031
 
 ## ۱. Scope
@@ -832,3 +832,21 @@ Candidate source `7f66113d3fe091829747d1f5059eb8f16c82cb88` با tree
 `PMCS-V1.1-RPT1-S07-MS23-C1` فقط Runtime Core را می‌بندد؛ گام بعد Renderer/Golden
 محدود F07 در MS24 است. Historical producer کامل RFI/Submittal، Migration/Catalog/API/Worker،
 UI/Production و F08 خارج از MS23 ماندند.
+
+Slice 07 Micro-Step 24 فقط Renderer/Golden محدود F07 را اضافه کرد: Template `1.0.0` با
+content digest `e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7`،
+Renderer/Layout `v1`، request/model و snapshot parser fail-closed، PDF چهار بخش RTL و XLSX
+شش Sheet `Metadata/Coverage/Documents/Transmittals/RFI/Submittals`. در هر دو Format، status و
+reason و count هر بخش روشن‌اند: RFI/Submittal legacy با history ناقص `InsufficientData` و
+count نامعلوم می‌مانند؛ Source خالی کامل `NoData` با صفر اثبات‌شده است. PDF Golden SHA-256
+`2c149cd41d1765c960964816df13bf4054adb0f009fc827a7abfd49c4d513f43` و XLSX
+`d25bc987e3411f159b7aba04f6daadc8c0d30758ac77c953e8c28edb9a709547` به‌همراه چهار
+visual digest در Checkpoint MS24 پین شدند. Source candidate
+`8a08d3a0876cb6307613cb3eb51d918ff0269564`، tree
+`ffa44deb661c4055f06fd32064bdfa8f61de425f` و PR merge
+`121960696bb6c3fd4a7c490371ee20367840cb0b` با همان tree در Run 215
+(`36301524177`) هشت Job و `518/518` C# را سبز کردند.
+
+Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden را می‌بندد؛ historical RFI/Submittal
+transition producer در `S07-MS25` مستقل پیگیری می‌شود. Migration/Catalog/API/Worker و
+permission enforcement متصل، UI/Production، Report Designer و F08 همچنان بازند.

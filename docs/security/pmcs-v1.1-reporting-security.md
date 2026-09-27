@@ -1,8 +1,8 @@
 # PMCS V1.1 — Reporting Permission، Classification و Threat Contract
 
 - شناسه: `PMCS-SEC-RPT1-001`
-- نسخه: `1.22.0`
-- وضعیت: F01–F06 connected؛ F07 bounded Runtime Core ready / wiring absent؛ F08–F10 open؛ Production disabled
+- نسخه: `1.23.0`
+- وضعیت: F01–F06 connected؛ F07 bounded Runtime/Renderer ready / historical producer and wiring absent؛ F08–F10 open؛ Production disabled
 - Checkpoint: `V1.1-RPT1`
 
 ## ۱. اصل دسترسی
@@ -322,3 +322,15 @@ Document/Output fail-closed کرد. byte-tamper، missing و malformed object ن
 502 و Audit مستقل متوقف کردند و fixture در `finally` به byte اصلی بازگشت. orphan موقت
 crash-after-storage inventory و پس از recovery صفر شد. sweeper/remediation Production و Agent Tool
 privilege-elevation qualification همچنان باز هستند.
+
+## F07 Renderer/Golden محدود — Checkpoint S07-MS24
+
+Renderer مستقل F07 فقط Snapshot minimized و hash پین‌شده را می‌پذیرد؛ schema/semantic/policy،
+طبقه‌بندی حداقل `Confidential`، status/count/reason هر دفتر، ترتیب ردیف، filename و budget
+fail-closed می‌شوند. XLSX متن آغازشونده با formula را text امن و بدون formula می‌نویسد؛
+PDF با Font/License/Image digest مصوب QA اجرا می‌شود و default Production همچنان
+`PdfLicense=Unconfigured` است. RFI/Submittal legacy دارای history ناقص count نامعلوم و
+علت صریح دارند و هیچ metadata یا صفر ساختگی منتشر نمی‌شود. Run 215 (`36301524177`)
+همهٔ هشت Job و `518/518` C# را سبز کرد. دو Permission Source در Runtime Contract پین
+هستند، اما چون Catalog/API/Worker و Output متصل F07 هنوز وجود ندارند، enforcement عملیاتی
+و آزمون revoke/download خانواده F07 در Micro-Step اتصال بعدی باقی است.

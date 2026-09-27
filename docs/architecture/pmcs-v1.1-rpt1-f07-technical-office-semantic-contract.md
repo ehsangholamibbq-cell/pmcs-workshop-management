@@ -3,11 +3,11 @@
 - شناسه: `PMCS-RPT1-F07-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F07`
-- وضعیت: `Semantic Contract Locked | MS23 Runtime Core Ready / Renderer and Wiring Open | F08-F10/UI/Production open`
+- وضعیت: `Semantic Contract Locked | MS24 Runtime/Renderer Ready / historical producer and wiring open | F08-F10/UI/Production open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS21-C1`
 - Safe checkpoint: `PMCS-V1.1-RPT1-S07-MS22-C1`
 - مرز: `Document / RFI / Submittal / Transmittal`
-- Runtime / Renderer / Migration / Catalog / API / Worker change: None
+- MS22 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
 
 ## ۱. هدف و مرز مالکیت
 
@@ -284,3 +284,17 @@ Migration در MS23 افزوده نشد. Run 211 (`36296626010`) هر هشت Job
 Renderer/Golden، Catalog/API/Worker wiring و permission enforcement عملیاتی F07 هنوز بازند.
 گام بعدی `S07-MS24` فقط Renderer/Golden محدود F07 است؛ نتیجهٔ
 `InsufficientData` باید صریح حفظ شود. RPT1 و PMCS V1.1 همچنان فعال‌اند.
+
+## پیوست Safe Checkpoint S07-MS24 — Renderer/Golden محدود
+
+Template `1.0.0`، digest
+`e759f7dfd073f464402d8ae389c8cc4ce2a8205c9893cceb4e0427faf975c1a7`،
+Renderer و Layout `pmcs.reporting.project-technical-office.{renderer,layout}/v1` روی Snapshot
+همان قرارداد پین شده‌اند. Parser/Model و PDF/XLSX، `InsufficientData`، count نامعلوم و
+`HistoricalTransitionUnavailable/SourceCoverageIncomplete` را برای RFI/Submittal موجود
+بدون برآورد حفظ می‌کنند. `NoData` فقط از Source کامل شمارش صفر می‌گیرد؛ Document/Transmittal
+اثبات‌شده مستقل نمایش داده می‌شوند. Golden PDF چهار صفحه و XLSX شش Sheet، tamper/format/budget،
+RTL/شمسی/formula escaping در Run 215 (`36301524177`) با همهٔ هشت Job و `518/518` C# تأیید شدند.
+Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1` فقط Renderer/Golden را می‌بندد. گام بعد
+`S07-MS25` producer تاریخی transitionهای RFI/Submittal است؛ migration/backfill policy و
+wiring/permission enforcement عملیاتی جدا می‌مانند.
