@@ -3,7 +3,7 @@
 - Contract: `pmcs.reporting/v1`
 - Checkpoint: `V1.1-RPT1`
 - Base path: `/api/v1`
-- Status: F01–F08 connected و checkpointed؛ F09/F10 open؛ UI/Production disabled؛ RPT1 active
+- Status: F01–F09 connected و checkpointed؛ F10 open؛ UI/Production disabled؛ RPT1 active
 
 ## ۱. قواعد عمومی
 
@@ -202,6 +202,17 @@ PDF/XLSX قطعی مصرف می‌کند. وضعیت Quality/HSE و count نام
 `NotConfigured`/`InsufficientData` صفر یا نرخ حادثهٔ ساختگی نیستند. Run 237 هشت Job،
 هارنس F08 `20/20` و Restore Drill ۵۱ Migration را سبز کرد. همهٔ defaultهای
 Reporting و PDF license همچنان خاموش/`Unconfigured` هستند.
+
+### ۱.۱۳ خانواده F09 روی API متصل — Safe Checkpoint
+
+در MS36، Definition `project-governance-action-certified` با Template immutable
+`1.0.0` و Migration ۵۳ به routeهای موجود وصل شد. فقط `{}` مجاز است؛ Project
+profile و cutoff در Run pin می‌شوند. Catalog و Create/List/Get/Retry/Cancel/
+Download/Verify هر سه مجوز `governance.read`، `governance.sensitive.read` و
+`actions.read` را whole-definition می‌خواهند. Worker Source مالک ActionControl
+و Snapshot/Renderer مستقل را مصرف می‌کند؛ PDF پنج صفحه، XLSX هفت Sheet،
+hash/verify و status/count پنج بخش در Run 252 با هارنس `18/18` تأیید شدند.
+Defaultها همچنان خاموش‌اند.
 
 ## ۲. Catalog
 

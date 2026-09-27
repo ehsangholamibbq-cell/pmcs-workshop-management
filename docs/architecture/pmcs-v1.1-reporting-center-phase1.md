@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.49.0`
-- وضعیت: `S07-MS35 F09 Historical Selector Safe Checkpoint | wiring F09 و F10/UI/Production open`
+- نسخه: `1.50.0`
+- وضعیت: `S07-MS36 F09 Connected Safe Checkpoint | F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -935,3 +935,14 @@ current state کار مستقل MS35 است؛ Catalog/API/Worker در MS36 با�
 هستند. Manifest دفترها به تصویر cutoff متکی است و legacy هیچ count ساختگی
 نمی‌گیرد. Run 250 (`36329655993`) هر هشت Job و C# `542/542` را سبز کرد.
 Definition/Template و dispatch هنوز در MS36 بازند.
+
+## F09 S07-MS36 Connected Pipeline
+
+Migration `reporting/20260927-010` Definition/Template immutable F09 را منتشر کرد.
+API با strict `{}` پروفایل نسخه‌دار پروژه و cutoff را pin می‌کند؛ policy هر سه
+`governance.read`، `governance.sensitive.read` و `actions.read` را برای کل Definition
+در Catalog، request و Worker لازم دارد. Worker Source ActionControl را در cutoff
+مصرف و Snapshot پنج‌بخشی را به PDF پنج صفحه و XLSX هفت Sheet در Generated Document
+می‌سپارد. Classification `Confidential/Restricted`، count نامعلوم legacy و hash
+Snapshot/Manifest حفظ می‌شوند. Run 252 (`36331528136`) هشت Job، هارنس F09
+`18/18` و Restore Drill ۵۳ Migration را سبز کرد. F10 و UI/Production بازند.

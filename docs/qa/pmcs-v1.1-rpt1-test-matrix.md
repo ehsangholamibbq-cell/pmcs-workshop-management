@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.52.0`
-- وضعیت: F01–F08 connected؛ F09 historical selector MS35 checkpointed؛ wiring F09 و F10/UI/Production باز
+- نسخه: `1.53.0`
+- وضعیت: F01–F09 connected؛ F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1398,3 +1398,19 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
 - Run 250 (`36329655993`) هشت Job سبز، C# `542/542`، Node `109/109`،
   Web `139/139`، پنج مرورگر و Restore Drill ۵۲ را ثبت کرد. Catalog/API/Worker
   و qualification متصل F09 در MS36 باز است.
+
+## ۵۸. F09 MS36 Connected Qualification
+
+- Migration `reporting/20260927-010` Definition/Template با سه permission و
+  digest/version ثابت را seed و collision را fail-closed می‌کند؛ ledger ۵۳ است.
+- Catalog visibility و Create با هر سه source read؛ FinanceManager فاقد
+  `actions.read` و ProcurementOperator فاقد `governance.sensitive.read` رد می‌شوند؛
+  ProjectController مجاز است. Client فقط `{}` و idempotent replay/conflict پذیرفته است.
+- Worker Project profile/cutoff را pin، Source owner را با Snapshot semantic مصرف،
+  PDF پنج صفحه/XLSX هفت Sheet را به Generated Document با hash/verify/retention
+  منتشر می‌کند. SQL مستقل permission snapshots و پنج section/officialCount را می‌سنجد.
+- Run 252 (`36331528136`) هر هشت Job `success`، C# `542/542`، Node `110/110`،
+  Web `139/139`، پنج سناریوی مرورگر، Restore Drill `53` و هارنس F09 `18/18`.
+  Qualification artifact `10936011116` با digest
+  `sha256:044284ae2594b020e489b895f6bb1bef9801e21d0e3dca5ee1e6d09ef838efeb`.
+  F09 End-to-End checkpointed؛ MS37 فقط DoR/قرارداد معنایی F10 است.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.69.0`
+- نسخه سند: `1.70.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -818,6 +818,15 @@ legacy، دادهٔ ناقص و classification محافظه‌کارانه جد�
 هشت Job سبز گرفت؛ C# `542/542` و Restore Drill ۵۲. MS36 فقط اتصال
 Catalog/API/Worker و Qualification متصل F09 است؛ F10/UI/Production بازند.
 
+در `S07-MS36`، Catalog/Template نسخه‌دار F09 با Migration ۵۳ و سه permission
+`governance.read`، `governance.sensitive.read`، `actions.read` به API/Worker
+متصل شد. PDF پنج صفحه و XLSX هفت Sheet در مسیر Generated Document از Snapshot
+cutoff-aware صادر شدند. Candidate `2bb925b8cf8531442c5136e55811a9f8c31db655`، tree `3085dc51931b2b7965521b7b18fe0b9bfa55ec70`،
+Run 252 (`36331528136`) هر هشت Job را سبز کرد؛ هارنس F09 `18/18`، C#
+`542/542`، Node `110/110`، Web `139/139`، پنج مرورگر و Restore ۵۳ موفق‌اند.
+F01 تا F09 End-to-End بسته‌اند. Exact Next فقط DoR/قرارداد معنایی مستقل F10 در
+`S07-MS37` است؛ UI/Production و defaultها باز/خاموش‌اند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1129,3 +1138,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.67.0` | ثبت Safe Checkpoint `S07-MS33` و Evidence سبز Run 245 برای PDF/XLSX Renderer/Golden پنج‌بخشی F09؛ producer/wiring F09 و F10/UI/Production باز است |
 | `1.68.0` | ثبت Safe Checkpoint `S07-MS34` و Evidence سبز Run 248 برای owner transition producer F09 بدون backfill؛ selector/wiring F09 و F10/UI/Production باز است |
 | `1.69.0` | ثبت Safe Checkpoint `S07-MS35` و Evidence سبز Run 250 برای Source selector cutoff-aware تاریخچهٔ F09؛ wiring F09 و F10/UI/Production باز است |
+| `1.70.0` | ثبت Connected Safe Checkpoint `S07-MS36` و Evidence سبز Run 252 برای Catalog/API/Worker و Qualification مستقل F09؛ F10/UI/Production باز است |

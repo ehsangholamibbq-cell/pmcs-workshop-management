@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F09-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F09`
-- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime MS32، Renderer/Golden MS33 و historical Source MS35 checkpointed | Catalog/API/Worker open`
+- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime MS32، Renderer/Golden MS33 و historical Source MS35 checkpointed | Catalog/API/Worker MS36 connected`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS30-C1`
 - مرز مالکیت: `Pmcs.Modules.ActionControl` برای Issue، Risk، Decision Request/Record، Escalation Thread و Management Action
 - MS31 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
@@ -220,3 +220,10 @@ Migration ۵۲ در Run 248 (`36327282876`) و هشت Job سبز بست. Legacy 
 sequence/revision/current state، hash رجیستر بر مبنای تصویر زمانی و حفظ
 classification/count نامعلوم legacy را در Run 250 (`36329655993`) با هشت
 Job سبز بست. Catalog/API/Worker و Qualification متصل MS36 باقی است.
+
+## ۱۲. تحقق Connected Pipeline در MS36
+
+`PMCS-V1.1-RPT1-S07-MS36-C1` با Migration ۵۳، Catalog/Template pin و API strict
+`{}`، permissionهای سه‌گانه و Worker Source/Renderer را متصل کرد. Run 252
+(`36331528136`) هشت Job و هارنس متصل F09 `18/18` را سبز کرد. Legacy نامعلوم
+باقی می‌ماند و F10 مستقل است.
