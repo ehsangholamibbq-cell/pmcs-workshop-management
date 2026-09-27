@@ -39,6 +39,9 @@ public sealed class ManagementAction : AggregateRoot
     public DateTimeOffset? LastChangedAt { get; private set; }
 
     public DateTimeOffset? CompletedAt { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
 
     public static ManagementAction Create(
         Guid id,
@@ -84,7 +87,9 @@ public sealed class ManagementAction : AggregateRoot
             Priority = priority,
             Status = ManagementActionStatus.Open,
             CreatedBy = createdBy,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(createdAt,
+                ManagementActionStatus.Open.ToString(), dueDate, priority.ToString())
         };
     }
 
@@ -113,6 +118,8 @@ public sealed class ManagementAction : AggregateRoot
         LastChangedBy = changedBy;
         LastChangedAt = changedAt;
         CompletedAt = targetStatus == ManagementActionStatus.Done ? changedAt : null;
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson,
+            changedAt, targetStatus.ToString(), DueDate, Priority.ToString());
         AdvanceRevision();
     }
 

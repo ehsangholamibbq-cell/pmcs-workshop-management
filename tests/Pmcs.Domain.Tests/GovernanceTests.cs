@@ -124,7 +124,7 @@ public sealed class GovernanceTests
         var replacement = DecisionRecord.Record(Guid.NewGuid(), request, "اجرای راهکار ب", "اطلاعات جدید",
             ["کنترل هفتگی"], DecisionChannel.Meeting, At.AddHours(3), null, Guid.NewGuid(),
             "مدیر پروژه", original.Id, At.AddHours(4));
-        original.Supersede(1, replacement.Id);
+        original.Supersede(1, replacement.Id, At.AddHours(4));
         request.LinkReplacementDecision(3, original.Id, replacement.Id, Guid.NewGuid(), At.AddHours(4));
 
         Assert.Equal(DecisionRecordStatus.Superseded, original.Status);
@@ -178,6 +178,72 @@ public sealed class GovernanceTests
 
         Assert.Equal(EscalationStatus.Acknowledged, thread.Status);
         Assert.NotEqual(EscalationStatus.ClosedBySourceResolution, thread.Status);
+    }
+
+    [Fact]
+    public void ReportingProducerPreservesEachGovernanceTransitionAndOnlyMinimalFacts()
+    {
+        var issue = Issue();
+        issue.Transition(1, IssueStatus.UnderAssessment, null, null, Guid.NewGuid(), At.AddHours(1));
+        Assert.Equal(new[] { "Open", "UnderAssessment" }, issue.ReportingHistory!.Select(x => x.State));
+        Assert.Equal(issue.Revision, issue.ReportingHistory!.Last().Sequence);
+
+        var risk = AssessedRisk();
+        risk.Activate(2, Guid.NewGuid(), At.AddHours(2));
+        var riskStates = risk.ReportingHistory!.ToArray();
+        Assert.Equal(new[] { "Proposed", "Assessed", "Active" }, riskStates.Select(x => x.State));
+        Assert.Equal("High", riskStates[1].Rating); // 3 x 4 = 12, pinned at assessment.
+        Assert.Equal(1, riskStates[1].MatrixVersion);
+        Assert.Equal(new DateOnly(2026, 9, 20), riskStates[1].DueDate);
+
+        var request = Decision(["اجرای راهکار الف", "اجرای راهکار ب"]);
+        request.Submit(1, Guid.NewGuid(), At.AddHours(1));
+        request.BeginDecision(2, Guid.NewGuid(), At.AddHours(2));
+        var record = DecisionRecord.Record(Guid.NewGuid(), request, "اجرای راهکار الف", "توجیه",
+            null, DecisionChannel.VerbalRecordedLater, At, null, Guid.NewGuid(), "مدیر", null, At.AddHours(3));
+        request.LinkDecision(3, record.Id, Guid.NewGuid(), At.AddHours(3));
+        record.ReviewEffect(1, "نتیجه بررسی", ["evidence:1"], At.AddHours(4));
+        Assert.Equal(new[] { "Draft", "ReadyForDecision", "InDecision", "Decided" },
+            request.ReportingHistory!.Select(x => x.State));
+        Assert.Equal(new[] { "Recorded", "EffectReviewed" }, record.ReportingHistory!.Select(x => x.State));
+        Assert.Equal(At.AddHours(3), record.ReportingHistory!.First().AtUtc);
+        Assert.DoesNotContain("توجیه", record.ReportingHistoryJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("evidence:1", record.ReportingHistoryJson, StringComparison.Ordinal);
+
+        var thread = EscalationThread.Raise(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            SlaEntityType.Issue, Guid.NewGuid(), "ISS-01", "موضوع", EscalationReason.Overdue,
+            1, Guid.NewGuid(), "مدیر", RecordConfidentiality.GeneralProject, At);
+        thread.Touch(At.AddHours(1));
+        thread.Acknowledge(2, Guid.NewGuid(), "یادداشت حساس", At.AddHours(2));
+        thread.CloseFromSource(At.AddHours(3));
+        Assert.Equal(new int?[] { 1, 2, 2, 2 }, thread.ReportingHistory!.Select(x => x.OccurrenceCount));
+        Assert.Equal("ClosedBySourceResolution", thread.ReportingHistory!.Last().State);
+        Assert.DoesNotContain("یادداشت حساس", thread.ReportingHistoryJson, StringComparison.Ordinal);
+
+        var action = ManagementAction.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid(), "کار حساس", null, Guid.NewGuid(), "مسئول",
+            new DateOnly(2026, 9, 20), ActionPriority.High, Guid.NewGuid(), At);
+        action.Transition(1, ManagementActionStatus.Blocked, Guid.NewGuid(), At.AddHours(1));
+        action.Transition(2, ManagementActionStatus.Done, Guid.NewGuid(), At.AddHours(2));
+        Assert.Equal(new[] { "Open", "Blocked", "Done" }, action.ReportingHistory!.Select(x => x.State));
+        Assert.DoesNotContain("کار حساس", action.ReportingHistoryJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LegacyHistoryCannotBePromotedAndChronologyCannotMoveBackward()
+    {
+        var issue = Issue();
+        typeof(ManagementIssue).GetProperty(nameof(ManagementIssue.ReportingHistoryJson))!
+            .SetValue(issue, null);
+        issue.Transition(1, IssueStatus.UnderAssessment, null, null, Guid.NewGuid(), At.AddHours(1));
+        Assert.Null(issue.ReportingHistory);
+
+        var action = ManagementAction.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid(), "کار", null, Guid.NewGuid(), "مسئول",
+            new DateOnly(2026, 9, 20), ActionPriority.High, Guid.NewGuid(), At);
+        var exception = Assert.Throws<DomainRuleException>(() => action.Transition(1,
+            ManagementActionStatus.Blocked, Guid.NewGuid(), At.AddMinutes(-1)));
+        Assert.Equal("governance.reporting_history.chronology", exception.Code);
     }
 
     private static ProjectRisk Risk(Guid? tenantId = null, Guid? projectId = null) => ProjectRisk.Propose(

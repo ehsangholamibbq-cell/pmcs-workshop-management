@@ -39,6 +39,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.LastChangedBy).HasColumnName("last_changed_by");
             builder.Property(x => x.LastChangedAt).HasColumnName("last_changed_at");
             builder.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            MapReportingHistory(builder);
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.DomainEvents);
             builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.Status, x.DueDate });
@@ -97,6 +98,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.ResolvedBy).HasColumnName("resolved_by");
             builder.Property(x => x.ClosedAt).HasColumnName("closed_at");
             builder.Property(x => x.ClosedBy).HasColumnName("closed_by");
+            MapReportingHistory(builder);
             builder.Ignore(x => x.EvidenceReferences);
             builder.Ignore(x => x.ClosureEvidence);
             builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.Status, x.TargetResolutionDate });
@@ -172,6 +174,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.LastReviewedBy).HasColumnName("last_reviewed_by");
             builder.Property(x => x.LastReviewedAt).HasColumnName("last_reviewed_at");
             builder.Property(x => x.ClosedAt).HasColumnName("closed_at");
+            MapReportingHistory(builder);
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.EvidenceReferences);
             builder.Ignore(x => x.ClosureEvidence);
@@ -209,6 +212,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.SlaDueAt).HasColumnName("sla_due_at");
             builder.Property(x => x.SlaRuleVersionId).HasColumnName("sla_rule_version_id");
             MapLifecycle(builder);
+            MapReportingHistory(builder);
             builder.Ignore(x => x.KnownFacts);
             builder.Ignore(x => x.Assumptions);
             builder.Ignore(x => x.Predictions);
@@ -240,6 +244,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.EffectEvidenceJson).HasColumnName("effect_evidence_json").HasColumnType("jsonb");
             builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.RecordedAt).HasColumnName("recorded_at");
+            MapReportingHistory(builder);
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.Conditions);
             builder.Ignore(x => x.EffectEvidence);
@@ -296,11 +301,19 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.AcknowledgedBy).HasColumnName("acknowledged_by");
             builder.Property(x => x.AcknowledgedAt).HasColumnName("acknowledged_at");
             builder.Property(x => x.AcknowledgementNote).HasColumnName("acknowledgement_note").HasMaxLength(1_000);
+            MapReportingHistory(builder);
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(x => x.DomainEvents);
             builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.ThreadKey }).IsUnique();
             builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.Status, x.RecipientUserId });
         });
+    }
+
+    private static void MapReportingHistory<TEntity>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TEntity> builder)
+        where TEntity : class
+    {
+        builder.Property<string?>("ReportingHistoryJson").HasColumnName("reporting_history_json").HasColumnType("jsonb");
+        builder.Ignore("ReportingHistory");
     }
 
     private static void MapIdentity<TEntity>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TEntity> builder)

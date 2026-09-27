@@ -132,6 +132,9 @@ public sealed class EscalationThread : AggregateRoot
     public Guid? AcknowledgedBy { get; private set; }
     public DateTimeOffset? AcknowledgedAt { get; private set; }
     public string? AcknowledgementNote { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
 
     public static string Key(SlaEntityType entityType, Guid entityId, EscalationReason reason, int level) =>
         $"{entityType}:{entityId:N}:{reason}:{level}".ToLowerInvariant();
@@ -162,12 +165,16 @@ public sealed class EscalationThread : AggregateRoot
             Status = EscalationStatus.Open,
             OccurrenceCount = 1,
             FirstRaisedAt = at,
-            LastRaisedAt = at
+            LastRaisedAt = at,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(at,
+                EscalationStatus.Open.ToString(), occurrenceCount: 1)
         };
     }
 
     public void Touch(DateTimeOffset at)
     {
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            Status.ToString(), occurrenceCount: OccurrenceCount + 1);
         LastRaisedAt = at;
         OccurrenceCount++;
         AdvanceRevision();
@@ -183,12 +190,16 @@ public sealed class EscalationThread : AggregateRoot
         AcknowledgedBy = actor;
         AcknowledgedAt = at;
         AcknowledgementNote = GovernanceRules.Optional(note, 1_000, "governance.escalation.note.invalid");
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            Status.ToString(), occurrenceCount: OccurrenceCount);
         AdvanceRevision();
     }
 
     public void CloseFromSource(DateTimeOffset at)
     {
         if (Status == EscalationStatus.ClosedBySourceResolution) return;
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            EscalationStatus.ClosedBySourceResolution.ToString(), occurrenceCount: OccurrenceCount);
         Status = EscalationStatus.ClosedBySourceResolution;
         LastRaisedAt = at;
         AdvanceRevision();

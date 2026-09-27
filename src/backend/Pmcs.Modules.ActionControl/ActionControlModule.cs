@@ -28,6 +28,7 @@ public sealed class ActionControlModule : IModule
         services.AddHostedService<GovernanceDeadlineWorker>();
         services.AddSingleton<IDatabaseMigration, ActionControlInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ActionGovernanceMigration>();
+        services.AddSingleton<IDatabaseMigration, GovernanceReportingHistoryMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapActionControlEndpoints();

@@ -37,6 +37,9 @@ public sealed class DecisionRequest : AggregateRoot
     public DateTimeOffset CreatedAt { get; private set; }
     public Guid? LastChangedBy { get; private set; }
     public DateTimeOffset? LastChangedAt { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
 
     public IReadOnlyCollection<string> KnownFacts => GovernanceRules.ReadList(KnownFactsJson);
     public IReadOnlyCollection<string> Assumptions => GovernanceRules.ReadList(AssumptionsJson);
@@ -87,7 +90,8 @@ public sealed class DecisionRequest : AggregateRoot
             SlaDueAt = slaDueAt,
             SlaRuleVersionId = slaRuleVersionId,
             CreatedBy = actor,
-            CreatedAt = at
+            CreatedAt = at,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(at, DecisionRequestStatus.Draft.ToString(), requiredBy)
         };
     }
 
@@ -172,6 +176,8 @@ public sealed class DecisionRequest : AggregateRoot
 
     private void Touch(Guid actor, DateTimeOffset at)
     {
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson,
+            at, Status.ToString(), RequiredBy, relatedId: DecisionRecordId);
         LastChangedBy = actor;
         LastChangedAt = at;
         AdvanceRevision();
@@ -201,6 +207,9 @@ public sealed class DecisionRecord : AggregateRoot
     public string EffectEvidenceJson { get; private set; } = "[]";
     public DecisionRecordStatus Status { get; private set; }
     public DateTimeOffset RecordedAt { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
     public IReadOnlyCollection<string> Conditions => GovernanceRules.ReadList(ConditionsJson);
     public IReadOnlyCollection<string> EffectEvidence => GovernanceRules.ReadList(EffectEvidenceJson);
 
@@ -233,11 +242,13 @@ public sealed class DecisionRecord : AggregateRoot
             DecidedByDisplayName = GovernanceRules.Required(decidedByDisplayName, 200, "governance.decision.authority.invalid"),
             SupersedesDecisionId = supersedesDecisionId,
             Status = DecisionRecordStatus.Recorded,
-            RecordedAt = recordedAt
+            RecordedAt = recordedAt,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(recordedAt,
+                DecisionRecordStatus.Recorded.ToString(), effectiveDate, relatedId: supersedesDecisionId)
         };
     }
 
-    public void Supersede(long baseRevision, Guid replacementDecisionId)
+    public void Supersede(long baseRevision, Guid replacementDecisionId, DateTimeOffset at)
     {
         GovernanceRules.Revision(Revision, baseRevision, "governance.decision.revision.conflict");
         GovernanceRules.Identities(replacementDecisionId);
@@ -245,10 +256,12 @@ public sealed class DecisionRecord : AggregateRoot
             throw new DomainRuleException("governance.decision.supersede.invalid_state", "Decision cannot be superseded in this state.");
         SupersededByDecisionId = replacementDecisionId;
         Status = DecisionRecordStatus.Superseded;
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            Status.ToString(), EffectiveDate, relatedId: replacementDecisionId);
         AdvanceRevision();
     }
 
-    public void ReviewEffect(long baseRevision, string review, IReadOnlyCollection<string>? evidence)
+    public void ReviewEffect(long baseRevision, string review, IReadOnlyCollection<string>? evidence, DateTimeOffset at)
     {
         GovernanceRules.Revision(Revision, baseRevision, "governance.decision.revision.conflict");
         if (Status != DecisionRecordStatus.Recorded)
@@ -256,6 +269,8 @@ public sealed class DecisionRecord : AggregateRoot
         EffectReview = GovernanceRules.Required(review, 4_000, "governance.decision.effect.invalid");
         EffectEvidenceJson = GovernanceRules.JsonList(evidence, 700, "governance.decision.effect_evidence.invalid", true);
         Status = DecisionRecordStatus.EffectReviewed;
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            Status.ToString(), EffectiveDate, relatedId: SupersedesDecisionId);
         AdvanceRevision();
     }
 }

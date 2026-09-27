@@ -188,7 +188,7 @@ internal static partial class ActionControlEndpoints
         var replacement = DecisionRecord.Record(request.ClientGeneratedId, decisionRequest,
             request.SelectedOption, request.Rationale, request.Conditions, request.Channel, request.DecidedAt,
             request.EffectiveDate, actor.UserId, authority.DisplayName, original.Id, clock.UtcNow);
-        original.Supersede(request.DecisionBaseRevision, replacement.Id);
+        original.Supersede(request.DecisionBaseRevision, replacement.Id, clock.UtcNow);
         decisionRequest.LinkReplacementDecision(request.RequestBaseRevision, original.Id, replacement.Id,
             actor.UserId, clock.UtcNow);
         db.Decisions.Add(replacement);
@@ -221,7 +221,7 @@ internal static partial class ActionControlEndpoints
             return Results.NotFound();
         if (decisionRequest.DecisionRecordId != decision.Id)
             return Results.Conflict(new { code = "governance.decision.not_current" });
-        decision.ReviewEffect(request.DecisionBaseRevision, request.Review, request.EvidenceReferences);
+        decision.ReviewEffect(request.DecisionBaseRevision, request.Review, request.EvidenceReferences, clock.UtcNow);
         decisionRequest.MarkEffectReviewed(request.RequestBaseRevision, actor.UserId, clock.UtcNow);
         var response = new { request = DecisionRequestResponse.From(decisionRequest), decision = DecisionResponse.From(decision) };
         await PersistAsync(db, httpContext, actor, projectId, decision.Id, "DecisionRecord", "DecisionEffectReviewed",
