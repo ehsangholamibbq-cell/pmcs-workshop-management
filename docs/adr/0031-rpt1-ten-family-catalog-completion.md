@@ -110,6 +110,10 @@ Migration nullable شمارهٔ ۵۲ و بدون backfill در Run 248 (`3632728
 هشت Job سبز گرفت. Source selector/wiring و F10 بازند؛ Scope ده‌گانه و
 defaultهای خاموش ثابت‌اند. MS35 فقط مصرف تاریخچهٔ cutoff-aware است.
 
+در `PMCS-V1.1-RPT1-S07-MS35-C1`، selector تاریخچهٔ شش دفتر F09 در Run 250
+(`36329655993`) با هشت Job سبز شد. Wiring F09، F10 و Gate ده‌گانه باز و
+defaultها خاموش باقی ماندند. MS36 فقط اتصال/Qualification مستقل F09 است.
+
 ### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
 
 - هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های

@@ -3,7 +3,7 @@
 - شناسه: `PMCS-RPT1-F09-SEMANTIC-001`
 - نسخه: `1.0.0`
 - خانواده: `RPT1-F09`
-- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime MS32 و Renderer/Golden MS33 checkpointed | producer/Catalog/API/Worker open`
+- وضعیت: `DoR / Semantic Contract Locked | Source/Runtime MS32، Renderer/Golden MS33 و historical Source MS35 checkpointed | Catalog/API/Worker open`
 - Parent checkpoint: `PMCS-V1.1-RPT1-S07-MS30-C1`
 - مرز مالکیت: `Pmcs.Modules.ActionControl` برای Issue، Risk، Decision Request/Record، Escalation Thread و Management Action
 - MS31 contract-only Runtime / Renderer / Migration / Catalog / API / Worker change: None
@@ -213,3 +213,10 @@ Migration ۵۲ در Run 248 (`36327282876`) و هشت Job سبز بست. Legacy 
 به‌صورت حدسی پر نمی‌شود و transition جدید آن را کامل نمی‌کند. این تنها
 تولید تاریخچه است؛ Source selector cutoff-aware در MS35 و wiring/Qualification
 متصل در MS36 گام‌های جدا هستند.
+
+## ۱۱. تحقق Selector در MS35
+
+`PMCS-V1.1-RPT1-S07-MS35-C1` انتخاب cutoff-aware، تطبیق ledger با
+sequence/revision/current state، hash رجیستر بر مبنای تصویر زمانی و حفظ
+classification/count نامعلوم legacy را در Run 250 (`36329655993`) با هشت
+Job سبز بست. Catalog/API/Worker و Qualification متصل MS36 باقی است.

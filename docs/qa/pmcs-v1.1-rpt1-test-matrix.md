@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.51.0`
-- وضعیت: F01–F08 connected؛ F09 owner producer MS34 checkpointed؛ selector/wiring F09 و F10/UI/Production باز
+- نسخه: `1.52.0`
+- وضعیت: F01–F08 connected؛ F09 historical selector MS35 checkpointed؛ wiring F09 و F10/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1385,3 +1385,16 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
 - Run 248 (`36327282876`) هشت Job سبز، C# `540/540`، Node `109/109`،
   Web `139/139` و پنج مرورگر را ثبت کرد. Source selector و connected E2E
   در MS35/MS36 Gateهای باز هستند.
+
+## ۵۷. F09 MS35 Historical Selector
+
+- `sequence/revision/createdAt/currentState` و حد رویداد/حجم در Source owner
+  سنجیده شوند؛ malformed ledger failure و legacy null `InsufficientData` با
+  count=`null` بماند.
+- Resolve/Close/Reopen، Risk assessment، Draft/Submit، verbal RecordedAt و
+  Action Blocked/Done در cutoffهای دو سوی transition وضعیت مستقل داشته باشند.
+- digest register از وضعیت cutoff، نه Revision جاری پس از cutoff، ساخته شود؛
+  classification در بخش ناقص هم بیشینه باقی بماند.
+- Run 250 (`36329655993`) هشت Job سبز، C# `542/542`، Node `109/109`،
+  Web `139/139`، پنج مرورگر و Restore Drill ۵۲ را ثبت کرد. Catalog/API/Worker
+  و qualification متصل F09 در MS36 باز است.

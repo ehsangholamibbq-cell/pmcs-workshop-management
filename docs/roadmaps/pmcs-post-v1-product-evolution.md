@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.68.0`
+- نسخه سند: `1.69.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -810,6 +810,14 @@ payload کمینه در ledger nullable ثبت می‌کنند. Migration ۵۲ �
 selector cutoff-aware Source مالک است؛ سپس wiring/Qualification مستقل F09 در
 MS36 می‌آید. F10، UI/Production و defaults همچنان باز/خاموش‌اند.
 
+در `S07-MS35`، Source مالک رخدادهای F09 را با revision/sequence، cutoff و
+تطبیق وضعیت جاری انتخاب کرد. Register digest از تصویر زمانی ساخته می‌شود؛
+legacy، دادهٔ ناقص و classification محافظه‌کارانه جدا می‌مانند. Candidate
+`44bd46689bcb795534bcf059f42591cecdaa35ba`، tree
+`d849b915a0157dd10812acb8271c8b64dd108c29` در Run 250 (`36329655993`)
+هشت Job سبز گرفت؛ C# `542/542` و Restore Drill ۵۲. MS36 فقط اتصال
+Catalog/API/Worker و Qualification متصل F09 است؛ F10/UI/Production بازند.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1120,3 +1128,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.66.0` | ثبت Safe Checkpoint `S07-MS32` و Evidence سبز Run 242 برای Source مالک و Runtime Core محدود F09؛ Renderer/producer/wiring F09 و F10/UI/Production باز است |
 | `1.67.0` | ثبت Safe Checkpoint `S07-MS33` و Evidence سبز Run 245 برای PDF/XLSX Renderer/Golden پنج‌بخشی F09؛ producer/wiring F09 و F10/UI/Production باز است |
 | `1.68.0` | ثبت Safe Checkpoint `S07-MS34` و Evidence سبز Run 248 برای owner transition producer F09 بدون backfill؛ selector/wiring F09 و F10/UI/Production باز است |
+| `1.69.0` | ثبت Safe Checkpoint `S07-MS35` و Evidence سبز Run 250 برای Source selector cutoff-aware تاریخچهٔ F09؛ wiring F09 و F10/UI/Production باز است |

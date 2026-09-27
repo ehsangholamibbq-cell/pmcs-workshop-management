@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.48.0`
-- وضعیت: `S07-MS34 F09 Owner History Safe Checkpoint | selector/wiring F09 و F10/UI/Production open`
+- نسخه: `1.49.0`
+- وضعیت: `S07-MS35 F09 Historical Selector Safe Checkpoint | wiring F09 و F10/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -929,3 +929,9 @@ Escalation/Action در همان Aggregate و transaction با timestamp UTC و s
 transition بعدی legacy را معتبر جلوه نمی‌دهد. Run 248 (`36327282876`) هر هشت
 Job و C# `540/540` را سبز کرد. مصرف cutoff-aware و تطبیق ledger با revision/
 current state کار مستقل MS35 است؛ Catalog/API/Worker در MS36 باقی می‌ماند.
+
+در `S07-MS35`، Source مالک در repeatable-read event cutoff را از شش ledger
+انتخاب می‌کند؛ sequence/revision/current state، bounds و لینک‌ها fail-closed
+هستند. Manifest دفترها به تصویر cutoff متکی است و legacy هیچ count ساختگی
+نمی‌گیرد. Run 250 (`36329655993`) هر هشت Job و C# `542/542` را سبز کرد.
+Definition/Template و dispatch هنوز در MS36 بازند.
