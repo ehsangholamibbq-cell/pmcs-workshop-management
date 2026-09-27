@@ -1,8 +1,8 @@
 # PMCS V1.1 — معماری Reporting Center Phase 1
 
 - شناسه: `PMCS-ARCH-RPT1-001`
-- نسخه: `1.52.0`
-- وضعیت: `S07-MS38 F10 Tenant Scope Safe Checkpoint | Source/UI/Production open`
+- نسخه: `1.53.0`
+- وضعیت: `S07-MS39 F10 Runtime Safe Checkpoint | Renderer/UI/Production open`
 - Checkpoint: `V1.1-RPT1`
 - Parent checkpoint commit: `fc62b977a389b1bd2de6e2e2800ae41d4d8e0701`
 - Parent checkpoint tree: `c2174537b6fb9910580045cd6edc6f765448ee78`
@@ -967,3 +967,14 @@ F01–F09 را حفظ می‌کنند. Worker موجود فقط Project را cla
 API/Worker F10 و نه Renderer در این Micro-Step متصل نشده‌اند. Run 256
 (`36335141253`) هشت Job و Restore ۵۵ Migration را سبز کرد. MS39 Source/
 Runtime Core محدود است.
+
+## F10 S07-MS39 Owner Source and Runtime Core
+
+Source مستقل، `portfolio.read` Tenant و scope `project-state.read` را پیش از
+خواندن Directory intersect می‌کند. Permissionهای F05/F06 برای هر پروژه جدا
+mask می‌شوند؛ Sourceهای cutoff-aware مالک فقط برای ابعاد مجاز خوانده و با
+Builderهای Certified موجود validate می‌شوند. Snapshot Portfolio با ProjectId
+تهی، status مستقل، ارزهای جدا و manifest شامل نسخهٔ مالک، profile، watermark،
+mask، classification و hash منبع است. Run 261 (`36338179481`) هشت Job،
+C# `549/549` و Restore ۵۵ را سبز کرد. MS40 فقط Renderer/Golden است؛
+Catalog/API/Worker و Production هنوز بازند.

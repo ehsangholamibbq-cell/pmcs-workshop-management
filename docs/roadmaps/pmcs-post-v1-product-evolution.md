@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.72.0`
+- نسخه سند: `1.73.0`
 - وضعیت: `V1.1 Development`؛ UX1، EXT1، DOC1، IAM1 و PRJ1 بسته شده‌اند؛ RPT1 با Scope ده‌گانه فعال است
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -843,6 +843,14 @@ tree `63e5542679e9d0427c6ec96ad7fa3404810f340d` در Run 256
 Migration را سبز کرد. Exact Next MS39 فقط Source/Runtime Core F10؛ Renderer
 و wiring/Qualification بعدی باز است.
 
+در `S07-MS39`، Source فقط cohort مجاز و owner selectorهای F03/F05/F06 را
+با permission mask مستقل می‌خواند؛ Runtime ۲۰۰ پروژه را fail-closed، ارزها را
+جدا، profile تاریخی نامعلوم را `InsufficientData` و manifest نسخه‌دار را pin
+می‌کند. Candidate `c45b72be7bc913a6dc65b656bea0188f7da0dc8c`، tree
+`00ad037a2eec41c2d5dbacfe0c186e04c4584cce` در Run 261 (`36338179481`)
+هشت Job، C# `549/549`، Node `120/120` و Restore ۵۵ را سبز کرد.
+Exact Next MS40 PDF/XLSX Renderer/Golden؛ wiring/Qualification بعدی باز است.
+
 ### `V1.1-COL1` — Project Collaboration
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1157,3 +1165,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.70.0` | ثبت Connected Safe Checkpoint `S07-MS36` و Evidence سبز Run 252 برای Catalog/API/Worker و Qualification مستقل F09؛ F10/UI/Production باز است |
 | `1.71.0` | ثبت Safe Checkpoint `S07-MS37` و Evidence سبز Run 254 برای DoR/قرارداد معنایی مستقل F10؛ MS38 Tenant-scope و Runtime/Renderer/wiring بعدی باز است |
 | `1.72.0` | ثبت Safe Checkpoint `S07-MS38` و Evidence سبز Run 256 برای زیرساخت واقعی Tenant-scope و Documents owner؛ MS39 Source/Runtime Core F10 باز است |
+| `1.73.0` | ثبت Safe Checkpoint `S07-MS39` و Evidence سبز Run 261 برای Source مالک و Runtime Core محدود F10؛ MS40 Renderer/Golden باز است |

@@ -180,3 +180,7 @@ Tenant-scope infrastructure، Runtime، Renderer و wiring در Micro-Stepهای
 owner سند Tenant در Run 256 (`36335141253`) هشت Job و Restore ۵۵ را سبز کرد.
 F10 هنوز Source/Renderer/wiring و Qualification متصل ندارد؛ Scope ده‌گانه و
 defaultهای خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS39-C1`، Source/Runtime Core محدود F10 با
+Run 261 (`36338179481`) هشت Job سبز گرفت. Renderer/Golden و wiring/
+Qualification هنوز بازند؛ Scope ده‌گانه و defaults خاموش ثابت‌اند.

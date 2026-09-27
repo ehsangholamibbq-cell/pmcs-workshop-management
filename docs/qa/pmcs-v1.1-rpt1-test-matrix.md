@@ -1,8 +1,8 @@
 # PMCS V1.1 — RPT1 Test Matrix و Qualification Contract
 
 - شناسه: `PMCS-QA-RPT1-001`
-- نسخه: `1.55.0`
-- وضعیت: F01–F09 connected؛ F10 tenant-scope infrastructure ready، Source/UI/Production باز
+- نسخه: `1.56.0`
+- وضعیت: F01–F09 connected؛ F10 Source/Runtime Core ready، Renderer/UI/Production باز
 - Parent V1.1 qualification contract: `pmcs-v1.1-test-and-qualification-contract.md`
 
 ## ۱. اصل Gate
@@ -1439,3 +1439,16 @@ Golden PDF `85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1`
   `sha256:e2cf47c1d4cfab57912daa7e525d5891dc3f31861b41d51eeced7cac7924c3cd`.
 - F10 هنوز Catalog/API/Worker/Renderer ندارد؛ MS39 Source/Runtime محدود،
   سپس Golden و wiring متصل با Gate مستقل.
+
+## ۶۱. F10 MS39 Owner Source and Runtime Core
+
+- Source ابتدا Tenant `portfolio.read` و Project `project-state.read` را محدود می‌کند؛
+  permissionهای مالی/تجاری مستقل و بدون خواندن Source فاقد مجوز ارزیابی می‌شوند.
+  Builders معتبر F03/F05/F06 خروجی مالک را پیش از projection Portfolio می‌سنجند.
+- Snapshot با ProjectId تهی، ۲۰۰ پروژه سقف بدون truncation، currency group مستقل،
+  `NotAuthorized` بدون عدد، profile تاریخی نامعلوم، cutoff/timezone و manifest
+  mask/watermark/classification/hash تست می‌شود؛ Renderer/wiring اضافه نشده است.
+- Run 261 (`36338179481`) هشت Job، C# `549/549`، Node `120/120`، Web
+  `139/139`، پنج مرورگر، Restore `55` و Qualification `7/7` سبز؛ artifact
+  `10938470711` با digest
+  `sha256:981dfc244427999078e9e4e9c13d281197fb9e721520cc421e0b5f1820cda122`.
