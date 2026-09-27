@@ -64,6 +64,7 @@ start_api() {
   PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" \
   ProjectStateRefresh__Enabled=false \
   AdvisoryIntelligence__WorkerEnabled=false \
+  Collaboration__Enabled=true \
   ReportingCenter__Phase1Enabled=true \
   ReportingCenter__OutputAccessEnabled=true \
   ReportingCenter__WorkerEnabled="${worker_enabled}" \
@@ -108,6 +109,10 @@ start_api true Unconfigured
 qa_base_url="http://127.0.0.1:${port}"
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- probe
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-core
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --command "update identity_access.project_memberships set status = 'Suspended' where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' and tenant_id = '11111111-1111-1111-1111-111111111111' and project_id = '33333333-3333-3333-3333-333333333333';" >/dev/null
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-revoked
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --command "update identity_access.project_memberships set status = 'Active' where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' and tenant_id = '11111111-1111-1111-1111-111111111111' and project_id = '33333333-3333-3333-3333-333333333333';" >/dev/null
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- prepare-reporting-portfolio-retry
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-reporting-golden

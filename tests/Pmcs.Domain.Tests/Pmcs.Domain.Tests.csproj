@@ -22,6 +22,7 @@
     <ProjectReference Include="../../src/backend/Pmcs.Modules.QualitySafety/Pmcs.Modules.QualitySafety.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.WorkManagement/Pmcs.Modules.WorkManagement.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.Reporting/Pmcs.Modules.Reporting.csproj" />
+    <ProjectReference Include="../../src/backend/Pmcs.Modules.Collaboration/Pmcs.Modules.Collaboration.csproj" />
     <ProjectReference Include="../../src/backend/Pmcs.Modules.QualityAssurance/Pmcs.Modules.QualityAssurance.csproj" />
   </ItemGroup>
   <ItemGroup>

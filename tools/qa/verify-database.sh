@@ -87,8 +87,23 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "56" \
+  "57" \
   "select count(*) from foundation.schema_migrations;"
+
+expect_equal \
+  "collaboration default room migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'collaboration' and version = '20260928-001';"
+
+expect_equal \
+  "collaboration stable retry and concurrent send yield exactly three messages" \
+  "3|3|3" \
+  "select count(*)::text || '|' || count(distinct sequence)::text || '|' || count(distinct client_message_id)::text from collaboration.messages where tenant_id = '11111111-1111-1111-1111-111111111111' and project_id = '33333333-3333-3333-3333-333333333333';"
+
+expect_equal \
+  "collaboration messages have atomic audit and outbox" \
+  "3|3" \
+  "select (select count(*) from foundation.audit_events where event_type = 'ProjectMessageCreated' and project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'collaboration.message.created' and project_id = '33333333-3333-3333-3333-333333333333')::text;"
 
 expect_equal \
   "governance reporting history migration identity" \

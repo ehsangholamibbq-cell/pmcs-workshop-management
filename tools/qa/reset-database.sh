@@ -24,6 +24,7 @@ fi
 
 schemas=(
   action_control
+  collaboration
   commercial
   documents
   evidence

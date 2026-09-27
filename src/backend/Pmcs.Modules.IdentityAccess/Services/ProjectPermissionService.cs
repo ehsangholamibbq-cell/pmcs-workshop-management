@@ -477,6 +477,28 @@ internal sealed class ProjectPermissionService(
             ["ProjectController"] = ReportingOperatorPermissions()
         };
 
+    private static readonly Dictionary<string, IReadOnlySet<string>> CollaborationRolePermissions =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Observer"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "collaboration.read"
+            },
+            ["SiteSupervisor"] = CollaborationContributorPermissions(),
+            ["TechnicalOffice"] = CollaborationContributorPermissions(),
+            ["FinanceOperator"] = CollaborationContributorPermissions(),
+            ["FinanceManager"] = CollaborationContributorPermissions(),
+            ["ContractAdministrator"] = CollaborationContributorPermissions(),
+            ["ProcurementOperator"] = CollaborationContributorPermissions(),
+            ["ProcurementManager"] = CollaborationContributorPermissions(),
+            ["QualityController"] = CollaborationContributorPermissions(),
+            ["HseOfficer"] = CollaborationContributorPermissions(),
+            ["ProjectController"] = new HashSet<string>(CollaborationContributorPermissions(), StringComparer.OrdinalIgnoreCase)
+            {
+                "collaboration.moderate", "collaboration.convert"
+            }
+        };
+
     public async Task<bool> HasTenantPermissionAsync(
         Guid tenantId,
         Guid userId,
@@ -695,6 +717,7 @@ internal sealed class ProjectPermissionService(
     private static string[] KnownOperations() => ProjectRolePermissions.Values
         .SelectMany(permissions => permissions)
         .Concat(ReportingRolePermissions.Values.SelectMany(permissions => permissions))
+        .Concat(CollaborationRolePermissions.Values.SelectMany(permissions => permissions))
         .Where(permission => permission != "*")
         .Concat(AdministratorOnlyPermissions)
         .Concat([
@@ -754,7 +777,16 @@ internal sealed class ProjectPermissionService(
         (permissions.Contains("*") || permissions.Contains(permission) ||
             string.Equals(permission, "member-profile.read-directory", StringComparison.OrdinalIgnoreCase)) ||
         ReportingRolePermissions.TryGetValue(roleCode, out var reportingPermissions) &&
-        reportingPermissions.Contains(permission);
+        reportingPermissions.Contains(permission) ||
+        CollaborationRolePermissions.TryGetValue(roleCode, out var collaborationPermissions) &&
+        collaborationPermissions.Contains(permission);
+
+    private static HashSet<string> CollaborationContributorPermissions() =>
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "collaboration.read", "collaboration.send", "collaboration.upload",
+            "collaboration.edit-own"
+        };
 
     private static HashSet<string> ReportingOperatorPermissions() =>
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
