@@ -13,7 +13,7 @@ using Pmcs.Modules.Reporting.Services;
 
 namespace Pmcs.Modules.Reporting.Endpoints;
 
-internal static class PortfolioReportingEndpoints
+internal static partial class PortfolioReportingEndpoints
 {
     private const string CreateOperation = "reporting.run.create";
     private const string ReadOperation = "reporting.catalog.read";
@@ -28,6 +28,10 @@ internal static class PortfolioReportingEndpoints
         group.MapPost("/runs", CreateRunAsync);
         group.MapGet("/runs", ListRunsAsync);
         group.MapGet("/runs/{runId:guid}", GetRunAsync);
+        group.MapPost("/runs/{runId:guid}/retry", RetryRunAsync);
+        group.MapPost("/runs/{runId:guid}/cancel", CancelRunAsync);
+        group.MapGet("/outputs/{outputId:guid}/content", DownloadOutputAsync);
+        group.MapGet("/outputs/{outputId:guid}/verify", VerifyOutputAsync);
     }
 
     private static async Task<IResult> ListCatalogAsync(

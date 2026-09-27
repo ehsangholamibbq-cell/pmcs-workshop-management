@@ -45,6 +45,8 @@ reporting_project_technical_office_run_id="7c000000-0000-4000-8000-000000000001"
 reporting_project_quality_hse_run_id="7d000000-0000-4000-8000-000000000001"
 reporting_project_governance_action_run_id="7e000000-0000-4000-8000-000000000001"
 reporting_portfolio_summary_run_id="7f000000-0000-4000-8000-000000000001"
+reporting_portfolio_retry_run_id="7f000000-0000-4000-8000-000000000002"
+reporting_portfolio_cancelled_run_id="7f000000-0000-4000-8000-000000000003"
 system_actor_id="00000000-0000-0000-0000-000000000001"
 
 scalar() {
@@ -172,6 +174,16 @@ expect_equal \
   "portfolio worker persists a tenant snapshot and two tenant outputs" \
   "Succeeded|Complete|2|1|2|2" \
   "select run.status || '|' || run.pipeline_stage || '|' || run.output_count::text || '|' || (select count(*) from reporting.report_snapshots snapshot where snapshot.run_id = run.id and snapshot.scope = 'Portfolio' and snapshot.project_id is null and snapshot.tenant_id = run.tenant_id and snapshot.sha256 ~ '^[0-9a-f]{64}$')::text || '|' || (select count(*) from reporting.report_outputs output where output.run_id = run.id and output.scope = 'Portfolio' and output.project_id is null and output.tenant_id = run.tenant_id and output.sha256 ~ '^[0-9a-f]{64}$')::text || '|' || (select count(*) from reporting.report_outputs output join documents.assets asset on asset.id = output.generated_document_id and asset.tenant_id = output.tenant_id and asset.project_id is null and asset.owner_type = 'TenantReportOutput' and asset.owner_id = output.id and asset.sha256 = output.sha256 and asset.status = 'Released' and asset.scan_verdict = 'Clean' where output.run_id = run.id)::text from reporting.report_runs run where run.id = '${reporting_portfolio_summary_run_id}' and run.tenant_id = '${tenant_id}' and run.project_id is null and run.scope = 'Portfolio';"
+
+expect_equal \
+  "portfolio explicit retry reuses its snapshot and publishes one tenant document" \
+  "Succeeded|2|1|1|1" \
+  "select run.status || '|' || run.attempt_count::text || '|' || run.output_count::text || '|' || (select count(*) from reporting.report_snapshots snapshot where snapshot.run_id = run.id and snapshot.project_id is null)::text || '|' || (select count(*) from reporting.report_outputs output join documents.assets asset on asset.id = output.generated_document_id and asset.owner_type = 'TenantReportOutput' and asset.owner_id = output.id and asset.project_id is null where output.run_id = run.id)::text from reporting.report_runs run where run.id = '${reporting_portfolio_retry_run_id}' and run.tenant_id = '${tenant_id}' and run.project_id is null and run.scope = 'Portfolio';"
+
+expect_equal \
+  "portfolio cancelled run has no snapshot or output" \
+  "Cancelled|0|0|0" \
+  "select run.status || '|' || run.attempt_count::text || '|' || (select count(*) from reporting.report_snapshots snapshot where snapshot.run_id = run.id)::text || '|' || (select count(*) from reporting.report_outputs output where output.run_id = run.id)::text from reporting.report_runs run where run.id = '${reporting_portfolio_cancelled_run_id}' and run.tenant_id = '${tenant_id}' and run.project_id is null and run.scope = 'Portfolio';"
 
 expect_equal \
   "portfolio scope constraints exist on all three reporting stores" \

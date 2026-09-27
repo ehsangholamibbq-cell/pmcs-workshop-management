@@ -1,6 +1,9 @@
+using System.IO.Compression;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Pmcs.BuildingBlocks.Testing;
+using UglyToad.PdfPig;
 
 namespace Pmcs.TestHarness;
 
@@ -74,6 +77,13 @@ internal static partial class Program
                 $"attempts={ReadInt64(completed.Payload, "attemptCount")};" +
                 $"diagnostic={ReadOptionalString(completed.Payload, "diagnosticCode")};" +
                 $"outputs={outputs}");
+            if (HasString(completed.Payload, "status", "Succeeded"))
+            {
+                await VerifyPortfolioOutputAsync(client, key, actor, path,
+                    completed.Payload, "Pdf", assertions);
+                await VerifyPortfolioOutputAsync(client, key, actor, path,
+                    completed.Payload, "Xlsx", assertions);
+            }
         }
 
         var failed = assertions.Count(assertion => !assertion.Passed);
@@ -91,6 +101,86 @@ internal static partial class Program
             assertions
         }, JsonOptions));
         return failed == 0 ? 0 : 1;
+    }
+
+    private static async Task VerifyPortfolioOutputAsync(HttpClient client,
+        string key, PmcsTestActor actor, string path, JsonElement run,
+        string format, List<VerificationAssertion> assertions)
+    {
+        var outputId = Guid.Empty;
+        var validMetadata = TryFindOutput(run, format, out var output) &&
+            TryReadGuid(output, "id", out outputId) &&
+            TryReadString(output, "sha256", out var expectedHash) &&
+            TryReadString(output, "verificationCode", out var verificationCode) &&
+            TryReadString(output, "fileName", out var fileName) &&
+            expectedHash is { Length: 64 } &&
+            !string.IsNullOrWhiteSpace(verificationCode) &&
+            fileName!.StartsWith("portfolio-summary-", StringComparison.Ordinal);
+        Record(assertions, $"reporting.portfolio.{format}.metadata",
+            validMetadata, $"outputId={outputId}");
+        if (!validMetadata) return;
+
+        var expectedSha256 = output.GetProperty("sha256").GetString()!;
+        var code = output.GetProperty("verificationCode").GetString()!;
+        var result = await DownloadReportingOutputAsync(client, key, actor,
+            $"{path}/outputs/{outputId}/content");
+        var sha = Convert.ToHexString(SHA256.HashData(result.Bytes)).ToLowerInvariant();
+        var payloadValid = format == "Pdf"
+            ? ValidPortfolioPdf(result.Bytes, code)
+            : ValidPortfolioWorkbook(result.Bytes, code);
+        Record(assertions, $"reporting.portfolio.{format}.download.integrity",
+            result.StatusCode == HttpStatusCode.OK &&
+            result.ContentType == (format == "Pdf" ? "application/pdf" :
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") &&
+            result.NoStore && result.NoSniff && result.IsAttachment &&
+            result.ETag == $"\"sha256-{expectedSha256}\"" &&
+            sha == expectedSha256 && payloadValid,
+            $"http={(int)result.StatusCode};sha256={sha};bytes={result.Bytes.Length}");
+
+        var verified = await SendAsync(client, key, actor, HttpMethod.Get,
+            $"{path}/outputs/{outputId}/verify");
+        Record(assertions, $"reporting.portfolio.{format}.verify.valid",
+            verified.StatusCode == HttpStatusCode.OK &&
+            HasString(verified.Payload, "status", "Valid") &&
+            HasString(verified.Payload, "definitionCode", PortfolioSummaryDefinitionCode) &&
+            HasString(verified.Payload, "sha256", expectedSha256) &&
+            HasString(verified.Payload, "verificationCode", code),
+            $"http={(int)verified.StatusCode}");
+
+        var projectRoute = await SendAsync(client, key, actor, HttpMethod.Get,
+            $"/api/v1/projects/{PmcsTestDataSet.ProjectId}/reports/outputs/{outputId}/verify");
+        Record(assertions, $"reporting.portfolio.{format}.project-route-isolated",
+            projectRoute.StatusCode == HttpStatusCode.NotFound,
+            $"http={(int)projectRoute.StatusCode}");
+    }
+
+    private static bool ValidPortfolioPdf(byte[] bytes, string code)
+    {
+        if (!bytes.AsSpan().StartsWith("%PDF-"u8)) return false;
+        using var document = PdfDocument.Open(bytes);
+        return document.NumberOfPages >= 3 &&
+            string.Join('\n', document.GetPages().Select(page => page.Text))
+                .Contains(code, StringComparison.Ordinal);
+    }
+
+    private static bool ValidPortfolioWorkbook(byte[] bytes, string code)
+    {
+        try
+        {
+            using var archive = new ZipArchive(new MemoryStream(bytes, writable: false),
+                ZipArchiveMode.Read);
+            return archive.GetEntry("xl/workbook.xml") is not null &&
+                archive.Entries.Count(entry => entry.FullName.StartsWith(
+                    "xl/worksheets/sheet", StringComparison.Ordinal)) == 6 &&
+                archive.Entries.Any(entry =>
+                {
+                    if (!entry.FullName.StartsWith("xl/worksheets/sheet",
+                            StringComparison.Ordinal)) return false;
+                    using var reader = new StreamReader(entry.Open());
+                    return reader.ReadToEnd().Contains(code, StringComparison.Ordinal);
+                });
+        }
+        catch (InvalidDataException) { return false; }
     }
 
     private sealed record PortfolioSummaryRunRequest(Guid ClientGeneratedId,

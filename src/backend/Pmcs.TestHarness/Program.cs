@@ -78,6 +78,12 @@ internal static partial class Program
                     await VerifyReportingProjectGovernanceActionAsync(),
                 "verify-reporting-portfolio-summary" =>
                     await VerifyReportingPortfolioSummaryAsync(),
+                "prepare-reporting-portfolio-retry" =>
+                    await PrepareReportingPortfolioRetryAsync(),
+                "verify-reporting-portfolio-retry" =>
+                    await VerifyReportingPortfolioRetryAsync(),
+                "verify-reporting-portfolio-cancellation" =>
+                    await VerifyReportingPortfolioCancellationAsync(),
                 "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
                 "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
                 "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
@@ -510,6 +516,8 @@ internal static partial class Program
             "verify-reporting-project-commercial-procurement-supply|" +
             "verify-reporting-project-technical-office|verify-reporting-project-quality-hse|" +
             "verify-reporting-project-governance-action|verify-reporting-portfolio-summary|" +
+            "prepare-reporting-portfolio-retry|verify-reporting-portfolio-retry|" +
+            "verify-reporting-portfolio-cancellation|" +
             "verify-reporting-cancellation|" +
             "verify-reporting-recovery|" +
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +

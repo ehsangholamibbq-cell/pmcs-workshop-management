@@ -41,3 +41,16 @@ test("F10 worker rechecks pinned access and canonicalizes JSONB before digest ve
   assert.match(worker, /CanonicalJson\.Sha256\(CanonicalJson\.Normalize\([\s\S]*snapshot\.SourceManifestJson/u);
   assert.match(worker, /DocumentRetentionPolicy\.LongTerm[\s\S]*ReportOutput\.CreatePortfolio/u);
 });
+
+test("F10 tenant output and mutations recheck the pinned cohort and document owner", () => {
+  const routes = read("src/backend/Pmcs.Modules.Reporting/Endpoints/PortfolioReportingEndpoints.cs");
+  const output = read("src/backend/Pmcs.Modules.Reporting/Endpoints/PortfolioReportingOutputAccess.cs");
+  const mutations = read("src/backend/Pmcs.Modules.Reporting/Endpoints/PortfolioReportingRunMutations.cs");
+  assert.match(routes, /MapPost\("\/runs\/\{runId:guid\}\/retry"[\s\S]*MapPost\("\/runs\/\{runId:guid\}\/cancel"[\s\S]*MapGet\("\/outputs\/\{outputId:guid\}\/content"[\s\S]*MapGet\("\/outputs\/\{outputId:guid\}\/verify"/u);
+  assert.match(output, /OutputAccessEnabled[\s\S]*reporting\.output\.download[\s\S]*portfolio\.read/u);
+  assert.match(output, /CanAccessPinnedAsync[\s\S]*ReadVerifiedPortfolioOutputAsync[\s\S]*CanAccessPinnedAsync/u);
+  assert.match(output, /ReadReleasedAsync\(output\.TenantId,[\s\S]*DocumentOwnerType\.TenantReportOutput/u);
+  assert.match(output, /CanonicalJson\.Normalize\([\s\S]*ReportArtifactIdentity\.CreateManifest[\s\S]*ReportArtifactIdentity\.Sha256/u);
+  assert.match(mutations, /LockRunAsync[\s\S]*CanAccessPinnedAsync[\s\S]*MutationReplayAsync/u);
+  assert.match(mutations, /Retryable\(previous\)[\s\S]*run\.RetryFailed[\s\S]*CertifiedPortfolioReportRunRetried/u);
+});
