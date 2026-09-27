@@ -68,10 +68,12 @@ public sealed class PortfolioSummaryReportingTests
         var item = Project(Guid.NewGuid(), "IRR", 10);
         var gap = item with {
             Code = null, Name = null, BaseCurrencyCode = null, ConfigurationVersion = null,
+            ConfigurationChangedAtUtc = null,
             ConfigurationProvenAtCutoff = false,
             OperationalStatus = PortfolioDimensionStatus.InsufficientData,
             OperationalAssessment = null, Coverage = null, Freshness = null,
             Confidence = null, IsPartial = null, OperationalSnapshotId = null,
+            OperationalWatermarkUtc = null,
             OperationalSourceSha256 = null,
             Financial = new PortfolioFinancialDimension(PortfolioDimensionStatus.InsufficientData,
                 null, null, null, null, "project.configuration_history_unavailable",
@@ -84,6 +86,27 @@ public sealed class PortfolioSummaryReportingTests
             Assert.Throws<DomainRuleException>(() => Build([gap with { Name = "current" }])).Code);
     }
 
+    [Fact]
+    public void ManifestPinsSourceVersionsPermissionMaskAndCutoffProof()
+    {
+        var item = Project(Guid.NewGuid(), "IRR", 10);
+        var snapshot = Build([item]);
+        var manifest = JsonSerializer.Deserialize<PortfolioSummarySourceManifest>(
+            snapshot.SourceManifestJson, CanonicalJson.SerializerOptions)!;
+        var entry = Assert.Single(manifest.Projects);
+        Assert.Equal(item.ProjectId, entry.ProjectId);
+        Assert.Equal(item.ConfigurationChangedAtUtc, entry.ConfigurationChangedAtUtc);
+        Assert.Equal(item.OperationalWatermarkUtc, entry.OperationalWatermarkUtc);
+        Assert.True(entry.FinancialAuthorized);
+        Assert.False(entry.CommercialAuthorized);
+        Assert.Equal("pmcs.project-intelligence.project-state-reporting/v1",
+            manifest.ProjectStateSourceContractVersion);
+        Assert.Equal("reporting.portfolio.project.invalid",
+            Assert.Throws<DomainRuleException>(() => Build([
+                item with { OperationalWatermarkUtc = Cutoff.AddSeconds(1) }
+            ])).Code);
+    }
+
     private static ReportSnapshot Build(IReadOnlyCollection<PortfolioProjectSelection> items) =>
         PortfolioSummaryReportSnapshotBuilder.Build(Guid.NewGuid(),
             new PortfolioSummarySelection(TenantId, Guid.NewGuid(), Cutoff, items), Cutoff.AddSeconds(1));
@@ -94,10 +117,12 @@ public sealed class PortfolioSummaryReportingTests
 
     private static PortfolioProjectSelection Project(Guid id, string currency, decimal spend) => new(
         id, id.ToString("N"), "Project", ProjectStatus.Active,
-        new DateOnly(2026, 9, 27), "UTC", currency, 1, true, "policy-v1",
+        new DateOnly(2026, 9, 27), "UTC", currency, 1,
+        Cutoff.AddDays(-1), true, "policy-v1",
         PortfolioDimensionStatus.Available, ProjectOperationalStatus.Stable,
         DataCoverageStatus.Sufficient, DataFreshnessStatus.Current,
-        DataConfidenceStatus.Adequate, false, Guid.NewGuid(), new string('a', 64), null,
+        DataConfidenceStatus.Adequate, false, Guid.NewGuid(), Cutoff.AddHours(-1),
+        new string('a', 64), null,
         new PortfolioFinancialDimension(PortfolioDimensionStatus.Available, currency,
             spend, spend - 1, new string('b', 64), null, ReportClassification.Confidential),
         new PortfolioCommercialDimension(PortfolioDimensionStatus.NotAuthorized,

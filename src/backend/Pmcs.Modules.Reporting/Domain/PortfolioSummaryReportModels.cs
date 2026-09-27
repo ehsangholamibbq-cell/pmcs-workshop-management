@@ -51,6 +51,7 @@ internal sealed record PortfolioProjectSelection(
     string TimeZone,
     string? BaseCurrencyCode,
     long? ConfigurationVersion,
+    DateTimeOffset? ConfigurationChangedAtUtc,
     bool ConfigurationProvenAtCutoff,
     string PermissionPolicyVersion,
     PortfolioDimensionStatus OperationalStatus,
@@ -60,6 +61,7 @@ internal sealed record PortfolioProjectSelection(
     DataConfidenceStatus? Confidence,
     bool? IsPartial,
     Guid? OperationalSnapshotId,
+    DateTimeOffset? OperationalWatermarkUtc,
     string? OperationalSourceSha256,
     string? OperationalReasonCode,
     PortfolioFinancialDimension Financial,
@@ -97,13 +99,24 @@ internal sealed record PortfolioSummarySemanticSnapshot(
 internal sealed record PortfolioProjectSourceManifest(
     Guid ProjectId,
     DateOnly CutoffLocalDate,
+    string TimeZone,
+    long? ConfigurationVersion,
+    DateTimeOffset? ConfigurationChangedAtUtc,
     string PermissionPolicyVersion,
+    bool FinancialAuthorized,
+    bool CommercialAuthorized,
+    ReportClassification Classification,
+    Guid? OperationalSnapshotId,
+    DateTimeOffset? OperationalWatermarkUtc,
     string? OperationalSourceSha256,
     string? FinancialSourceManifestSha256,
     string? CommercialSourceManifestSha256);
 
 internal sealed record PortfolioSummarySourceManifest(
     string Version,
+    string ProjectStateSourceContractVersion,
+    string FinancialSourceContractVersion,
+    string CommercialSourceContractVersion,
     Guid TenantId,
     DateTimeOffset SourceCutoffUtc,
     IReadOnlyCollection<PortfolioProjectSourceManifest> Projects);

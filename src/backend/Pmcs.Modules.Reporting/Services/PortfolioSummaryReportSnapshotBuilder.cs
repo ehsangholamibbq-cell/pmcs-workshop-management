@@ -1,4 +1,7 @@
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.Commercial.Contracts;
+using Pmcs.Modules.Finance.Contracts;
+using Pmcs.Modules.ProjectIntelligence.Contracts;
 using Pmcs.Modules.Reporting.Domain;
 
 namespace Pmcs.Modules.Reporting.Services;
@@ -26,17 +29,28 @@ internal static class PortfolioSummaryReportSnapshotBuilder
         }
         foreach (var item in projects)
         {
-            ValidateProject(item);
+            ValidateProject(item, cutoff);
         }
 
         var manifest = new PortfolioSummarySourceManifest(
             PortfolioSummaryReportRuntimeContract.SourceManifestVersion,
+            ProjectStateReportingContract.Version,
+            ProjectFinancialPositionReportingContract.Version,
+            ProjectCommercialProcurementSupplyReportingContract.Version,
             selection.TenantId,
             cutoff,
             projects.Select(item => new PortfolioProjectSourceManifest(
                 item.ProjectId,
                 item.CutoffLocalDate,
+                item.TimeZone,
+                item.ConfigurationVersion,
+                item.ConfigurationChangedAtUtc,
                 item.PermissionPolicyVersion,
+                item.Financial.Status != PortfolioDimensionStatus.NotAuthorized,
+                item.Commercial.Status != PortfolioDimensionStatus.NotAuthorized,
+                item.Classification,
+                item.OperationalSnapshotId,
+                item.OperationalWatermarkUtc,
                 item.OperationalSourceSha256,
                 item.Financial.SourceManifestSha256,
                 item.Commercial.SourceManifestSha256)).ToArray());
@@ -63,8 +77,12 @@ internal static class PortfolioSummaryReportSnapshotBuilder
             builtAt, cutoff);
     }
 
-    private static void ValidateProject(PortfolioProjectSelection item)
+    private static void ValidateProject(PortfolioProjectSelection item, DateTimeOffset cutoff)
     {
+        TimeZoneInfo timeZone;
+        try { timeZone = TimeZoneInfo.FindSystemTimeZoneById(item.TimeZone); }
+        catch (TimeZoneNotFoundException) { throw Invalid("time_zone.invalid"); }
+        catch (InvalidTimeZoneException) { throw Invalid("time_zone.invalid"); }
         if (!Enum.IsDefined(item.Lifecycle) || !Enum.IsDefined(item.OperationalStatus) ||
             item.OperationalStatus == PortfolioDimensionStatus.NotAuthorized ||
             !Enum.IsDefined(item.Classification) ||
@@ -72,14 +90,18 @@ internal static class PortfolioSummaryReportSnapshotBuilder
             string.IsNullOrWhiteSpace(item.PermissionPolicyVersion) ||
             string.IsNullOrWhiteSpace(item.TimeZone) ||
             item.Financial is null || item.Commercial is null ||
-            !Enum.IsDefined(item.Financial.Status) || !Enum.IsDefined(item.Commercial.Status))
+            !Enum.IsDefined(item.Financial.Status) || !Enum.IsDefined(item.Commercial.Status) ||
+            item.CutoffLocalDate != DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(cutoff, timeZone).DateTime) ||
+            item.ConfigurationChangedAtUtc?.ToUniversalTime() > cutoff ||
+            item.OperationalWatermarkUtc?.ToUniversalTime() > cutoff)
         {
             throw Invalid("project.invalid");
         }
 
         if (!item.ConfigurationProvenAtCutoff &&
             (item.Code is not null || item.Name is not null || item.BaseCurrencyCode is not null ||
-             item.ConfigurationVersion.HasValue ||
+             item.ConfigurationVersion.HasValue || item.ConfigurationChangedAtUtc.HasValue ||
              item.OperationalStatus != PortfolioDimensionStatus.InsufficientData ||
              item.Financial.Status is not (PortfolioDimensionStatus.NotAuthorized or PortfolioDimensionStatus.InsufficientData) ||
              item.Commercial.Status is not (PortfolioDimensionStatus.NotAuthorized or PortfolioDimensionStatus.InsufficientData)))
@@ -88,7 +110,8 @@ internal static class PortfolioSummaryReportSnapshotBuilder
         }
         if (item.ConfigurationProvenAtCutoff &&
             (string.IsNullOrWhiteSpace(item.Code) || string.IsNullOrWhiteSpace(item.Name) ||
-             !Currency(item.BaseCurrencyCode) || item.ConfigurationVersion is null or <= 0))
+             !Currency(item.BaseCurrencyCode) || item.ConfigurationVersion is null or <= 0 ||
+             !item.ConfigurationChangedAtUtc.HasValue))
         {
             throw Invalid("project.configuration_invalid");
         }
@@ -97,12 +120,14 @@ internal static class PortfolioSummaryReportSnapshotBuilder
             if (!item.OperationalSnapshotId.HasValue ||
                 !item.OperationalAssessment.HasValue || !item.Coverage.HasValue ||
                 !item.Freshness.HasValue || !item.Confidence.HasValue ||
-                !item.IsPartial.HasValue || !Hash(item.OperationalSourceSha256))
+                !item.IsPartial.HasValue || !item.OperationalWatermarkUtc.HasValue ||
+                !Hash(item.OperationalSourceSha256))
             {
                 throw Invalid("operational.proof_invalid");
             }
         }
-        else if (item.OperationalSnapshotId.HasValue || item.OperationalAssessment.HasValue ||
+        else if (item.OperationalSnapshotId.HasValue || item.OperationalWatermarkUtc.HasValue ||
+                 item.OperationalAssessment.HasValue ||
                  item.Coverage.HasValue || item.Freshness.HasValue ||
                  item.Confidence.HasValue || item.IsPartial.HasValue)
         {
