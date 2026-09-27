@@ -48,6 +48,18 @@ internal static class ReportArtifactIdentity
             contentType);
     }
 
+    public static string FileName(PortfolioSummarySemanticSnapshot snapshot, ReportFormat format)
+    {
+        var extension = format switch
+        {
+            ReportFormat.Pdf => "pdf",
+            ReportFormat.Xlsx => "xlsx",
+            _ => throw new ReportRenderingException("reporting.format.unsupported",
+                transient: false, "Output format is not supported by the certified template.")
+        };
+        return $"portfolio-summary-{snapshot.AsOfUtc.UtcDateTime:yyyy-MM-dd}.{extension}";
+    }
+
     public static string FileName(DailyReportRenderSnapshot snapshot, ReportFormat format)
     {
         var current = snapshot.CurrentOfficialReportId.HasValue

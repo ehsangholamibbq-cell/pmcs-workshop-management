@@ -7,6 +7,11 @@ internal static class PortfolioSummaryReportRuntimeContract
 {
     public const string DefinitionCode = "portfolio-summary-certified";
     public const string DefinitionVersion = "1.0.0";
+    public const string TemplateVersion = "1.0.0";
+    public const string TemplateContentDigest =
+        "9a2df8c64c6f4d461130f00cd106822d529e713de0a97b9ee72c90468bd8115f";
+    public const string RendererContractVersion = "pmcs.reporting.portfolio-summary.renderer/v1";
+    public const string LayoutContractVersion = "pmcs.reporting.portfolio-summary.layout/v1";
     public const string SnapshotSchemaVersion = "pmcs.reporting.portfolio-summary.snapshot/v1";
     public const string SourceManifestVersion = "pmcs.reporting.portfolio-summary.source-manifest/v1";
     public const int MaximumProjects = 200;

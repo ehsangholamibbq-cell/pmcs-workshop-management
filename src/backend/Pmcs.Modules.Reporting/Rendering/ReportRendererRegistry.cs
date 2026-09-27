@@ -132,3 +132,17 @@ internal sealed class ProjectGovernanceActionReportRendererRegistry(
                 "reporting.format.unsupported", transient: false,
                 $"No certified project-governance-action renderer is registered for {format}.");
 }
+
+internal sealed class PortfolioSummaryReportRendererRegistry(
+    IEnumerable<IPortfolioSummaryReportRenderer> renderers)
+{
+    private readonly Dictionary<ReportFormat, IPortfolioSummaryReportRenderer> byFormat =
+        renderers.ToDictionary(renderer => renderer.Format);
+
+    public IPortfolioSummaryReportRenderer Require(ReportFormat format) =>
+        byFormat.TryGetValue(format, out var renderer)
+            ? renderer
+            : throw new ReportRenderingException(
+                "reporting.format.unsupported", transient: false,
+                $"No certified portfolio-summary renderer is registered for {format}.");
+}

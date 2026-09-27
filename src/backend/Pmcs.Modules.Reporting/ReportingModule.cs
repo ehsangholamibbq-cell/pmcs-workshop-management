@@ -139,6 +139,9 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<IProjectGovernanceActionReportRenderer, ProjectGovernanceActionReportPdfRenderer>();
         services.AddSingleton<IProjectGovernanceActionReportRenderer, ProjectGovernanceActionReportXlsxRenderer>();
         services.AddSingleton<ProjectGovernanceActionReportRendererRegistry>();
+        services.AddSingleton<IPortfolioSummaryReportRenderer, PortfolioSummaryReportPdfRenderer>();
+        services.AddSingleton<IPortfolioSummaryReportRenderer, PortfolioSummaryReportXlsxRenderer>();
+        services.AddSingleton<PortfolioSummaryReportRendererRegistry>();
         services.AddSingleton<IDatabaseMigration, ReportingInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ReportingVerificationCodeIndexMigration>();
         services.AddSingleton<IDatabaseMigration, ProjectPeriodicReportCatalogMigration>();
