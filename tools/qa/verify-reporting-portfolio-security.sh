@@ -6,6 +6,7 @@ set -euo pipefail
 : "${PMCS_QA_AUTH_KEY:?Set the independent QA gateway key.}"
 command -v psql >/dev/null
 command -v curl >/dev/null
+command -v grep >/dev/null
 
 tenant_id="11111111-1111-1111-1111-111111111111"
 foreign_tenant_id="11111111-1111-4111-8111-111111111199"
@@ -74,7 +75,7 @@ for path in "${verify_path}" "${content_path}"; do
     --header "X-Tenant-Id: ${tenant_id}" \
     --header "X-User-Id: ${administrator_id}" "${path}")"
   assert_status "tampered tenant report output" "${status}" "502"
-  if ! rg -q 'reporting.output.integrity_failed' "${response_file}"; then
+  if ! grep -q 'reporting.output.integrity_failed' "${response_file}"; then
     echo "Tampered tenant output did not return the safe diagnostic." >&2
     exit 1
   fi
@@ -87,7 +88,7 @@ status="$(curl --silent --show-error --max-time 30 --output "${response_file}" -
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${administrator_id}" "${verify_path}")"
 assert_status "restored tenant output" "${status}" "200"
-if ! rg -q '"status"[[:space:]]*:[[:space:]]*"Valid"' "${response_file}"; then
+if ! grep -Eq '"status"[[:space:]]*:[[:space:]]*"Valid"' "${response_file}"; then
   echo "Restored tenant output did not verify." >&2
   exit 1
 fi
