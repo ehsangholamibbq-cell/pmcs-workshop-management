@@ -109,6 +109,7 @@ public sealed class ReportingModule : IModule
         services.AddSingleton<ReportingWorkerTelemetry>();
         services.AddDbContext<ReportingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IReportingReadService, ReportingReadService>();
+        services.AddScoped<PortfolioSummaryReportSource>();
         services.AddSingleton<IReportRenderer, DailyReportPdfRenderer>();
         services.AddSingleton<IReportRenderer, DailyReportXlsxRenderer>();
         services.AddSingleton<ReportRendererRegistry>();

@@ -1,0 +1,109 @@
+using Pmcs.Modules.ProjectIntelligence.Domain;
+using Pmcs.Modules.Projects.Domain;
+
+namespace Pmcs.Modules.Reporting.Domain;
+
+internal static class PortfolioSummaryReportRuntimeContract
+{
+    public const string DefinitionCode = "portfolio-summary-certified";
+    public const string DefinitionVersion = "1.0.0";
+    public const string SnapshotSchemaVersion = "pmcs.reporting.portfolio-summary.snapshot/v1";
+    public const string SourceManifestVersion = "pmcs.reporting.portfolio-summary.source-manifest/v1";
+    public const int MaximumProjects = 200;
+}
+
+internal enum PortfolioDimensionStatus
+{
+    NotAuthorized = 1,
+    NotConfigured = 2,
+    NotEnabled = 3,
+    SetupRequired = 4,
+    Suspended = 5,
+    NoData = 6,
+    InsufficientData = 7,
+    Available = 8
+}
+
+internal sealed record PortfolioFinancialDimension(
+    PortfolioDimensionStatus Status,
+    string? CurrencyCode,
+    decimal? RecognizedSpend,
+    decimal? ExternalNetCash,
+    string? SourceManifestSha256,
+    string? ReasonCode,
+    ReportClassification Classification);
+
+internal sealed record PortfolioCommercialDimension(
+    PortfolioDimensionStatus Status,
+    string? CurrencyCode,
+    decimal? TotalCommittedAmount,
+    decimal? OpenCommitmentAmount,
+    string? SourceManifestSha256,
+    string? ReasonCode,
+    ReportClassification Classification);
+
+internal sealed record PortfolioProjectSelection(
+    Guid ProjectId,
+    string? Code,
+    string? Name,
+    ProjectStatus Lifecycle,
+    DateOnly CutoffLocalDate,
+    string TimeZone,
+    string? BaseCurrencyCode,
+    long? ConfigurationVersion,
+    bool ConfigurationProvenAtCutoff,
+    string PermissionPolicyVersion,
+    PortfolioDimensionStatus OperationalStatus,
+    ProjectOperationalStatus? OperationalAssessment,
+    DataCoverageStatus? Coverage,
+    DataFreshnessStatus? Freshness,
+    DataConfidenceStatus? Confidence,
+    bool? IsPartial,
+    Guid? OperationalSnapshotId,
+    string? OperationalSourceSha256,
+    string? OperationalReasonCode,
+    PortfolioFinancialDimension Financial,
+    PortfolioCommercialDimension Commercial,
+    ReportClassification Classification);
+
+internal sealed record PortfolioSummarySelection(
+    Guid TenantId,
+    Guid RequestedBy,
+    DateTimeOffset SourceCutoffUtc,
+    IReadOnlyCollection<PortfolioProjectSelection> Projects);
+
+internal sealed record PortfolioCurrencyGroup(
+    string CurrencyCode,
+    int FinancialContributorCount,
+    decimal? RecognizedSpendSubtotal,
+    decimal? ExternalNetCashSubtotal,
+    int CommercialContributorCount,
+    decimal? TotalCommittedSubtotal,
+    decimal? OpenCommitmentSubtotal,
+    bool HasIncompleteFinancial,
+    bool HasIncompleteCommercial);
+
+internal sealed record PortfolioSummarySemanticSnapshot(
+    string SchemaVersion,
+    string DefinitionCode,
+    DateTimeOffset AsOfUtc,
+    Guid TenantId,
+    int AuthorizedProjectCount,
+    ReportDataStatus DataStatus,
+    IReadOnlyCollection<PortfolioProjectSelection> Projects,
+    IReadOnlyCollection<PortfolioCurrencyGroup> CurrencyGroups,
+    string SourceManifestSha256);
+
+internal sealed record PortfolioProjectSourceManifest(
+    Guid ProjectId,
+    DateOnly CutoffLocalDate,
+    string PermissionPolicyVersion,
+    string? OperationalSourceSha256,
+    string? FinancialSourceManifestSha256,
+    string? CommercialSourceManifestSha256);
+
+internal sealed record PortfolioSummarySourceManifest(
+    string Version,
+    Guid TenantId,
+    DateTimeOffset SourceCutoffUtc,
+    IReadOnlyCollection<PortfolioProjectSourceManifest> Projects);
