@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.107.0`
+- نسخه: `1.108.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS46 Safe Checkpoint, MS47 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS47 Safe Checkpoint, MS48 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate | MS47 `20b52c1e8f685b4efa1155c652512f3e63100538`؛ tree `b27cc8be9d669eeacac5119b574a3a964830f4e3`؛ Run 419 هشت Job سبز، Artifact ۱۱قابی معتبر؛ CI مستندات شرط اعتبار |
-| Current evidence-bearing source checkpoint | `0f9f348486276dfe11294743651a7760be4aaac2`؛ MS46 documentation Run 417 هشت Job سبز، Source Run 416 و ۴۵ قاب معتبر |
-| Source lineage | UX2-MS47 ادامهٔ مستقیم MS46 documentation `0f9f348486276dfe11294743651a7760be4aaac2`، source `20b52c1e8f685b4efa1155c652512f3e63100538` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS46-C1`؛ ماتریس State و Hover غیرفعال، Runهای 416/417 هشت Job سبز؛ MS47 Candidate |
+| آخرین Source Candidate | MS48 `218dbfff78b94e8f3ce897321136544d5ef3f630`؛ tree `e4fa7ec1e393966bd01a1e1dd693863e7eef29bd`؛ Run 425 هشت Job سبز و Artifactهای فونت/Golden معتبر؛ CI مستندات شرط اعتبار |
+| Current evidence-bearing source checkpoint | `a27d798167811ba0be2a4763bb3b56d41f44e460`؛ MS47 documentation Run 420 هشت Job سبز، Source Run 419 و ۱۱ قاب معتبر |
+| Source lineage | UX2-MS48 ادامهٔ مستقیم MS47 documentation `a27d798167811ba0be2a4763bb3b56d41f44e460` است؛ Candidateهای اصلاحی فقط با Commit و fast-forward، بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS47-C1`؛ نمونهٔ Foundation، Runهای 419/420 هشت Job سبز؛ MS48 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS46-C1`؛ ماتریس State و Hover غیرفعال، Runهای 416/417 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS45-C1`؛ تمرین PDF/XLSX فونت، Runهای 414/415 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS44-C1`؛ Prototype/فونت مقایسه‌ای، Runهای 412/413 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS43-C1`؛ برگهٔ چاپ محدود و صادق، Runهای 409/410 هشت Job سبز |
@@ -106,8 +107,9 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 تأیید کرد. تغییر آتی فونت فارسی باید در تمام UI فعال/Offline و PDF/Print از
 قرارداد مرکزی نسخه‌دار ممکن باشد. در MS32 مسیر UI/Offline/Print/PDF/XLSX و assetهای
 خودمیزبان از `assets/typography/pmcs-fonts.json` تولید و کنترل می‌شوند؛ جزئیات در
-`docs/ux/pmcs-v1.1-typography-contract.md` است. فونت فارسی جدید هنوز انتخاب یا
-Qualification نشده و Gate تعویض سراسری تا آزمون بصری/چاپی آن باز است.
+`docs/ux/pmcs-v1.1-typography-contract.md` است. در MS48 وزیرمتن با اختیار
+واگذارشدهٔ مالک از مقایسهٔ MS44/45 برگزیده و در Candidate نسخهٔ `2.0.0`
+برای Web/Offline/PDF/XLSX/Print متصل شد؛ Gate بصری `VX-G5` باز است.
 
 UX2-MS33 inventory فعال ۱۱ Route و ۳۸ screenshot با manifest نسخه‌دار،
 index/SHA-256 و Fixture مرورگر قابل بازتولید را در Run 380 تثبیت کرد. تصاویر
@@ -258,9 +260,15 @@ CI مستندات MS46 در Run 417 هر هشت Job را پاس کرد و
 و تعاملی Foundation Stateها را در ۹ حالت با Action/Field/Status/
 Feedback/Table افزود. Run 419 هشت Job سبز و Artifact `11002615768`
 با ۱۱ PNG/Source/Hash/ابعاد معتبر و تصویرهای نمایندهٔ بازبینی‌شده دارد؛
-CI مستندات شرط پذیرش است. مالک اختیار انتخاب فونت را برای ادامهٔ بدون توقف واگذار کرده؛
-وزیرمتن از شواهد MS44/45 گزینهٔ کاری مستند MS48 است، اما manifest
-تولیدی تا Qualification واقعی تغییر نکرده است. `VX-G3/G4/G5` بازند.
+CI مستندات MS47 در Run 420 هشت Job سبز داشت و
+`PMCS-V1.1-UX2-MS47-C1` Safe شد. MS48 Source Candidate
+`218dbfff78b94e8f3ce897321136544d5ef3f630` / tree
+`e4fa7ec1e393966bd01a1e1dd693863e7eef29bd` با فونت وزیرمتن و
+Goldenهای PDF/XLSX نسخه‌دار ساخته شد. F05 پس از جابه‌جایی Lineage
+به صفحهٔ اول، دو صفحهٔ A4 خوانا دارد. Artifact رسمی Backend ده PDF،
+نه XLSX و ۲۶ PNG را با فونت embedded/Style ثبت می‌کند؛ Run 425
+هر هشت Job را پاس کرد و CI مستندات شرط Checkpoint MS48 است.
+`VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
 
@@ -997,7 +1005,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS47`، CI و مرور تصویرهای Stateهای Foundation است. سپس `UX2-MS48` فونت وزیرمتن را از قرارداد مرکزی نسخه‌دار و با Golden/Regression واقعی به‌طور قابل بازگشت بررسی و متصل می‌کند.**
+**گام جاری `V1.1-UX2-MS48`، CI و مرور خروجی‌های فونت وزیرمتن است. پس از Checkpoint، `UX2-MS49` قرارداد Stateهای مشترک و نمونه‌های تعاملی باقی‌مانده را تا بستهٔ قابل بازبینی `VX-G3` تکمیل می‌کند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

@@ -1,17 +1,18 @@
 # PMCS V1.1 — قرارداد فونت نسخه‌دار
 
 - شناسه: `PMCS-UX-TYPOGRAPHY-001`
-- نسخه: `1.4.0`
-- وضعیت: زیرساخت MS32 متصل؛ انتخاب فونت فارسی و Qualification بصری/چاپی باز
-- مرجع: `PMCS-V1.1-UX2-MS32-C1`، source Run 377 با هشت Job سبز
+- نسخه: `1.5.0`
+- وضعیت: وزیرمتن در Candidate تولیدی MS48 متصل؛ Gateهای `VX-G3/G4/G5` باز
+- مرجع: `PMCS-V1.1-UX2-MS32-C1` و Source Candidate `UX2-MS48`
 
 ## منبع واحد و سطوح مصرف
 
 `assets/typography/pmcs-fonts.json` تنها محل تعریف `contractVersion`، خانواده و
 fallback وب، asset اختیاری WOFF2 خودمیزبان، خانواده و فایل‌های Regular/Bold
-PDF با SHA-256 و خانوادهٔ XLSX است. وضعیت فعلی Web برابر Tahoma با fallback
-`Segoe UI, Arial, sans-serif`، PDF برابر DejaVu Sans و XLSX برابر Arial است؛
-این‌ها baseline فعلی‌اند و انتخاب فونت فارسی آینده تلقی نمی‌شوند.
+PDF با SHA-256 و خانوادهٔ XLSX است. Candidate MS48 نسخهٔ `2.0.0` این manifest
+را به `Vazirmatn` در Web/Offline، PDF، XLSX و Print ارتقا می‌دهد؛ fallback وب
+`Tahoma, Segoe UI, Arial, sans-serif` است. نسخهٔ `1.0.0` با Tahoma،
+DejaVu Sans و Arial، baseline تاریخی و مسیر بازگشت است.
 
 | سطح | خروجی تولیدشده | مصرف |
 | --- | --- | --- |
@@ -45,8 +46,8 @@ PDF با SHA-256 و خانوادهٔ XLSX است. وضعیت فعلی Web برا
 `docs/ux/prototypes/ms44/` دو WOFF2 خودمیزبان با مجوز OFL و منشأ/Hash
 ثابت برای وزیرمتن و استعداد نگه می‌دارد. انتخابگر نمونه، هر قلم را با
 Baseline در ۱۰ سناریو و ۷ حالت و Web/Desktop/Tablet/Mobile/Print A4 مقایسه
-می‌کند. این آزمایش فقط Browser Print است؛ `assets/typography/pmcs-fonts.json`
-همچنان نسخهٔ `1.0.0` با Tahoma/DejaVu/Arial تولیدی است. انتخاب مستند و تمرین
+می‌کند. این آزمایش فقط Browser Print بود؛ در زمان MS44،
+`assets/typography/pmcs-fonts.json` نسخهٔ `1.0.0` با Tahoma/DejaVu/Arial بود. انتخاب مستند و تمرین
 رندر رسمی PDF/XLSX، Golden و Offline، پیش از هر تعویض تولیدی لازم‌اند.
 
 ## تمرین ایزولهٔ UX2-MS45
@@ -59,15 +60,15 @@ Baseline در ۱۰ سناریو و ۷ حالت و Web/Desktop/Tablet/Mobile/Prin
 سبز، Artifact `10999743061` با شش خروجی و index معتبر دارد. PDF/PNGهای
 هر دو قلم بازبینی و XLSXها با parser مستقل باز شدند. این نمونه از Renderer
 رسمی و Golden محصول استفاده نمی‌کند؛ Familyهای تولیدی Tahoma/DejaVu/Arial
-و `PdfLicense=Unconfigured` عوض نشده‌اند. نصب فونت روی دستگاه گیرنده برای
+و `PdfLicense=Unconfigured` در آن مرحله عوض نشدند. نصب فونت روی دستگاه گیرنده برای
 نمایش همان قلم در XLSX همچنان شرط خارجی است.
 
 در ۲۰۲۶-۰۹-۲۹ مالک محصول اختیار انتخاب قلم را برای ادامهٔ بدون توقف UX2
 واگذار کرد. انتخاب از شواهد Web/Browser Print/تمرین PDF/XLSX با دلیل
 ثبت‌شده و Rollback نسخه‌دار انجام می‌شود؛ این اختیار جایگزین
 Qualification واقعی Offline، Renderer رسمی، Golden، Accessibility و
-چاپ پس از تغییر تولیدی نیست. تا Candidate بعدی، manifest تولیدی
-`1.0.0` و خانواده‌های موجود برقرارند.
+چاپ پس از تغییر تولیدی نیست. این بند ثبت تصمیم پیش از Candidate MS48 است؛
+manifest آن هنگام `1.0.0` بود.
 
 ## انتخاب Candidate برای UX2-MS48
 
@@ -76,8 +77,36 @@ Qualification واقعی Offline، Renderer رسمی، Golden، Accessibility و
 چاپ A4 را بدون برش اصلی نشان می‌دهند. برای متن‌های پرتراکم مدیریتی
 و جدول/گزارش، وزیرمتن در وزن معمول خوانایی یکنواخت‌تری دارد؛
 استعداد در تیترها پررنگ‌تر است. با اختیار واگذارشدهٔ مالک، `Vazirmatn`
-به‌عنوان خانوادهٔ Candidate و `Estedad` به‌عنوان گزینهٔ بازگشت
-انتخاب شدند. این قضاوت بصری است، نه نتیجهٔ Golden محصول؛ MS48 باید
-فایل‌های pinned WOFF2/TTF را از manifest مرکزی نسخه‌دار، Web/Offline/
-PDF/XLSX/Print و آزمون‌های واقعی را هم‌زمان تغییر و کنترل کند.
-manifest تولیدی هنوز `1.0.0` است.
+به‌عنوان خانوادهٔ Candidate و `Estedad` به‌عنوان گزینهٔ مقایسهٔ بعدی
+انتخاب شدند. این قضاوت بصری مبنای Candidate است و با Golden واقعی MS48
+در بخش بعدی کنترل می‌شود.
+
+## اجرای نسخه‌دار و Qualification محدود UX2-MS48
+
+manifest `2.0.0`، WOFF2 متغیر خودمیزبان با SHA-256
+`4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92`،
+TTF Regular/Bold با digestهای
+`b69fd4c680b8f3f225feabcc655a2c585d97627b8f5f5c0f9985e894069f3a56` و
+`f635fdbea28f265de395ba83b4b1570dcf2f58d13c65469e61903b1c2d2ae723`
+و مجوز OFL با digest
+`17e355067c8284f47743a1ee3b1ef7ff684ff0601eda357f9353b10b3016ab31`
+را به commit رسمی upstream `6e553e33489a8f9dfaccc76860a2e3f3c1e66de7`
+pin می‌کند. `sync.mjs --check` digest و خروجی‌های تولیدی CSS/C#/manifest/SW
+را کنترل می‌کند. Font file در Browser با digest واقعی، `document.fonts`،
+cache آفلاین و Print inheritance آزموده می‌شود؛ فاز بارگذاری آفلاین بعد از
+قطع شبکه نیز در E2E کنترل شده است. ده خانوادهٔ گزارش، PDFهای rasterized و
+XLSXهای راست‌به‌چپ از Artifact رسمی بررسی می‌شوند. در F05 جابه‌جایی بخش
+Lineage به فضای صفحهٔ اول، PDF را دوصفحه‌ای و خوانا نگه داشت.
+Source Run 425 هر هشت Job را پاس کرد؛ Golden Backend Artifact
+`11003123272` با digest
+`sha256:07964bb13f02df30b5a94ce96f14a4d46ac8c5663a2bcdbb0c39d0b0db18d460`
+و UI Artifact `11003547859` با digest
+`sha256:cd9f084c7161653a59ce7358a8275b17ab0c4a64ebd6d83c761da1dbbe1a8722`
+است. Index قاب‌های UI به Source Commit و manifest رسمی متصل است.
+
+Rollback از manifest و assetهای قبلی همراه sync و Goldenهای پیشین در
+Commit عادی قابل انجام است؛ DejaVu و fallback وب حفظ شده‌اند. XLSX نام
+خانواده را در Style دارد اما نصب فونت در دستگاه گیرنده خارج از کنترل فایل
+است. Gate `VX-G5` هنوز به ممیزی جامع Accessibility، Responsive،
+cross-browser، عملکرد و Golden همهٔ Route/Stateهای مهاجرت‌یافته نیاز دارد؛
+این Evidence فونت به‌تنهایی آن Gate را نمی‌بندد.
