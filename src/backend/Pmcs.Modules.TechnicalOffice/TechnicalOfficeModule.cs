@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.BuildingBlocks.Application;
 using Pmcs.Modules.TechnicalOffice.Endpoints;
 using Pmcs.Modules.TechnicalOffice.Contracts;
 using Pmcs.Modules.TechnicalOffice.Migrations;
@@ -22,6 +23,7 @@ public sealed class TechnicalOfficeModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddDbContext<TechnicalOfficeDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IProjectTechnicalOfficeReportingSource, ProjectTechnicalOfficeReportingSource>();
+        services.AddScoped<IProjectMessageConversionDestination, ProjectChatTechnicalConversionDestination>();
         services.AddSingleton<IDatabaseMigration, TechnicalOfficeInitialMigration>();
         services.AddSingleton<IDatabaseMigration, TechnicalReportingHistoryMigration>();
     }

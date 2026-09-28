@@ -485,7 +485,10 @@ internal sealed class ProjectPermissionService(
                 "collaboration.read"
             },
             ["SiteSupervisor"] = CollaborationContributorPermissions(),
-            ["TechnicalOffice"] = CollaborationContributorPermissions(),
+            ["TechnicalOffice"] = new HashSet<string>(CollaborationContributorPermissions(), StringComparer.OrdinalIgnoreCase)
+            {
+                "collaboration.convert"
+            },
             ["FinanceOperator"] = CollaborationContributorPermissions(),
             ["FinanceManager"] = CollaborationContributorPermissions(),
             ["ContractAdministrator"] = CollaborationContributorPermissions(),

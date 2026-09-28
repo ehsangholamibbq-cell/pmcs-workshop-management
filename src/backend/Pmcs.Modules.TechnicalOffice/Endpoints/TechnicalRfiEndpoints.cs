@@ -15,6 +15,7 @@ internal static partial class TechnicalOfficeEndpoints
     private static void MapRfiEndpoints(RouteGroupBuilder group)
     {
         group.MapPost("/rfis", CreateRfiAsync);
+        group.MapGet("/rfis/{rfiId:guid}/evidence/{documentId:guid}/content", ReadConvertedRfiEvidenceAsync);
         group.MapPost("/rfis/{rfiId:guid}/internal-review", SubmitRfiForInternalReviewAsync);
         group.MapPost("/rfis/{rfiId:guid}/return", ReturnRfiAsync);
         group.MapPost("/rfis/{rfiId:guid}/issue", IssueRfiAsync);
