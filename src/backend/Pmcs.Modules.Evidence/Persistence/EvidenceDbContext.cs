@@ -24,6 +24,9 @@ internal sealed class EvidenceDbContext(DbContextOptions<EvidenceDbContext> opti
             builder.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             builder.Property(x => x.Sha256).HasColumnName("sha256").HasMaxLength(64);
             builder.Property(x => x.ObjectKey).HasColumnName("object_key").HasMaxLength(700);
+            builder.Property(x => x.SourceMessageId).HasColumnName("source_message_id");
+            builder.Property(x => x.SourceDocumentId).HasColumnName("source_document_id");
+            builder.Property(x => x.SourceDocumentVersion).HasColumnName("source_document_version");
             builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(x => x.CapturedAtDevice).HasColumnName("captured_at_device");
             builder.Property(x => x.CreatedBy).HasColumnName("created_by");

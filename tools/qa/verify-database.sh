@@ -87,7 +87,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "62" \
+  "63" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -119,6 +119,11 @@ expect_equal \
   "action source distinction migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'action-control' and version = '20260928-004';"
+
+expect_equal \
+  "evidence converted chat source migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'evidence' and version = '20260928-002';"
 
 expect_equal \
   "collaboration stable retry, concurrent send and live recovery yield distinct messages" \

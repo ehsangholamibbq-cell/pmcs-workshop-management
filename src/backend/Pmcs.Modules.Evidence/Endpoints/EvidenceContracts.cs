@@ -32,7 +32,10 @@ public sealed record EvidenceFileResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UploadedAt,
     long Revision,
-    string ContentUrl)
+    string ContentUrl,
+    Guid? SourceMessageId,
+    Guid? SourceDocumentId,
+    int? SourceDocumentVersion)
 {
     public static EvidenceFileResponse From(EvidenceFile evidence) => new(
         evidence.Id,
@@ -48,5 +51,6 @@ public sealed record EvidenceFileResponse(
         evidence.CreatedAt,
         evidence.UploadedAt,
         evidence.Revision,
-        $"/api/v1/projects/{evidence.ProjectId}/evidence/{evidence.Id}/content");
+        $"/api/v1/projects/{evidence.ProjectId}/evidence/{evidence.Id}/content",
+        evidence.SourceMessageId, evidence.SourceDocumentId, evidence.SourceDocumentVersion);
 }

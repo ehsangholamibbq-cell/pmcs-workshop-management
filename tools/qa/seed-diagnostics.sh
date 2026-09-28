@@ -162,9 +162,15 @@ stop_api
 start_api false Unconfigured
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-action-conversions
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-technical-conversions
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-field-evidence-conversions
 stop_api
 conversion_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align --command "select (select count(*) from collaboration.message_conversions where project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from action_control.actions where id = 'ca110000-0000-4000-8000-000000000201' and source_fact_id is null and source_message_id is not null)::text || '|' || (select count(*) from action_control.issues where id = 'ca110000-0000-4000-8000-000000000202' and source_module = 'collaboration' and source_revision = 1)::text || '|' || (select count(*) from technical_office.rfis where id = 'ca110000-0000-4000-8000-000000000302')::text || '|' || (select count(*) from technical_office.documents where id = 'ca110000-0000-4000-8000-000000000303')::text || '|' || (select count(*) from technical_office.document_revisions where document_id = 'ca110000-0000-4000-8000-000000000303' and sha256 is not null)::text || '|' || (select count(*) from foundation.audit_events where event_type in ('ProjectChatConvertedToAction','ProjectChatConvertedToIssue','ProjectChatConvertedToRfi','ProjectChatConvertedToTechnicalDocument') and project_id = '33333333-3333-3333-3333-333333333333')::text;")"
-if [[ "${conversion_state}" != "4|1|1|1|1|1|4" ]]; then
+if [[ "${conversion_state}" != "6|1|1|1|1|1|4" ]]; then
   echo "Collaboration conversion lineage and owner state diverged: ${conversion_state}." >&2
+  exit 1
+fi
+field_conversion_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align --command "select (select count(*) from field_operations.daily_report_facts where id = 'ca110000-0000-4000-8000-000000000403' and reference_code like 'chat:%')::text || '|' || (select count(*) from evidence.files where id = 'ca110000-0000-4000-8000-000000000405' and source_message_id is not null and source_document_id = 'ca110000-0000-4000-8000-000000000404' and source_document_version = 1 and status = 'Uploaded')::text || '|' || (select count(*) from foundation.audit_events where event_type in ('ProjectChatConvertedToDailyFact','ProjectChatConvertedToEvidence') and project_id = '33333333-3333-3333-3333-333333333333')::text;")"
+if [[ "${field_conversion_state}" != "1|1|2" ]]; then
+  echo "Field and evidence conversion owner state diverged: ${field_conversion_state}." >&2
   exit 1
 fi

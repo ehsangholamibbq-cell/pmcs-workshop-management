@@ -11,6 +11,9 @@ using Pmcs.BuildingBlocks.Application;
 using Pmcs.Modules.Evidence.Domain;
 using Pmcs.Modules.Evidence.Persistence;
 using Pmcs.Modules.Evidence.Storage;
+using Pmcs.Modules.Documents.Contracts;
+using Pmcs.Modules.Documents.Domain;
+using Pmcs.Modules.IdentityAccess.Contracts;
 using Pmcs.Modules.FieldOperations.Contracts;
 
 namespace Pmcs.Modules.Evidence.Endpoints;
@@ -301,6 +304,8 @@ internal static class EvidenceEndpoints
         IProjectPermissionService permissionService,
         EvidenceDbContext dbContext,
         IObjectStorage objectStorage,
+        ISharedDocumentDirectory sharedDocuments,
+        IProjectCollaborationMembership membership,
         IAuditTrail auditTrail,
         IClock clock,
         CancellationToken cancellationToken)
@@ -321,7 +326,30 @@ internal static class EvidenceEndpoints
             return Results.NotFound();
         }
 
-        var content = await objectStorage.ReadAsync(evidence.ObjectKey, cancellationToken);
+        StoredObjectContent? content;
+        if (evidence.SourceMessageId.HasValue && evidence.SourceDocumentId.HasValue &&
+            evidence.SourceDocumentVersion.HasValue)
+        {
+            if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
+                !await HasPermissionAsync(permissionService, actor, projectId, "documents.read", cancellationToken))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            var released = await sharedDocuments.ReadReleasedAsync(actor.TenantId,
+                evidence.SourceDocumentId.Value, DocumentOwnerType.ProjectChat,
+                evidence.SourceMessageId.Value, cancellationToken);
+            if (released is null || released.Document.ProjectId != projectId ||
+                released.Document.VersionNumber != evidence.SourceDocumentVersion.Value ||
+                !string.Equals(released.Document.Sha256, evidence.Sha256, StringComparison.OrdinalIgnoreCase))
+                return Results.NotFound();
+            if (released.Document.Classification == DocumentClassification.Restricted &&
+                !await permissionService.HasTenantPermissionAsync(actor.TenantId,
+                    actor.UserId, "documents.read", cancellationToken))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            content = new StoredObjectContent(released.Bytes, released.Document.ContentType);
+        }
+        else
+        {
+            content = await objectStorage.ReadAsync(evidence.ObjectKey, cancellationToken);
+        }
         if (content is null)
         {
             return Results.NotFound();
@@ -340,6 +368,12 @@ internal static class EvidenceEndpoints
                     ["code"] = "evidence.storage_integrity.failed"
                 });
         }
+
+        if (evidence.SourceMessageId.HasValue &&
+            (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
+             !await HasPermissionAsync(permissionService, actor, projectId, "evidence.read", cancellationToken) ||
+             !await HasPermissionAsync(permissionService, actor, projectId, "documents.read", cancellationToken)))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         await auditTrail.WriteAsync(
             new AuditEntry(
@@ -361,6 +395,7 @@ internal static class EvidenceEndpoints
                 },
                 httpContext.TraceIdentifier),
             cancellationToken);
+        httpContext.Response.Headers.CacheControl = "no-store";
         return Results.File(
             content.Bytes,
             evidence.ContentType,
