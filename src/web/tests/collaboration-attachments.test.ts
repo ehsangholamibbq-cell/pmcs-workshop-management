@@ -4,6 +4,7 @@ import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
   downloadProjectMessageAttachment, loadProjectMessageAttachments,
+  loadProjectChatUploadState,
   type ProjectMessageAttachment,
 } from "../lib/collaboration-attachments.ts";
 
@@ -77,5 +78,30 @@ test("revoked permission and invalid identity fail before any unrestricted downl
     await assert.rejects(downloadProjectMessageAttachment("/api/pmcs", projectId, projectId, attachment),
       /مشخصات پیوست/u);
     assert.equal(requested, 2);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("author-only upload status validates owner identity and quarantine transition", async () => {
+  const previous = globalThis.fetch;
+  const expected = { assetId: documentId, originalFileName: attachment.originalFileName,
+    contentType: attachment.contentType, sizeBytes: attachment.sizeBytes, sha256: attachment.sha256 };
+  const calls: string[] = [];
+  try {
+    globalThis.fetch = async (input) => {
+      calls.push(String(input));
+      return Response.json({ id: documentId, messageId, originalFileName: expected.originalFileName,
+        contentType: expected.contentType, sizeBytes: expected.sizeBytes, sha256: expected.sha256,
+        status: "Quarantined", versionNumber: 1, releasedAt: null });
+    };
+    assert.equal((await loadProjectChatUploadState("/api/pmcs", projectId, messageId, expected)).status,
+      "Quarantined");
+    assert.equal(calls[0], `/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/uploads/${documentId}`);
+    globalThis.fetch = async () => Response.json({ id: documentId, messageId: projectId,
+      ...expected, status: "Released", versionNumber: 1, releasedAt: null });
+    await assert.rejects(loadProjectChatUploadState("/api/pmcs", projectId, messageId, expected),
+      /وضعیت آپلود/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(loadProjectChatUploadState("/api/pmcs", projectId, messageId, expected),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
   } finally { globalThis.fetch = previous; }
 });

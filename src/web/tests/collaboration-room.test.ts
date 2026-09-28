@@ -10,14 +10,17 @@ test("conversation reads the latest bounded project window and denies caching", 
   globalThis.fetch = async (input, init) => {
     requests.push({ url: String(input), cache: init?.cache });
     return Response.json(requests.length === 1
-      ? { projectId, lastSequence: 205, canModerate: true }
+      ? { projectId, lastSequence: 205, canModerate: true, canUpload: true }
       : { messages: [{ id: "m1", projectId, sequence: 205, authorUserId: "u1",
         body: "واقعیت پروژه", createdAt: "2026-09-28T00:00:00Z" }], nextSequence: 205 });
   };
   try {
     const result = await loadProjectConversation("/api/pmcs", projectId);
     assert.equal(result.kind, "ready");
-    if (result.kind === "ready") assert.equal(result.canModerate, true);
+    if (result.kind === "ready") {
+      assert.equal(result.canModerate, true);
+      assert.equal(result.canUpload, true);
+    }
     assert.deepEqual(requests, [
       { url: `/api/pmcs/api/v1/projects/${projectId}/collaboration`, cache: "no-store" },
       { url: `/api/pmcs/api/v1/projects/${projectId}/collaboration/messages?after=105`, cache: "no-store" },
@@ -56,8 +59,13 @@ test("room capability is false without a validated moderator grant", async () =>
       : { messages: [], nextSequence: 0 });
     const view = await loadProjectConversation("/api/pmcs", projectId);
     assert.equal(view.kind, "ready");
-    if (view.kind === "ready") assert.equal(view.canModerate, false);
+    if (view.kind === "ready") {
+      assert.equal(view.canModerate, false);
+      assert.equal(view.canUpload, false);
+    }
     globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canModerate: "true" });
+    await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
+    globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canUpload: "true" });
     await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
   } finally { globalThis.fetch = original; }
 });

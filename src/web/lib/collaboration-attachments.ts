@@ -15,6 +15,26 @@ export interface ProjectMessageAttachment {
   readonly contentUrl: string;
 }
 
+export interface ProjectChatUploadState {
+  readonly id: string;
+  readonly messageId: string;
+  readonly originalFileName: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+  readonly sha256: string;
+  readonly status: "PendingUpload" | "Quarantined" | "Released" | "Rejected";
+  readonly versionNumber: number;
+  readonly releasedAt: string | null;
+}
+
+export interface ProjectChatUploadExpectation {
+  readonly assetId: string;
+  readonly originalFileName: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+  readonly sha256: string;
+}
+
 const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu;
 const digest = /^[0-9a-f]{64}$/iu;
 const maximumBytes = 25 * 1024 * 1024;
@@ -38,6 +58,30 @@ async function checked(response: Response): Promise<Response> {
   if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
   if (!response.ok) throw new Error("دریافت پیوست گفت‌وگو کامل نشد.");
   return response;
+}
+
+/** Author-only status read; the generic Documents route intentionally hides ProjectChat assets. */
+export async function loadProjectChatUploadState(apiBaseUrl: string, projectId: string,
+  messageId: string, expected: ProjectChatUploadExpectation): Promise<ProjectChatUploadState> {
+  attachmentPath(projectId, messageId);
+  if (!uuid.test(expected.assetId)) throw new Error("شناسهٔ آپلود پیام معتبر نیست.");
+  const path = `/api/v1/projects/${encodeURIComponent(projectId)}/collaboration/messages/${encodeURIComponent(messageId)}/uploads/${encodeURIComponent(expected.assetId)}`;
+  const response = await checked(await fetch(`${apiBaseUrl.replace(/\/$/u, "")}${path}`,
+    { cache: "no-store" }));
+  const state = await response.json() as ProjectChatUploadState;
+  if (!state || state.id?.toLowerCase() !== expected.assetId.toLowerCase() ||
+      state.messageId?.toLowerCase() !== messageId.toLowerCase() ||
+      state.originalFileName !== expected.originalFileName ||
+      state.contentType !== expected.contentType || state.sizeBytes !== expected.sizeBytes ||
+      state.sha256?.toLowerCase() !== expected.sha256.toLowerCase() ||
+      !["PendingUpload", "Quarantined", "Released", "Rejected"].includes(state.status) ||
+      !Number.isSafeInteger(state.versionNumber) || state.versionNumber < 1 ||
+      (state.status === "Released"
+        ? typeof state.releasedAt !== "string" || !Number.isFinite(Date.parse(state.releasedAt))
+        : state.releasedAt !== null)) {
+    throw new Error("وضعیت آپلود پیام معتبر نیست.");
+  }
+  return state;
 }
 
 function validAttachment(item: ProjectMessageAttachment, projectId: string, messageId: string): boolean {

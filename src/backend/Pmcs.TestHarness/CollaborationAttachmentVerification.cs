@@ -68,15 +68,26 @@ internal static partial class Program
             "application/pdf", "qa-col1-doc-upload");
         var beforeRelease = await SendAsync(client, key, author, HttpMethod.Put,
             $"{path}/messages/{messageId}/attachments/{documentId}");
+        var quarantinedState = await SendAsync(client, key, author, HttpMethod.Get,
+            $"{path}/messages/{messageId}/uploads/{documentId}");
+        var otherActorState = await SendAsync(client, key, observer, HttpMethod.Get,
+            $"{path}/messages/{messageId}/uploads/{documentId}");
         Record(assertions, "collaboration.attachment.quarantine-blocked",
             upload.StatusCode == HttpStatusCode.OK &&
-            beforeRelease.StatusCode == HttpStatusCode.NotFound,
-            $"upload={(int)upload.StatusCode};attach={(int)beforeRelease.StatusCode}");
+            beforeRelease.StatusCode == HttpStatusCode.NotFound &&
+            quarantinedState.StatusCode == HttpStatusCode.OK &&
+            quarantinedState.Payload.GetProperty("status").GetString() == "Quarantined" &&
+            HasGuid(quarantinedState.Payload, "messageId", messageId) &&
+            otherActorState.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.NotFound,
+            $"upload={(int)upload.StatusCode};attach={(int)beforeRelease.StatusCode};" +
+            $"state={(int)quarantinedState.StatusCode};other={(int)otherActorState.StatusCode}");
 
         var revision = ReadInt64(upload.Payload, "revision") ?? 0;
         var release = await SendAsync(client, key, scanner, HttpMethod.Post,
             $"/api/v1/documents/{documentId}/release", new { baseRevision = revision },
             "qa-col1-doc-release");
+        var releasedState = await SendAsync(client, key, author, HttpMethod.Get,
+            $"{path}/messages/{messageId}/uploads/{documentId}");
         var denied = await SendAsync(client, key, observer, HttpMethod.Put,
             $"{path}/messages/{messageId}/attachments/{documentId}");
         var attach = await SendAsync(client, key, author, HttpMethod.Put,
@@ -86,6 +97,8 @@ internal static partial class Program
         Record(assertions, "collaboration.attachment.released-and-repeatable",
             release.StatusCode == HttpStatusCode.OK && denied.StatusCode == HttpStatusCode.Forbidden &&
             attach.StatusCode == HttpStatusCode.OK && repeat.StatusCode == HttpStatusCode.OK &&
+            releasedState.StatusCode == HttpStatusCode.OK &&
+            releasedState.Payload.GetProperty("status").GetString() == "Released" &&
             HasGuid(attach.Payload, "documentId", documentId),
             $"release={(int)release.StatusCode};denied={(int)denied.StatusCode};attach={(int)attach.StatusCode}");
 

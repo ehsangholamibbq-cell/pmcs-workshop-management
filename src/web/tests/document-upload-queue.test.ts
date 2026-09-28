@@ -53,3 +53,8 @@ test("offline retry reuses one idempotency identity and recovers interrupted sta
   assert.ok(!source.includes("${item.attemptCount}:session"));
   assert.match(source, /status: "queued" as const/u);
 });
+
+test("project Chat upload retry filters the shared queue by message owner", () => {
+  assert.match(source, /item\.ownerType === owner\.ownerType && item\.ownerId === owner\.ownerId/u);
+  assert.match(source, /item\.ownerType === "ProjectChat" && item\.ownerId === messageId/u);
+});

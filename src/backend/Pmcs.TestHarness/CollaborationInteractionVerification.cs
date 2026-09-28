@@ -23,7 +23,8 @@ internal static partial class Program
             moderatorRoom.StatusCode == HttpStatusCode.OK &&
             readerRoom.StatusCode == HttpStatusCode.OK &&
             moderatorRoom.Payload.GetProperty("canModerate").GetBoolean() &&
-            !readerRoom.Payload.GetProperty("canModerate").GetBoolean(),
+            !readerRoom.Payload.GetProperty("canModerate").GetBoolean() &&
+            !readerRoom.Payload.GetProperty("canUpload").GetBoolean(),
             $"moderator={(int)moderatorRoom.StatusCode};reader={(int)readerRoom.StatusCode}");
 
         var prior = await SendAsync(client, key, supervisor, HttpMethod.Get, $"{path}/messages");

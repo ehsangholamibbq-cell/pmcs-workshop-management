@@ -11,6 +11,30 @@ internal sealed class SharedDocumentDirectory(
     DocumentsDbContext dbContext,
     IDocumentObjectStorage objectStorage) : ISharedDocumentDirectory
 {
+    public Task<ProjectChatUploadReference?> FindProjectChatUploadAsync(
+        Guid tenantId,
+        Guid projectId,
+        Guid messageId,
+        Guid documentId,
+        Guid createdBy,
+        CancellationToken cancellationToken = default)
+    {
+        if (tenantId == Guid.Empty || projectId == Guid.Empty || messageId == Guid.Empty ||
+            documentId == Guid.Empty || createdBy == Guid.Empty)
+            return Task.FromResult<ProjectChatUploadReference?>(null);
+
+        return dbContext.Assets.AsNoTracking()
+            .Where(asset => asset.TenantId == tenantId && asset.ProjectId == projectId &&
+                asset.OwnerType == DocumentOwnerType.ProjectChat && asset.OwnerId == messageId &&
+                asset.Id == documentId && asset.CreatedBy == createdBy &&
+                asset.Status != DocumentAssetStatus.Deleted)
+            .Select(asset => new ProjectChatUploadReference(
+                asset.Id, asset.OwnerId, asset.OriginalFileName, asset.ContentType,
+                asset.SizeBytes, asset.Sha256, asset.Status, asset.VersionNumber,
+                asset.ReleasedAt))
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ReleasedDocumentReference>> FindReleasedAsync(
         Guid tenantId,
         IReadOnlyCollection<Guid> documentIds,

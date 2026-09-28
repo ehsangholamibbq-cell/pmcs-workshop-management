@@ -335,3 +335,73 @@ test("a project reader downloads only a verified Released message attachment and
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام با پیوست")).toHaveCount(0);
 });
+
+test("only the message author queues a Chat document and sees quarantine status across reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const bytes = Buffer.from("%PDF-1.7\nPMCS project Chat upload\n%%EOF\n", "utf8");
+  let canUpload = true;
+  let revoked = false;
+  let uploadedId = "";
+  let uploadedSha = "";
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1, canUpload }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام نویسنده", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.route(`**/api/pmcs/api/v1/upload-sessions`, (route) => {
+    const payload = route.request().postDataJSON() as {
+      clientGeneratedId: string; projectId: string; ownerType: string; ownerId: string; sha256: string;
+    };
+    expect(payload.projectId).toBe(projectId);
+    expect(payload.ownerType).toBe("ProjectChat");
+    expect(payload.ownerId).toBe(messageId);
+    expect(route.request().headers()["idempotency-key"]).toBe(`${payload.clientGeneratedId}:session`);
+    uploadedId = payload.clientGeneratedId;
+    uploadedSha = payload.sha256;
+    return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({
+      document: { id: uploadedId, status: "PendingUpload" }, uploadMethod: "PUT",
+      uploadUrl: `/api/v1/documents/${uploadedId}/content`, expiresAt: "2026-09-29T00:00:00Z",
+    }) });
+  });
+  await page.route(`**/api/pmcs/api/v1/documents/*/content`, (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(route.request().headers()["idempotency-key"]).toBe(`${uploadedId}:content`);
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ status: "Quarantined" }) });
+  });
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/uploads/`, "u"),
+    (route) => route.fulfill(revoked ? { status: 403 } : { status: 200,
+      contentType: "application/json", body: JSON.stringify({
+        id: uploadedId, messageId, originalFileName: "scope.pdf", contentType: "application/pdf",
+        sizeBytes: bytes.length, sha256: uploadedSha, status: "Quarantined",
+        versionNumber: 1, releasedAt: null,
+      }) }));
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await page.getByLabel("افزودن فایل به پیام خود").setInputFiles({
+    name: "scope.pdf", mimeType: "application/pdf", buffer: bytes,
+  });
+  await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "دریافت پیوست" })).toHaveCount(0);
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
+  canUpload = false;
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByLabel("افزودن فایل به پیام خود")).toHaveCount(0);
+  canUpload = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام نویسنده")).toHaveCount(0);
+});

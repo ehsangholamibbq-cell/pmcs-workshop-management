@@ -87,6 +87,11 @@ export interface DocumentUploadSummary {
   readonly remaining: number;
 }
 
+export interface DocumentUploadOwner {
+  readonly ownerType: DocumentOwnerType;
+  readonly ownerId: string;
+}
+
 const activeSyncs = new Map<string, Promise<DocumentUploadSummary>>();
 const maximumSizeBytes = 25 * 1024 * 1024;
 const allowedExtensions = new Map<string, readonly string[]>([
@@ -177,6 +182,7 @@ export async function recoverInterruptedDocumentUploads(projectId?: string | nul
 export function syncPendingDocumentUploads(
   apiBaseUrl: string,
   projectId?: string | null,
+  owner?: DocumentUploadOwner,
 ): Promise<DocumentUploadSummary> {
   const identity = currentLocalIdentityScope();
   const scopeKey = toScopeKey(projectId ?? null);
@@ -184,19 +190,33 @@ export function syncPendingDocumentUploads(
   const current = activeSyncs.get(key);
   if (current) return current;
 
-  const sync = drainQueue(apiBaseUrl, scopeKey).finally(() => activeSyncs.delete(key));
+  const sync = drainQueue(apiBaseUrl, scopeKey, owner).finally(() => activeSyncs.delete(key));
   activeSyncs.set(key, sync);
   return sync;
 }
 
-async function drainQueue(apiBaseUrl: string, scopeKey: string): Promise<DocumentUploadSummary> {
+export async function listProjectChatDocumentUploads(projectId: string,
+  messageId: string): Promise<readonly QueuedDocumentUpload[]> {
+  const identity = currentLocalIdentityScope();
+  const database = await openFieldDatabase();
+  try {
+    return (await readByScope(database, toScopeKey(projectId), 100_000))
+      .filter((item) => item.tenantId === identity.tenantId && item.userId === identity.userId &&
+        item.projectId === projectId && item.ownerType === "ProjectChat" && item.ownerId === messageId)
+      .sort((a, b) => b.createdAtDevice.localeCompare(a.createdAtDevice))
+      .slice(0, 20);
+  } finally { database.close(); }
+}
+
+async function drainQueue(apiBaseUrl: string, scopeKey: string,
+  owner?: DocumentUploadOwner): Promise<DocumentUploadSummary> {
   let sent = 0;
   let quarantined = 0;
   let rejected = 0;
   let deferred = 0;
   let remaining = 0;
   for (let batchNumber = 0; batchNumber < 50; batchNumber += 1) {
-    const batch = await performBatch(apiBaseUrl, scopeKey);
+    const batch = await performBatch(apiBaseUrl, scopeKey, owner);
     sent += batch.sent;
     quarantined += batch.quarantined;
     rejected += batch.rejected;
@@ -208,10 +228,12 @@ async function drainQueue(apiBaseUrl: string, scopeKey: string): Promise<Documen
   return { sent, quarantined, rejected, deferred, remaining };
 }
 
-async function performBatch(apiBaseUrl: string, scopeKey: string): Promise<DocumentUploadSummary> {
+async function performBatch(apiBaseUrl: string, scopeKey: string,
+  owner?: DocumentUploadOwner): Promise<DocumentUploadSummary> {
   const database = await openFieldDatabase();
   const queued = (await readByScope(database, scopeKey, 100_000))
-    .filter((item) => item.status === "queued")
+    .filter((item) => item.status === "queued" &&
+      (!owner || (item.ownerType === owner.ownerType && item.ownerId === owner.ownerId)))
     .slice(0, 20);
   if (queued.length === 0) {
     database.close();
@@ -274,7 +296,8 @@ async function performBatch(apiBaseUrl: string, scopeKey: string): Promise<Docum
   }
 
   const remaining = (await readByScope(database, scopeKey, 100_000))
-    .filter((item) => item.status === "queued").length;
+    .filter((item) => item.status === "queued" &&
+      (!owner || (item.ownerType === owner.ownerType && item.ownerId === owner.ownerId))).length;
   database.close();
   return { sent: queued.length, quarantined, rejected, deferred, remaining };
 }

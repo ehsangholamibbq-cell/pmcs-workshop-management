@@ -14,6 +14,40 @@ namespace Pmcs.Modules.Collaboration.Endpoints;
 
 internal static partial class CollaborationEndpoints
 {
+    private static async Task<IResult> GetAttachmentUploadAsync(Guid projectId, Guid messageId,
+        Guid documentId, HttpContext http, CollaborationRuntimeOptions runtime,
+        ICurrentActor actor, IProjectCollaborationMembership membership,
+        IProjectPermissionService permissions, IProjectDirectory projects,
+        ISharedDocumentDirectory documents, CollaborationDbContext db,
+        CancellationToken cancellationToken)
+    {
+        var gate = await GateAsync(projectId, "collaboration.upload", runtime,
+            actor, membership, permissions, projects, cancellationToken);
+        if (gate is not null) return gate;
+        var authored = await db.Messages.AsNoTracking().AnyAsync(item =>
+            item.Id == messageId && item.TenantId == actor.TenantId &&
+            item.ProjectId == projectId && item.AuthorUserId == actor.UserId &&
+            item.DeletedAt == null && item.RedactedAt == null,
+            cancellationToken);
+        if (!authored) return Results.NotFound();
+        var upload = await documents.FindProjectChatUploadAsync(actor.TenantId,
+            projectId, messageId, documentId, actor.UserId, cancellationToken);
+        if (upload is null) return Results.NotFound();
+        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "collaboration.upload", cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "documents.upload", cancellationToken))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        if (!await db.Messages.AsNoTracking().AnyAsync(item =>
+            item.Id == messageId && item.TenantId == actor.TenantId &&
+            item.ProjectId == projectId && item.AuthorUserId == actor.UserId &&
+            item.DeletedAt == null && item.RedactedAt == null, cancellationToken))
+            return Results.NotFound();
+        http.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(upload);
+    }
+
     private static async Task<IResult> AttachDocumentAsync(Guid projectId, Guid messageId,
         Guid documentId, HttpContext http, CollaborationRuntimeOptions runtime,
         ICurrentActor actor, IProjectCollaborationMembership membership,

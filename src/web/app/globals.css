@@ -1447,6 +1447,14 @@ textarea {
   padding: 0.65rem; border: 1px solid var(--border-default); border-radius: 0.75rem;
 }
 .collaboration-attachment-panel li span { overflow-wrap: anywhere; min-width: 0; }
+.collaboration-upload {
+  display: grid; justify-items: start; gap: 0.55rem; padding: 0.8rem;
+  border: 1px solid var(--border-default); border-radius: 0.75rem;
+  background: var(--status-info-surface);
+}
+.collaboration-upload input { max-width: 100%; }
+.collaboration-upload p { margin: 0; }
+.collaboration-upload ul { width: 100%; }
 .collaboration-composer {
   display: grid;
   gap: 0.7rem;

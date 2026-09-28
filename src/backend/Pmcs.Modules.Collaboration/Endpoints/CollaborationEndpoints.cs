@@ -37,6 +37,7 @@ internal static partial class CollaborationEndpoints
         group.MapDelete("/messages/{messageId:guid}/pin", UnpinMessageAsync);
         group.MapPut("/messages/{messageId:guid}/attachments/{documentId:guid}", AttachDocumentAsync);
         group.MapGet("/messages/{messageId:guid}/attachments", ListAttachmentsAsync);
+        group.MapGet("/messages/{messageId:guid}/uploads/{documentId:guid}", GetAttachmentUploadAsync);
         group.MapGet("/messages/{messageId:guid}/attachments/{documentId:guid}/content", DownloadAttachmentAsync);
         group.MapPatch("/messages/{messageId:guid}", EditMessageAsync);
         group.MapPost("/messages/{messageId:guid}/delete", DeleteMessageAsync);
@@ -65,7 +66,11 @@ internal static partial class CollaborationEndpoints
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         var canModerate = await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
             projectId, "collaboration.moderate", cancellationToken);
-        return Results.Ok(new ProjectRoomResponse(projectId, projectId, last, canModerate));
+        var canUpload = await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+            projectId, "collaboration.upload", cancellationToken) &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "documents.upload", cancellationToken);
+        return Results.Ok(new ProjectRoomResponse(projectId, projectId, last, canModerate, canUpload));
     }
 
     private static async Task<IResult> ListMessagesAsync(
@@ -236,7 +241,7 @@ internal static partial class CollaborationEndpoints
 internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? Body,
     Guid? ReplyToMessageId = null, Guid[]? MentionedUserIds = null);
 internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence,
-    bool CanModerate);
+    bool CanModerate, bool CanUpload);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,

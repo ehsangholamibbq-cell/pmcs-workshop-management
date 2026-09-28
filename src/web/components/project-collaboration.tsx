@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
@@ -10,8 +10,12 @@ import {
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
   downloadProjectMessageAttachment, loadProjectMessageAttachments,
-  type ProjectMessageAttachment,
+  loadProjectChatUploadState, type ProjectChatUploadState, type ProjectMessageAttachment,
 } from "@/lib/collaboration-attachments";
+import {
+  enqueueDocumentUpload, listProjectChatDocumentUploads, recoverInterruptedDocumentUploads,
+  syncPendingDocumentUploads, type QueuedDocumentUpload,
+} from "@/lib/document-upload-queue";
 import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
@@ -286,6 +290,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageAttachments projectId={projectId} messageId={message.id}
+                        canUpload={view.canUpload && message.authorUserId.toLowerCase() === session.userId.toLowerCase()}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt && <div className="collaboration-message-actions">
                       <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
@@ -386,9 +391,10 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
   </div>;
 }
 
-function ProjectMessageAttachments({ projectId, messageId, refreshToken, onAccessLoss }: {
+function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshToken, onAccessLoss }: {
   readonly projectId: string;
   readonly messageId: string;
+  readonly canUpload: boolean;
   readonly refreshToken: number;
   readonly onAccessLoss: (status: number) => void;
 }) {
@@ -456,6 +462,90 @@ function ProjectMessageAttachments({ projectId, messageId, refreshToken, onAcces
       </ul>}
       {notice && <span role="status">{notice}</span>}
       {error && <span role="alert">{error}</span>}
+      {canUpload && <ProjectMessageUpload projectId={projectId} messageId={messageId}
+        onAccessLoss={onAccessLoss} />}
     </div>}
   </div>;
+}
+
+function ProjectMessageUpload({ projectId, messageId, onAccessLoss }: {
+  readonly projectId: string;
+  readonly messageId: string;
+  readonly onAccessLoss: (status: number) => void;
+}) {
+  const session = usePmcsSession();
+  const [uploads, setUploads] = useState<readonly QueuedDocumentUpload[]>([]);
+  const [states, setStates] = useState<Record<string, ProjectChatUploadState>>({});
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  const refreshUploads = useCallback(async (retry: boolean) => {
+    try {
+      if (retry && navigator.onLine) {
+        await recoverInterruptedDocumentUploads(projectId);
+        await syncPendingDocumentUploads("/api/pmcs", projectId,
+          { ownerType: "ProjectChat", ownerId: messageId });
+      }
+      const items = await listProjectChatDocumentUploads(projectId, messageId);
+      setUploads(items);
+      const accepted = items.filter((item) => item.status === "quarantined" || item.status === "released");
+      const server = await Promise.all(accepted.map((item) =>
+        loadProjectChatUploadState("/api/pmcs", projectId, messageId, item)));
+      setStates(Object.fromEntries(server.map((state) => [state.id, state])));
+      setNotice(items.some((item) => item.status === "queued")
+        ? "فایل در صف امن دستگاه است؛ پس از اتصال دوباره ارسال می‌شود." : "");
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+      else setNotice("بررسی وضعیت آپلود کامل نشد؛ دوباره تلاش کنید.");
+    }
+  }, [projectId, messageId, onAccessLoss]);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.resolve().then(() => { if (active) return refreshUploads(navigator.onLine); });
+    const online = () => { void refreshUploads(true); };
+    window.addEventListener("online", online);
+    return () => { active = false; window.removeEventListener("online", online); };
+  }, [refreshUploads]);
+
+  async function selectFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || busy) return;
+    setBusy(true);
+    setNotice("در حال ثبت فایل در صف امن و کنترل امنیتی…");
+    try {
+      await enqueueDocumentUpload({
+        tenantId: session.tenantId, userId: session.userId, projectId,
+        ownerType: "ProjectChat", ownerId: messageId, file,
+        classification: "Internal", retentionPolicy: "Standard",
+      });
+      await refreshUploads(navigator.onLine);
+    } catch (failure) {
+      setNotice(failure instanceof Error ? failure.message : "ثبت فایل کامل نشد.");
+    } finally { setBusy(false); }
+  }
+
+  function uploadLabel(item: QueuedDocumentUpload): string {
+    const state = states[item.assetId];
+    if (state?.status === "Released") return "آزادشده؛ اتصال به پیام در مرحلهٔ بعد";
+    if (state?.status === "Quarantined") return "در انتظار بررسی و آزادسازی";
+    if (item.status === "rejected" || state?.status === "Rejected") return "ردشده در کنترل امنیتی";
+    if (item.status === "queued") return "در صف ارسال";
+    return "در حال بررسی وضعیت";
+  }
+
+  return <section className="collaboration-upload" aria-label="آپلود فایل برای همین پیام">
+    <label htmlFor={`chat-upload-${messageId}`}>افزودن فایل به پیام خود</label>
+    <input id={`chat-upload-${messageId}`} type="file" disabled={busy}
+      accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.txt,.log,.csv,.docx,.xlsx,.pptx"
+      onChange={(event) => void selectFile(event)} />
+    <p>فایل ابتدا اسکن و قرنطینه می‌شود؛ پس از آزادسازی می‌توان آن را به پیام متصل کرد.</p>
+    <button type="button" className="secondary-button" disabled={busy}
+      onClick={() => void refreshUploads(navigator.onLine)}>بررسی وضعیت آپلود</button>
+    {notice && <span role="status">{notice}</span>}
+    {uploads.length > 0 && <ul>{uploads.map((item) => <li key={item.assetId}>
+      <span>{item.originalFileName} · {uploadLabel(item)}</span>
+    </li>)}</ul>}
+  </section>;
 }
