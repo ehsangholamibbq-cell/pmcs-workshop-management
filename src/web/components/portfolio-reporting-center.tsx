@@ -1,18 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
 import { formatPersianDateTime } from "@/lib/persian-date";
-import { loadPortfolioReportingCenter, type PortfolioReportingCenterView } from
-  "@/lib/portfolio-reporting-center";
+import { scopedStorageKey } from "@/lib/field-database";
+import { loadPortfolioReportingCenter, type PortfolioReportDefinitionView,
+  type PortfolioReportingCenterView } from "@/lib/portfolio-reporting-center";
+import { PortfolioReportRequestAccessError, requestPortfolioReport,
+  type PortfolioReportRequest } from "@/lib/portfolio-reporting-run-request";
 
 const statusLabels: Record<string, string> = {
   Queued: "در صف", Processing: "در حال تهیه", Succeeded: "آماده", Failed: "ناموفق",
   Cancelled: "لغوشده", Available: "داده در دسترس", NoData: "بدون داده",
   InsufficientData: "داده ناکافی",
 };
+
+function pendingRequest(): PortfolioReportRequest | null {
+  try {
+    const stored = localStorage.getItem(scopedStorageKey("pmcs-portfolio-report-request"));
+    if (!stored) return null;
+    const request = JSON.parse(stored) as PortfolioReportRequest;
+    return request.definitionCode === "portfolio-summary-certified" &&
+      request.clientGeneratedId && request.templateVersion ? request : null;
+  } catch { return null; }
+}
 
 export function PortfolioReportingCenter() {
   return <PmcsSessionBoundary><PortfolioReportingContent /></PmcsSessionBoundary>;
@@ -22,11 +35,25 @@ function PortfolioReportingContent() {
   const [view, setView] = useState<PortfolioReportingCenterView | null>(null);
   const [failure, setFailure] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [format, setFormat] = useState<"Pdf" | "Xlsx">("Pdf");
+  const [pendingRun, setPendingRun] = useState<PortfolioReportRequest | null>(pendingRequest);
+  const [busy, setBusy] = useState(false);
+  const [runNotice, setRunNotice] = useState("");
+
+  const remember = useCallback((request: PortfolioReportRequest | null) => {
+    try {
+      const key = scopedStorageKey("pmcs-portfolio-report-request");
+      if (request) localStorage.setItem(key, JSON.stringify(request));
+      else localStorage.removeItem(key);
+    } catch { /* Keep the same identity in memory for this session. */ }
+    setPendingRun(request);
+  }, []);
 
   useEffect(() => {
     let active = true;
     void loadPortfolioReportingCenter("/api/pmcs").then((result) => {
       if (!active) return;
+      if (result.kind !== "ready") remember(null);
       setView(result);
       setFailure("");
     }).catch(() => {
@@ -35,7 +62,36 @@ function PortfolioReportingContent() {
       setFailure("دریافت گزارش‌های مجاز سبد کامل نشد؛ اتصال را بررسی و دوباره تلاش کنید.");
     });
     return () => { active = false; };
-  }, [refresh]);
+  }, [refresh, remember]);
+
+  async function createRun(definition: PortfolioReportDefinitionView) {
+    if (view?.kind !== "ready" || busy) return;
+    const allowed = definition.supportedFormats.filter((item): item is "Pdf" | "Xlsx" =>
+      item === "Pdf" || item === "Xlsx");
+    const selectedFormat = allowed.includes(format) ? format : allowed[0];
+    if (!selectedFormat) return;
+    const request = pendingRun ?? { clientGeneratedId: crypto.randomUUID(),
+      definitionCode: "portfolio-summary-certified" as const,
+      templateVersion: definition.templateVersion, format: selectedFormat };
+    remember(request);
+    setBusy(true);
+    setRunNotice("");
+    try {
+      await requestPortfolioReport("/api/pmcs", request);
+      remember(null);
+      setRunNotice("درخواست گزارش سبد پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.");
+      setRefresh((value) => value + 1);
+    } catch (error) {
+      if (error instanceof PortfolioReportRequestAccessError) {
+        remember(null);
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+      } else {
+        setRunNotice(error instanceof Error ? error.message : "درخواست گزارش سبد کامل نشد.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return <main className="app-shell reporting-shell">
     <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -70,6 +126,13 @@ function PortfolioReportingContent() {
           <p>مجوز سازمانی گزارش و دسترسی به سبد را با مدیر بررسی کنید.</p>
         </section>
         : <div className="reporting-sections">
+          {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
+          {pendingRun && <div className="reporting-notice reporting-pending" role="status">
+            <span>یک درخواست نیمه‌تمام سبد محفوظ است؛ پس از بررسی سابقه همان درخواست را دوباره بفرستید.</span>
+            <button className="secondary-button" type="button" onClick={() => remember(null)}>
+              کنارگذاشتن تلاش نیمه‌تمام
+            </button>
+          </div>}
           <section className="reporting-section" aria-labelledby="portfolio-report-definitions">
             <div className="reporting-section-heading"><h2 id="portfolio-report-definitions">گزارش‌های مجاز</h2>
               <span className="count-badge">{view.definitions.length.toLocaleString("fa-IR")}</span></div>
@@ -78,6 +141,19 @@ function PortfolioReportingContent() {
                 <p className="eyebrow">قالب {definition.templateVersion}</p><h3>{definition.title}</h3>
                 <p>{definition.description}</p>
                 <small>قالب‌های خروجی: {definition.supportedFormats.join("، ")}</small>
+                <div className="reporting-request">
+                  <label htmlFor="portfolio-report-format">قالب درخواستی</label>
+                  <select id="portfolio-report-format" value={definition.supportedFormats.includes(format) ?
+                    format : definition.supportedFormats[0] ?? ""} disabled={Boolean(pendingRun) || busy}
+                    onChange={(event) => setFormat(event.target.value as "Pdf" | "Xlsx")}>
+                    {definition.supportedFormats.map((item) =>
+                      <option key={item} value={item}>{item}</option>)}
+                  </select>
+                  <button type="button" disabled={busy || !definition.supportedFormats.length}
+                    onClick={() => void createRun(definition)}>
+                    {busy ? "در حال ثبت…" : pendingRun ? "تلاش دوباره با همان درخواست" : "درخواست گزارش سبد"}
+                  </button>
+                </div>
               </li>)}</ul> : <p className="reporting-state">گزارش سبد برای این نقش در دسترس نیست.</p>}
           </section>
           <section className="reporting-section" aria-labelledby="portfolio-report-runs">
