@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS36`؛ MS35 Runهای 388/389 موفق، source correction MS36 Run 393 موفق، CI مستندات شرط اعتبار
+- مرحله: `UX2-MS37`؛ MS36 Runهای 393/394 موفق، source correction MS37 Run 396 موفق، CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -15,7 +15,7 @@ Routeها کنترل می‌کند؛ اضافه‌شدن صفحهٔ جدید ب�
 
 | Route فعال | سطح | Stateهای ثبت‌شده | Capture |
 | --- | --- | --- | --- |
-| `/login` | Identity | ورود پیش از OIDC، برند، Motion کاهش‌یافته | 01 |
+| `/login` | Identity | ورود پیش از OIDC، برند، Motion کاهش‌یافته، خطای callback هویت و تلاش دوباره | 01، 42 |
 | `/` | Project Registry | فهرست پروژه | 02 |
 | `/portfolio` | Portfolio | عادی Desktop/Mobile، فیلتر خالی، Loading، خطای سرویس | 03، 20، 25–27 |
 | `/portfolio/reports` | Portfolio Reporting | خاموش پیش‌فرض، ممنوع، catalog مجاز | 24، 37–38 |
@@ -39,6 +39,9 @@ Capture 41 پیش‌نمایش نسخه‌دار تکثیر را با یک رد�
 ثبت می‌کند. Fixture مرورگر فقط پاسخ ساخت برنامه را شبیه‌سازی می‌کند؛ آزمون
 Payload و کلید Idempotency را کنترل می‌کند و حتی پس از تیک تأیید، دکمهٔ اجرا
 غیرفعال و تعداد درخواست اجرا صفر می‌ماند. هیچ مقصدی در API واقعی ساخته نمی‌شود.
+Capture 42 پیش از ورود OIDC و با پارامتر `error=identity`، پیام فارسی خطای
+callback را با `role=alert` و دکمهٔ «ورود امن» قابل تلاش دوباره ثبت می‌کند.
+Credential در صفحهٔ PMCS وارد نمی‌شود و Setup پس از Capture ورود واقعی را ادامه می‌دهد.
 
 ## دستور بازتولید و Evidence
 
@@ -49,7 +52,7 @@ Light و reduced motion اجرا می‌شود. تصاویر Command Center در
 تصویر را پس از Assertion state،
 آماده‌شدن فونت، کنترل URL و RTL می‌گیرد؛ انیمیشن و caret غیرفعال‌اند.
 
-پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۱ PNG
+پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۲ PNG
 اعلام‌شده را از نظر حضور، عدم فایل اضافی، ساختار PNG و اندازهٔ viewport کنترل
 می‌کند. `index.json` برای هر تصویر SHA-256، اندازه، Route، state و viewport و
 برای کل بسته Manifest SHA-256، Commit و Run/Attempt GitHub را ثبت می‌کند. Artifact
@@ -75,7 +78,9 @@ Artifact ۳۹تایی Run 386 با index، ابعاد و SHA-256 همهٔ تصو
 ویرایش دوباره را هم‌زمان در viewport نشان می‌دهد. Artifact ۴۱تایی Run 393
 نیز با index و SHA/ابعاد و Source/Run تطبیق شد؛ تصویر 41 Preview مسدود،
 تأیید و دکمهٔ اجرای غیرفعال را در قاب نشان می‌دهد.
-Conflict پیام و Preview مسدود تکثیر اکنون قاب مستقل دارند؛ خطای Login، چاپ و
+Artifact ۴۲تایی Run 396 نیز با index و SHA/ابعاد و Source/Run تطبیق شد؛
+تصویر 42 پیام خطای callback و دکمهٔ ورود دوباره را واضح نشان می‌دهد.
+Conflict پیام، Preview مسدود تکثیر و خطای Login اکنون قاب مستقل دارند؛ چاپ و
 بازبینی نهایی در Micro-Stepهای بعدی به Evidence مستقل نیاز دارند؛ `VX-G1` هنوز
 بسته نیست.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،

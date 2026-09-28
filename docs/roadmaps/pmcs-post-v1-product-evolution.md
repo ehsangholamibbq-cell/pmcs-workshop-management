@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.119.0`
+- نسخه سند: `1.120.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1272,6 +1272,21 @@ Run 393 هر هشت Job سبز شد و Artifact ۴۱تصویری با SHA/ابع
 بازبینی شد؛ CI مستندات شرط اعتبار Checkpoint است. بعد از Gateهای MS36،
 MS37 به خطای Login می‌پردازد. `VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
 
+UX2-MS36 documentation `6146ab37cca599f9e01e80fa633d94da32bce741` در Run 394
+هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS36-C1` Safe شد. UX2-MS37 Source
+Candidate `32d6f6bda739f399d7df5689db920cabd9acb0b9` / tree
+`f147bd703c2ad9c8fc8399a1995240a093e642ee` قاب 42 را برای خطای
+callback هویت در Login پیش از ورود واقعی OIDC افزوده است. پیام فارسی
+`role=alert` و دکمهٔ ورود دوباره در همان setup کنترل می‌شوند؛ Feature Flag
+یا Authentication flow تغییر نمی‌کند. Run 395 در Setup UI-E2E به‌دلیل
+Locator عمومی `role=alert` با route announcer خالی Next.js شکست خورد؛ correction
+`20e4a0e2ab64eb8893311cfc88daac6a60d07712` / tree
+`3c29b376e3c743e19d92276c13f86e6994e3ee90` Assertion را به Alert
+کارت Login محدود می‌کند. Run 396 هر هشت Job سبز شد و Artifact ۴۲تصویری با
+SHA/ابعاد معتبر و قاب 42 بازبینی شد؛ CI مستندات شرط اعتبار Candidate است.
+گام بعدی MS38، baseline چاپ و Print Preview است؛
+`VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1631,3 +1646,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.117.0` | UX2-MS34 Candidate نشان ثابت، Sidebar مستقل و keyboard reachability در ۳۹ screenshot؛ Run 386 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار؛ MS35 و Gateهای Visual باز |
 | `1.118.0` | UX2-MS34 documentation Run 387 هشت Job سبز و Safe؛ UX2-MS35 Candidate تصویر تعارض Chat گروه پروژه در baseline چهل‌تایی، Run 388 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS36 و Gateهای Visual باز |
 | `1.119.0` | UX2-MS35 documentation Run 389 هشت Job سبز و Safe؛ UX2-MS36 Preview مسدود تکثیر در baseline چهل‌ویک‌تایی، Runهای 390–392 علت گذار آزمون را آشکار و correction Run 393 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS37 و Gateهای Visual باز |
+| `1.120.0` | UX2-MS36 documentation Run 394 هشت Job سبز و Safe؛ UX2-MS37 Candidate خطای callback هویت در baseline چهل‌ودوتایی، Run 395 Setup assertion شکست و correction Run 396 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS38 Print و Gateهای Visual باز |

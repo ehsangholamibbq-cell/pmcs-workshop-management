@@ -167,5 +167,19 @@ Evidence به‌معنای مجوز اجرای واقعی یا Qualification ت�
 `9202660180e48a0124130123ae43fc1d6821597c` از Navigation مستقل برای
 مرحلهٔ اعضا استفاده و نبود درخواست ساخت پیش از Submit را کنترل می‌کند. Run
 393 هر هشت Job سبز و Artifact `10989402355` با ۴۱ PNG، index/SHA و ابعاد
-معتبر است؛ تصویر 41 بازبینی شد. CI مستندات شرط اعتبار Candidate است. خطای Login، Print،
+معتبر است؛ تصویر 41 بازبینی شد. CI مستندات Run 394 هشت Job سبز شد و MS36 Safe است. خطای Login، Print،
 انتخاب و Qualification فونت و بازبینی نهایی `VX-G1/G3/G4/G5` باز می‌مانند.
+
+## ۱۱. پیوست UX2-MS37 — خطای callback هویت
+
+Source Candidate `32d6f6bda739f399d7df5689db920cabd9acb0b9` تصویر 42 را از
+صفحهٔ Login پیش از نشست احرازشده می‌گیرد. پارامتر خطای callback، پیام فارسی
+با `role=alert` و امکان تلاش دوباره را ظاهر می‌کند؛ پس از Capture، Setup
+ورود واقعی OIDC را ادامه می‌دهد. Credential در صفحهٔ PMCS گرفته نمی‌شود.
+Run 395 در Setup به‌دلیل Locator عمومی Alert با route announcer خالی Next.js
+رد شد؛ correction `20e4a0e2ab64eb8893311cfc88daac6a60d07712` Alert خود کارت
+Login را هدف می‌گیرد. Run 396 هر هشت Job سبز و Artifact `10990146859` با
+۴۲ PNG، index/SHA و ابعاد معتبر است؛ تصویر 42 بازبینی شد. این Evidence فقط
+state خطا و راه بازگشت را پوشش می‌دهد؛ CI مستندات شرط اعتبار Candidate است.
+Print، فونت تازه و Qualification تمام
+Stateها و Gateهای `VX-G1/G3/G4/G5` بازند.
