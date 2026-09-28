@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.72.0`
+- نسخه: `1.73.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS12 Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS13 Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `6a5b0649d1709eb3d483331ffcec0ee52f998920`؛ tree `273511d67bc428d31e149e48e4630c45f465a3e3` |
-| Current evidence-bearing source checkpoint | `6a5b0649d1709eb3d483331ffcec0ee52f998920`؛ Run 334، هر هشت Job سبز |
-| Source lineage | UX2-MS12 ادامهٔ مستقیم MS11 checkpoint `6bc678c926d1536a7176e02ec5c97707f60d8834` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS12-C1`؛ دانلود F10، UX2-MS13 بعدی |
+| آخرین Source Candidate واجد Evidence | `8cc8c54ad471481c6231a083baa4966b8ab9e28c`؛ tree `1e73b3aeb077c6336b3b42c942ff56188cd26b15` |
+| Current evidence-bearing source checkpoint | `8cc8c54ad471481c6231a083baa4966b8ab9e28c`؛ Run 337، هر هشت Job سبز |
+| Source lineage | UX2-MS13 ادامهٔ مستقیم MS12 documentation `cfb61e60a909d632f05b8811ae6479f48b437f55` و QA correction `550820b22ef7959a7fbdc5a14f47ef100721fb4d` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS13-C1`؛ واکنش‌های Chat گروه پروژه، UX2-MS14 بعدی |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS12-C1`؛ دانلود F10، Run 334 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS11-C1`؛ درخواست F10، Run 332 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS01-C1`؛ نشان رسمی در Shell/Login، Run 307 سبز |
 | COL1 predecessor safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ ساخت متصل و Qualification بسته، Run 305 سبز |
@@ -40,7 +41,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.95.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.96.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -53,7 +54,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.79.0` | Superseded؛ `v1.80.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.95.0` | Superseded؛ `v1.96.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS33` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -67,6 +68,10 @@ Financial و Commercial مستقل؛ نبود داده هرگز صفر/سبز ت
 Application Service استفاده کند و SQL/DB مستقیم نداشته باشد؛ Chat منبع حقیقت رسمی نیست؛ Login/Profile
 و Project Bootstrap نسخه‌دار و محدود؛ Reporting یک Bounded Context مستقل؛ تمام flagهای RPT1 پیش‌فرض
 خاموش و دسترسی به خروجی fail-closed باقی بماند.
+
+مالک محصول در ۲۰۲۶-۰۹-۲۸ نشان کامل و نماد شفاف فعلی را به‌عنوان مبنای برند
+تأیید کرد. تغییر آتی فونت فارسی باید در تمام UI فعال/Offline و PDF/Print از
+قرارداد مرکزی نسخه‌دار ممکن باشد؛ انتخاب فونت و Gate تعویض سراسری هنوز باز است.
 
 ## Completed & Verified Work
 
@@ -124,6 +129,10 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
   `273511d67bc428d31e149e48e4630c45f465a3e3` در Run 334 هر هشت Job را
   پاس کرد؛ دانلود F10 در مرز Tenant با MIME/اندازه/هش و ابطال 403 در مرورگر
   واقعی تأیید شد.
+- UX2-MS13 روی source `8cc8c54ad471481c6231a083baa4966b8ab9e28c` / tree
+  `1e73b3aeb077c6336b3b42c942ff56188cd26b15` در Run 337 هر هشت Job را
+  پاس کرد؛ واکنش‌های چهارگانه با شمارش، وضعیت کاربر، read-only، 403 و
+  ماندگاری پس از Reload در مرورگر واقعی تأیید شدند.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -720,7 +729,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده برای Source: Run 281 (`36359396205`) — هر ۸ Job
+- آخرین CI بررسی‌شده برای Source: Run 337 (`36390541888`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
@@ -738,8 +747,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی `V1.1-UX2-MS13` است؛ واکنش‌های محدود گفت‌وگوی گروهی پروژه.**
-سنجاق، پیوست، تبدیل/تعدیل و مهاجرت UX2، INT1/QA1 و Production بازند.
+**گام دقیق بعدی `V1.1-UX2-MS14` است؛ سنجاق و برداشتن سنجاق با مجوز تعدیل در گفت‌وگوی گروهی پروژه.**
+پیوست، تبدیل/تعدیل و مهاجرت UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
 
