@@ -135,10 +135,16 @@ test("loading and failure states stay explicit and localized", async ({ page }) 
 
   await page.goto("/portfolio");
   await expect(page.getByText("در حال ساخت نمای مدیریتی از آخرین وضعیت‌های رسمی…")).toBeVisible();
+  const loadingPreview = page.locator(".portfolio-loading-preview");
+  await expect(loadingPreview).toBeVisible();
+  await expect(loadingPreview).toHaveAttribute("aria-hidden", "true");
+  await expect(loadingPreview.locator(".portfolio-loading-card")).toHaveCount(5);
+  await expect(page.locator(".portfolio-kpis")).toHaveCount(0);
   await captureVisualBaseline(page, "26-portfolio-loading");
   releaseRequest?.();
 
   await expect(page.getByRole("heading", { name: "داده سبد در دسترس نیست" })).toBeVisible();
+  await expect(loadingPreview).toHaveCount(0);
   await expect(page.getByText("Sensitive upstream failure must not reach the user")).toHaveCount(0);
   await expect(page.locator(".portfolio-empty-panel").getByText(/در حال حاضر مشکلی در سرور رخ داده است/u)).toBeVisible();
   await captureVisualBaseline(page, "27-portfolio-failure");

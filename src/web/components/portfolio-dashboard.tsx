@@ -135,6 +135,8 @@ function PortfolioDashboardContent() {
           {message}
         </p>
 
+        {!model && isLoading && <PortfolioLoadingPreview />}
+
         {model && (
           <>
             <section className="portfolio-kpis" aria-label="شاخص‌های کلیدی سبد پروژه‌ها">
@@ -242,6 +244,27 @@ function PortfolioDashboardContent() {
         )}
       </section>
     </main>
+  );
+}
+
+function PortfolioLoadingPreview() {
+  return (
+    <div className="portfolio-loading-preview" aria-hidden="true">
+      <div className="portfolio-loading-kpis">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div className="portfolio-loading-card" key={index}>
+            <span className="portfolio-loading-line short" />
+            <span className="portfolio-loading-line number" />
+            <span className="portfolio-loading-line medium" />
+          </div>
+        ))}
+      </div>
+      <div className="portfolio-loading-panel">
+        <span className="portfolio-loading-line medium" />
+        <span className="portfolio-loading-line wide" />
+        <span className="portfolio-loading-line wide" />
+      </div>
+    </div>
   );
 }
 
