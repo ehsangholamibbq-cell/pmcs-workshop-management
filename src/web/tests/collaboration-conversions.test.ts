@@ -7,6 +7,8 @@ import { CollaborationActionValidationError, CollaborationIssueAlreadyExists,
   CollaborationDailyFactValidationError, convertProjectMessageToDailyFact,
   CollaborationEvidenceSourceAlreadyExists, CollaborationEvidenceValidationError,
   convertProjectMessageToEvidence,
+  CollaborationTechnicalDocumentSourceAlreadyExists, CollaborationTechnicalDocumentValidationError,
+  convertProjectMessageToTechnicalDocument,
   convertProjectMessageToAction, convertProjectMessageToIssue, convertProjectMessageToRfi,
   loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
 import { CollaborationRevisionConflict } from "../lib/collaboration-interactions.ts";
@@ -164,6 +166,65 @@ test("confirmed Evidence preserves one Released chat document hash and checks th
     /مشخصات تبدیل/u);
     await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
       actor, { ...attachment, messageId: reportId }, reportId, factId, destinationId, key),
+    /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("confirmed Technical Document creates one Draft revision from a released source with exact hash lineage", async () => {
+  const previous = globalThis.fetch;
+  const actor = "10000000-0000-4000-8000-000000000041";
+  const destinationId = "10000000-0000-4000-8000-000000000036";
+  const key = "10000000-0000-4000-8000-000000000066";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "فایل فنی" } as ProjectConversationMessage;
+  const attachment = { messageId, documentId: item.documents[0].id,
+    originalFileName: item.documents[0].fileName, contentType: "application/pdf",
+    sizeBytes: 100, sha256: "a".repeat(64), versionNumber: 1,
+    releasedAt: "2026-09-28T00:01:00Z" } as ProjectMessageAttachment;
+  const details = { title: " مشخصات بتن ", type: "Specification" as const,
+    discipline: " سازه ", originator: " پیمانکار ", revisionCode: " a0 " };
+  const response = { ...item, destinationType: "TechnicalDocument", destinationId,
+    destinationReference: "DOC-001", confirmedBy: actor };
+  try {
+    let payload: unknown;
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), new RegExp(`${messageId}/conversions$`, "u"));
+      assert.equal(init?.method, "POST");
+      assert.equal(new Headers(init?.headers).get("Idempotency-Key"), key);
+      payload = JSON.parse(String(init?.body)) as unknown;
+      return Response.json(response, { status: 201 });
+    };
+    assert.equal((await convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key)).destinationReference, "DOC-001");
+    assert.deepEqual(payload, { destinationId, destinationType: "TechnicalDocument", baseRevision: 2,
+      confirmed: true, details: { title: "مشخصات بتن", type: "Specification",
+        discipline: "سازه", originator: "پیمانکار", revisionCode: "A0" },
+      documentIds: [attachment.documentId] });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 3 }, { status: 409 });
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationRevisionConflict && error.currentRevision === 3);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.technical_document.source.already_created" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key), CollaborationTechnicalDocumentSourceAlreadyExists);
+    globalThis.fetch = async () => new Response(null, { status: 422 });
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key), CollaborationTechnicalDocumentValidationError);
+    globalThis.fetch = async () => Response.json({ ...response,
+      documents: [{ ...item.documents[0], versionNumber: 2 }] }, { status: 201 });
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key), /تبار فایل/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      message, actor, attachment, { ...details, revisionCode: " " }, destinationId, key),
+    /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToTechnicalDocument("/api/pmcs", projectId,
+      { ...message, projectId: destinationId }, actor, attachment, details, destinationId, key),
     /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });

@@ -28,7 +28,8 @@ internal sealed class ProjectChatTechnicalConversionDestination(
             ? "technical.rfis.create" : "technical.documents.create";
         if (!await CanAsync(command, permission, cancellationToken) ||
             command.DestinationType == "TechnicalDocument" &&
-            !await CanAsync(command, "technical.documents.create-revision", cancellationToken))
+            (!await CanAsync(command, "technical.documents.create-revision", cancellationToken) ||
+             !await CanAsync(command, "documents.read", cancellationToken)))
             throw new ProjectMessageConversionException("collaboration.conversion.technical_permission.denied", 403);
         var project = await projects.FindProfileAsync(command.TenantId,
             command.ProjectId, cancellationToken);
@@ -85,7 +86,8 @@ internal sealed class ProjectChatTechnicalConversionDestination(
         }
         if (!await CanAsync(command, permission, cancellationToken) ||
             command.DestinationType == "TechnicalDocument" &&
-            !await CanAsync(command, "technical.documents.create-revision", cancellationToken))
+            (!await CanAsync(command, "technical.documents.create-revision", cancellationToken) ||
+             !await CanAsync(command, "documents.read", cancellationToken)))
             throw new ProjectMessageConversionException("collaboration.conversion.technical_permission.denied", 403);
         await db.SaveChangesAsync(cancellationToken);
         await effects.WriteEventAsync(command.Connection, command.Transaction,

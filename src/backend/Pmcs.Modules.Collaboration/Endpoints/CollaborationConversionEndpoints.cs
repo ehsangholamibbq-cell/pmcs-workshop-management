@@ -94,15 +94,17 @@ internal static partial class CollaborationEndpoints
             new ProjectMessageDocumentReference(item.Id, item.Sha256,
                 item.VersionNumber, item.OriginalFileName,
                 item.ContentType, item.SizeBytes)).ToArray();
-        if (request.DestinationType == "Evidence" && references.Length == 1)
+        if (request.DestinationType is ("Evidence" or "TechnicalDocument") && references.Length == 1)
         {
-            var priorEvidence = await db.Conversions.AsNoTracking().Where(item =>
+            var priorFromSource = await db.Conversions.AsNoTracking().Where(item =>
                 item.TenantId == actor.TenantId && item.ProjectId == projectId &&
-                item.MessageId == messageId && item.DestinationType == "Evidence")
+                item.MessageId == messageId && item.DestinationType == request.DestinationType)
                 .Select(item => item.DocumentReferencesJson).ToArrayAsync(cancellationToken);
-            if (priorEvidence.Any(json => (JsonSerializer.Deserialize<ProjectMessageDocumentReference[]>(json) ?? [])
+            if (priorFromSource.Any(json => (JsonSerializer.Deserialize<ProjectMessageDocumentReference[]>(json) ?? [])
                     .Any(document => document.Id == references[0].Id)))
-                return Results.Conflict(new { code = "collaboration.conversion.evidence.source.already_created" });
+                return Results.Conflict(new { code = request.DestinationType == "Evidence"
+                    ? "collaboration.conversion.evidence.source.already_created"
+                    : "collaboration.conversion.technical_document.source.already_created" });
         }
         if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
             !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,

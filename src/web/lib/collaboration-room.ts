@@ -20,7 +20,7 @@ export type ProjectConversationView =
       readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean;
       readonly canConvertAction: boolean; readonly canConvertIssue: boolean;
       readonly canConvertRfi: boolean; readonly canConvertDailyFact: boolean;
-      readonly canConvertEvidence: boolean }
+      readonly canConvertEvidence: boolean; readonly canConvertTechnicalDocument: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -43,6 +43,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     canConvertRfi?: boolean;
     canConvertDailyFact?: boolean;
     canConvertEvidence?: boolean;
+    canConvertTechnicalDocument?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
@@ -56,11 +57,13 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
       (roomValue.canConvertRfi !== undefined && typeof roomValue.canConvertRfi !== "boolean") ||
       (roomValue.canConvertDailyFact !== undefined && typeof roomValue.canConvertDailyFact !== "boolean") ||
       (roomValue.canConvertEvidence !== undefined && typeof roomValue.canConvertEvidence !== "boolean") ||
+      (roomValue.canConvertTechnicalDocument !== undefined && typeof roomValue.canConvertTechnicalDocument !== "boolean") ||
       (roomValue.canConvertAction === true && roomValue.canConvert !== true) ||
       (roomValue.canConvertIssue === true && roomValue.canConvert !== true) ||
       (roomValue.canConvertRfi === true && roomValue.canConvert !== true) ||
       (roomValue.canConvertDailyFact === true && roomValue.canConvert !== true) ||
-      (roomValue.canConvertEvidence === true && roomValue.canConvert !== true)) {
+      (roomValue.canConvertEvidence === true && roomValue.canConvert !== true) ||
+      (roomValue.canConvertTechnicalDocument === true && roomValue.canConvert !== true)) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -96,5 +99,6 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   canConvertIssue: roomValue.canConvertIssue === true,
   canConvertRfi: roomValue.canConvertRfi === true,
   canConvertDailyFact: roomValue.canConvertDailyFact === true,
-  canConvertEvidence: roomValue.canConvertEvidence === true };
+  canConvertEvidence: roomValue.canConvertEvidence === true,
+  canConvertTechnicalDocument: roomValue.canConvertTechnicalDocument === true };
 }

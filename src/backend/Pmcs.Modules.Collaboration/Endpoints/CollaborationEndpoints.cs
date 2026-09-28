@@ -87,9 +87,16 @@ internal static partial class CollaborationEndpoints
                 projectId, "evidence.upload", cancellationToken) &&
             await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
                 projectId, "documents.read", cancellationToken);
+        var canConvertTechnicalDocument = canConvert &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "technical.documents.create", cancellationToken) &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "technical.documents.create-revision", cancellationToken) &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "documents.read", cancellationToken);
         return Results.Ok(new ProjectRoomResponse(projectId, projectId, last,
             canModerate, canUpload, canEditOwn, canConvert, canConvertAction, canConvertIssue,
-            canConvertRfi, canConvertDailyFact, canConvertEvidence));
+            canConvertRfi, canConvertDailyFact, canConvertEvidence, canConvertTechnicalDocument));
     }
 
     private static async Task<IResult> ListMessagesAsync(
@@ -262,7 +269,7 @@ internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? B
 internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence,
     bool CanModerate, bool CanUpload, bool CanEditOwn, bool CanConvert,
     bool CanConvertAction, bool CanConvertIssue, bool CanConvertRfi, bool CanConvertDailyFact,
-    bool CanConvertEvidence);
+    bool CanConvertEvidence, bool CanConvertTechnicalDocument);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,

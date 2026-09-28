@@ -3,6 +3,7 @@ import { CollaborationRevisionConflict } from "./collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "./collaboration-room.ts";
 import type { DailyFactKind, DailyImpactLevel } from "./field-facts.ts";
 import type { ProjectMessageAttachment } from "./collaboration-attachments.ts";
+import type { TechnicalDocumentType } from "./technical-office.ts";
 
 export interface ProjectMessageConversionLineage {
   readonly id: string;
@@ -462,6 +463,96 @@ export async function convertProjectMessageToEvidence(apiBaseUrl: string, projec
       document?.contentType !== attachment.contentType ||
       document?.sizeBytes !== attachment.sizeBytes) {
     throw new Error("تأیید Evidence و تبار فایل معتبر نیست.");
+  }
+  return result;
+}
+
+export class CollaborationTechnicalDocumentSourceAlreadyExists extends Error {
+  constructor() { super("از این فایل پیام قبلاً سند فنی رسمی ساخته شده است؛ تبار را تازه‌سازی کنید."); }
+}
+
+export class CollaborationTechnicalDocumentValidationError extends Error {
+  constructor() { super("نوع سند، مشخصات Revision یا فایل آزادشده پذیرفته نشد."); }
+}
+
+export interface ProjectTechnicalDocumentConversionDetails {
+  readonly title: string;
+  readonly type: TechnicalDocumentType;
+  readonly discipline: string;
+  readonly originator: string;
+  readonly revisionCode: string;
+}
+
+const technicalDocumentTypes: readonly TechnicalDocumentType[] = ["Drawing", "Specification",
+  "MethodStatement", "MaterialSubmittal", "ShopDrawing", "CalculationOrReport",
+  "MeetingMinute", "Correspondence", "Instruction", "MeasurementSheet",
+  "HandoverOrTestRecord", "Other"];
+
+/** Creates one Draft Technical Document and WIP revision from a confirmed Released chat file. */
+export async function convertProjectMessageToTechnicalDocument(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, actorUserId: string, attachment: ProjectMessageAttachment,
+  details: ProjectTechnicalDocumentConversionDetails,
+  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  const title = details.title.trim();
+  const discipline = details.discipline.trim();
+  const originator = details.originator.trim();
+  const revisionCode = details.revisionCode.trim().toUpperCase();
+  if (!guid(projectId) || !guid(message.id) || !guid(actorUserId) ||
+      !guid(destinationId) || !guid(idempotencyKey) ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      message.deletedAt || message.redactedAt ||
+      attachment.messageId?.toLowerCase() !== message.id.toLowerCase() ||
+      !guid(attachment.documentId) || !/^[0-9a-f]{64}$/iu.test(attachment.sha256) ||
+      !Number.isSafeInteger(attachment.versionNumber) || attachment.versionNumber < 1 ||
+      !Number.isSafeInteger(attachment.sizeBytes) || attachment.sizeBytes < 1 ||
+      attachment.sizeBytes > 25 * 1024 * 1024 ||
+      !title || title.length > 240 || !technicalDocumentTypes.includes(details.type) ||
+      !discipline || discipline.length > 120 || originator.length > 240 ||
+      !revisionCode || revisionCode.length > 80 ||
+      /[\x00-\x08\x0b-\x1f\x7f]/u.test(title + discipline + originator + revisionCode) ||
+      typeof attachment.releasedAt !== "string" ||
+      !Number.isFinite(Date.parse(attachment.releasedAt))) {
+    throw new Error("مشخصات تبدیل به سند فنی معتبر نیست.");
+  }
+  const url = `${apiBaseUrl.replace(/\/$/u, "")}/api/v1/projects/${encodeURIComponent(projectId)}` +
+    `/collaboration/messages/${encodeURIComponent(message.id)}/conversions`;
+  const response = await fetch(url, {
+    method: "POST", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ destinationId, destinationType: "TechnicalDocument",
+      baseRevision: message.revision, confirmed: true,
+      details: { title, type: details.type, discipline, originator: originator || null, revisionCode },
+      documentIds: [attachment.documentId] }),
+  });
+  if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as { code?: string; currentRevision?: number } | null;
+    if (conflict?.code === "collaboration.message.revision.conflict") {
+      const revision = conflict.currentRevision;
+      throw new CollaborationRevisionConflict(Number.isSafeInteger(revision) && revision! > 0 ? revision! : null);
+    }
+    if (conflict?.code === "collaboration.conversion.technical_document.source.already_created" ||
+        conflict?.code === "collaboration.conversion.destination_id.reused")
+      throw new CollaborationTechnicalDocumentSourceAlreadyExists();
+    throw new Error("تعارض در تبدیل رسمی؛ تبار پیام را بازخوانی کنید.");
+  }
+  if (response.status === 422) throw new CollaborationTechnicalDocumentValidationError();
+  if (![200, 201].includes(response.status)) throw new Error("ثبت سند فنی رسمی کامل نشد.");
+  const result = await response.json() as ProjectMessageConversionLineage;
+  const document = result?.documents?.[0];
+  if (!validLineage(result, message.id) || result.destinationType !== "TechnicalDocument" ||
+      result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
+      result.messageRevision !== message.revision ||
+      result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
+      result.documents.length !== 1 ||
+      document?.id.toLowerCase() !== attachment.documentId.toLowerCase() ||
+      document?.sha256.toLowerCase() !== attachment.sha256.toLowerCase() ||
+      document?.versionNumber !== attachment.versionNumber ||
+      document?.fileName !== attachment.originalFileName ||
+      document?.contentType !== attachment.contentType ||
+      document?.sizeBytes !== attachment.sizeBytes) {
+    throw new Error("تأیید سند فنی و تبار فایل معتبر نیست.");
   }
   return result;
 }

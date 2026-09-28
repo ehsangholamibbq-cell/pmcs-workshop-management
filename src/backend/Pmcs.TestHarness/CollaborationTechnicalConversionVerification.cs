@@ -23,7 +23,9 @@ internal static partial class Program
             officeRoom.StatusCode == HttpStatusCode.OK &&
             observerRoom.StatusCode == HttpStatusCode.OK &&
             officeRoom.Payload.GetProperty("canConvertRfi").GetBoolean() &&
-            !observerRoom.Payload.GetProperty("canConvertRfi").GetBoolean(),
+            officeRoom.Payload.GetProperty("canConvertTechnicalDocument").GetBoolean() &&
+            !observerRoom.Payload.GetProperty("canConvertRfi").GetBoolean() &&
+            !observerRoom.Payload.GetProperty("canConvertTechnicalDocument").GetBoolean(),
             $"office={(int)officeRoom.StatusCode};observer={(int)observerRoom.StatusCode}");
         var message = await SendAsync(client, key, office, HttpMethod.Post,
             $"{path}/messages", new
@@ -92,6 +94,15 @@ internal static partial class Program
                 details = new { title = "مشخصات بتن", type = "Specification",
                     discipline = "سازه", revisionCode = "A0" }
             }, "qa-col1-technical-document");
+        var duplicateTechnical = await SendAsync(client, key, office, HttpMethod.Post,
+            $"{path}/messages/{messageId}/conversions", new
+            {
+                destinationId = Guid.Parse("ca110000-0000-4000-8000-000000000308"),
+                destinationType = "TechnicalDocument", baseRevision = 1, confirmed = true,
+                documentIds = new[] { documentId },
+                details = new { title = "مشخصات تکراری", type = "Specification",
+                    discipline = "سازه", revisionCode = "A0" }
+            }, "qa-ux2-technical-document-duplicate");
         var lineage = await SendAsync(client, key, office, HttpMethod.Get,
             $"{path}/messages/{messageId}/conversions");
         var state = await SendAsync(client, key, office, HttpMethod.Get,
@@ -109,6 +120,9 @@ internal static partial class Program
             rfi.StatusCode == HttpStatusCode.Created &&
             duplicateRfi.StatusCode == HttpStatusCode.Conflict &&
             technical.StatusCode == HttpStatusCode.Created &&
+            duplicateTechnical.StatusCode == HttpStatusCode.Conflict &&
+            duplicateTechnical.Payload.GetProperty("code").GetString() ==
+                "collaboration.conversion.technical_document.source.already_created" &&
             lineage.StatusCode == HttpStatusCode.OK &&
             lineage.Payload.GetArrayLength() == 2 &&
             officialRfi.ValueKind == JsonValueKind.Object &&
