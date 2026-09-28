@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.114.0`
+- نسخه سند: `1.115.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1203,6 +1203,15 @@ Conflict فایل‌ها/تبار را تازه می‌کند و تأیید دو
 Conflict، Reload و 403 را تأیید کرد. Exact next `UX2-MS32` قرارداد مرکزی
 نسخه‌دار فونت برای UI/Offline/PDF/XLSX/Print است؛ مهاجرت و Gateهای بصری بازند.
 
+UX2-MS32 روی source `07d7f2e2c4bf9eea8e47b636c5dacd6f6e9bb9ea` / tree
+`92abf70a377c0fba939f6ffc145d861b09d9b4ff` در Run 377
+(`36440859534`) هر هشت Job را پاس کرد. Manifest نسخه‌دار فونت، CSS رابط فعال
+و Offline/Print، Fontهای PDF با Hash، Family تمام XLSXها، asset خودمیزبان
+و cache نسخه‌دار را به یک مسیر تولید/بررسی متصل می‌کند. فونت موجود و Goldenهای
+گزارش حفظ شده‌اند؛ انتخاب فونت فارسی آینده و آزمون بصری/چاپی آن باز است.
+Exact next `UX2-MS33` inventory تازهٔ صفحات/stateها و screenshot baseline
+قابل بازتولید برای `VX-G1` است؛ سایر Gateهای بصری بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1557,3 +1566,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.112.0` | UX2-MS29 انتخاب صریح پیوست Released برای تبار Action با Run 371 هشت Job سبز؛ MS30 پیوست Issue و Gateهای UX2 باز |
 | `1.113.0` | UX2-MS30 انتخاب صریح پیوست Released برای شواهد Issue با Run 373 هشت Job سبز؛ MS31 پیوست RFI و Gateهای UX2 باز |
 | `1.114.0` | UX2-MS31 انتخاب صریح پیوست Released برای شواهد Draft RFI با Run 375 هشت Job سبز؛ MS32 قرارداد فونت و Gateهای UX2 باز |
+| `1.115.0` | UX2-MS32 قرارداد نسخه‌دار فونت UI/Offline/PDF/XLSX/Print با Run 377 هشت Job سبز؛ MS33 ممیزی بصری و Gateهای UX2 باز |
