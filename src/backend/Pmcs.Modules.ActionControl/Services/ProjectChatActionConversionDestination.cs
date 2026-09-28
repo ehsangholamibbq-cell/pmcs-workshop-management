@@ -65,6 +65,11 @@ internal sealed class ProjectChatActionConversionDestination(
         else
         {
             var details = Read<IssueDetails>(command.Details);
+            if (await db.Issues.AsNoTracking().AnyAsync(item =>
+                    item.TenantId == command.TenantId && item.ProjectId == command.ProjectId &&
+                    item.SourceModule == "collaboration" && item.SourceEntityType == "ProjectMessage" &&
+                    item.SourceEntityId == command.MessageId, cancellationToken))
+                throw new ProjectMessageConversionException("collaboration.conversion.issue.already_created", 409);
             if (details.Confidentiality != RecordConfidentiality.GeneralProject &&
                 !await permissions.HasProjectPermissionAsync(command.TenantId,
                     command.ActorUserId, command.ProjectId, "governance.sensitive.write", cancellationToken))

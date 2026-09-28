@@ -79,12 +79,20 @@ internal static partial class Program
                     severity = "Medium", urgency = "Soon", ownerUserId = supervisor.UserId,
                     targetResolutionDate = "2099-01-01", confidentiality = "GeneralProject" } },
             "qa-col1-issue-conversion");
+        var duplicateIssue = await SendAsync(client, key, controller, HttpMethod.Post,
+            $"{path}/messages/{sourceId}/conversions", new { destinationId = Guid.NewGuid(),
+                destinationType = "Issue", baseRevision = 1, confirmed = true,
+                details = new { title = "تکرار مسئله", category = "Coordination",
+                    severity = "Medium", urgency = "Soon", ownerUserId = supervisor.UserId,
+                    targetResolutionDate = "2099-01-01", confidentiality = "GeneralProject" } },
+            "qa-ux2-issue-duplicate");
         var lineage = await SendAsync(client, key, controller, HttpMethod.Get,
             $"{path}/messages/{sourceId}/conversions");
         var governance = await SendAsync(client, key, controller, HttpMethod.Get,
             $"/api/v1/projects/{PmcsTestDataSet.ProjectId}/governance");
         Record(assertions, "collaboration.conversion.issue-owner-and-lineage",
             issue.StatusCode == HttpStatusCode.Created &&
+            duplicateIssue.StatusCode == HttpStatusCode.Conflict &&
             HasGuid(issue.Payload, "destinationId", issueId) &&
             lineage.StatusCode == HttpStatusCode.OK &&
             lineage.Payload.GetArrayLength() == 2 &&
@@ -94,7 +102,7 @@ internal static partial class Program
                 item.GetProperty("sourceModule").GetString() == "collaboration" &&
                 item.GetProperty("evidenceReferences").EnumerateArray().Any(reference =>
                     reference.GetString() == $"collaboration:message:{sourceId:N}:revision:1")),
-            $"issue={(int)issue.StatusCode};lineage={(int)lineage.StatusCode};governance={(int)governance.StatusCode}");
+            $"issue={(int)issue.StatusCode};duplicate={(int)duplicateIssue.StatusCode};lineage={(int)lineage.StatusCode};governance={(int)governance.StatusCode}");
 
         var failed = assertions.Count(item => !item.Passed);
         Console.WriteLine(JsonSerializer.Serialize(new

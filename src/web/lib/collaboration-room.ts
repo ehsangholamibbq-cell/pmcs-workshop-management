@@ -18,7 +18,7 @@ export type ProjectConversationView =
   | { readonly kind: "ready"; readonly messages: readonly ProjectConversationMessage[];
       readonly lastSequence: number; readonly canModerate: boolean;
       readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean;
-      readonly canConvertAction: boolean }
+      readonly canConvertAction: boolean; readonly canConvertIssue: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -37,6 +37,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     canUpload?: boolean; canEditOwn?: boolean;
     canConvert?: boolean;
     canConvertAction?: boolean;
+    canConvertIssue?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
@@ -46,7 +47,9 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
       (roomValue.canEditOwn !== undefined && typeof roomValue.canEditOwn !== "boolean") ||
       (roomValue.canConvert !== undefined && typeof roomValue.canConvert !== "boolean") ||
       (roomValue.canConvertAction !== undefined && typeof roomValue.canConvertAction !== "boolean") ||
-      (roomValue.canConvertAction === true && roomValue.canConvert !== true)) {
+      (roomValue.canConvertIssue !== undefined && typeof roomValue.canConvertIssue !== "boolean") ||
+      (roomValue.canConvertAction === true && roomValue.canConvert !== true) ||
+      (roomValue.canConvertIssue === true && roomValue.canConvert !== true)) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -78,5 +81,6 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   })), lastSequence,
   canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true,
   canEditOwn: roomValue.canEditOwn === true, canConvert: roomValue.canConvert === true,
-  canConvertAction: roomValue.canConvertAction === true };
+  canConvertAction: roomValue.canConvertAction === true,
+  canConvertIssue: roomValue.canConvertIssue === true };
 }

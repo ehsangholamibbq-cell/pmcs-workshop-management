@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
-import { CollaborationActionValidationError, convertProjectMessageToAction,
-  loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
+import { CollaborationActionValidationError, CollaborationIssueAlreadyExists,
+  CollaborationIssueValidationError, convertProjectMessageToAction,
+  convertProjectMessageToIssue, loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
 import { CollaborationRevisionConflict } from "../lib/collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "../lib/collaboration-room.ts";
 
@@ -84,6 +85,61 @@ test("confirmed Action conversion keeps destination and retry identity, scope an
         error instanceof CollaborationAccessError && error.status === 403);
     await assert.rejects(convertProjectMessageToAction("/api/pmcs", projectId,
       { ...message, deletedAt: "2026-09-28T00:02:00Z" }, actor, details, destinationId, key),
+    /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("confirmed Issue conversion keeps general-project classification, actor and stable retry identity", async () => {
+  const previous = globalThis.fetch;
+  const actor = "10000000-0000-4000-8000-000000000041";
+  const destinationId = "10000000-0000-4000-8000-000000000032";
+  const key = "10000000-0000-4000-8000-000000000062";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مسئلهٔ کارگاه" } as ProjectConversationMessage;
+  const details = { ownerUserId: actor, targetResolutionDate: "2099-01-01", title: " مسئلهٔ رسمی ",
+    observedFact: " تأخیر تأیید شد ", category: " هماهنگی ", severity: "High" as const,
+    urgency: "Immediate" as const };
+  const response = { ...item, destinationType: "Issue", destinationId, documents: [],
+    destinationReference: "ISS-001", confirmedBy: actor };
+  try {
+    let payload: unknown;
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), new RegExp(`${messageId}/conversions$`, "u"));
+      assert.equal(init?.method, "POST");
+      assert.equal(init?.cache, "no-store");
+      assert.equal(new Headers(init?.headers).get("Idempotency-Key"), key);
+      payload = JSON.parse(String(init?.body)) as unknown;
+      return Response.json(response, { status: 201 });
+    };
+    assert.equal((await convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key)).destinationReference, "ISS-001");
+    assert.deepEqual(payload, { destinationId, destinationType: "Issue", baseRevision: 2,
+      confirmed: true, details: { ownerUserId: actor, targetResolutionDate: "2099-01-01",
+        title: "مسئلهٔ رسمی", observedFact: "تأخیر تأیید شد", category: "هماهنگی",
+        severity: "High", urgency: "Immediate", confidentiality: "GeneralProject" }, documentIds: [] });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 3 }, { status: 409 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationRevisionConflict && error.currentRevision === 3);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.issue.already_created" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationIssueAlreadyExists);
+    globalThis.fetch = async () => new Response(null, { status: 422 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationIssueValidationError);
+    globalThis.fetch = async () => Response.json({ ...response, messageRevision: 3 }, { status: 201 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), /تأیید تبدیل/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, { ...details, ownerUserId: destinationId }, destinationId, key), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId,
+      { ...message, redactedAt: "2026-09-28T00:02:00Z" }, actor, details, destinationId, key),
     /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });

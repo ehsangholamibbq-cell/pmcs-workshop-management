@@ -811,3 +811,84 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
   await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
 });
+
+test("confirmed Issue conversion requires owner permission and survives conflict, reload and revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canConvertIssue = false;
+  let revision = 2;
+  let body = "مسئلهٔ هماهنگی کارگاه";
+  let revoked = false;
+  let issue: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertIssue }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(issue ? [issue] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { ownerUserId: string; title: string; observedFact: string;
+          severity: string; urgency: string; confidentiality: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Issue");
+      expect(request.confirmed).toBe(true);
+      expect(request.documentIds).toEqual([]);
+      expect(request.details.ownerUserId).toBe(userId);
+      expect(request.details.title).toBe("مسئلهٔ تأییدشده");
+      expect(request.details.observedFact).toBe("واقعیت مشاهده‌شده");
+      expect(request.details.severity).toBe("High");
+      expect(request.details.urgency).toBe("Immediate");
+      expect(request.details.confidentiality).toBe("GeneralProject");
+      expect(request.baseRevision).toBe(revision);
+      if (posts === 1) {
+        revision = 3;
+        body = "نسخهٔ تازهٔ مسئله";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      issue = { id: "10000000-0000-4000-8000-000000000022", messageId,
+        messageRevision: revision, destinationType: "Issue", destinationId: request.destinationId,
+        destinationReference: "ISS-001", documents: [], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(issue) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" })).toHaveCount(0);
+  canConvertIssue = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" }).click();
+  await page.getByLabel("عنوان مسئله").fill("مسئلهٔ تأییدشده");
+  await page.getByLabel("واقعیت مشاهده‌شده").fill("واقعیت مشاهده‌شده");
+  await page.getByRole("combobox", { name: /^شدت مسئله/u }).selectOption("High");
+  await page.getByRole("combobox", { name: /^فوریت مسئله/u }).selectOption("Immediate");
+  await page.getByRole("checkbox", { name: /ایجاد مسئلهٔ عمومی رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت مسئلهٔ رسمی" }).click();
+  await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
+  await expect(page.getByText("نسخهٔ فعلی پیام: نسخهٔ تازهٔ مسئله")).toBeVisible();
+  await page.getByRole("button", { name: "تبدیل مسئله بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("checkbox", { name: /ایجاد مسئلهٔ عمومی رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت مسئلهٔ رسمی" }).click();
+  await expect(page.getByText("مسئلهٔ رسمی با ارجاع ISS-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" }).click();
+  await expect(page.getByText("برای این پیام مسئلهٔ رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});

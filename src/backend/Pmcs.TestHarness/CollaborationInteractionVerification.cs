@@ -25,9 +25,11 @@ internal static partial class Program
             moderatorRoom.Payload.GetProperty("canModerate").GetBoolean() &&
             moderatorRoom.Payload.GetProperty("canConvert").GetBoolean() &&
             moderatorRoom.Payload.GetProperty("canConvertAction").GetBoolean() &&
+            moderatorRoom.Payload.GetProperty("canConvertIssue").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canModerate").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canConvert").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canConvertAction").GetBoolean() &&
+            !readerRoom.Payload.GetProperty("canConvertIssue").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canUpload").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canEditOwn").GetBoolean(),
             $"moderator={(int)moderatorRoom.StatusCode};reader={(int)readerRoom.StatusCode}");

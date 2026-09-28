@@ -11,8 +11,10 @@ import {
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
   CollaborationActionAlreadyExists, CollaborationActionValidationError,
-  convertProjectMessageToAction, loadProjectMessageConversions,
-  type ProjectActionConversionDetails, type ProjectMessageConversionLineage,
+  CollaborationIssueAlreadyExists, CollaborationIssueValidationError,
+  convertProjectMessageToAction, convertProjectMessageToIssue, loadProjectMessageConversions,
+  type ProjectActionConversionDetails, type ProjectIssueConversionDetails,
+  type ProjectMessageConversionLineage,
 } from "@/lib/collaboration-conversions";
 import {
   attachProjectChatDocument, downloadProjectMessageAttachment, loadProjectMessageAttachments,
@@ -606,6 +608,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                       <ProjectActionConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
                         onChanged={() => setRefresh((value) => value + 1)} />}
+                    {view.canConvertIssue && !message.deletedAt && !message.redactedAt &&
+                      <ProjectIssueConversion projectId={projectId} message={message}
+                        actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
+                        onChanged={() => setRefresh((value) => value + 1)} />}
                   </li>
                 ))}
               </ol>
@@ -767,6 +773,144 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
           {phase === "editing" && <button className="secondary-button" type="button"
             onClick={() => { setPhase("closed"); setStatus(""); setIdentity(null); }}>
             انصراف</button>}
+        </div>
+      </form>}
+  </section>;
+}
+
+function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss, onChanged }: {
+  readonly projectId: string; readonly message: ProjectConversationMessage;
+  readonly actorUserId: string; readonly onAccessLoss: (status: number) => void;
+  readonly onChanged: () => void;
+}) {
+  const [phase, setPhase] = useState<"closed" | "checking" | "editing" | "sending" |
+    "uncertain" | "conflict" | "done" | "exists">("closed");
+  const [base, setBase] = useState(message);
+  const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
+  const [details, setDetails] = useState<ProjectIssueConversionDetails>({
+    ownerUserId: actorUserId, targetResolutionDate: futureProjectDate(3),
+    title: message.body.slice(0, 240), observedFact: message.body,
+    category: "هماهنگی", severity: "Medium", urgency: "Soon",
+  });
+  const [confirmed, setConfirmed] = useState(false);
+  const [status, setStatus] = useState("");
+
+  async function open() {
+    if (phase !== "closed") return;
+    setPhase("checking"); setStatus("");
+    try {
+      const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
+      if (entries.some((item) => item.destinationType === "Issue")) {
+        setPhase("exists");
+        setStatus("برای این پیام مسئلهٔ رسمی قبلاً ثبت شده است؛ تبار تبدیل را ببینید.");
+      } else {
+        setBase(message);
+        setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+        setConfirmed(false); setPhase("editing");
+      }
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else { setPhase("closed"); setStatus("بررسی تبار پیش از تبدیل کامل نشد؛ دوباره تلاش کنید."); }
+    }
+  }
+
+  async function reconcile() {
+    try {
+      const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
+      if (entries.some((item) => item.destinationType === "Issue")) {
+        setPhase("done"); setStatus("مسئلهٔ رسمی در تبار پیام ثبت شده است."); onChanged();
+      } else setStatus("هنوز مسئلهٔ ثبت‌شده‌ای دیده نمی‌شود؛ تلاش مجدد فقط با همان شناسه انجام شود.");
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else setStatus("بازبینی نتیجه کامل نشد؛ هویت درخواست حفظ شده است.");
+    }
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
+    if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
+    setPhase("sending"); setStatus("در حال ثبت مسئلهٔ رسمی…");
+    try {
+      const result = await convertProjectMessageToIssue("/api/pmcs", projectId, base,
+        actorUserId, details, identity.destinationId, identity.key);
+      setPhase("done");
+      setStatus(`مسئلهٔ رسمی با ارجاع ${result.destinationReference} ثبت شد؛ تبار پیام را تازه‌سازی کنید.`);
+      onChanged();
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else if (error instanceof CollaborationRevisionConflict) {
+        setPhase("conflict");
+        setStatus("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید و تبدیل مسئله را دوباره تأیید کنید.");
+        onChanged();
+      } else if (error instanceof CollaborationIssueAlreadyExists) {
+        setPhase("exists"); setStatus(error.message); onChanged();
+      } else if (error instanceof CollaborationIssueValidationError) {
+        setPhase("editing");
+        setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+        setConfirmed(false); setStatus(error.message);
+      } else {
+        setPhase("uncertain");
+        setStatus("نتیجهٔ ارسال قطعی نیست؛ ابتدا تبار را بازبینی یا با همان شناسه تلاش مجدد کنید.");
+      }
+    }
+  }
+
+  return <section className="collaboration-edit" aria-label="تبدیل پیام به مسئلهٔ رسمی">
+    {phase === "closed" && <button className="secondary-button" type="button"
+      onClick={() => void open()}>ساخت مسئلهٔ رسمی از پیام</button>}
+    {phase === "checking" && <p role="status">در حال بررسی تبار پیام…</p>}
+    {status && <p role={phase === "conflict" ? "alert" : "status"}>{status}</p>}
+    {phase === "conflict" && <div>
+      <p>نسخهٔ فعلی پیام: {message.body}</p>
+      {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
+        <button className="secondary-button" type="button" onClick={() => {
+          setBase(message);
+          setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+          setConfirmed(false); setStatus(""); setPhase("editing");
+        }}>تبدیل مسئله بر پایهٔ نسخهٔ تازه</button>}
+    </div>}
+    {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
+      <form onSubmit={(event) => void submit(event)}>
+        <p>این مسئله یک رکورد رسمی جداگانه و عمومی همین پروژه است؛ مسئول آن خود شما هستید.</p>
+        <label>عنوان مسئله<input value={details.title} maxLength={240}
+          disabled={phase !== "editing"} required onChange={(event) => setDetails((current) =>
+            ({ ...current, title: event.target.value }))} /></label>
+        <label>واقعیت مشاهده‌شده<textarea value={details.observedFact} maxLength={5000}
+          disabled={phase !== "editing"} required rows={3} onChange={(event) => setDetails((current) =>
+            ({ ...current, observedFact: event.target.value }))} /></label>
+        <label>دستهٔ مسئله<input value={details.category} maxLength={120}
+          disabled={phase !== "editing"} required onChange={(event) => setDetails((current) =>
+            ({ ...current, category: event.target.value }))} /></label>
+        <label>شدت مسئله<select value={details.severity} disabled={phase !== "editing"}
+          onChange={(event) => setDetails((current) => ({ ...current,
+            severity: event.target.value as ProjectIssueConversionDetails["severity"] }))}>
+          <option value="Low">کم</option><option value="Medium">متوسط</option>
+          <option value="High">زیاد</option><option value="Critical">بحرانی</option>
+        </select></label>
+        <label>فوریت مسئله<select value={details.urgency} disabled={phase !== "editing"}
+          onChange={(event) => setDetails((current) => ({ ...current,
+            urgency: event.target.value as ProjectIssueConversionDetails["urgency"] }))}>
+          <option value="Routine">عادی</option><option value="Soon">به‌زودی</option>
+          <option value="Immediate">فوری</option>
+        </select></label>
+        <label>مهلت رفع شمسی<PersianDateInput value={details.targetResolutionDate}
+          disabled={phase !== "editing"} required ariaLabel="مهلت رفع شمسی مسئلهٔ رسمی"
+          onChange={(date) => setDetails((current) => ({ ...current, targetResolutionDate: date }))} /></label>
+        <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
+          onChange={(event) => setConfirmed(event.target.checked)} />
+          ایجاد مسئلهٔ عمومی رسمی با این عنوان، شدت، فوریت و مهلت را تأیید می‌کنم.</label>
+        <div className="collaboration-message-actions">
+          <button type="submit" disabled={phase === "sending" || !confirmed ||
+            !details.title.trim() || !details.observedFact.trim() || !details.category.trim() ||
+            !details.targetResolutionDate}>
+            {phase === "uncertain" ? "تلاش مجدد مسئله با همان شناسه" : phase === "sending"
+              ? "در حال ثبت…" : "تأیید و ساخت مسئلهٔ رسمی"}
+          </button>
+          {phase === "uncertain" && <button className="secondary-button" type="button"
+            onClick={() => void reconcile()}>بازبینی نتیجهٔ مسئله</button>}
+          {phase === "editing" && <button className="secondary-button" type="button"
+            onClick={() => { setPhase("closed"); setStatus(""); setIdentity(null); }}>انصراف از مسئله</button>}
         </div>
       </form>}
   </section>;
