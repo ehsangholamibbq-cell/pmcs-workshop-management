@@ -237,6 +237,12 @@ jobs:
           name: pmcs-ms44-prototype-review
           path: src/web/artifacts/ms44-prototype/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms47-component-states
+          path: src/web/artifacts/ms47-component-states/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
