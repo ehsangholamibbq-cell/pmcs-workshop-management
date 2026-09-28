@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
-import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
-import { formatPersianDateTime } from "@/lib/persian-date";
+import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
+import { PersianDateInput } from "@/components/persian-date-input";
+import { listDailyReports, type DailyReportSummary } from "@/lib/daily-reports";
+import { formatPersianDate, formatPersianDateTime } from "@/lib/persian-date";
 import { scopedStorageKey } from "@/lib/field-database";
 import {
   loadProjectReportingCenter, type ProjectReportingCenterView, type ReportDefinitionView,
 } from "@/lib/reporting-center";
-import { ReportRequestAccessError, requestProjectReport, type ProjectReportRequest } from "@/lib/reporting-run-request";
+import {
+  isValidProjectPeriodStart, ReportRequestAccessError, requestProjectReport, type ProjectReportRequest,
+} from "@/lib/reporting-run-request";
 
 const statusLabels: Record<string, string> = {
   Queued: "در صف", Processing: "در حال تهیه", Succeeded: "آماده", Failed: "ناموفق",
@@ -32,6 +36,7 @@ export function ProjectReportingCenter({ projectId }: { readonly projectId: stri
 }
 
 function ReportingContent({ projectId }: { readonly projectId: string }) {
+  const session = usePmcsSession();
   const [view, setView] = useState<ProjectReportingCenterView | null>(null);
   const [failure, setFailure] = useState("");
   const [refresh, setRefresh] = useState(0);
@@ -39,6 +44,15 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   const [pendingRun, setPendingRun] = useState<ProjectReportRequest | null>(() => pendingRequest(projectId));
   const [busyCode, setBusyCode] = useState("");
   const [runNotice, setRunNotice] = useState("");
+  const [dailyReports, setDailyReports] = useState<readonly DailyReportSummary[]>([]);
+  const [dailyError, setDailyError] = useState("");
+  const [dailyReportId, setDailyReportId] = useState("");
+  const [includeRevisionChain, setIncludeRevisionChain] = useState(true);
+  const [periodKind, setPeriodKind] = useState<"Weekly" | "Monthly">("Weekly");
+  const [periodStartLocalDate, setPeriodStartLocalDate] = useState("");
+  const hasDailyDefinition = view?.kind === "ready" &&
+    view.definitions.some((item) => item.code === "daily-report-certified");
+  const validPeriodStart = isValidProjectPeriodStart(periodKind, periodStartLocalDate);
 
   const remember = useCallback((request: ProjectReportRequest | null) => {
     try {
@@ -65,14 +79,40 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
     return () => { active = false; };
   }, [projectId, refresh, remember]);
 
+  useEffect(() => {
+    if (!hasDailyDefinition) {
+      return undefined;
+    }
+    let active = true;
+    void listDailyReports("/api/pmcs", { tenantId: session.tenantId, userId: session.userId }, projectId)
+      .then((reports) => {
+        if (!active) return;
+        if (!Array.isArray(reports) || reports.length > 500 ||
+            reports.some((report) => report.projectId?.toLowerCase() !== projectId.toLowerCase())) {
+          throw new Error("سابقهٔ گزارش روزانه با پروژه سازگار نیست.");
+        }
+        setDailyReports(reports.filter((report) => report.status === "Approved" &&
+          !report.supersededByReportId));
+        setDailyError("");
+      }).catch(() => {
+        if (active) { setDailyReports([]); setDailyError("گزارش‌های روزانهٔ مجاز دریافت نشدند."); }
+      });
+    return () => { active = false; };
+  }, [hasDailyDefinition, projectId, session.tenantId, session.userId]);
+
   async function createRun(definition: ReportDefinitionView) {
     if (view?.kind !== "ready" || busyCode || pendingRun && pendingRun.definitionCode !== definition.code) return;
     const allowed = definition.supportedFormats.filter((format): format is "Pdf" | "Xlsx" =>
       format === "Pdf" || format === "Xlsx");
     const format = formats[definition.code] ?? allowed[0];
     if (!format) return;
+    const parameters = definition.code === "daily-report-certified"
+      ? { dailyReportId, includeRevisionChain }
+      : definition.code === "project-periodic-certified"
+        ? { periodKind, periodStartLocalDate }
+        : undefined;
     const request = pendingRun ?? { projectId, clientGeneratedId: crypto.randomUUID(),
-      definitionCode: definition.code, templateVersion: definition.templateVersion, format };
+      definitionCode: definition.code, templateVersion: definition.templateVersion, format, parameters };
     remember(request);
     setBusyCode(definition.code);
     setRunNotice("");
@@ -140,8 +180,33 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
                 <p className="eyebrow">قالب {definition.templateVersion}</p><h3>{definition.title}</h3>
                 <p>{definition.description}</p>
                 <small>قالب‌های خروجی: {definition.supportedFormats.join("، ")}</small>
-                {definition.code !== "daily-report-certified" && definition.code !== "project-periodic-certified"
-                  ? <div className="reporting-request">
+                <div className="reporting-request">
+                    {definition.code === "daily-report-certified" && <>
+                      <label htmlFor="report-daily-select">گزارش روزانهٔ تأییدشده</label>
+                      <select id="report-daily-select" value={dailyReportId} disabled={Boolean(pendingRun) || Boolean(busyCode)}
+                        onChange={(event) => setDailyReportId(event.target.value)}>
+                        <option value="">انتخاب گزارش روزانه</option>
+                        {dailyReports.map((report) => <option key={report.id} value={report.id}>
+                          {formatPersianDate(report.reportDate)} · نسخه {report.versionNumber.toLocaleString("fa-IR")}
+                        </option>)}
+                      </select>
+                      {dailyError && <small role="status">{dailyError}</small>}
+                      <label className="reporting-checkbox"><input type="checkbox" checked={includeRevisionChain}
+                        disabled={Boolean(pendingRun) || Boolean(busyCode)}
+                        onChange={(event) => setIncludeRevisionChain(event.target.checked)} />زنجیرهٔ اصلاحات را نیز بیاور</label>
+                    </>}
+                    {definition.code === "project-periodic-certified" && <>
+                      <label htmlFor="report-period-kind">دورهٔ گزارش</label>
+                      <select id="report-period-kind" value={periodKind} disabled={Boolean(pendingRun) || Boolean(busyCode)}
+                        onChange={(event) => setPeriodKind(event.target.value as "Weekly" | "Monthly")}>
+                        <option value="Weekly">هفتگی</option><option value="Monthly">ماهانه</option>
+                      </select>
+                      <label htmlFor="report-period-start">شروع دوره</label>
+                      <PersianDateInput id="report-period-start" ariaLabel="شروع دوره شمسی"
+                        value={periodStartLocalDate} onChange={setPeriodStartLocalDate}
+                        disabled={Boolean(pendingRun) || Boolean(busyCode)} required />
+                      <small>هفته از شنبه و ماه از روز نخست ماه شمسی آغاز می‌شود.</small>
+                    </>}
                     <label htmlFor={`report-format-${definition.code}`}>قالب درخواستی</label>
                     <select id={`report-format-${definition.code}`} value={formats[definition.code] ??
                       definition.supportedFormats.find((format) => format === "Pdf" || format === "Xlsx") ?? ""}
@@ -153,13 +218,14 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
                     </select>
                     <button type="button" disabled={Boolean(busyCode) || Boolean(pendingRun &&
                       pendingRun.definitionCode !== definition.code) ||
+                      (!pendingRun && definition.code === "daily-report-certified" && !dailyReportId) ||
+                      (!pendingRun && definition.code === "project-periodic-certified" && !validPeriodStart) ||
                       !definition.supportedFormats.some((format) => format === "Pdf" || format === "Xlsx")}
                       onClick={() => void createRun(definition)}>
                       {busyCode === definition.code ? "در حال ثبت…" : pendingRun?.definitionCode === definition.code
                         ? "تلاش دوباره با همان درخواست" : "درخواست گزارش"}
                     </button>
                   </div>
-                  : <p className="reporting-input-hint">تهیهٔ این گزارش به انتخاب روز یا دورهٔ مشخص نیاز دارد.</p>}
               </li>)}</ul> : <p className="reporting-state">گزارش مجازی برای این نقش و پروژه در دسترس نیست.</p>}
           </section>
           <section className="reporting-section" aria-labelledby="report-runs">

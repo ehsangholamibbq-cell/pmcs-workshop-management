@@ -82,3 +82,51 @@ test("a certified report request uses one client identity across a transport ret
   expect(attempts[0].key).toBe(attempts[0].id);
   expect(attempts[0].parameters).toEqual({});
 });
+
+test("daily and periodic certified reports use scoped day and Persian period inputs", async ({ page }) => {
+  const dailyReportId = "10000000-0000-4000-8000-000000000077";
+  const requests: Array<{ code: string; parameters: unknown }> = [];
+  await page.route(catalog, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([
+      { code: "daily-report-certified", title: "گزارش روزانهٔ کارگاه", description: "روز تأییدشده",
+        templateVersion: "1.0.0", supportedFormats: ["Pdf"], dataStatuses: ["Available"] },
+      { code: "project-periodic-certified", title: "گزارش دوره‌ای پروژه", description: "هفته یا ماه",
+        templateVersion: "1.0.0", supportedFormats: ["Xlsx"], dataStatuses: ["Available"] },
+    ]) }));
+  await page.route(runs, (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: dailyReportId, projectId, reportDate: "2026-09-28", versionNumber: 1,
+        status: "Approved", supersededByReportId: null },
+      { id: "10000000-0000-4000-8000-000000000078", projectId, reportDate: "2026-09-27",
+        versionNumber: 1, status: "Draft", supersededByReportId: null },
+    ]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/reports/runs`, (route) => {
+    const payload = route.request().postDataJSON() as {
+      clientGeneratedId: string; definitionCode: string; parameters: unknown;
+    };
+    requests.push({ code: payload.definitionCode, parameters: payload.parameters });
+    return route.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({
+      id: payload.clientGeneratedId, projectId, definitionCode: payload.definitionCode, outputs: [],
+    }) });
+  });
+  await page.goto(path);
+  const dailyCard = page.locator(".reporting-card").filter({ has: page.getByRole("heading", { name: "گزارش روزانهٔ کارگاه" }) });
+  await expect(dailyCard.getByLabel("گزارش روزانهٔ تأییدشده").locator("option")).toHaveCount(2);
+  await dailyCard.getByLabel("گزارش روزانهٔ تأییدشده").selectOption(dailyReportId);
+  await dailyCard.getByRole("button", { name: "درخواست گزارش" }).click();
+  await expect(page.getByText("درخواست گزارش پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.")).toBeVisible();
+
+  const periodCard = page.locator(".reporting-card").filter({ has: page.getByRole("heading", { name: "گزارش دوره‌ای پروژه" }) });
+  await periodCard.getByLabel("دورهٔ گزارش").selectOption("Monthly");
+  await periodCard.getByLabel("شروع دوره شمسی").fill("۱۴۰۵/۰۷/۰۱");
+  await periodCard.getByLabel("شروع دوره شمسی").press("Tab");
+  await periodCard.getByRole("button", { name: "درخواست گزارش" }).click();
+  await expect.poll(() => requests.length).toBe(2);
+  expect(requests).toEqual([
+    { code: "daily-report-certified", parameters: { dailyReportId, includeRevisionChain: true } },
+    { code: "project-periodic-certified", parameters: {
+      periodKind: "Monthly", periodStartLocalDate: "2026-09-23",
+    } },
+  ]);
+});

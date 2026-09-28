@@ -1476,6 +1476,8 @@ textarea {
 .reporting-notice { padding: 0.9rem 1rem; border-radius: 0.8rem; background: var(--status-info-surface); }
 .reporting-pending { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
 .reporting-input-hint { border-top: 1px solid var(--border-default); padding-top: 0.75rem; }
+.reporting-checkbox { display: flex; align-items: center; gap: 0.5rem; }
+.reporting-checkbox input { width: auto; }
 
 .sidebar nav {
   display: grid;
