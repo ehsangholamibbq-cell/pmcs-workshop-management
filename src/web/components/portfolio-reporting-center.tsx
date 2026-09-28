@@ -143,8 +143,9 @@ function PortfolioReportingContent() {
                 <small>قالب‌های خروجی: {definition.supportedFormats.join("، ")}</small>
                 <div className="reporting-request">
                   <label htmlFor="portfolio-report-format">قالب درخواستی</label>
-                  <select id="portfolio-report-format" value={definition.supportedFormats.includes(format) ?
-                    format : definition.supportedFormats[0] ?? ""} disabled={Boolean(pendingRun) || busy}
+                  <select id="portfolio-report-format" value={pendingRun?.format ??
+                    (definition.supportedFormats.includes(format) ? format :
+                      definition.supportedFormats[0] ?? "")} disabled={Boolean(pendingRun) || busy}
                     onChange={(event) => setFormat(event.target.value as "Pdf" | "Xlsx")}>
                     {definition.supportedFormats.map((item) =>
                       <option key={item} value={item}>{item}</option>)}

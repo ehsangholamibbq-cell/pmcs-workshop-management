@@ -73,9 +73,11 @@ test("portfolio request preserves one identity and payload after retry and reloa
         status: "Queued", pipelineStage: "Queued", outputs: [] }) });
   });
   await page.goto(path);
+  await page.getByLabel("قالب درخواستی").selectOption("Xlsx");
   await page.getByRole("button", { name: "درخواست گزارش سبد" }).click();
   await expect(page.getByRole("button", { name: "تلاش دوباره با همان درخواست" })).toBeVisible();
   await page.reload();
+  await expect(page.getByLabel("قالب درخواستی")).toHaveValue("Xlsx");
   await expect(page.getByRole("button", { name: "تلاش دوباره با همان درخواست" })).toBeVisible();
   await page.getByRole("button", { name: "تلاش دوباره با همان درخواست" }).click();
   await expect(page.getByText("درخواست گزارش سبد پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.")).toBeVisible();
@@ -85,5 +87,5 @@ test("portfolio request preserves one identity and payload after retry and reloa
   expect(attempts[0].key).toBe(attempts[0].id);
   expect(attempts[0].body).toEqual({ clientGeneratedId: attempts[0].id,
     definitionCode: definition.code, templateVersion: definition.templateVersion,
-    asOfUtc: null, formats: ["Pdf"], parameters: {} });
+    asOfUtc: null, formats: ["Xlsx"], parameters: {} });
 });
