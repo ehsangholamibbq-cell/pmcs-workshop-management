@@ -9,7 +9,8 @@ import { listDailyReports, type DailyReportSummary } from "@/lib/daily-reports";
 import { formatPersianDate, formatPersianDateTime } from "@/lib/persian-date";
 import { scopedStorageKey } from "@/lib/field-database";
 import {
-  loadProjectReportingCenter, type ProjectReportingCenterView, type ReportDefinitionView,
+  downloadProjectReportOutput, loadProjectReportingCenter, ReportOutputAccessError,
+  type ProjectReportingCenterView, type ReportDefinitionView, type ReportOutputView, type ReportRunView,
 } from "@/lib/reporting-center";
 import {
   isValidProjectPeriodStart, ReportRequestAccessError, requestProjectReport, type ProjectReportRequest,
@@ -44,6 +45,8 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   const [pendingRun, setPendingRun] = useState<ProjectReportRequest | null>(() => pendingRequest(projectId));
   const [busyCode, setBusyCode] = useState("");
   const [runNotice, setRunNotice] = useState("");
+  const [downloadBusyId, setDownloadBusyId] = useState("");
+  const [downloadNotice, setDownloadNotice] = useState("");
   const [dailyReports, setDailyReports] = useState<readonly DailyReportSummary[]>([]);
   const [dailyError, setDailyError] = useState("");
   const [dailyReportId, setDailyReportId] = useState("");
@@ -133,6 +136,33 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
     }
   }
 
+  async function downloadOutput(run: ReportRunView, output: ReportOutputView) {
+    if (downloadBusyId || view?.kind !== "ready") return;
+    setDownloadBusyId(output.id);
+    setDownloadNotice("");
+    try {
+      const blob = await downloadProjectReportOutput("/api/pmcs", projectId, run, output);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = output.fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setDownloadNotice("خروجی تأیید و دریافت شد.");
+    } catch (error) {
+      if (error instanceof ReportOutputAccessError && error.status === 403) {
+        remember(null);
+        setView({ kind: "forbidden" });
+      } else {
+        setDownloadNotice(error instanceof Error ? error.message : "دریافت خروجی کامل نشد.");
+      }
+    } finally {
+      setDownloadBusyId("");
+    }
+  }
+
   return <main className="app-shell reporting-shell">
     <aside className="sidebar" aria-label="ناوبری اصلی">
       <BrandMark />
@@ -166,6 +196,7 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
         </section>
         : <div className="reporting-sections">
           {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
+          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>}
           {pendingRun && <div className="reporting-notice reporting-pending" role="status">
             <span>یک درخواست نیمه‌تمام محفوظ است. پس از بررسی سابقه، همان درخواست را دوباره بفرستید.</span>
             <button className="secondary-button" type="button" onClick={() => remember(null)}>
@@ -238,6 +269,14 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
                 <time dateTime={run.createdAt}>{formatPersianDateTime(run.createdAt)}</time>
                 <p>{run.dataStatus ? statusLabels[run.dataStatus] ?? "وضعیت داده نامشخص" : "وضعیت داده هنوز مشخص نیست"}</p>
                 <small>{run.outputs.length ? `${run.outputs.length.toLocaleString("fa-IR")} خروجی ثبت‌شده` : "خروجی ثبت نشده است"}</small>
+                {run.status === "Succeeded" && run.outputs.length > 0 && <div className="reporting-request">
+                  {run.outputs.map((output) => <button className="secondary-button" type="button"
+                    key={output.id} disabled={Boolean(downloadBusyId)}
+                    onClick={() => void downloadOutput(run, output)}>
+                    {downloadBusyId === output.id ? "در حال دریافت…" :
+                      `دریافت خروجی ${output.format === "Pdf" ? "PDF" : "Excel"}`}
+                  </button>)}
+                </div>}
               </li>)}</ol> : <p className="reporting-state">هنوز درخواستی برای این پروژه ثبت نشده است.</p>}
           </section>
         </div>}

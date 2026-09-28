@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
 import { projectId } from "./support";
 
 const path = `/projects/${projectId}/reports`;
@@ -129,4 +130,37 @@ test("daily and periodic certified reports use scoped day and Persian period inp
       periodKind: "Monthly", periodStartLocalDate: "2026-09-23",
     } },
   ]);
+});
+
+test("Reporting Center downloads only verified output and closes on revoked access", async ({ page }) => {
+  const outputId = "10000000-0000-4000-8000-000000000088";
+  const runId = "10000000-0000-4000-8000-000000000099";
+  const body = "%PDF-1.7\nPMCS verified output\n";
+  const fileName = "PMCS-report.pdf";
+  const output = { id: outputId, format: "Pdf", fileName,
+    contentType: "application/pdf", sizeBytes: new TextEncoder().encode(body).byteLength,
+    sha256: createHash("sha256").update(body).digest("hex"), verificationCode: "verified" };
+  let denied = false;
+  await page.route(catalog, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ code: "project-progress-certified", title: "گزارش پیشرفت پروژه",
+      description: "واقعیت تأییدشده", templateVersion: "1.0.0",
+      supportedFormats: ["Pdf"], dataStatuses: ["Available"] }]) }));
+  await page.route(runs, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ id: runId, projectId, definitionCode: "project-progress-certified",
+      status: "Succeeded", pipelineStage: "Complete", dataStatus: "Available",
+      createdAt: "2026-09-28T00:00:00Z", outputs: [output] }]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/reports/outputs/${outputId}/content`,
+    (route) => route.fulfill(denied ? { status: 403 } :
+      { status: 200, contentType: "application/pdf", body }));
+  await page.goto(path);
+  const downloadButton = page.getByRole("button", { name: "دریافت خروجی PDF" });
+  const downloadPromise = page.waitForEvent("download");
+  await downloadButton.click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe(fileName);
+  await expect(page.getByText("خروجی تأیید و دریافت شد.")).toBeVisible();
+  denied = true;
+  await downloadButton.click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گزارش‌ها ندارید" })).toBeVisible();
+  await expect(downloadButton).toHaveCount(0);
 });
