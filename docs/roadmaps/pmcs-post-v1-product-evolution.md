@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.79.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS02، UX2/INT1/QA1 باز
+- نسخه سند: `1.80.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS03، UX2/INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -900,6 +900,14 @@ MS02 با Reply/Mention، Reaction/Pin، Search، read cursor/unread و notifica
 (`36360228559`) هر هشت Job را پاس کرد. Migration count اکنون ۵۸ است.
 Exact Next `COL1-MS03`؛ MS04–MS06 و UX2/Production بازند.
 
+MS03 روی source `c47c7e4202b9c7616602bedda587bc24b75246ed` / tree
+`2ebc69d8b528274b2828ccdc8ef367e3fc8f0fe7` در Run 286
+(`36361342403`) هشت Job را پاس کرد: WebSocket مجاز با replay از sequence،
+fallback long-poll از BFF، recheck عضویت، صف IndexedDB هویت‌محور، آزمون متصل
+دو کاربر و مرورگر واقعی offline/reload/retry. Run 285 کاندید اولیه در Build
+TestHarness شکست خورد و با commit اصلاحی fast-forward شد؛ checkpoint فقط به
+Run 286 متکی است. Exact Next `COL1-MS04`؛ UX2/Production بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1219,3 +1227,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.77.0` | ثبت Connected Safe Checkpoint `S07-MS43` و Evidence سبز Run 275 برای F10 End-to-End؛ گام بعد COL1 طبق ترتیب Roadmap، UX2/Production باز |
 | `1.78.0` | DoR مستقل COL1 و MS01 هستهٔ Room/Message با Evidence سبز Runهای 280/281؛ MS02–MS06 و UX2/Production باز |
 | `1.79.0` | MS02 تعامل و read state متصل با Evidence سبز Run 283؛ MS03–MS06 و UX2/Production باز |
+| `1.80.0` | MS03 live/reconnect/fallback و صف آفلاین با Evidence سبز Run 286؛ MS04–MS06 و UX2/Production باز |
