@@ -160,6 +160,7 @@ jobs:
       PMCS_E2E_USER_PASSWORD: Pmcs-E2E-only-2026!
       PMCS_E2E_ADMIN_CLIENT_SECRET: identity_admin_dev_only
       PMCS_E2E_BASE_URL: http://localhost:3000
+      PMCS_GENERAL_PERMIT_LIMIT: "2000"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
