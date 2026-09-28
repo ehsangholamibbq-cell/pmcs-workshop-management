@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
 import { projectId, userId } from "./support";
 
 const path = `/projects/${projectId}/collaboration`;
@@ -286,4 +287,51 @@ test("only a project moderator can pin and unpin, while readers see the pinned s
   await page.getByRole("button", { name: "برداشتن سنجاق" }).click();
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام سنجاق پروژه")).toHaveCount(0);
+});
+
+test("a project reader downloads only a verified Released message attachment and loses it on 403", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000101";
+  const bytes = Buffer.from("PMCS project attachment", "utf8");
+  const attachmentPath = `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`;
+  const contentPath = `${attachmentPath}/${documentId}/content`;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 2 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 2, messages: [
+        { id: messageId, projectId, sequence: 1, authorUserId: userId,
+          body: "پیام با پیوست", createdAt: "2026-09-28T00:00:00Z" },
+        { id: "10000000-0000-4000-8000-000000000012", projectId, sequence: 2,
+          authorUserId: userId, body: "حذف‌شده", createdAt: "2026-09-28T00:01:00Z",
+          deletedAt: "2026-09-28T00:02:00Z" },
+      ],
+    }) }));
+  await page.route(`**/api/pmcs${attachmentPath}`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([{
+      messageId, documentId, originalFileName: "project.pdf", contentType: "application/pdf",
+      sizeBytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"),
+      classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+      releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1, contentUrl: contentPath,
+    }]),
+  }));
+  await page.route(`**/api/pmcs${contentPath}`, (route) => route.fulfill(revoked
+    ? { status: 403 } : { status: 200, contentType: "application/pdf", body: bytes }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "پیوست‌ها" })).toHaveCount(1);
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("project.pdf", { exact: false })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "دریافت پیوست" }).click();
+  expect((await download).suggestedFilename()).toBe("project.pdf");
+  await expect(page.getByText("پیوست پس از تأیید صحت دریافت شد.")).toBeVisible();
+  revoked = true;
+  await page.getByRole("button", { name: "دریافت پیوست" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام با پیوست")).toHaveCount(0);
 });

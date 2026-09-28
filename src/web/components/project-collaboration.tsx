@@ -9,6 +9,10 @@ import {
 } from "@/lib/collaboration-room";
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
+  downloadProjectMessageAttachment, loadProjectMessageAttachments,
+  type ProjectMessageAttachment,
+} from "@/lib/collaboration-attachments";
+import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
@@ -280,6 +284,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
+                    {!message.deletedAt && !message.redactedAt &&
+                      <ProjectMessageAttachments projectId={projectId} messageId={message.id}
+                        refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt && <div className="collaboration-message-actions">
                       <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
                         پاسخ به پیام
@@ -374,6 +381,80 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
         </button>)}
         {!view.canReact && <span>نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.</span>}
       </>}
+      {error && <span role="alert">{error}</span>}
+    </div>}
+  </div>;
+}
+
+function ProjectMessageAttachments({ projectId, messageId, refreshToken, onAccessLoss }: {
+  readonly projectId: string;
+  readonly messageId: string;
+  readonly refreshToken: number;
+  readonly onAccessLoss: (status: number) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [attachments, setAttachments] = useState<readonly ProjectMessageAttachment[] | null>(null);
+  const [busyId, setBusyId] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const controller = new AbortController();
+    void loadProjectMessageAttachments("/api/pmcs", projectId, messageId, controller.signal)
+      .then((result) => { if (!controller.signal.aborted) { setAttachments(result); setError(""); } })
+      .catch((failure: unknown) => {
+        if (controller.signal.aborted) return;
+        if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+        else setError("دریافت پیوست‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+      });
+    return () => controller.abort();
+  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+
+  async function download(attachment: ProjectMessageAttachment) {
+    if (busyId) return;
+    setBusyId(attachment.documentId);
+    setError("");
+    setNotice("");
+    try {
+      const blob = await downloadProjectMessageAttachment("/api/pmcs", projectId, messageId, attachment);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = attachment.originalFileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setNotice("پیوست پس از تأیید صحت دریافت شد.");
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+      else setError(failure instanceof Error ? failure.message : "دریافت پیوست کامل نشد.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  return <div className="collaboration-attachments">
+    <button className="secondary-button" type="button" aria-expanded={expanded}
+      aria-controls={`attachments-${messageId}`}
+      onClick={() => { setExpanded((value) => !value); setAttachments(null); setError(""); setNotice(""); }}>
+      پیوست‌ها
+    </button>
+    {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel"
+      aria-label="پیوست‌های همین پیام">
+      {!attachments && !error && <span role="status">در حال دریافت پیوست‌ها…</span>}
+      {attachments?.length === 0 && <span>پیوست تأییدشده‌ای برای این پیام ثبت نشده است.</span>}
+      {attachments && attachments.length > 0 && <ul>
+        {attachments.map((attachment) => <li key={attachment.documentId}>
+          <span>{attachment.originalFileName} · {attachment.sizeBytes.toLocaleString("fa-IR")} بایت</span>
+          <button type="button" className="secondary-button" disabled={Boolean(busyId)}
+            onClick={() => void download(attachment)}>
+            {busyId === attachment.documentId ? "در حال دریافت…" : "دریافت پیوست"}
+          </button>
+        </li>)}
+      </ul>}
+      {notice && <span role="status">{notice}</span>}
       {error && <span role="alert">{error}</span>}
     </div>}
   </div>;
