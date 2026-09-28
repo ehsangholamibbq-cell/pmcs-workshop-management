@@ -74,7 +74,15 @@ export function LoginPanel({ experience, initialError = false }: LoginPanelProps
                 unoptimized
               />
             ) : (
-              <div className="login-monogram" aria-label="بتن بسپار قزوین">ب‌ق</div>
+              <Image
+                className="login-brand-logo"
+                src="/brand/bbq-official-symbol.png"
+                alt="نشان رسمی بتن بسپار قزوین"
+                width={176}
+                height={91}
+                priority
+                unoptimized
+              />
             )}
             <span>بتن بسپار قزوین</span>
           </div>

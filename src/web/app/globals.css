@@ -1321,8 +1321,14 @@ textarea {
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  font: 700 1.45rem/1 Georgia, serif;
+  background: #fffdf8;
+  overflow: hidden;
+}
+
+.brand-mark img {
+  width: 2.75rem;
+  height: auto;
+  object-fit: contain;
 }
 
 .sidebar nav {

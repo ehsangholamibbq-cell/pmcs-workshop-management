@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ProjectFeatureState, ProjectOperationalStatus } from "@/lib/command-center";
 import { currencyLabel, formatAmountFa, toUserMessage } from "@/lib/localization";
@@ -90,7 +91,7 @@ function PortfolioDashboardContent() {
   return (
     <main className="app-shell portfolio-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
+        <BrandMark />
         <nav>
           <Link className="nav-item active" href="/portfolio">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>

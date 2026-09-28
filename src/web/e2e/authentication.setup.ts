@@ -28,8 +28,15 @@ setup("OIDC login establishes the scoped BFF session", async ({ page }) => {
   const descriptorResponse = await page.request.get("/api/login-experience");
   expect(descriptorResponse.status()).toBe(200);
   expect(descriptorResponse.headers()["cache-control"]).toMatch(/no-store/u);
-  const descriptorBody = JSON.stringify(await descriptorResponse.json());
+  const descriptor = await descriptorResponse.json() as { logoUrl: string | null };
+  const descriptorBody = JSON.stringify(descriptor);
   expect(descriptorBody).not.toMatch(/clientSecret|authorizationUrl|redirectUri|issuer/u);
+  if (!descriptor.logoUrl) {
+    const officialMark = page.getByRole("img", { name: "نشان رسمی بتن بسپار قزوین" });
+    await expect(officialMark).toBeVisible();
+    await expect(officialMark).toHaveAttribute("src", /\/brand\/bbq-official-symbol\.png/u);
+    await expect.poll(() => officialMark.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  }
 
   await loginThroughOidc(page);
 

@@ -8,6 +8,9 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect(page.getByRole("heading", { name: "مرکز فرمان سبد پروژه‌ها" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  const brand = page.locator('.brand-mark[aria-label="بتن بسپار قزوین، سامانه مدیریت پروژه"] img');
+  await expect(brand).toHaveAttribute("src", /\/brand\/bbq-official-symbol\.png/u);
+  await expect.poll(() => brand.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
 
   const sessionResponse = await page.request.get("/api/pmcs/api/v1/session");
   expect(sessionResponse.status()).toBe(200);

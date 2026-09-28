@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import {
   getCommandCenter,
   recalculateProjectState,
@@ -261,7 +262,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
+        <BrandMark />
         <nav>
           <Link className="nav-item" href="/">پروژه‌ها</Link>
           {(session.tenantRole === "TenantAdministrator" || session.tenantRole === "PortfolioViewer") && (

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   changeTenantRole,
@@ -95,7 +96,7 @@ function IdentityAdministrationContent() {
   return (
     <main className="app-shell identity-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
+        <BrandMark />
         <nav>
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
