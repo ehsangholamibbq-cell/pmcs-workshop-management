@@ -485,6 +485,9 @@ test("own-message edit keeps the draft on revision conflict and confirms a fresh
   await page.getByRole("button", { name: "ثبت ویرایش" }).click();
   await expect(page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر")).toBeVisible();
   await expect(page.getByLabel("ویرایش پیام خود")).toHaveValue("پیش‌نویس من");
+  await page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر").scrollIntoViewIfNeeded();
+  await expect(page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر")).toBeInViewport();
+  await captureVisualBaseline(page, "40-chat-edit-conflict");
   await page.getByRole("button", { name: "ویرایش دوباره بر پایهٔ نسخهٔ تازه" }).click();
   await page.getByRole("button", { name: "ثبت ویرایش" }).click();
   await expect(page.getByText("ویرایش پیام ثبت شد.")).toBeVisible();
