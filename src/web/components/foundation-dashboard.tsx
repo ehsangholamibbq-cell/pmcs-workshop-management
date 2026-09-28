@@ -279,6 +279,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <a className="nav-item" href="#quality-safety">کیفیت و ایمنی</a>
           <a className="nav-item" href="#governance">ریسک و تصمیم</a>
           <a className="nav-item" href="#advisory">تحلیل مشورتی</a>
+          <Link className="nav-item" href={`/projects/${projectId}/collaboration`}>گفت‌وگوی پروژه</Link>
+          <Link className="nav-item" href={`/projects/${projectId}/reports`}>مرکز گزارش‌ها</Link>
           <a className="nav-item" href="#setup">تنظیمات پروژه</a>
           <a className="nav-item" href="/profile">پروفایل من</a>
           {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</a>}

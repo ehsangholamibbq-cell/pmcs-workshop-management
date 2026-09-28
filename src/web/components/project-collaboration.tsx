@@ -179,6 +179,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         <nav>
           <Link className="nav-item" href={`/projects/${projectId}`}>مرکز فرمان پروژه</Link>
           <span className="nav-item active" aria-current="page">گفت‌وگوی پروژه</span>
+          <Link className="nav-item" href={`/projects/${projectId}/reports`}>مرکز گزارش‌ها</Link>
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
         </nav>
         <SessionBadge />

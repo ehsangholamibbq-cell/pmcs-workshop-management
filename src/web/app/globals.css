@@ -1450,6 +1450,27 @@ textarea {
 .collaboration-search-results li { white-space: pre-wrap; overflow-wrap: anywhere; }
 .collaboration-reply-preview span { overflow-wrap: anywhere; }
 .collaboration-message > button { margin-top: 0.5rem; }
+.reporting-workspace { max-width: 88rem; width: 100%; }
+.reporting-state, .reporting-card {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--surface-card);
+}
+.reporting-state { margin-top: 1.5rem; }
+.reporting-section-heading, .reporting-run-heading {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+}
+.reporting-section { margin-top: 2rem; }
+.reporting-section h2 { margin-block: 0 1rem; }
+.reporting-grid, .reporting-runs {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem; margin: 0; padding: 0; list-style: none;
+}
+.reporting-runs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
+.reporting-card h3 { margin-block: 0.25rem 0.75rem; }
+.reporting-card p, .reporting-card small, .reporting-card time { color: var(--text-secondary); }
+.reporting-card .eyebrow { color: var(--brand-green-700); }
 
 .sidebar nav {
   display: grid;
