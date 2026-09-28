@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.109.0`
+- نسخه سند: `1.110.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1151,6 +1151,17 @@ UX2-MS26 روی source `a37e61313f775da914909f2db96361b2a89c1a23` / tree
 Exact next `UX2-MS27` تبدیل فایل Released به Evidence است؛ Technical Document،
 سایر پیوست‌ها و Gateهای UX2 بازند.
 
+UX2-MS27 روی source `41d610a5ffea4995a91389407be36958a1e71c0a` / tree
+`ee0e23ca1d308bfb2eaf7a7e948c9b18f253720c` در Run 367
+(`36428852963`) هر هشت Job را پاس کرد. Room مجوز Evidence را از ترکیب
+`collaboration.convert`، `evidence.upload` و `documents.read` می‌دهد.
+یک فایل Released متصل به همان پیام، با نسخه و SHA-256، برای گزارش روزانه
+و Fact اختیاری همان پروژه پس از تأیید صریح به Evidence رسمی تبدیل می‌شود.
+سرور زیر قفل پیام تبدیل دوبارهٔ همان فایل به Evidence را رد می‌کند و پاسخ
+Hash/نسخه را با منبع تطبیق می‌دهیم. مرورگر Conflict، Reload و 403 را تأیید کرد.
+Exact next `UX2-MS28` تبدیل Technical Document است؛ سایر پیوست‌های تبدیل
+و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1500,3 +1511,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.107.0` | UX2-MS24 تبدیل تأییدشدهٔ Issue عمومی با جلوگیری از تکرار و Run 361 هشت Job سبز؛ MS25 RFI و Gateهای UX2 باز |
 | `1.108.0` | UX2-MS25 تبدیل تأییدشدهٔ پیش‌نویس RFI با جلوگیری از تکرار و Run 363 هشت Job سبز؛ MS26 Daily Fact و Gateهای UX2 باز |
 | `1.109.0` | UX2-MS26 تبدیل تأییدشدهٔ Daily Fact به گزارش Draft با تعارض Revision و Run 365 هشت Job سبز؛ MS27 Evidence و Gateهای UX2 باز |
+| `1.110.0` | UX2-MS27 تبدیل فایل Released به Evidence رسمی با Hash و جلوگیری از تکرار و Run 367 هشت Job سبز؛ MS28 Technical Document و Gateهای UX2 باز |
