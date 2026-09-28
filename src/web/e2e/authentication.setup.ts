@@ -35,6 +35,11 @@ setup("OIDC login establishes the scoped BFF session", async ({ page }) => {
     await expect.poll(() => officialMark.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   }
 
+  await page.goto("/login?error=identity");
+  await expect(page.getByRole("alert")).toHaveText("ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید.");
+  await expect(page.getByRole("button", { name: "ورود امن" })).toBeEnabled();
+  await captureVisualBaseline(page, "42-login-identity-error");
+
   await loginThroughOidc(page);
 
   const sessionResponse = await page.request.get("/api/pmcs/api/v1/session");
