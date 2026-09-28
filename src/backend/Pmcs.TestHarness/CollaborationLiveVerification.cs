@@ -29,7 +29,7 @@ internal static partial class Program
         var created = await SendAsync(client, key, supervisor, HttpMethod.Post,
             $"{path}/messages", new { clientMessageId = messageId,
                 body = "پیام هم‌زمان و قابل بازیابی" }, "qa-col1-live-five");
-        var sequence = ReadInt64(created.Payload, "sequence");
+        var sequence = ReadInt64(created.Payload, "sequence") ?? 0;
         var frames = await Task.WhenAll(
             ReceiveMessageEventAsync(firstSocket, timeout.Token),
             ReceiveMessageEventAsync(secondSocket, timeout.Token));
