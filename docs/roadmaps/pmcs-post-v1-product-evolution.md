@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.107.0`
+- نسخه سند: `1.108.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1131,6 +1131,15 @@ UX2-MS24 روی source `677176ec198fe8aca275e84c4a276a132a9609a3` / tree
 403 در مرورگر واقعی تأیید شدند. Exact next `UX2-MS25` تبدیل RFI است؛
 Daily Fact، Evidence، Technical Document، پیوست‌ها و Gateهای UX2 بازند.
 
+UX2-MS25 روی source `13a192fe490702a3e3632d52637baa11493e922a` / tree
+`02272e93bdc375790950db95e0ac60063c40896a` در Run 363
+(`36424473183`) هر هشت Job را پاس کرد. Room مجوز RFI را از ترکیب
+`collaboration.convert` و `technical.rfis.create` می‌دهد؛ فرم تأییدشده
+پیش‌نویس رسمی را با پرسش فنی، مخاطب، رشته، اثر احتمالی، مانع بودن و موعد
+اختیاری شمسی می‌سازد. یک RFI به‌ازای پیام تحت قفل سروری تضمین شده،
+هویت Retry پایدار و 403 قطع دسترسی را می‌بندد. Exact next `UX2-MS26`
+تبدیل Daily Fact است؛ Evidence، Technical Document، پیوست‌ها و Gateها بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1478,3 +1487,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.105.0` | UX2-MS22 مجوز مؤثر تبدیل و lineage خواندنی با Run 356 هشت Job سبز؛ MS23 Action و Gateهای UX2 باز |
 | `1.106.0` | UX2-MS23 تبدیل تأییدشدهٔ Action با Revision/Idempotency و Run 359 هشت Job سبز؛ MS24 Issue و Gateهای UX2 باز |
 | `1.107.0` | UX2-MS24 تبدیل تأییدشدهٔ Issue عمومی با جلوگیری از تکرار و Run 361 هشت Job سبز؛ MS25 RFI و Gateهای UX2 باز |
+| `1.108.0` | UX2-MS25 تبدیل تأییدشدهٔ پیش‌نویس RFI با جلوگیری از تکرار و Run 363 هشت Job سبز؛ MS26 Daily Fact و Gateهای UX2 باز |
