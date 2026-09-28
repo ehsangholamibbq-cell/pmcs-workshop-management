@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS42`؛ MS41 Runهای 404/405 موفق و Safe، source MS42 Run 406 و CI مستندات شرط اعتبار
+- مرحله: `UX2-MS43`؛ MS42 Runهای 406/407 موفق و Safe، source MS43 Run 408/PDF و correction Run 409 و CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -45,6 +45,13 @@ Credential در صفحهٔ PMCS وارد نمی‌شود و Setup پس از Capt
 Capture 43 صفحهٔ مرکز فرمان را با `media=print` در viewport دسکتاپ ثبت می‌کند و
 PDF A4 همان مرورگر را در فایل `43-project-print-preview.pdf` همراه دارد. این
 فایل نمونهٔ ممیزی وضعیت فعلی است، نه Print System یا خروجی رسمی Reporting.
+در MS43 همین Capture برگهٔ محدود چاپ مرورگر را با نشان رسمی، تصویر وضعیت
+مجاز یا نبود آن و اعلان غیررسمی‌بودن ثبت می‌کند. E2E پنهان‌شدن Sidebar و
+Workspace تعاملی، نبود Input/Select/Button در برگه و بارگذاری نشان را
+کنترل می‌کند. PDF همراه همچنان خروجی رسمی Reporting نیست؛ صفحه‌بندی و
+Golden نهایی در `VX-G5` باید جداگانه Qualified شوند. Run 408 PDF را به یک
+صفحه رساند اما پیام منبع برای نبود Snapshot ناسازگار بود؛ correction Run
+409 هشت Job سبز و متن/PDF را دوباره تأیید کرد.
 Capture 44 انتخاب فایل نمونه در مدیریت ظاهر Login را بدون Upload ثبت می‌کند؛
 نام فایل در UI دیده می‌شود و E2E پس از Capture فوکوس و حذف انتخاب را کنترل
 می‌کند. سیاست امن Upload/Release و Publish تغییر نمی‌کند.
@@ -130,3 +137,11 @@ Run 405 مستندات MS41 هشت Job سبز شد و MS41 Safe است. Source M
 شامل ۴۴ PNG، PDF و index معتبر از نظر Source/Run، SHA و ابعاد است. قاب 26
 Skeleton خنثی را پیش از پاسخ و قاب 27 پیام خطای واقعی را بدون Placeholder
 نشان می‌دهد. CI مستندات شرط پذیرش MS42 و `VX-G3/G4/G5` بازند.
+
+MS42 documentation در Run 407 هشت Job سبز شد و Safe است. MS43 correction
+در Run 409 نیز هر هشت Job را پاس کرد؛ Artifact `10996804117` با digest
+`sha256:636f371259b6a888a09bbbdce5d52825d06983b4271bc2ab98a87a1b8a4c9761`
+شامل ۴۴ PNG، PDF و index معتبر از نظر Source/Run، SHA و ابعاد است. قاب 43
+و PDF یک‌صفحه‌ای A4 با Poppler بازبینی شدند؛ فرم/Navigation چاپ نشده و متن
+NoSnapshot صادق است. CI مستندات شرط پذیرش MS43، Golden چاپ و `VX-G3/G4/G5`
+بازند.

@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.102.0`
+- نسخه: `1.103.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS41 Safe Checkpoint, MS42 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS42 Safe Checkpoint, MS43 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `41b5eeb06dedab3e9d7e4b2f7ee52ffeba8e44af`؛ tree `010814c9f03923dad2189e238b549dcfedd84dfe`؛ Run 406 هشت Job سبز، Artifact ۴۴ تصویر/PDF معتبر؛ CI مستندات شرط اعتبار MS42 |
-| Current evidence-bearing source checkpoint | `f02abcd28debc68fb63826c2850926d4e98db59b`؛ MS41 documentation Run 405 هشت Job سبز، Source Run 404 و Artifact ۴۴ تصویر/PDF معتبر |
-| Source lineage | UX2-MS42 ادامهٔ مستقیم MS41 documentation `f02abcd28debc68fb63826c2850926d4e98db59b` و source `41b5eeb06dedab3e9d7e4b2f7ee52ffeba8e44af` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS41-C1`؛ Navigation موبایل و keyboard/۳۲۰ پیکسل، Runهای 404/405 هشت Job سبز؛ MS42 Candidate |
+| آخرین Source Candidate واجد Evidence | correction `ce179fd6ffadc0f90a203c522dbea1c106e67765`؛ tree `ca08e1894453d922bf7885b4c52bc690a1385b75`؛ Run 409 هشت Job سبز، Artifact ۴۴ تصویر/PDF یک‌صفحه‌ای A4 معتبر؛ CI مستندات شرط اعتبار MS43 |
+| Current evidence-bearing source checkpoint | `401f1356f659c5c489c5fd3f626adc8865a3b723`؛ MS42 documentation Run 407 هشت Job سبز، Source Run 406 و Artifact ۴۴ تصویر/PDF معتبر |
+| Source lineage | UX2-MS43 ادامهٔ مستقیم MS42 documentation `401f1356f659c5c489c5fd3f626adc8865a3b723`، source `f9847db38e79bce7c7986f61fcdc5a628a407422` و correction `ce179fd6ffadc0f90a203c522dbea1c106e67765` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS42-C1`؛ Skeleton صادق Loading سبد، Runهای 406/407 هشت Job سبز؛ MS43 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS41-C1`؛ Navigation موبایل و keyboard/۳۲۰ پیکسل، Runهای 404/405 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS40-C1`؛ FileInput فارسی Login، Runهای 402/403 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS39-C1`؛ کنتراست Wizard و VX-G1 Audit Complete، Runهای 400/401 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS38-C1`؛ ممیزی چاپ مرورگر، Runهای 398/399 هشت Job سبز |
@@ -185,6 +186,24 @@ CI مستندات MS41 در Run 405 هر هشت Job را پاس کرد و
 از نظر ۴۴ PNG/PDF، SHA/ابعاد و Source/Run معتبر است؛ قاب‌های 26/27
 بازبینی شدند. CI مستندات شرط پذیرش MS42 است. `VX-G3/G4/G5`، فونت
 فارسی تازه و Print System بازند.
+
+CI مستندات MS42 در Run 407 هر هشت Job را پاس کرد و
+`PMCS-V1.1-UX2-MS42-C1` Safe شد. UX2-MS43 Source
+`f9847db38e79bce7c7986f61fcdc5a628a407422` / tree
+`a60ff1a03da6c78c69fa9ef3a0623244a24a83fa` برگهٔ چاپ مرورگر
+مرکز فرمان را فقط با دادهٔ تصویر وضعیت مجاز یا نبود آن نشان می‌دهد؛ Sidebar،
+فرم و کنترل تعاملی از چاپ حذف می‌شوند. قرارداد مرز Print System در
+`docs/ux/pmcs-v1.1-print-system-contract.md` است. Run 408 هشت Job سبز و
+PDF یک‌صفحه‌ای A4 داشت، اما بازبینی متن، پیام «تصویر رسمی دریافت شد» را
+هم‌زمان با نبود Snapshot یافت. Correction
+`ce179fd6ffadc0f90a203c522dbea1c106e67765` / tree
+`ca08e1894453d922bf7885b4c52bc690a1385b75` متن را صادق کرد؛ Run
+409 هشت Job سبز و Artifact `10996804117` با digest
+`sha256:636f371259b6a888a09bbbdce5d52825d06983b4271bc2ab98a87a1b8a4c9761`
+از نظر ۴۴ PNG/PDF، SHA/ابعاد و Source/Run معتبر است. PDF یک صفحهٔ A4،
+فارسی قابل استخراج و بدون Navigation/فرم یا پیام متناقض است؛ قاب 43/PDF
+بازبینی شدند. CI مستندات شرط پذیرش MS43 است. این برگه خروجی رسمی Reporting نیست و
+`VX-G3/G4/G5` و فونت تازه بازند.
 
 ## Completed & Verified Work
 
@@ -901,9 +920,9 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI Source: Run 406 (`36478629704`) — هر هشت Job موفق و Artifact
-  `10995736502` با ۴۴ PNG/PDF و index معتبر؛ MS41 documentation Run 405
-  سبز است و MS42 documentation هنوز CI مستقل می‌خواهد.
+- آخرین CI Source: correction Run 409 (`36481517081`) — هر هشت Job موفق و
+  Artifact `10996804117` با ۴۴ PNG/PDF یک‌صفحه‌ای و index معتبر؛ MS42
+  documentation Run 407 سبز است و MS43 documentation هنوز CI مستقل می‌خواهد.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
   `10927275947` با digest `sha256:e3c4021e7c96e79bdc4b929581bbcd8d007fbdac7322f5f89d2a202056eb476b`
@@ -920,7 +939,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی پس از CI و پذیرش MS42، `V1.1-UX2-MS43` است؛ قرارداد Print System و نمونهٔ محدود چاپ مرکز فرمان با حذف Navigation بریده و فرم‌های تعاملی.**
+**گام دقیق بعدی پس از CI و پذیرش MS43، `V1.1-UX2-MS44` است؛ بستهٔ Prototype/Review نمایندهٔ `VX-G3` و مقایسهٔ فونت فارسی روی Web/Print با معیارهای خوانایی.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

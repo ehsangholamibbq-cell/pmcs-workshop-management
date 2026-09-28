@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.5`
+- نسخه Candidate: `1.0.0-rc.6`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -119,6 +119,11 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 - Executive Intelligence workspace؛ Agent هرگز به Chat box ساده تقلیل داده نمی‌شود.
 
 هر Component باید Default، Hover، Focus-visible، Pressed، Disabled، Loading، Error و Offline state مرتبط خود را تعریف کند.
+
+قرارداد `PMCS-UX-PRINT-001` چاپ مرورگر محدود MS43 را از خروجی رسمی
+Reporting جدا می‌کند. برگهٔ نمونه فقط Snapshot مجاز یا نبود آن، منبع و
+هشدار تازگی را نشان می‌دهد؛ Navigation/فرم چاپ نمی‌شوند. A4/Golden و فونت
+تازه هنوز در `VX-G5` Qualified نشده‌اند.
 
 در UX2-MS42، Portfolio هنگام دریافت اولیهٔ داده، Skeleton خنثای Card/Panel
 با `aria-hidden` نشان می‌دهد و پیام زندهٔ Loading را حفظ می‌کند. Placeholder

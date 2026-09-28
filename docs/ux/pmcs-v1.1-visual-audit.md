@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS41 Safe، MS42 Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS42 Safe، MS43 Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -262,3 +262,22 @@ MS41 documentation در Run 405 هر هشت Job را پاس کرد و Safe شد.
 SHA/ابعاد و Source/Run معتبر دارد؛ قاب‌های 26/27 بازبینی شدند. Full CI
 مستندات شرط پذیرش Candidate است. Print System، فونت تازه و مهاجرت سایر
 Loadingها بازند.
+
+## ۱۷. پیوست UX2-MS43 — نمونهٔ چاپ محدود مرکز فرمان
+
+MS42 documentation در Run 407 هر هشت Job را پاس کرد و Safe شد. Source MS43
+`f9847db38e79bce7c7986f61fcdc5a628a407422` / tree
+`a60ff1a03da6c78c69fa9ef3a0623244a24a83fa` به‌جای چاپ ۲۲صفحه‌ای
+تمام UI تعاملی، یک برگهٔ مرورگر فقط با تصویر رسمی وضعیت مجاز یا نبود آن،
+منبع، هشدار کهنگی و اعلان غیررسمی‌بودن نشان می‌دهد. Sidebar، Form و Button
+از media چاپ پنهان‌اند. E2E حضور برگه، نبود کنترل، تصویر لوگو و PDF A4 را
+کنترل می‌کند. قرارداد `PMCS-UX-PRINT-001` مرز با Reporting رسمی و Gateهای
+بعدی را ثبت می‌کند. Run 408 هشت Job سبز و PDF A4 یک‌صفحه‌ای داشت؛ متن
+«تصویر رسمی دریافت شد» در کنار نبود Snapshot با شواهد ناسازگار بود.
+Correction `ce179fd6ffadc0f90a203c522dbea1c106e67765` / tree
+`ca08e1894453d922bf7885b4c52bc690a1385b75` پیام را صادق و E2E را
+متمرکز کرد. Run 409 هشت Job سبز و Artifact `10996804117` با ۴۴ PNG/PDF،
+SHA/ابعاد و Source/Run معتبر دارد. PDF یک صفحهٔ A4 با متن فارسی قابل
+استخراج و بدون Navigation/فرم/پیام متناقض است؛ قاب 43 و PDF بازبینی شدند.
+Full CI مستندات شرط پذیرش Candidate است؛ Print Golden، فونت تازه و
+`VX-G3/G4/G5` بازند.

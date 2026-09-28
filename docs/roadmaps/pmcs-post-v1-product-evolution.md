@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.125.0`
+- نسخه سند: `1.126.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1344,6 +1344,24 @@ Artifact `10995736502` با ۴۴ PNG/PDF و index معتبر دارد؛ قاب�
 بازبینی شدند. CI مستندات شرط پذیرش MS42 است. Exact next `UX2-MS43` قرارداد Print System
 و نمونهٔ چاپ محدود مرکز فرمان است؛ `VX-G3/G4/G5`، فونت و Qualification بازند.
 
+UX2-MS42 documentation `401f1356f659c5c489c5fd3f626adc8865a3b723` در
+Run 407 هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS42-C1` Safe شد. Source
+UX2-MS43 `f9847db38e79bce7c7986f61fcdc5a628a407422` / tree
+`a60ff1a03da6c78c69fa9ef3a0623244a24a83fa` برای چاپ مرورگر مرکز
+فرمان یک برگهٔ محدود فقط با تصویر وضعیت مجاز، منبع و هشدار تازگی ایجاد
+می‌کند. Navigation و فرم‌ها در media چاپ پنهان‌اند؛ نبود Snapshot به KPI
+ساختگی تبدیل نمی‌شود. `PMCS-UX-PRINT-001` مرز این نمونه با PDF/XLSX رسمی
+Reporting و معیارهای A4/Golden/فونت را نسخه‌دار می‌کند. Run 408 هر هشت
+Job سبز و PDF یک‌صفحه‌ای A4 داشت؛ بازبینی محتوایی، پیام دریافت تصویر رسمی
+را هم‌زمان با نبود Snapshot یافت. Correction
+`ce179fd6ffadc0f90a203c522dbea1c106e67765` / tree
+`ca08e1894453d922bf7885b4c52bc690a1385b75` پیام را اصلاح و E2E
+حالت بدون Snapshot را Assert می‌کند. Run 409 هشت Job سبز و Artifact
+`10996804117` با ۴۴ PNG/PDF و index معتبر دارد. PDF یک صفحهٔ A4 با متن
+فارسی قابل استخراج، بدون ناوبری/فرم و پیام متناقض است؛ قاب 43/PDF بازبینی
+شدند. CI مستندات شرط پذیرش MS43 است. Exact next `UX2-MS44` بستهٔ Prototype/Review
+برای `VX-G3` و مقایسهٔ فونت Web/Print است؛ `VX-G3/G4/G5` بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1709,3 +1727,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.123.0` | UX2-MS39 documentation Run 401 هشت Job سبز و VX-G1 ممیزی پذیرفته؛ UX2-MS40 FileInput فارسی با Capture 44، Run 402 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS41 Navigation موبایل و Gateهای G3/G4/G5 باز |
 | `1.124.0` | UX2-MS40 documentation Run 403 هشت Job سبز و Safe؛ UX2-MS41 Navigation موبایل در شش Shell و آزمون keyboard/۳۲۰ پیکسل، Run 404 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS42 Loading صادق و Gateهای G3/G4/G5 باز |
 | `1.125.0` | UX2-MS41 documentation Run 405 هشت Job سبز و Safe؛ UX2-MS42 Skeleton خنثای Loading سبد بدون Fact ساختگی، Source Run 406 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS43 Print System و Gateهای G3/G4/G5 باز |
+| `1.126.0` | UX2-MS42 documentation Run 407 هشت Job سبز و Safe؛ UX2-MS43 برگهٔ چاپ محدود/قرارداد Print System، Run 408 متن NoSnapshot را آشکار و correction Run 409 هشت Job سبز/PDF یک‌صفحه‌ای بازبینی‌شده؛ CI مستندات شرط اعتبار، MS44 Prototype/Font review و Gateهای G3/G4/G5 باز |
