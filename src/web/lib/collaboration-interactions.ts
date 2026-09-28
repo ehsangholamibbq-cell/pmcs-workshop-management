@@ -181,6 +181,51 @@ export function setProjectMessageLegalHold(apiBaseUrl: string, projectId: string
   return mutateModeratedMessage(apiBaseUrl, projectId, message, "legal-hold", reason, idempotencyKey, enabled);
 }
 
+export interface ProjectMessageHistory {
+  readonly messageId: string;
+  readonly currentRevision: number;
+  readonly revisions: readonly {
+    readonly fromRevision: number; readonly body: string;
+    readonly action: "Edited" | "Deleted" | "Redacted";
+    readonly actorUserId: string; readonly occurredAt: string;
+  }[];
+  readonly moderation: readonly {
+    readonly messageRevision: number; readonly action: "Redacted" | "HoldApplied" | "HoldRemoved";
+    readonly reason: string; readonly actorUserId: string; readonly occurredAt: string;
+  }[];
+}
+
+/** History is a separate author-or-moderator read, never part of the group timeline. */
+export async function loadProjectMessageHistory(apiBaseUrl: string, projectId: string,
+  messageId: string, signal?: AbortSignal): Promise<ProjectMessageHistory> {
+  const response = await checked(await fetch(`${messageUrl(apiBaseUrl, projectId, messageId)}/history`,
+    { cache: "no-store", signal }));
+  const history = await response.json() as ProjectMessageHistory;
+  const isGuid = (value: unknown) => typeof value === "string" &&
+    /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(value);
+  const validDate = (value: unknown) => typeof value === "string" && Number.isFinite(Date.parse(value));
+  if (history?.messageId?.toLowerCase() !== messageId.toLowerCase() ||
+      !Number.isSafeInteger(history.currentRevision) || history.currentRevision < 1 ||
+      !Array.isArray(history.revisions) || history.revisions.length > 1000 ||
+      history.revisions.some((item, index) => !item ||
+        !Number.isSafeInteger(item.fromRevision) || item.fromRevision < 1 ||
+        item.fromRevision >= history.currentRevision ||
+        (index > 0 && item.fromRevision <= history.revisions[index - 1].fromRevision) ||
+        typeof item.body !== "string" || item.body.length > 4000 ||
+        !["Edited", "Deleted", "Redacted"].includes(item.action) ||
+        !isGuid(item.actorUserId) || !validDate(item.occurredAt)) ||
+      !Array.isArray(history.moderation) || history.moderation.length > 1000 ||
+      history.moderation.some((item) => !item ||
+        !Number.isSafeInteger(item.messageRevision) || item.messageRevision < 1 ||
+        item.messageRevision > history.currentRevision ||
+        !["Redacted", "HoldApplied", "HoldRemoved"].includes(item.action) ||
+        typeof item.reason !== "string" || !item.reason.trim() || item.reason.length > 500 ||
+        !isGuid(item.actorUserId) || !validDate(item.occurredAt))) {
+    throw new Error("تاریخچهٔ محدود پیام معتبر نیست.");
+  }
+  return history;
+}
+
 export async function setProjectMessagePin(apiBaseUrl: string, projectId: string,
   messageId: string, pinned: boolean): Promise<string | null> {
   const response = await checked(await fetch(`${messageUrl(apiBaseUrl, projectId, messageId)}/pin`,

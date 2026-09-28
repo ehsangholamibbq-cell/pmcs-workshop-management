@@ -5,6 +5,7 @@ import {
   CollaborationRevisionConflict, editOwnProjectMessage,
   CollaborationLegalHoldError, deleteOwnProjectMessage,
   redactProjectMessage, setProjectMessageLegalHold,
+  loadProjectMessageHistory,
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
 } from "../lib/collaboration-interactions.ts";
@@ -123,6 +124,36 @@ test("moderator redaction and hold require reason, revision and scoped confirmat
       body: "متن ناشناخته" });
     await assert.rejects(setProjectMessageLegalHold("/api/pmcs", projectId, message,
       true, "دلیل", key), /تأیید تعدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("message history is a separate bounded author-or-moderator read", async () => {
+  const previous = globalThis.fetch;
+  try {
+    let url = "";
+    globalThis.fetch = async (input, init) => {
+      url = String(input);
+      assert.equal(init?.cache, "no-store");
+      return Response.json({ messageId, currentRevision: 3,
+        revisions: [{ fromRevision: 1, body: "متن پیشین", action: "Edited",
+          actorUserId: projectId, occurredAt: "2026-09-28T00:01:00Z" }],
+        moderation: [{ messageRevision: 3, action: "HoldApplied", reason: "نگهداری مستند",
+          actorUserId: projectId, occurredAt: "2026-09-28T00:02:00Z" }] });
+    };
+    const history = await loadProjectMessageHistory("/api/pmcs", projectId, messageId);
+    assert.equal(history.revisions[0].body, "متن پیشین");
+    assert.match(url, new RegExp(`${projectId}/collaboration/messages/${messageId}/history$`, "u"));
+    globalThis.fetch = async () => Response.json({ ...history,
+      moderation: [{ ...history.moderation[0], reason: "" }] });
+    await assert.rejects(loadProjectMessageHistory("/api/pmcs", projectId, messageId),
+      /تاریخچهٔ محدود/u);
+    globalThis.fetch = async () => Response.json({ ...history,
+      messageId: "20000000-0000-4000-8000-000000000002" });
+    await assert.rejects(loadProjectMessageHistory("/api/pmcs", projectId, messageId),
+      /تاریخچهٔ محدود/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(loadProjectMessageHistory("/api/pmcs", projectId, messageId),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
   } finally { globalThis.fetch = previous; }
 });
 

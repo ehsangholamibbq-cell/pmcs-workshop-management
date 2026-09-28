@@ -648,3 +648,52 @@ test("moderator records a reason for redaction and Legal Hold with revision reco
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام نیازمند بررسی")).toHaveCount(0);
 });
+
+test("private message history opens only for author or moderator and clears on revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const otherUserId = "10000000-0000-4000-8000-000000000098";
+  let authorUserId = otherUserId;
+  let canModerate = false;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId,
+        body: "متن فعلی", revision: 3, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/history`,
+    (route) => revoked ? route.fulfill({ status: 403 }) : route.fulfill({
+      status: 200, contentType: "application/json", body: JSON.stringify({
+        messageId, currentRevision: 3,
+        revisions: [{ fromRevision: 1, body: "متن پیشین خصوصی", action: "Edited",
+          actorUserId: otherUserId, occurredAt: "2026-09-28T00:01:00Z" }],
+        moderation: canModerate ? [{ messageRevision: 3, action: "HoldApplied",
+          reason: "دلیل خصوصی تعدیل", actorUserId: otherUserId,
+          occurredAt: "2026-09-28T00:02:00Z" }] : [],
+      }),
+    }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "تاریخچهٔ محدود پیام" })).toHaveCount(0);
+  authorUserId = userId;
+  await page.reload();
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByText("متن پیشین خصوصی")).toBeVisible();
+  await expect(page.getByText("دلیل خصوصی تعدیل")).toHaveCount(0);
+  authorUserId = otherUserId;
+  canModerate = true;
+  await page.reload();
+  await expect(page.getByText("متن پیشین خصوصی")).toHaveCount(0);
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByText("دلیل: دلیل خصوصی تعدیل")).toBeVisible();
+  await page.reload();
+  revoked = true;
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("متن فعلی")).toHaveCount(0);
+});

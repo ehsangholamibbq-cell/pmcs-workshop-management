@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ChangeEvent, type FormEvent, useCallback, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
@@ -22,6 +22,7 @@ import {
   editOwnProjectMessage, CollaborationRevisionConflict,
   deleteOwnProjectMessage, CollaborationLegalHoldError,
   redactProjectMessage, setProjectMessageLegalHold,
+  loadProjectMessageHistory, type ProjectMessageHistory,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
@@ -67,8 +68,14 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   } | null>(null);
   const [moderationBusy, setModerationBusy] = useState(false);
   const [moderationStatus, setModerationStatus] = useState("");
+  const [history, setHistory] = useState<ProjectMessageHistory | null>(null);
+  const [historyBusyId, setHistoryBusyId] = useState<string | null>(null);
+  const [historyStatus, setHistoryStatus] = useState("");
+  const historyController = useRef<AbortController | null>(null);
 
   const closeRestrictedConversation = useCallback((status: number) => {
+    historyController.current?.abort();
+    historyController.current = null;
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
     setDraft("");
     setReplyTo(null);
@@ -81,14 +88,22 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setDeleteStatus("");
     setModerating(null);
     setModerationStatus("");
+    setHistory(null);
+    setHistoryBusyId(null);
+    setHistoryStatus("");
   }, []);
 
   useEffect(() => {
     let active = true;
+    historyController.current?.abort();
+    historyController.current = null;
     void loadProjectConversation("/api/pmcs", projectId).then((result) => {
       if (!active) return;
       setSearchResults(null);
       setSearchStatus("");
+      setHistory(null);
+      setHistoryBusyId(null);
+      setHistoryStatus("");
       if (result.kind !== "ready") {
         setDraft("");
         setReplyTo(null);
@@ -323,6 +338,35 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     } finally { setModerationBusy(false); }
   }
 
+  async function openHistory(message: ProjectConversationMessage) {
+    if (view?.kind !== "ready" ||
+        !(view.canModerate || message.authorUserId.toLowerCase() === session.userId.toLowerCase())) return;
+    historyController.current?.abort();
+    if (history?.messageId === message.id) {
+      historyController.current = null;
+      setHistory(null);
+      setHistoryBusyId(null);
+      setHistoryStatus("");
+      return;
+    }
+    const controller = new AbortController();
+    historyController.current = controller;
+    setHistory(null);
+    setHistoryStatus("");
+    setHistoryBusyId(message.id);
+    try {
+      const result = await loadProjectMessageHistory("/api/pmcs", projectId, message.id, controller.signal);
+      if (controller.signal.aborted) return;
+      setHistory(result);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      if (error instanceof CollaborationAccessError) closeRestrictedConversation(error.status);
+      else setHistoryStatus(error instanceof Error ? error.message : "دریافت تاریخچهٔ پیام کامل نشد.");
+    } finally {
+      if (!controller.signal.aborted) setHistoryBusyId(null);
+    }
+  }
+
   return (
     <main className="app-shell collaboration-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -375,6 +419,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             {editStatus && <p role={editing?.conflict ? "alert" : "status"}>{editStatus}</p>}
             {deleteStatus && <p role={deleting?.conflict ? "alert" : "status"}>{deleteStatus}</p>}
             {moderationStatus && <p role={moderating?.conflict ? "alert" : "status"}>{moderationStatus}</p>}
+            {historyStatus && <p role="alert">{historyStatus}</p>}
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
@@ -515,6 +560,39 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                           {message.legalHold ? "برداشتن نگهداری قانونی" : "اعمال نگهداری قانونی"}
                         </button>
                       </div>}
+                    {(view.canModerate || message.authorUserId.toLowerCase() === session.userId.toLowerCase()) &&
+                      <div className="collaboration-message-actions">
+                        <button className="secondary-button" type="button" disabled={historyBusyId !== null}
+                          aria-expanded={history?.messageId === message.id}
+                          onClick={() => void openHistory(message)}>
+                          {historyBusyId === message.id ? "در حال دریافت تاریخچه…" :
+                            history?.messageId === message.id ? "بستن تاریخچه" : "تاریخچهٔ محدود پیام"}
+                        </button>
+                      </div>}
+                    {history?.messageId === message.id &&
+                      <section className="collaboration-edit" aria-label="تاریخچهٔ محدود پیام">
+                        <h3>سوابق نسخه‌های پیام</h3>
+                        {history.revisions.length === 0 ? <p>ویرایش یا حذف پیشین ثبت نشده است.</p> :
+                          <ol>{history.revisions.map((item) => <li key={`${item.fromRevision}-${item.action}`}>
+                            <strong>{item.action === "Edited" ? "ویرایش" : item.action === "Deleted"
+                              ? "حذف نمایشی" : "پنهان‌سازی"}</strong>
+                            <span> · نسخهٔ {item.fromRevision.toLocaleString("fa-IR")} · </span>
+                            <time dateTime={item.occurredAt}>{formatPersianDateTime(item.occurredAt)}</time>
+                            <p>متن پیشین: {item.body}</p>
+                          </li>)}</ol>}
+                        {view.canModerate && <>
+                          <h3>تصمیم‌های تعدیل</h3>
+                          {history.moderation.length === 0 ? <p>تصمیم تعدیلی ثبت نشده است.</p> :
+                            <ol>{history.moderation.map((item, index) => <li key={`${item.messageRevision}-${index}`}>
+                              <strong>{item.action === "Redacted" ? "پنهان‌سازی" :
+                                item.action === "HoldApplied" ? "اعمال نگهداری قانونی" :
+                                  "برداشتن نگهداری قانونی"}</strong>
+                              <span> · نسخهٔ {item.messageRevision.toLocaleString("fa-IR")} · </span>
+                              <time dateTime={item.occurredAt}>{formatPersianDateTime(item.occurredAt)}</time>
+                              <p>دلیل: {item.reason}</p>
+                            </li>)}</ol>}
+                        </>}
+                      </section>}
                   </li>
                 ))}
               </ol>
