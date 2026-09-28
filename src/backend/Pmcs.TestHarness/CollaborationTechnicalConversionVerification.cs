@@ -17,6 +17,14 @@ internal static partial class Program
         var observer = Actor("observer");
         var scanner = Actor("qa-super-admin");
         var assertions = new List<VerificationAssertion>();
+        var officeRoom = await SendAsync(client, key, office, HttpMethod.Get, path);
+        var observerRoom = await SendAsync(client, key, observer, HttpMethod.Get, path);
+        Record(assertions, "collaboration.technical.rfi-room-capability",
+            officeRoom.StatusCode == HttpStatusCode.OK &&
+            observerRoom.StatusCode == HttpStatusCode.OK &&
+            officeRoom.Payload.GetProperty("canConvertRfi").GetBoolean() &&
+            !observerRoom.Payload.GetProperty("canConvertRfi").GetBoolean(),
+            $"office={(int)officeRoom.StatusCode};observer={(int)observerRoom.StatusCode}");
         var message = await SendAsync(client, key, office, HttpMethod.Post,
             $"{path}/messages", new
             {
@@ -65,9 +73,17 @@ internal static partial class Program
                 destinationId = rfiId, destinationType = "RFI", baseRevision = 1,
                 confirmed = true, documentIds = new[] { documentId },
                 details = new { title = "پرسش مشخصات بتن", requestedFrom = "مشاور",
-                    discipline = "سازه", potentialImpact = "Quality", isBlocking = false,
+                    discipline = "سازه", potentialImpact = "Time, Quality", isBlocking = false,
                     requiredByDate = "2099-01-01" }
             }, "qa-col1-technical-rfi");
+        var duplicateRfi = await SendAsync(client, key, office, HttpMethod.Post,
+            $"{path}/messages/{messageId}/conversions", new
+            {
+                destinationId = Guid.NewGuid(), destinationType = "RFI", baseRevision = 1,
+                confirmed = true, documentIds = Array.Empty<Guid>(),
+                details = new { title = "پرسش تکراری", requestedFrom = "مشاور",
+                    discipline = "سازه", potentialImpact = "Quality", isBlocking = false }
+            }, "qa-ux2-technical-rfi-duplicate");
         var technical = await SendAsync(client, key, office, HttpMethod.Post,
             $"{path}/messages/{messageId}/conversions", new
             {
@@ -91,17 +107,19 @@ internal static partial class Program
             ? revision.GetProperty("id").GetGuid() : Guid.Empty;
         Record(assertions, "collaboration.technical.owner-rows-and-lineage",
             rfi.StatusCode == HttpStatusCode.Created &&
+            duplicateRfi.StatusCode == HttpStatusCode.Conflict &&
             technical.StatusCode == HttpStatusCode.Created &&
             lineage.StatusCode == HttpStatusCode.OK &&
             lineage.Payload.GetArrayLength() == 2 &&
             officialRfi.ValueKind == JsonValueKind.Object &&
             officialRfi.GetProperty("status").GetString() == "Draft" &&
+            officialRfi.GetProperty("potentialImpact").GetString() == "Time, Quality" &&
             officialRfi.GetProperty("evidenceReferences").EnumerateArray().Any(item =>
                 item.GetString() == $"pmcs:chat-document:{messageId:N}:{documentId:N}:v1:sha256:{sha256}") &&
             officialDocument.ValueKind == JsonValueKind.Object &&
             revisionId != Guid.Empty && revision.GetProperty("status").GetString() == "Draft" &&
             revision.GetProperty("sha256").GetString() == sha256,
-            $"rfi={(int)rfi.StatusCode};document={(int)technical.StatusCode};state={(int)state.StatusCode};lineage={(int)lineage.StatusCode}");
+            $"rfi={(int)rfi.StatusCode};duplicate={(int)duplicateRfi.StatusCode};document={(int)technical.StatusCode};state={(int)state.StatusCode};lineage={(int)lineage.StatusCode}");
 
         if (revisionId != Guid.Empty)
         {

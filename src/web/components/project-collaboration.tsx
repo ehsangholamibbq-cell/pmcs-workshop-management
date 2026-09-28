@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PersianDateInput } from "@/components/persian-date-input";
+import { ProjectRfiConversion } from "@/components/project-rfi-conversion";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
   loadProjectConversation, type ProjectConversationMessage, type ProjectConversationView,
@@ -610,6 +611,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         onChanged={() => setRefresh((value) => value + 1)} />}
                     {view.canConvertIssue && !message.deletedAt && !message.redactedAt &&
                       <ProjectIssueConversion projectId={projectId} message={message}
+                        actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
+                        onChanged={() => setRefresh((value) => value + 1)} />}
+                    {view.canConvertRfi && !message.deletedAt && !message.redactedAt &&
+                      <ProjectRfiConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
                         onChanged={() => setRefresh((value) => value + 1)} />}
                   </li>

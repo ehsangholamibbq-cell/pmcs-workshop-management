@@ -208,3 +208,91 @@ export async function convertProjectMessageToIssue(apiBaseUrl: string, projectId
   }
   return result;
 }
+
+export class CollaborationRfiAlreadyExists extends Error {
+  constructor() { super("از این پیام قبلاً RFI رسمی ساخته شده است؛ تبار تبدیل را تازه‌سازی کنید."); }
+}
+
+export class CollaborationRfiValidationError extends Error {
+  constructor() { super("مشخصات پرسش فنی، مخاطب یا مهلت انتخاب‌شده پذیرفته نشد."); }
+}
+
+export type RfiPotentialImpact = "Time" | "Cost" | "Quality" | "Scope" | "Safety";
+
+export interface ProjectRfiConversionDetails {
+  readonly title: string;
+  readonly question: string;
+  readonly requestedFrom: string;
+  readonly discipline: string;
+  readonly requiredByDate: string;
+  readonly potentialImpacts: readonly RfiPotentialImpact[];
+  readonly isBlocking: boolean;
+  readonly proposedSolution: string;
+}
+
+/** Creates a Draft RFI through Technical Office, leaving later review/issue transitions untouched. */
+export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, actorUserId: string, details: ProjectRfiConversionDetails,
+  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  const title = details.title.trim();
+  const question = details.question.trim();
+  const requestedFrom = details.requestedFrom.trim();
+  const discipline = details.discipline.trim();
+  const proposedSolution = details.proposedSolution.trim();
+  const date = details.requiredByDate;
+  const impacts = details.potentialImpacts;
+  if (!guid(projectId) || !guid(message.id) || !guid(actorUserId) ||
+      !guid(destinationId) || !guid(idempotencyKey) ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      message.deletedAt || message.redactedAt ||
+      !title || title.length > 240 || !question || question.length > 6000 ||
+      !requestedFrom || requestedFrom.length > 240 ||
+      !discipline || discipline.length > 120 || proposedSolution.length > 4000 ||
+      (date !== "" && (!/^\d{4}-\d{2}-\d{2}$/u.test(date) ||
+        Number.isNaN(Date.parse(`${date}T00:00:00Z`)) ||
+        new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date)) ||
+      !Array.isArray(impacts) || impacts.length > 5 ||
+      new Set(impacts).size !== impacts.length ||
+      impacts.some((item) => !["Time", "Cost", "Quality", "Scope", "Safety"].includes(item)) ||
+      typeof details.isBlocking !== "boolean" ||
+      /[\x00-\x08\x0b-\x1f\x7f]/u.test(title + question + requestedFrom + discipline + proposedSolution)) {
+    throw new Error("مشخصات تبدیل به RFI معتبر نیست.");
+  }
+  const url = `${apiBaseUrl.replace(/\/$/u, "")}/api/v1/projects/${encodeURIComponent(projectId)}` +
+    `/collaboration/messages/${encodeURIComponent(message.id)}/conversions`;
+  const response = await fetch(url, {
+    method: "POST", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ destinationId, destinationType: "RFI", baseRevision: message.revision,
+      confirmed: true, details: { title, question, requestedFrom, discipline,
+        requiredByDate: date || null, potentialImpact: impacts.join(", ") || "None",
+        isBlocking: details.isBlocking, proposedSolution: proposedSolution || null }, documentIds: [] }),
+  });
+  if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as {
+      code?: string; currentRevision?: number;
+    } | null;
+    if (conflict?.code === "collaboration.message.revision.conflict") {
+      const revision = conflict.currentRevision;
+      throw new CollaborationRevisionConflict(Number.isSafeInteger(revision) && revision! > 0 ? revision! : null);
+    }
+    if (conflict?.code === "collaboration.conversion.rfi.already_created" ||
+        conflict?.code === "collaboration.conversion.destination_id.reused") {
+      throw new CollaborationRfiAlreadyExists();
+    }
+    throw new Error("تعارض در تبدیل رسمی؛ تبار پیام را بازخوانی کنید.");
+  }
+  if (response.status === 422) throw new CollaborationRfiValidationError();
+  if (![200, 201].includes(response.status)) throw new Error("ثبت RFI رسمی کامل نشد.");
+  const result = await response.json() as ProjectMessageConversionLineage;
+  if (!validLineage(result, message.id) || result.destinationType !== "RFI" ||
+      result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
+      result.messageRevision !== message.revision ||
+      result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
+      result.documents.length !== 0) {
+    throw new Error("تأیید تبدیل RFI رسمی معتبر نیست.");
+  }
+  return result;
+}

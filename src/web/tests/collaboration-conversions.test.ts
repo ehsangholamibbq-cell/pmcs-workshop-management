@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import { CollaborationActionValidationError, CollaborationIssueAlreadyExists,
-  CollaborationIssueValidationError, convertProjectMessageToAction,
-  convertProjectMessageToIssue, loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
+  CollaborationIssueValidationError, CollaborationRfiAlreadyExists, CollaborationRfiValidationError,
+  convertProjectMessageToAction, convertProjectMessageToIssue, convertProjectMessageToRfi,
+  loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
 import { CollaborationRevisionConflict } from "../lib/collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "../lib/collaboration-room.ts";
 
@@ -140,6 +141,63 @@ test("confirmed Issue conversion keeps general-project classification, actor and
       actor, { ...details, ownerUserId: destinationId }, destinationId, key), /مشخصات تبدیل/u);
     await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId,
       { ...message, redactedAt: "2026-09-28T00:02:00Z" }, actor, details, destinationId, key),
+    /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("confirmed RFI creates only a Draft owner command with explicit impact flags and scoped identity", async () => {
+  const previous = globalThis.fetch;
+  const actor = "10000000-0000-4000-8000-000000000041";
+  const destinationId = "10000000-0000-4000-8000-000000000033";
+  const key = "10000000-0000-4000-8000-000000000063";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "پرسش فنی کارگاه" } as ProjectConversationMessage;
+  const details = { title: " پرسش بتن ", question: " مغایرت مشخصات ", requestedFrom: " مشاور ",
+    discipline: " سازه ", requiredByDate: "2099-01-01", potentialImpacts: ["Time", "Quality"] as const,
+    isBlocking: true, proposedSolution: " بررسی نقشه " };
+  const response = { ...item, destinationType: "RFI", destinationId, documents: [],
+    destinationReference: "RFI-001", confirmedBy: actor };
+  try {
+    let payload: unknown;
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), new RegExp(`${messageId}/conversions$`, "u"));
+      assert.equal(init?.method, "POST");
+      assert.equal(init?.cache, "no-store");
+      assert.equal(new Headers(init?.headers).get("Idempotency-Key"), key);
+      payload = JSON.parse(String(init?.body)) as unknown;
+      return Response.json(response, { status: 201 });
+    };
+    assert.equal((await convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key)).destinationReference, "RFI-001");
+    assert.deepEqual(payload, { destinationId, destinationType: "RFI", baseRevision: 2,
+      confirmed: true, details: { title: "پرسش بتن", question: "مغایرت مشخصات",
+        requestedFrom: "مشاور", discipline: "سازه", requiredByDate: "2099-01-01",
+        potentialImpact: "Time, Quality", isBlocking: true, proposedSolution: "بررسی نقشه" },
+      documentIds: [] });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 3 }, { status: 409 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationRevisionConflict && error.currentRevision === 3);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.rfi.already_created" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationRfiAlreadyExists);
+    globalThis.fetch = async () => new Response(null, { status: 422 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationRfiValidationError);
+    globalThis.fetch = async () => Response.json({ ...response, destinationType: "Action" }, { status: 201 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), /تأیید تبدیل/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, { ...details, potentialImpacts: ["Time", "Time"] }, destinationId, key),
+    /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId,
+      { ...message, projectId: destinationId }, actor, details, destinationId, key),
     /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });

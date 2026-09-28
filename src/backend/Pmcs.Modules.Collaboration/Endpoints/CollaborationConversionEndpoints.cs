@@ -70,6 +70,10 @@ internal static partial class CollaborationEndpoints
             return existing.RequestHash == requestHash && existing.MessageId == messageId
                 ? Results.Ok(ToConversionResponse(existing))
                 : Results.Conflict(new { code = "collaboration.conversion.destination_id.reused" });
+        if (request.DestinationType == "RFI" && await db.Conversions.AsNoTracking().AnyAsync(item =>
+                item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+                item.MessageId == messageId && item.DestinationType == "RFI", cancellationToken))
+            return Results.Conflict(new { code = "collaboration.conversion.rfi.already_created" });
 
         var ids = request.DocumentIds ?? [];
         var attached = await db.Attachments.AsNoTracking().Where(item =>
