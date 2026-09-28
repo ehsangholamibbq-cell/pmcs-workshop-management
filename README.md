@@ -4,13 +4,14 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS06-C1`, source
-`5914b2184a15cbec0cc8c7224e05fecf8098fb19`, Full CI Run 319 (8/8).
+Current safe checkpoint: `PMCS-V1.1-UX2-MS07-C1`, source
+`70c547c2993c521246ff61e688b9ba98e28f70eb`, Full CI Run 321 (8/8).
 The official brand mark, shared tokens, focus, mobile navigation and scoped
 project Chat with send/live/offline, search, reply and read cursor are in UI;
 COL1 connected build remains closed with 63 migrations. The dedicated
-Reporting Center now reads scoped catalog/history; UX2-MS07 request flow and
-remaining Chat/UX2 migration follow, then
+Reporting Center now reads scoped catalog/history and requests standard reports
+with durable idempotency. UX2-MS08 daily/period inputs and remaining Chat/UX2
+migration follow, then
 remaining UX2 migration, INT1/QA1 and their separate gates. Rollout
 flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
 
