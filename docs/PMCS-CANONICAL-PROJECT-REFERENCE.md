@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.64.0`
+- نسخه: `1.65.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS04 Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS05 Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,11 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `c09fd37ecd674fe888ca52c6e369d504d19d4802`؛ tree `b0fd1056967d91e052c16c6157e1d8aa0f34e6ed` |
-| Current evidence-bearing source checkpoint | `c09fd37ecd674fe888ca52c6e369d504d19d4802`؛ Run 315، هر هشت Job سبز |
-| Source lineage | UX2-MS04 ادامهٔ مستقیم MS03 checkpoint `b5d238ccb91eea5f97f616ac45f8286a825f3cde` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS04-C1`؛ Chat ارسال/Live/Offline، UX2-MS05 بعدی |
-| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS03-C1`؛ Chat خواندنی پروژه، Run 314 سبز |
+| آخرین Source Candidate واجد Evidence | `324e4f930e71fa072ded7b190eea935d468de74f`؛ tree `04a22d38ee4fe2181e58def8a7e61e2677c9af43` |
+| Current evidence-bearing source checkpoint | `324e4f930e71fa072ded7b190eea935d468de74f`؛ Run 317، هر هشت Job سبز |
+| Source lineage | UX2-MS05 ادامهٔ مستقیم MS04 checkpoint `43e274fd984fcc63cf1f943850b736f4256ca2d3` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS05-C1`؛ Chat جست‌وجو/Reply/Read، UX2-MS06 بعدی |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS04-C1`؛ Chat ارسال/Live/Offline، Run 316 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS01-C1`؛ نشان رسمی در Shell/Login، Run 307 سبز |
 | COL1 predecessor safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ ساخت متصل و Qualification بسته، Run 305 سبز |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
@@ -40,7 +40,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.87.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.88.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -95,6 +95,9 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - UX2-MS04 روی source `c09fd37ecd674fe888ca52c6e369d504d19d4802` / tree
   `b0fd1056967d91e052c16c6157e1d8aa0f34e6ed` در Run 315 هر هشت Job را
   پاس کرد؛ ارسال، Live، صف آفلاین با شناسه پایدار و ابطال عضویت در مرورگر واقعی تأیید شد.
+- UX2-MS05 روی source `324e4f930e71fa072ded7b190eea935d468de74f` / tree
+  `04a22d38ee4fe2181e58def8a7e61e2677c9af43` در Run 317 هر هشت Job را
+  پاس کرد؛ جست‌وجو/Reply/read cursor Chat با مرز پروژه در مرورگر واقعی تأیید شد.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -709,7 +712,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی `V1.1-UX2-MS05` است؛ تعامل‌های گروه پروژه، سپس Reporting UI و مهاجرت مشترک.**
+**گام دقیق بعدی `V1.1-UX2-MS06` است؛ Catalog/History خواندنی مرکز گزارش‌های اختصاصی پروژه.**
 UI اختصاصی Reporting در UX2، Production enablement و Report Designer همچنان بازند.
 
 ## Resume Rule
