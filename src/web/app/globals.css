@@ -3752,6 +3752,12 @@ output {
     padding: 1.2rem 0.75rem 4rem;
   }
 
+  .section-note {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .topbar,
   .section-title,
   .topbar-meta {
