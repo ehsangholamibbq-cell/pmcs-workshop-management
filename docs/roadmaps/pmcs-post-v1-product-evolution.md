@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.102.0`
+- نسخه سند: `1.103.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1088,6 +1088,14 @@ Idempotency و تأیید صریح، حذف نمایشی انجام می‌ده�
 حفظ می‌شود. Exact next `UX2-MS20` تعدیل پیام با دلیل، Redaction و Revision
 است؛ تاریخچه، تبدیل و Gateهای UX2 بازند.
 
+UX2-MS20 روی source `f9bb46d655d8385c6581ec02fcf842c3526e69af` / tree
+`13859e54a56bc870e0e828b5f8ea173a7f4e39e8` در Run 352
+(`36403055126`) هر هشت Job را پاس کرد. ناظر پروژه Redaction و تغییر
+Legal Hold را تنها با دلیل، Revision، Idempotency و تأیید پاسخ محدود به همان
+پیام انجام می‌دهد؛ Conflict بازخوانی و تأیید دوباره و 403 بستن نما را
+الزامی می‌کند. جست‌وجوی مانده و پاسخ به پیام پنهان‌شده پاک می‌شوند. Exact
+next `UX2-MS21` تاریخچهٔ محدود Revision/تعدیل است؛ تبدیل و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1430,3 +1438,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.100.0` | UX2-MS17 اتصال صریح سند Released با Run 345 هشت Job سبز؛ MS18 ویرایش پیام خود و Gateهای UX2 باز |
 | `1.101.0` | UX2-MS18 ویرایش پیام خود با Revision/Conflict و Run 348 هشت Job سبز؛ MS19 حذف نمایشی و Gateهای UX2 باز |
 | `1.102.0` | UX2-MS19 حذف نمایشی پیام خود با Revision/Legal Hold و Run 350 هشت Job سبز؛ MS20 تعدیل و Gateهای UX2 باز |
+| `1.103.0` | UX2-MS20 Redaction و Legal Hold با دلیل/Revision و Run 352 هشت Job سبز؛ MS21 تاریخچه و Gateهای UX2 باز |
