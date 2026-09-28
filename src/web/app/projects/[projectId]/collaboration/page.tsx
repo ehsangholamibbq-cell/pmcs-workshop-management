@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProjectCollaboration } from "@/components/project-collaboration";
 
-export const metadata = { title: "گفت‌وگوی پروژه | PMCS" };
+export const metadata = { title: "گفت‌وگوی پروژه | سامانه مدیریت پروژه" };
 
 interface ProjectCollaborationPageProps {
   readonly params: Promise<{ projectId: string }>;
