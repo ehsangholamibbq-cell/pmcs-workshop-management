@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.1.1` در `UX2-MS46`
+- نسخهٔ Candidate: `0.2.0` در `UX2-MS47`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -50,6 +50,16 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 روی دکمهٔ اجرای Preview مسدود، Hover واقعی، ثابت‌ماندن background، حفظ
 `disabled`، نبود درخواست Execute و قاب 45 را ثبت می‌کند. این اصلاح
 سراسری CSS به معنای تکمیل State Contract همهٔ دکمه‌ها نیست.
+
+## نمونهٔ Foundation MS47
+
+`docs/ux/prototypes/ms47/index.html` نمونهٔ ایزولهٔ Action، Field،
+Status، Feedback و Table با ۹ State است. E2E رفتار واقعی Hover/
+Focus/Pressed، Label و ARIA، قفل Disabled/Loading/Offline و
+Responsive ۳۲۰px را کنترل و تصویرهای سه اندازه را ثبت می‌کند.
+این شواهد، خانه‌های `G` مربوط به مصرف‌کنندگان فعال را خودکار
+به `D` تبدیل نمی‌کنند؛ پس از بازبینی Artifact و CI مستندات
+فقط Prototype Foundation معتبر می‌شود.
 
 ## خروجی بعدی برای `VX-G3`
 

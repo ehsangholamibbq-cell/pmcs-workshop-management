@@ -71,3 +71,8 @@ Accessibility، Responsive، PDF/XLSX/Print Golden و Performance لازم‌ا�
 
 MS45 تمرین TTF/PDF/XLSX را در `docs/ux/prototypes/ms45/README.md` جداگانه
 ثبت کرد؛ بستهٔ مرور MS44 مبنای انتخاب مستند و قابل بازگشت قلم در UX2 است.
+
+MS47 Prototype اجزای مشترک را در `docs/ux/prototypes/ms47/README.md`
+و نمونهٔ تعاملی همان پوشه ثبت کرد. شواهد MS44/45، وزیرمتن را برای
+MS48 به‌عنوان Candidate قابل بازگشت برگزیدند؛ انتخاب، تعویض یا
+Qualification نهایی فونت را به‌تنهایی انجام نمی‌دهد.

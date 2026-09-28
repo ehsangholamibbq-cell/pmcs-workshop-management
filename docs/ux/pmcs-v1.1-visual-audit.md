@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS45 Safe، MS46 Component State Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS46 Safe، MS47 Foundation Prototype Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -303,3 +303,10 @@ MS45 documentation Run 415 هشت Job سبز و Safe شد. MS46 ماتریس
 Run 416 هشت Job سبز و Artifact `11001141954` با ۴۵ PNG/PDF معتبر
 و قاب 45 بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است. این اصلاح
 به معنای تکمیل Component Contract یا `VX-G3/G4/G5` نیست.
+
+MS46 documentation Run 417 هشت Job سبز و Safe شد. MS47 نمونهٔ
+تعامل و State اجزای Foundation را در ۹ حالت افزود؛ Run 419 هشت Job
+سبز و Artifact ۱۱قابی با تصویرهای Desktop/Tablet/Mobile بازبینی شد؛
+CI مستندات شرط اعتبار است.
+وزیرمتن Candidate قابل بازگشت MS48 است؛ manifest تولیدی و
+`VX-G3/G4/G5` هنوز تغییر وضعیت نداده‌اند.

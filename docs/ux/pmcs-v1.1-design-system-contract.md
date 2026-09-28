@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.8`
+- نسخه Candidate: `1.0.0-rc.9`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -148,6 +148,12 @@ Componentهای مشترک را از روی Source و Captureهای فعال ث�
 دکمهٔ غیرفعال در Preview مسدود دیگر نباید سیگنال رنگ Action فعال بدهد؛
 قاب 45 و آزمون Browser شرط Evidence این اصلاح محدودند. این ماتریس
 همهٔ Stateها را Qualified یا `VX-G3` را بسته اعلام نمی‌کند.
+
+در UX2-MS47، Prototype مستقل `docs/ux/prototypes/ms47/index.html`
+Action/Field/Status/Feedback/Table را در ۹ State قراردادی با
+رفتار واقعی Hover/Focus/Pressed و Label/ARIA نمایش می‌دهد. Browser
+E2E و قاب‌های Desktop/Tablet/Mobile، نمونه را قابل مرور می‌کنند؛
+مصرف‌کنندگان فعال و Visual Qualification هنوز Gateهای مستقل‌اند.
 
 ## ۷. Login Experience Contract
 

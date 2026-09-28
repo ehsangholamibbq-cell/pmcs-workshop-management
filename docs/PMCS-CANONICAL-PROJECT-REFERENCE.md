@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.106.0`
+- نسخه: `1.107.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS45 Safe Checkpoint, MS46 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS46 Safe Checkpoint, MS47 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | MS46 `4d320c13e3a6f66c6c7d7d836891fcbbe14311b3`؛ tree `2984d1db45a9a466b7ea3cee31e4afea3c5fa326`؛ Run 416 هشت Job سبز و Artifact ۴۵قابی معتبر؛ CI مستندات شرط اعتبار |
-| Current evidence-bearing source checkpoint | `92cee0a9273f025f9f7cdba2709b9f3ae951fc0c`؛ MS45 documentation Run 415 هشت Job سبز، Source Run 414 و خروجی‌های ایزولهٔ فونت معتبر |
-| Source lineage | UX2-MS46 ادامهٔ مستقیم MS45 documentation `92cee0a9273f025f9f7cdba2709b9f3ae951fc0c`، source `4d320c13e3a6f66c6c7d7d836891fcbbe14311b3` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS45-C1`؛ تمرین PDF/XLSX فونت، Runهای 414/415 هشت Job سبز؛ MS46 Candidate |
+| آخرین Source Candidate | MS47 `20b52c1e8f685b4efa1155c652512f3e63100538`؛ tree `b27cc8be9d669eeacac5119b574a3a964830f4e3`؛ Run 419 هشت Job سبز، Artifact ۱۱قابی معتبر؛ CI مستندات شرط اعتبار |
+| Current evidence-bearing source checkpoint | `0f9f348486276dfe11294743651a7760be4aaac2`؛ MS46 documentation Run 417 هشت Job سبز، Source Run 416 و ۴۵ قاب معتبر |
+| Source lineage | UX2-MS47 ادامهٔ مستقیم MS46 documentation `0f9f348486276dfe11294743651a7760be4aaac2`، source `20b52c1e8f685b4efa1155c652512f3e63100538` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS46-C1`؛ ماتریس State و Hover غیرفعال، Runهای 416/417 هشت Job سبز؛ MS47 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS45-C1`؛ تمرین PDF/XLSX فونت، Runهای 414/415 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS44-C1`؛ Prototype/فونت مقایسه‌ای، Runهای 412/413 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS43-C1`؛ برگهٔ چاپ محدود و صادق، Runهای 409/410 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS42-C1`؛ Skeleton صادق Loading سبد، Runهای 406/407 هشت Job سبز |
@@ -249,6 +250,17 @@ Stateهای Component مشترک و اصلاح محدود Hover دکمهٔ Disab
 شدند. قاب‌های 41/45 در Hover دکمهٔ Disabled از نظر پیکسل برابرند؛
 آزمون Browser قفل Action و نبود Execute را هم Assert کرد. CI مستندات
 شرط Checkpoint است؛ `VX-G3/G4/G5` بازند.
+
+CI مستندات MS46 در Run 417 هر هشت Job را پاس کرد و
+`PMCS-V1.1-UX2-MS46-C1` Safe شد. MS47 Source
+`20b52c1e8f685b4efa1155c652512f3e63100538` / tree
+`b27cc8be9d669eeacac5119b574a3a964830f4e3` نمونهٔ مستقل
+و تعاملی Foundation Stateها را در ۹ حالت با Action/Field/Status/
+Feedback/Table افزود. Run 419 هشت Job سبز و Artifact `11002615768`
+با ۱۱ PNG/Source/Hash/ابعاد معتبر و تصویرهای نمایندهٔ بازبینی‌شده دارد؛
+CI مستندات شرط پذیرش است. مالک اختیار انتخاب فونت را برای ادامهٔ بدون توقف واگذار کرده؛
+وزیرمتن از شواهد MS44/45 گزینهٔ کاری مستند MS48 است، اما manifest
+تولیدی تا Qualification واقعی تغییر نکرده است. `VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
 
@@ -985,7 +997,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS46`، CI مستندات ماتریس Component و اصلاح Hover است. سپس `UX2-MS47` نمونهٔ تعاملی Stateهای Foundation را محدود و تکمیل می‌کند.**
+**گام جاری `V1.1-UX2-MS47`، CI و مرور تصویرهای Stateهای Foundation است. سپس `UX2-MS48` فونت وزیرمتن را از قرارداد مرکزی نسخه‌دار و با Golden/Regression واقعی به‌طور قابل بازگشت بررسی و متصل می‌کند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
