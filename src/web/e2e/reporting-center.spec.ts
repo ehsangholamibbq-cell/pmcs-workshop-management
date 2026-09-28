@@ -47,3 +47,38 @@ test("Reporting Center refuses a cross-project run even when catalog was authori
   await expect(page.getByRole("heading", { name: "دریافت گزارش‌ها کامل نشد" })).toBeVisible();
   await expect(page.locator(".reporting-card")).toHaveCount(0);
 });
+
+test("a certified report request uses one client identity across a transport retry", async ({ page }) => {
+  const attempts: Array<{ key: string | undefined; id: string; parameters: unknown }> = [];
+  let created = false;
+  await page.route(catalog, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ code: "project-progress-certified", title: "گزارش پیشرفت پروژه",
+      description: "واقعیت تأییدشده", templateVersion: "1.0.0",
+      supportedFormats: ["Pdf", "Xlsx"], dataStatuses: ["Available"] }]) }));
+  await page.route(runs, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify(created ? [{ id: attempts[0].id, projectId,
+      definitionCode: "project-progress-certified", status: "Queued", pipelineStage: "Queued",
+      dataStatus: null, createdAt: "2026-09-28T00:00:00Z", outputs: [] }] : []) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/reports/runs`, (route) => {
+    const payload = route.request().postDataJSON() as { clientGeneratedId: string; parameters: unknown };
+    attempts.push({ key: route.request().headers()["idempotency-key"], id: payload.clientGeneratedId,
+      parameters: payload.parameters });
+    if (attempts.length === 1) return route.fulfill({ status: 503 });
+    created = true;
+    return route.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({
+      id: payload.clientGeneratedId, projectId, definitionCode: "project-progress-certified", outputs: [],
+    }) });
+  });
+  await page.goto(path);
+  await page.getByRole("button", { name: "درخواست گزارش" }).click();
+  await expect(page.getByRole("button", { name: "تلاش دوباره با همان درخواست" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "تلاش دوباره با همان درخواست" })).toBeVisible();
+  await page.getByRole("button", { name: "تلاش دوباره با همان درخواست" }).click();
+  await expect(page.getByText("درخواست گزارش پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.")).toBeVisible();
+  await expect(page.getByText("در صف")).toBeVisible();
+  expect(attempts).toHaveLength(2);
+  expect(attempts[0]).toEqual(attempts[1]);
+  expect(attempts[0].key).toBe(attempts[0].id);
+  expect(attempts[0].parameters).toEqual({});
+});

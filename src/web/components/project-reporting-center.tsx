@@ -1,17 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
 import { formatPersianDateTime } from "@/lib/persian-date";
-import { loadProjectReportingCenter, type ProjectReportingCenterView } from "@/lib/reporting-center";
+import { scopedStorageKey } from "@/lib/field-database";
+import {
+  loadProjectReportingCenter, type ProjectReportingCenterView, type ReportDefinitionView,
+} from "@/lib/reporting-center";
+import { ReportRequestAccessError, requestProjectReport, type ProjectReportRequest } from "@/lib/reporting-run-request";
 
 const statusLabels: Record<string, string> = {
   Queued: "در صف", Processing: "در حال تهیه", Succeeded: "آماده", Failed: "ناموفق",
   Cancelled: "لغوشده", Pending: "در انتظار داده", Available: "داده در دسترس", NoData: "بدون داده",
   InsufficientData: "داده ناکافی", NotConfigured: "پیکربندی‌نشده",
 };
+
+function pendingRequest(projectId: string): ProjectReportRequest | null {
+  try {
+    const stored = localStorage.getItem(scopedStorageKey(`pmcs-report-request:${projectId}`));
+    if (!stored) return null;
+    const request = JSON.parse(stored) as ProjectReportRequest;
+    return request.projectId === projectId && request.clientGeneratedId && request.definitionCode
+      ? request : null;
+  } catch { return null; }
+}
 
 export function ProjectReportingCenter({ projectId }: { readonly projectId: string }) {
   return <PmcsSessionBoundary><ReportingContent projectId={projectId} /></PmcsSessionBoundary>;
@@ -21,11 +35,25 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   const [view, setView] = useState<ProjectReportingCenterView | null>(null);
   const [failure, setFailure] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [formats, setFormats] = useState<Record<string, "Pdf" | "Xlsx">>({});
+  const [pendingRun, setPendingRun] = useState<ProjectReportRequest | null>(() => pendingRequest(projectId));
+  const [busyCode, setBusyCode] = useState("");
+  const [runNotice, setRunNotice] = useState("");
+
+  const remember = useCallback((request: ProjectReportRequest | null) => {
+    try {
+      const key = scopedStorageKey(`pmcs-report-request:${projectId}`);
+      if (request) localStorage.setItem(key, JSON.stringify(request));
+      else localStorage.removeItem(key);
+    } catch { /* The in-memory request still retains its identity in this session. */ }
+    setPendingRun(request);
+  }, [projectId]);
 
   useEffect(() => {
     let active = true;
     void loadProjectReportingCenter("/api/pmcs", projectId).then((result) => {
       if (!active) return;
+      if (result.kind !== "ready") remember(null);
       setView(result);
       setFailure("");
     }).catch(() => {
@@ -35,7 +63,35 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
       }
     });
     return () => { active = false; };
-  }, [projectId, refresh]);
+  }, [projectId, refresh, remember]);
+
+  async function createRun(definition: ReportDefinitionView) {
+    if (view?.kind !== "ready" || busyCode || pendingRun && pendingRun.definitionCode !== definition.code) return;
+    const allowed = definition.supportedFormats.filter((format): format is "Pdf" | "Xlsx" =>
+      format === "Pdf" || format === "Xlsx");
+    const format = formats[definition.code] ?? allowed[0];
+    if (!format) return;
+    const request = pendingRun ?? { projectId, clientGeneratedId: crypto.randomUUID(),
+      definitionCode: definition.code, templateVersion: definition.templateVersion, format };
+    remember(request);
+    setBusyCode(definition.code);
+    setRunNotice("");
+    try {
+      await requestProjectReport("/api/pmcs", request);
+      remember(null);
+      setRunNotice("درخواست گزارش پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.");
+      setRefresh((value) => value + 1);
+    } catch (error) {
+      if (error instanceof ReportRequestAccessError) {
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+        remember(null);
+      } else {
+        setRunNotice(error instanceof Error ? error.message : "درخواست گزارش کامل نشد؛ دوباره تلاش کنید.");
+      }
+    } finally {
+      setBusyCode("");
+    }
+  }
 
   return <main className="app-shell reporting-shell">
     <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -69,6 +125,13 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
           <h2>دسترسی به گزارش‌ها ندارید</h2><p>مجوز پروژه و منبع گزارش را با مدیر بررسی کنید.</p>
         </section>
         : <div className="reporting-sections">
+          {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
+          {pendingRun && <div className="reporting-notice reporting-pending" role="status">
+            <span>یک درخواست نیمه‌تمام محفوظ است. پس از بررسی سابقه، همان درخواست را دوباره بفرستید.</span>
+            <button className="secondary-button" type="button" onClick={() => remember(null)}>
+              کنارگذاشتن تلاش نیمه‌تمام
+            </button>
+          </div>}
           <section className="reporting-section" aria-labelledby="report-definitions">
             <div className="reporting-section-heading"><h2 id="report-definitions">گزارش‌های مجاز</h2>
               <span className="count-badge">{view.definitions.length.toLocaleString("fa-IR")}</span></div>
@@ -77,6 +140,26 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
                 <p className="eyebrow">قالب {definition.templateVersion}</p><h3>{definition.title}</h3>
                 <p>{definition.description}</p>
                 <small>قالب‌های خروجی: {definition.supportedFormats.join("، ")}</small>
+                {definition.code !== "daily-report-certified" && definition.code !== "project-periodic-certified"
+                  ? <div className="reporting-request">
+                    <label htmlFor={`report-format-${definition.code}`}>قالب درخواستی</label>
+                    <select id={`report-format-${definition.code}`} value={formats[definition.code] ??
+                      definition.supportedFormats.find((format) => format === "Pdf" || format === "Xlsx") ?? ""}
+                      disabled={Boolean(pendingRun) || Boolean(busyCode)}
+                      onChange={(event) => setFormats((current) => ({ ...current,
+                        [definition.code]: event.target.value as "Pdf" | "Xlsx" }))}>
+                      {definition.supportedFormats.filter((format) => format === "Pdf" || format === "Xlsx")
+                        .map((format) => <option key={format} value={format}>{format}</option>)}
+                    </select>
+                    <button type="button" disabled={Boolean(busyCode) || Boolean(pendingRun &&
+                      pendingRun.definitionCode !== definition.code) ||
+                      !definition.supportedFormats.some((format) => format === "Pdf" || format === "Xlsx")}
+                      onClick={() => void createRun(definition)}>
+                      {busyCode === definition.code ? "در حال ثبت…" : pendingRun?.definitionCode === definition.code
+                        ? "تلاش دوباره با همان درخواست" : "درخواست گزارش"}
+                    </button>
+                  </div>
+                  : <p className="reporting-input-hint">تهیهٔ این گزارش به انتخاب روز یا دورهٔ مشخص نیاز دارد.</p>}
               </li>)}</ul> : <p className="reporting-state">گزارش مجازی برای این نقش و پروژه در دسترس نیست.</p>}
           </section>
           <section className="reporting-section" aria-labelledby="report-runs">

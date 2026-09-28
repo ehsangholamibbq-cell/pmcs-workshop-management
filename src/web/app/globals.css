@@ -1471,6 +1471,11 @@ textarea {
 .reporting-card h3 { margin-block: 0.25rem 0.75rem; }
 .reporting-card p, .reporting-card small, .reporting-card time { color: var(--text-secondary); }
 .reporting-card .eyebrow { color: var(--brand-green-700); }
+.reporting-request { display: grid; gap: 0.6rem; margin-top: 1rem; }
+.reporting-request button { justify-self: start; }
+.reporting-notice { padding: 0.9rem 1rem; border-radius: 0.8rem; background: var(--status-info-surface); }
+.reporting-pending { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.reporting-input-hint { border-top: 1px solid var(--border-default); padding-top: 0.75rem; }
 
 .sidebar nav {
   display: grid;
