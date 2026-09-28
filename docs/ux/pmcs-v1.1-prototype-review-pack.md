@@ -47,7 +47,7 @@ QuestPDF و نام فونت XLSX باید در Candidate بعدی کنترل ش�
 
 `src/web/e2e/ms44-prototype.spec.ts` تمام ۱۰ سناریو و ۷ حالت را می‌گردد،
 نشان را بارگذاری می‌کند، Hash و load واقعی دو قلم را کنترل می‌کند، در ۳۲۰
-پیکسل overflow کل سند را رد می‌کند و PNGهای Desktop/Mobile و PDFهای A4 را
+پیکسل overflow کل سند را رد می‌کند و PNGهای Desktop/Tablet/Mobile و PDFهای A4 را
 به Artifact `pmcs-ms44-prototype-review` همراه `index.json` دارای Source SHA
 و Hash هر فایل می‌فرستد. این شواهد باید پس از CI باز و از نظر clipping،
 فاصله، تراکم جدول، ارقام فارسی، تیترها، RTL، حالت‌های خطا/نبود داده و چاپ
@@ -68,3 +68,6 @@ Correction Run 412 (`36485197274`) هشت Job سبز و Artifact
 Login/Shell/Chart و Mobile fallback، نقد بصری مالک و انتخاب قلم باقی است.
 برای `VX-G4` مهاجرت همهٔ Routeهای فعال و برای `VX-G5` Visual Diff،
 Accessibility، Responsive، PDF/XLSX/Print Golden و Performance لازم‌اند.
+
+MS45 تمرین TTF/PDF/XLSX را در `docs/ux/prototypes/ms45/README.md` جداگانه
+ثبت کرد؛ بستهٔ مرور MS44 همچنان مبنای انتخاب بصری مالک است.

@@ -1,7 +1,7 @@
 # PMCS V1.1 — قرارداد فونت نسخه‌دار
 
 - شناسه: `PMCS-UX-TYPOGRAPHY-001`
-- نسخه: `1.1.0`
+- نسخه: `1.2.0`
 - وضعیت: زیرساخت MS32 متصل؛ انتخاب فونت فارسی و Qualification بصری/چاپی باز
 - مرجع: `PMCS-V1.1-UX2-MS32-C1`، source Run 377 با هشت Job سبز
 
@@ -48,3 +48,16 @@ Baseline در ۱۰ سناریو و ۷ حالت و Web/Desktop/Tablet/Mobile/Prin
 می‌کند. این آزمایش فقط Browser Print است؛ `assets/typography/pmcs-fonts.json`
 همچنان نسخهٔ `1.0.0` با Tahoma/DejaVu/Arial تولیدی است. انتخاب مالک و تمرین
 رندر رسمی PDF/XLSX، Golden و Offline، پیش از هر تعویض تولیدی لازم‌اند.
+
+## تمرین ایزولهٔ UX2-MS45
+
+چهار TTF Regular/Bold در `docs/ux/prototypes/ms45/fonts/` از همان Commitهای
+رسمی وزیرمتن و استعداد با SHA ثابت و OFL موجود در بستهٔ MS44 نگه‌داری
+می‌شوند. برنامهٔ `tools/qa/FontReview` در فرآیند QA جداگانه، QuestPDF را
+با فونت هر Candidate ثبت و یک صفحهٔ A4/PNG و نمونهٔ Spreadsheet راست‌به‌چپ
+می‌سازد؛ نام خانواده در دو Style XLSX ذخیره می‌شود. Run 414 هر هشت Job
+سبز، Artifact `10999743061` با شش خروجی و index معتبر دارد. PDF/PNGهای
+هر دو قلم بازبینی و XLSXها با parser مستقل باز شدند. این نمونه از Renderer
+رسمی و Golden محصول استفاده نمی‌کند؛ Familyهای تولیدی Tahoma/DejaVu/Arial
+و `PdfLicense=Unconfigured` عوض نشده‌اند. نصب فونت روی دستگاه گیرنده برای
+نمایش همان قلم در XLSX همچنان شرط خارجی است.

@@ -1,7 +1,7 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.8.0`
+- نسخه سند: `1.9.0`
 - وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G1 Audit Complete` با Run 401؛ Design System و Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -198,3 +198,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.6.0` | Run 405 مستندات MS41 را با هشت Job سبز پذیرفت؛ MS42 Loading سبد را با Skeleton خنثی و بدون Fact ساختگی، E2E خطا و قاب 26 اصلاح کرد؛ Source Run 406 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار، G3/G4/G5 باز |
 | `1.7.0` | Run 407 مستندات MS42 را با هشت Job سبز پذیرفت؛ MS43 قرارداد Print System و برگهٔ چاپ محدود مرکز فرمان را افزود؛ Run 408 متن بدون Snapshot را آشکار و correction Run 409 هشت Job سبز/PDF یک‌صفحه‌ای بازبینی‌شده، CI مستندات شرط اعتبار، G3/G4/G5 باز |
 | `1.8.0` | Run 410 مستندات MS43 را با هشت Job سبز پذیرفت؛ MS44 نمونهٔ مستقل ۱۰ سناریو × ۷ حالت و مقایسهٔ دو قلم Web/Print را افزود. Run 411 نشان کم‌خوانا را آشکار کرد؛ correction Run 412 هشت Job سبز و Artifact ۱۱فایلی/PDF A4 بازبینی‌شده، CI مستندات شرط پذیرش، G3/G4/G5 باز |
+| `1.9.0` | Run 413 مستندات MS44 را با هشت Job سبز پذیرفت؛ MS45 چهار TTF دارای Hash/OFL را در تمرین ایزولهٔ QuestPDF/XLSX ثبت کرد. Run 414 هشت Job سبز و PDF/PNG/XLSX مقایسه‌ای بازبینی‌شده؛ CI مستندات شرط اعتبار، Component states و G3/G4/G5 باز |

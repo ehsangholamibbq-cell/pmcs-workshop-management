@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS43 Safe، MS44 Prototype Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS44 Safe، MS45 Font Rehearsal Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -290,3 +290,9 @@ Correction MS44 سطح روشن نشان و Capture Tablet را افزود؛ Run
 سبز و Artifact `10998892196` با ۱۱ فایل، Source/Hash و دو PDF تک‌صفحه‌ای A4
 معتبر دارد. قاب‌های Desktop/Tablet/Mobile و چاپ بازبینی شدند؛ CI مستندات
 شرط پذیرش است. این مقایسه جای Visual Qualification یا PDF رسمی نیست.
+
+MS44 documentation Run 413 هشت Job سبز و Safe شد. MS45 Source Run 414
+هشت Job سبز و Artifact `10999743061` با PDF/PNG/XLSX ایزوله برای هر دو
+قلم دارد؛ PDFهای A4 یک‌صفحه‌ای و PNGهای فارسی بازبینی شدند. این تمرین نه
+خروجی رسمی Reporting و نه انتخاب بصری مالک است. CI مستندات شرط MS45؛
+ماتریس Component و `VX-G3/G4/G5` بازند.

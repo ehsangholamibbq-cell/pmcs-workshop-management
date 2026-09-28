@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.127.0`
+- نسخه سند: `1.128.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1378,6 +1378,19 @@ Artifact `10998892196` با ۱۱ فایل و PDFهای A4 یک‌صفحه‌ای
 دارد؛ CI مستندات شرط پذیرش MS44 است. Exact next `UX2-MS45` تمرین PDF/XLSX دو قلم و تکمیل Stateهای
 Component برای `VX-G3` است؛ `VX-G3/G4/G5` همچنان بازند.
 
+UX2-MS44 documentation `f964695c288bf72d12ab5332f385f6643c4e4f4b`
+در Run 413 هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS44-C1` Safe شد.
+MS45 source `43d263d836f719278b49ef4e983e36feda83f1da` / tree
+`2deffd12cff01d5c4f88ab6170b98d91477b4a16` چهار TTF Regular/Bold
+دارای مجوز OFL و Hash ثابت را برای دو قلم فقط در Review افزود. فرآیند QA
+مجزا یک نمونهٔ QuestPDF و XLSX راست‌به‌چپ برای هر قلم می‌سازد؛
+`CertifiedPdfRuntime`، manifest مرکزی، Permission و defaults تغییر نمی‌کنند.
+Run 414 هشت Job سبز و Artifact `10999743061` با شش خروجی معتبر دارد؛ دو
+PDF یک‌صفحه‌ای A4/PNG بازبینی بصری، XLSX با Parser مستقل و Style/RTL
+بررسی شد. CI مستندات شرط پذیرش MS45 است. Exact next `UX2-MS46` ماتریس
+Stateهای Component مشترک و اصلاح محدود شکاف‌ها است؛ انتخاب قلم، مهاجرت
+تولیدی، `VX-G3/G4/G5` و Goldenهای رسمی بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1745,3 +1758,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.125.0` | UX2-MS41 documentation Run 405 هشت Job سبز و Safe؛ UX2-MS42 Skeleton خنثای Loading سبد بدون Fact ساختگی، Source Run 406 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS43 Print System و Gateهای G3/G4/G5 باز |
 | `1.126.0` | UX2-MS42 documentation Run 407 هشت Job سبز و Safe؛ UX2-MS43 برگهٔ چاپ محدود/قرارداد Print System، Run 408 متن NoSnapshot را آشکار و correction Run 409 هشت Job سبز/PDF یک‌صفحه‌ای بازبینی‌شده؛ CI مستندات شرط اعتبار، MS44 Prototype/Font review و Gateهای G3/G4/G5 باز |
 | `1.127.0` | UX2-MS43 documentation Run 410 هشت Job سبز و Safe؛ UX2-MS44 Prototype مستقل با ۱۰ سناریو × ۷ حالت و مقایسهٔ دو قلم OFL، initial Run 411 و correction خوانایی نشان/Tablet در Run 412 هر دو هشت Job سبز؛ Artifact ۱۱فایلی/PDF A4 بازبینی‌شده، CI مستندات شرط اعتبار، G3/G4/G5 و انتخاب فونت باز |
+| `1.128.0` | UX2-MS44 documentation Run 413 هشت Job سبز و Safe؛ UX2-MS45 تمرین ایزولهٔ دو قلم TTF در QuestPDF/XLSX، Source Run 414 هشت Job سبز و شش خروجی PDF/PNG/XLSX بازبینی‌شده؛ CI مستندات شرط اعتبار، MS46 Component states و G3/G4/G5 باز |
