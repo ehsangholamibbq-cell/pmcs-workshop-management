@@ -1,7 +1,7 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.4.0`
+- نسخه سند: `1.5.0`
 - وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G1 Audit Complete` با Run 401؛ Design System و Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -194,3 +194,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.2.0` | ثبت تأیید مالک محصول برای ترکیب Login، گرمی محیط و Motion؛ تثبیت الزام Preview/Publish/Rollback/Fallback برای Login و باز نگه‌داشتن VX-G3 |
 | `1.3.0` | ممیزی قابل بازتولید ۱۱ Route و ۴۳ تصویر/یک PDF، اصلاح کنتراست Wizard و ثبت Gapها برای VX-G3/G4/G5؛ اعتبار VX-G1 به CI مستندات MS39 وابسته است |
 | `1.4.0` | Run 401 Gate ممیزی VX-G1 را با هشت Job سبز پذیرفت؛ MS40 FileInput فارسی و Capture 44 را افزود، بدون بستن VX-G3/G4/G5 |
+| `1.5.0` | Run 403 مستندات MS40 را با هشت Job سبز پذیرفت؛ MS41 راهنمای Navigation موبایل را در شش Shell فعال و آزمون keyboard/عرض ۳۲۰ ثبت کرد؛ Source Run 404 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط پذیرش MS41، Gateهای G3/G4/G5 باز |

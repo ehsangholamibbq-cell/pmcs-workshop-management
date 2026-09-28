@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS40`؛ MS39 Runهای 400/401 موفق و Safe، source MS40 Run 402 موفق، CI مستندات شرط اعتبار
+- مرحله: `UX2-MS41`؛ MS40 Runهای 402/403 موفق و Safe، source MS41 Run 404 و CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -48,6 +48,10 @@ PDF A4 همان مرورگر را در فایل `43-project-print-preview.pdf` �
 Capture 44 انتخاب فایل نمونه در مدیریت ظاهر Login را بدون Upload ثبت می‌کند؛
 نام فایل در UI دیده می‌شود و E2E پس از Capture فوکوس و حذف انتخاب را کنترل
 می‌کند. سیاست امن Upload/Release و Publish تغییر نمی‌کند.
+در MS41، قاب‌های 20/21/22/23 Navigation افقی موبایل را همراه با راهنمای
+فارسی پیمایش لمسی و کلید تب در شش Shell فعال نشان می‌دهند. آزمون مرورگر
+فوکوس پیوند دورتر و نبود overflow کل سند در عرض ۳۲۰ پیکسل را نیز حفظ می‌کند.
+تعداد Captureها ۴۴ و Routeها ۱۱ باقی می‌ماند.
 
 ## دستور بازتولید و Evidence
 
@@ -107,5 +111,11 @@ Run 401 مستندات MS39 هشت Job سبز شد و `VX-G1` به‌عنوان 
 شامل ۴۴ PNG، PDF و index است. Hash/ابعاد و Source/Run همهٔ فایل‌ها تطبیق
 شدند؛ قاب 18 حالت بدون فایل و قاب 44 نام فایل انتخابی را فارسی و خوانا
 نشان می‌دهند. `VX-G3/G4/G5` و Qualification فونت/چاپ بازند.
+Run 403 مستندات MS40 نیز هشت Job سبز شد و MS40 Safe است. Source MS41 در
+Run 404 هر هشت Job را پاس کرد؛ Artifact `10993184623` با digest
+`sha256:2d75917180d3f2d5474426afcec050e6175dcdec85491594f14acec299747edc`
+از نظر Source/Run، SHA و ابعاد همهٔ ۴۴ تصویر و PDF همراه معتبر است. قاب‌های
+20/21/22/23 راهنمای Navigation موبایل را نشان می‌دهند. پذیرش MS41 به CI
+مستندات وابسته می‌ماند؛ `VX-G3/G4/G5` بازند.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.3`
+- نسخه Candidate: `1.0.0-rc.4`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -157,6 +157,9 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 - Desktop: Sidebar کامل و Data-dense؛
 - Tablet: Sidebar فشرده و دو ستون کنترل‌شده؛
 - Mobile: Navigation جایگزین، یک ستون و جدول با fallback صریح؛
+- در MS41، شش Shell فعال زیر Navigation افقی موبایل راهنمای فارسی پیمایش
+  لمسی و حرکت با کلید تب دارند. این affordance، مهاجرت کامل Navigation
+  جایگزین و آزمون‌های جامع Responsive را نمی‌بندد؛
 - هیچ Action اصلی فقط با Hover قابل دسترسی نیست؛
 - Targetهای لمسی حداقل 44px؛
 - Zoom متن و عرض 320px نباید باعث از دست رفتن Action شود.

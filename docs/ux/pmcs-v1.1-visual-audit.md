@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS40 Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS40 Safe، MS41 Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -235,3 +235,17 @@ index است؛ SHA/ابعاد و Source/Run تطبیق شدند. قاب 18 «ف�
 و قاب 44 نام `نمونه.png` و «حذف انتخاب» را نشان می‌دهد؛ E2E فوکوس و پاک‌شدن
 انتخاب را نیز Assert کرد. CI مستندات شرط اعتبار Checkpoint MS40 است.
 `VX-G3/G4/G5` و Gapهای چاپ/Loading/ناوبری موبایل و فونت تازه بازند.
+
+## ۱۵. پیوست UX2-MS41 — راهنمای ناوبری موبایل
+
+MS40 documentation در Run 403 هر هشت Job را پاس کرد و Safe شد. Source MS41
+`d76a8645d9e784b71c2a167aa04d315f871762d7` / tree
+`d90dc6ec188cec7ac52e39ed768641fc60c50181` راهنمای فارسی کشیدن نوار
+افقی به چپ و حرکت با کلید تب را زیر Navigation شش Shell فعال در عرض موبایل
+می‌گذارد. نام، مقصد، ترتیب و اسکرول پیوندها تغییر نکرده‌اند. E2E نمایش
+راهنما در قاب‌های 20/21/22/23، فوکوس پیوند دورتر و نبود overflow کل سند
+در ۳۲۰ پیکسل را کنترل می‌کند. Source Run 404 هشت Job سبز و Artifact
+`10993184623` با ۴۴ PNG/PDF، SHA/ابعاد و Source/Run معتبر دارد؛ قاب‌های
+20/21/22/23 بازبینی شدند. Full CI مستندات شرط پذیرش Candidate است.
+Navigation جایگزین Responsive، Loading،
+فونت تازه و چاپ هنوز در `VX-G3/G4/G5` بازند.
