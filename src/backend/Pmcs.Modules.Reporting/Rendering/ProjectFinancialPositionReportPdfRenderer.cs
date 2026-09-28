@@ -104,13 +104,13 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
             container.Page(page => ConfigurePage(
                 page,
                 model,
-                "Cash و Budget رسمی",
+                "Cash، Budget و Lineage رسمی",
                 content => ComposeOverview(content, model)));
             container.Page(page => ConfigurePage(
                 page,
                 model,
-                "تعهدات، Aging و Lineage",
-                content => ComposeObligationsAndLineage(content, model)));
+                "تعهدات باز، Aging و شمارنده‌ها",
+                content => ComposeObligations(content, model)));
         }).WithMetadata(new DocumentMetadata
         {
             Title = "گزارش رسمی وضعیت مالی پروژه",
@@ -187,6 +187,7 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
                 .Padding(6).Text(
                     "تمام مبالغ فقط در ارز پایه ثبت‌شده نمایش داده می‌شوند؛ مقدار مفقود صفر نیست و هیچ تسعیر ارز، تهاتر، پیش‌بینی یا امتیاز سلامت ساخته نمی‌شود.")
                 .FontSize(7.1f).FontColor("#684C20");
+            column.Item().Element(lineage => ComposeLineage(lineage, model));
         });
     }
 
@@ -390,7 +391,7 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
         });
     }
 
-    private static void ComposeObligationsAndLineage(
+    private static void ComposeObligations(
         IContainer container,
         ProjectFinancialPositionReportRenderModel model)
     {
@@ -400,7 +401,6 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
             column.Item().Element(aging => ComposeAging(aging, model));
             column.Item().Element(rows => ComposeOpenObligations(rows, model));
             column.Item().Element(counts => ComposeSourceCounts(counts, model));
-            column.Item().Element(lineage => ComposeLineage(lineage, model));
         });
     }
 
