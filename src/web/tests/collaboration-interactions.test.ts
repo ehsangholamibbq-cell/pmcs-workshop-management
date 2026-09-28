@@ -3,6 +3,7 @@ import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
   CollaborationRevisionConflict, editOwnProjectMessage,
+  CollaborationLegalHoldError, deleteOwnProjectMessage,
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
 } from "../lib/collaboration-interactions.ts";
@@ -40,6 +41,37 @@ test("own-message edit uses stable revision/key and keeps a conflict explicit", 
       (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
     await assert.rejects(editOwnProjectMessage("/api/pmcs", projectId, message, message.body, key),
       /پیش‌نویس ویرایش/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("own-message tombstone honors Legal Hold, revision and scoped confirmation", async () => {
+  const previous = globalThis.fetch;
+  const key = "10000000-0000-4000-8000-000000000123";
+  const message = { id: messageId, projectId, authorUserId: "10000000-0000-4000-8000-000000000099",
+    body: "پیام زنده", revision: 2, sequence: 1, legalHold: false,
+    createdAt: "2026-09-28T00:00:00Z" } as ProjectConversationMessage;
+  try {
+    let payload = "";
+    globalThis.fetch = async (_input, init) => {
+      assert.equal(init?.method, "POST");
+      assert.equal(new Headers(init?.headers).get("idempotency-key"), key);
+      payload = String(init?.body);
+      return Response.json({ ...message, body: "پیام حذف شده است", revision: 3,
+        deletedAt: "2026-09-28T01:00:00Z", redactedAt: null });
+    };
+    assert.equal((await deleteOwnProjectMessage("/api/pmcs", projectId, message, key)).revision, 3);
+    assert.deepEqual(JSON.parse(payload), { baseRevision: 2 });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.legal_hold" }, { status: 409 });
+    await assert.rejects(deleteOwnProjectMessage("/api/pmcs", projectId, message, key),
+      (error: unknown) => error instanceof CollaborationLegalHoldError);
+    globalThis.fetch = async () => Response.json({ currentRevision: 5 }, { status: 409 });
+    await assert.rejects(deleteOwnProjectMessage("/api/pmcs", projectId, message, key),
+      (error: unknown) => error instanceof CollaborationRevisionConflict && error.currentRevision === 5);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(deleteOwnProjectMessage("/api/pmcs", projectId, message, key),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(deleteOwnProjectMessage("/api/pmcs", projectId,
+      { ...message, legalHold: true }, key), /مشخصات حذف/u);
   } finally { globalThis.fetch = previous; }
 });
 

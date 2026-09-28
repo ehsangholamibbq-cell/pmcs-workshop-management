@@ -26,6 +26,10 @@ export class CollaborationRevisionConflict extends Error {
   }
 }
 
+export class CollaborationLegalHoldError extends Error {
+  constructor() { super("این پیام تحت Legal Hold است و حذف نمایشی مجاز نیست."); }
+}
+
 export interface ProjectMessageReaction {
   readonly emoji: ProjectReactionEmoji;
   readonly count: number;
@@ -79,6 +83,41 @@ export async function editOwnProjectMessage(apiBaseUrl: string, projectId: strin
       typeof result.editedAt !== "string" || !Number.isFinite(Date.parse(result.editedAt)) ||
       result.deletedAt || result.redactedAt) {
     throw new Error("تأیید ویرایش پیام معتبر نیست.");
+  }
+  return result;
+}
+
+export async function deleteOwnProjectMessage(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, idempotencyKey: string): Promise<ProjectConversationMessage> {
+  if (!Number.isSafeInteger(message.revision) || message.revision < 1 || message.legalHold ||
+      message.deletedAt || message.redactedAt ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(idempotencyKey)) {
+    throw new Error("مشخصات حذف پیام معتبر نیست.");
+  }
+  const response = await fetch(`${messageUrl(apiBaseUrl, projectId, message.id)}/delete`, {
+    method: "POST", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ baseRevision: message.revision }),
+  });
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as {
+      code?: string; currentRevision?: number;
+    } | null;
+    if (conflict?.code === "collaboration.message.legal_hold") throw new CollaborationLegalHoldError();
+    const current = conflict?.currentRevision;
+    throw new CollaborationRevisionConflict(Number.isSafeInteger(current) && current! > 0 ? current! : null);
+  }
+  await checked(response);
+  const result = await response.json() as ProjectConversationMessage;
+  if (result?.id?.toLowerCase() !== message.id.toLowerCase() ||
+      result.projectId?.toLowerCase() !== projectId.toLowerCase() ||
+      result.authorUserId?.toLowerCase() !== message.authorUserId.toLowerCase() ||
+      result.sequence !== message.sequence || result.createdAt !== message.createdAt ||
+      !Number.isSafeInteger(result.revision) || result.revision <= message.revision ||
+      typeof result.deletedAt !== "string" || !Number.isFinite(Date.parse(result.deletedAt)) ||
+      result.redactedAt || result.legalHold) {
+    throw new Error("تأیید حذف پیام معتبر نیست.");
   }
   return result;
 }

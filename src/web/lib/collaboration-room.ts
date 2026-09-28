@@ -11,6 +11,7 @@ export interface ProjectConversationMessage {
   readonly editedAt: string | null;
   readonly deletedAt: string | null;
   readonly redactedAt: string | null;
+  readonly legalHold: boolean;
 }
 
 export type ProjectConversationView =
@@ -60,13 +61,14 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
         !Number.isFinite(Date.parse(message.createdAt)) ||
         (message.revision !== undefined &&
           (!Number.isSafeInteger(message.revision) || message.revision < 1)) ||
+        (message.legalHold !== undefined && typeof message.legalHold !== "boolean") ||
         !Number.isSafeInteger(message.sequence) || message.sequence <= after ||
         (index > 0 && message.sequence <= messages[index - 1].sequence)) ||
       (messages.length > 0 && nextSequence < messages[messages.length - 1].sequence)) {
     throw new Error("فهرست پیام‌های پروژه معتبر نیست.");
   }
   return { kind: "ready", messages: messages.map((message) => ({
-    ...message, revision: message.revision ?? 0,
+    ...message, revision: message.revision ?? 0, legalHold: message.legalHold === true,
   })), lastSequence,
   canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true,
   canEditOwn: roomValue.canEditOwn === true };

@@ -20,6 +20,7 @@ import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
   editOwnProjectMessage, CollaborationRevisionConflict,
+  deleteOwnProjectMessage, CollaborationLegalHoldError,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
@@ -53,6 +54,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   } | null>(null);
   const [editBusy, setEditBusy] = useState(false);
   const [editStatus, setEditStatus] = useState("");
+  const [deleting, setDeleting] = useState<{
+    readonly base: ProjectConversationMessage; readonly key: string; readonly conflict: boolean;
+  } | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState("");
 
   const closeRestrictedConversation = useCallback((status: number) => {
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
@@ -63,6 +69,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setPinStatus("");
     setEditing(null);
     setEditStatus("");
+    setDeleting(null);
+    setDeleteStatus("");
   }, []);
 
   useEffect(() => {
@@ -75,6 +83,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setSearchResults(null);
         setEditing(null);
         setEditStatus("");
+        setDeleting(null);
+        setDeleteStatus("");
       }
       setView(result);
       setFailure("");
@@ -236,6 +246,34 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     } finally { setEditBusy(false); }
   }
 
+  async function submitDelete(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (view?.kind !== "ready" || !view.canEditOwn || !deleting || deleting.conflict || deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteStatus("");
+    try {
+      const result = await deleteOwnProjectMessage("/api/pmcs", projectId,
+        deleting.base, deleting.key);
+      setView((current) => current?.kind === "ready" ? {
+        ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
+      } : current);
+      setDeleting(null);
+      setDeleteStatus("پیام از نمایش گروه برداشته شد؛ سوابق و نگهداری سازمانی حفظ می‌شوند.");
+      setRefresh((value) => value + 1);
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) closeRestrictedConversation(failure.status);
+      else if (failure instanceof CollaborationRevisionConflict) {
+        setDeleting((current) => current ? { ...current, conflict: true } : null);
+        setDeleteStatus("نسخهٔ پیام تغییر کرده است؛ پیام تازه را بخوانید و حذف را دوباره تأیید کنید.");
+        setRefresh((value) => value + 1);
+      } else if (failure instanceof CollaborationLegalHoldError) {
+        setDeleting(null);
+        setDeleteStatus(failure.message);
+        setRefresh((value) => value + 1);
+      } else setDeleteStatus(failure instanceof Error ? failure.message : "حذف پیام کامل نشد.");
+    } finally { setDeleteBusy(false); }
+  }
+
   return (
     <main className="app-shell collaboration-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -286,6 +324,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             </div>
             {pinStatus && <p role="status">{pinStatus}</p>}
             {editStatus && <p role={editing?.conflict ? "alert" : "status"}>{editStatus}</p>}
+            {deleteStatus && <p role={deleting?.conflict ? "alert" : "status"}>{deleteStatus}</p>}
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
@@ -309,6 +348,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     <p>{message.deletedAt || message.redactedAt ? "این پیام دیگر برای نمایش در دسترس نیست." : message.body}</p>
                     {message.editedAt && !message.deletedAt && !message.redactedAt && <small>ویرایش‌شده</small>}
                     {message.pinnedAt && <small>سنجاق‌شده</small>}
+                    {message.legalHold && <small>تحت نگهداری قانونی</small>}
                     {editing?.base.id === message.id && <form className="collaboration-edit"
                       onSubmit={(event) => void submitEdit(event)}>
                       <label htmlFor={`edit-${message.id}`}>ویرایش پیام خود</label>
@@ -330,6 +370,24 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                           onClick={() => { setEditing(null); setEditStatus(""); }}>لغو ویرایش</button>
                       </div>
                     </form>}
+                    {deleting?.base.id === message.id && !message.deletedAt && !message.redactedAt &&
+                      <form className="collaboration-edit" onSubmit={(event) => void submitDelete(event)}>
+                        <p>حذف فقط نمایش پیام را برمی‌دارد؛ ردپاهای ممیزی، پیوست و سوابق طبق سیاست نگهداری باقی می‌مانند.</p>
+                        {deleting.conflict && <p>نسخهٔ فعلی: {message.body}</p>}
+                        <div className="collaboration-message-actions">
+                          {deleting.conflict && message.revision > deleting.base.revision && !message.legalHold &&
+                            <button className="secondary-button" type="button" onClick={() => {
+                              setDeleting({ base: message, key: crypto.randomUUID(), conflict: false });
+                              setDeleteStatus("");
+                            }}>حذف بر پایهٔ نسخهٔ تازه</button>}
+                          <button type="submit" disabled={deleteBusy || deleting.conflict || message.legalHold}>
+                            {deleteBusy ? "در حال ثبت…" : "تأیید حذف نمایشی"}
+                          </button>
+                          <button className="secondary-button" type="button" onClick={() => {
+                            setDeleting(null); setDeleteStatus("");
+                          }}>انصراف از حذف</button>
+                        </div>
+                      </form>}
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
@@ -348,6 +406,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                             key: crypto.randomUUID(), conflict: false }); setEditStatus(""); }}>
                           ویرایش پیام
                         </button>}
+                      {view.canEditOwn && message.revision > 0 && !message.legalHold &&
+                        message.authorUserId.toLowerCase() === session.userId.toLowerCase() &&
+                        <button className="secondary-button" type="button" disabled={deleteBusy}
+                          onClick={() => { setDeleting({ base: message, key: crypto.randomUUID(), conflict: false });
+                            setDeleteStatus(""); }}>حذف نمایشی پیام</button>}
                       {view.canModerate && <button className="secondary-button collaboration-pin" type="button"
                         aria-pressed={Boolean(message.pinnedAt)} disabled={pinningMessageId !== null}
                         onClick={() => void togglePin(message)}>

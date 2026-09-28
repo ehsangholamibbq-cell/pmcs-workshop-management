@@ -501,3 +501,67 @@ test("own-message edit keeps the draft on revision conflict and confirms a fresh
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیش‌نویس من")).toHaveCount(0);
 });
+
+test("own-message display deletion respects Legal Hold, revision and revoked access", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let legalHold = false;
+  let revoked = false;
+  let revision = 1;
+  let deletedAt: string | null = null;
+  let body = "پیام برای حذف";
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canEditOwn: true }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, legalHold, deletedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/delete`,
+    (route) => {
+      expect(route.request().method()).toBe("POST");
+      expect((route.request().postDataJSON() as { baseRevision: number }).baseRevision).toBe(revision);
+      if (revoked) return route.fulfill({ status: 403 });
+      if (revision === 1) {
+        legalHold = true;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.legal_hold" }) });
+      }
+      revision += 1;
+      deletedAt = "2026-09-28T00:05:00Z";
+      body = "پیام حذف شده است";
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1,
+        createdAt: "2026-09-28T00:00:00Z", body, revision, legalHold, deletedAt, redactedAt: null,
+      }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  await expect(page.getByText("حذف فقط نمایش پیام را برمی‌دارد", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByText("این پیام تحت Legal Hold است و حذف نمایشی مجاز نیست.")).toBeVisible();
+  await expect(page.getByText("تحت نگهداری قانونی")).toBeVisible();
+  await expect(page.getByRole("button", { name: "حذف نمایشی پیام" })).toHaveCount(0);
+  legalHold = false;
+  revision = 2;
+  await page.reload();
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByText("پیام از نمایش گروه برداشته شد", { exact: false })).toBeVisible();
+  await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "حذف نمایشی پیام" })).toHaveCount(0);
+  deletedAt = null;
+  body = "پیام بعدی";
+  revision = 4;
+  await page.reload();
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  revoked = true;
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام بعدی")).toHaveCount(0);
+});
