@@ -860,6 +860,8 @@ if [[ "${profile_pdf_rejection_status}" != "422" ]]; then
   exit 1
 fi
 
+current_step="creating the policy-constrained profile image session"
+
 curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -868,6 +870,7 @@ curl --silent --fail \
   --header 'Content-Type: application/json' \
   --data "{\"clientGeneratedId\":\"${profile_image_id}\",\"projectId\":null,\"ownerType\":\"MemberProfile\",\"ownerId\":\"${login_member_id}\",\"originalFileName\":\"profile.png\",\"contentType\":\"image/png\",\"sizeBytes\":${profile_image_size},\"sha256\":\"${profile_image_sha}\",\"classification\":\"Confidential\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
   "http://127.0.0.1:${port}/api/v1/upload-sessions" | grep -q '"status":"PendingUpload"'
+current_step="uploading the profile image into quarantine"
 profile_image_upload="$(curl --silent --fail \
   --request PUT \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -877,6 +880,7 @@ profile_image_upload="$(curl --silent --fail \
   --data-binary "@${profile_image_file}" \
   "http://127.0.0.1:${port}/api/v1/documents/${profile_image_id}/content")"
 grep -q '"status":"Quarantined"' <<<"${profile_image_upload}"
+current_step="releasing the quarantined profile image"
 profile_image_revision="$(sed -n 's/.*"revision":\([0-9][0-9]*\).*/\1/p' <<<"${profile_image_upload}")"
 curl --silent --fail \
   --request POST \
@@ -888,6 +892,7 @@ curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/documents/${profile_image_id}/release" | \
   grep -q '"status":"Released"'
 
+current_step="reading and associating the member profile avatar"
 profile_current="$(curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${login_member_id}" \
@@ -903,6 +908,7 @@ profile_with_avatar="$(curl --silent --fail \
   --data "{\"baseUserRevision\":${profile_user_revision},\"baseProfileRevision\":${profile_revision},\"displayName\":\"سرپرست کارگاه آزمون\",\"jobTitle\":\"سرپرست کارگاه\",\"workPhone\":\"+98 21 1000\",\"avatarDocumentId\":\"${profile_image_id}\",\"avatarCrop\":{\"x\":0,\"y\":0,\"width\":1,\"height\":1}}" \
   "http://127.0.0.1:${port}/api/v1/member-profile")"
 grep -q "\"avatarDocumentId\":\"${profile_image_id}\"" <<<"${profile_with_avatar}"
+current_step="downloading the private member profile rendition"
 curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \
@@ -913,6 +919,7 @@ if [[ "$(sha256sum "${profile_image_download}" | cut -d ' ' -f 1)" != "${profile
   exit 1
 fi
 
+current_step="checking the member profile event safety"
 profile_event_safety="$(psql "${PMCS_VERIFICATION_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
   --tuples-only --no-align --command \
   "select count(*) from foundation.outbox_messages where tenant_id = '${tenant_id}' and event_type = 'identity.member-profile.updated.v1' and payload->>'userId' = '${login_member_id}' and not (payload ? 'email') and not (payload ? 'workPhone') and not (payload ? 'displayName');")"
