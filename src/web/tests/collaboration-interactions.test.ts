@@ -14,7 +14,8 @@ const messageId = "10000000-0000-4000-8000-000000000011";
 test("own-message edit uses stable revision/key and keeps a conflict explicit", async () => {
   const previous = globalThis.fetch;
   const message = { id: messageId, projectId, authorUserId: "10000000-0000-4000-8000-000000000099",
-    body: "نسخه پیشین", revision: 2 } as ProjectConversationMessage;
+    body: "نسخه پیشین", revision: 2, sequence: 1,
+    createdAt: "2026-09-28T00:00:00Z" } as ProjectConversationMessage;
   const key = "10000000-0000-4000-8000-000000000123";
   const calls: Array<{ url: string; method?: string; key?: string; body?: string }> = [];
   try {

@@ -73,6 +73,7 @@ export async function editOwnProjectMessage(apiBaseUrl: string, projectId: strin
   if (result?.id?.toLowerCase() !== message.id.toLowerCase() ||
       result.projectId?.toLowerCase() !== projectId.toLowerCase() ||
       result.authorUserId?.toLowerCase() !== message.authorUserId.toLowerCase() ||
+      result.sequence !== message.sequence || result.createdAt !== message.createdAt ||
       result.body !== normalized || !Number.isSafeInteger(result.revision) ||
       result.revision <= message.revision ||
       typeof result.editedAt !== "string" || !Number.isFinite(Date.parse(result.editedAt)) ||

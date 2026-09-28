@@ -472,7 +472,8 @@ test("own-message edit keeps the draft on revision conflict and confirms a fresh
       editedAt = "2026-09-28T00:05:00Z";
       return route.fulfill({ status: 200, contentType: "application/json",
         body: JSON.stringify({ id: messageId, projectId, authorUserId: userId,
-          body: currentBody, revision, editedAt, deletedAt: null, redactedAt: null }) });
+          sequence: 1, createdAt: "2026-09-28T00:00:00Z", body: currentBody,
+          revision, editedAt, deletedAt: null, redactedAt: null }) });
     });
 
   await page.goto(path);
