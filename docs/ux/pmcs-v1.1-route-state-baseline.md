@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS33`؛ Candidate تا تکمیل Full GitHub CI و بازبینی Evidence
+- مرحله: `UX2-MS33`؛ source Run 380 موفق، `PMCS-V1.1-UX2-MS33-C1`
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -61,6 +61,8 @@ node tools/qa/visual-baseline.mjs verify
 ## مرز Gate
 
 این Candidate مسیرها و stateهای بحرانی را با screenshot قابل تکرار به هم وصل
-می‌کند. بررسی واقعی فایل‌های Artifact و Full CI پیش از بستن MS33 لازم است.
+می‌کند. Artifact ۳۸تایی Run 380 و سه قاب اصلاحی Command Center بازبینی شدند.
+پوشش Gapهای conflict، preview تکثیر، خطای Login و چاپ در Micro-Stepهای بعدی
+نیازمند screenshot/qualification مستقل است؛ `VX-G1` هنوز بسته نیست.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.

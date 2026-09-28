@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.115.0`
+- نسخه سند: `1.116.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1212,6 +1212,19 @@ UX2-MS32 روی source `07d7f2e2c4bf9eea8e47b636c5dacd6f6e9bb9ea` / tree
 Exact next `UX2-MS33` inventory تازهٔ صفحات/stateها و screenshot baseline
 قابل بازتولید برای `VX-G1` است؛ سایر Gateهای بصری بازند.
 
+UX2-MS33 source نخست `9a775f19bc0c093e49aab2996e47f7fd7f68491e` / tree
+`243c99b185c83e16b3c992ed880f37b541790bde` در Run 379
+(`36449082359`) موفق بود. Audit فعال ۱۱ Route و ۳۸ تصویرِ Chromium از stateهای
+عملیاتی، موبایل/تبلت، عدم دسترسی، Offline، Loading/Failure و Featureهای خاموش
+را با SHA-256 و index در Artifact ثبت کرد. بازبینی تصویر، قاب‌بندی میانی
+Command Center موبایل را نشان داد؛ correction source
+`bbc55ab0b290f312b36ef364acd7e857e8c2d93f` / tree
+`c58a0d3db600d03d2c853e50cb7e5acf5bd9c1bc` نقطهٔ اسکرول سه viewport
+را pin کرد. Run 380 (`36450124654`) موفق و Artifact جدید ۳۸تایی بازبینی شد.
+Qualification Report هفت suite را `passed` ثبت کرد؛ `VX-G1` و Gateهای
+مهاجرت/Qualification بازند. Exact next `UX2-MS34` رفع محدود Sidebar دسکتاپ و
+ناوبری responsive بر پایهٔ Evidence است.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1567,3 +1580,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.113.0` | UX2-MS30 انتخاب صریح پیوست Released برای شواهد Issue با Run 373 هشت Job سبز؛ MS31 پیوست RFI و Gateهای UX2 باز |
 | `1.114.0` | UX2-MS31 انتخاب صریح پیوست Released برای شواهد Draft RFI با Run 375 هشت Job سبز؛ MS32 قرارداد فونت و Gateهای UX2 باز |
 | `1.115.0` | UX2-MS32 قرارداد نسخه‌دار فونت UI/Offline/PDF/XLSX/Print با Run 377 هشت Job سبز؛ MS33 ممیزی بصری و Gateهای UX2 باز |
+| `1.116.0` | UX2-MS33 inventory یازده Route و baseline سی‌وهشت screenshot با index/SHA-256 در Runهای 379/380؛ اصلاح قاب‌بندی Command Center، MS34 و Gateهای Visual باز |

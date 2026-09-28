@@ -103,7 +103,23 @@ Loading، خطا، عدم دسترسی، مجازِ محدود به پروژه،
 Desktop/Tablet/Mobile و Featureهای پیش‌فرض خاموش در این مجموعه‌اند. فایل
 `src/web/e2e/visual-baseline.json` و سند
 `docs/ux/pmcs-v1.1-route-state-baseline.md` مالک فهرست فعلی‌اند. Source و
-Artifact CI باید پیش از بستن `VX-G1` با هم تطبیق داده شوند.
+Artifact Run 380 با ۳۸ تصویر و index/SHA-256 تطبیق شدند. ۴۰ فایل Component TSX
+موجود و CSS سراسری ۱۰۴٬۲۸۴ بایتی نسبت به inventory تاریخی ۲۹ Component و
+۶۵٬۱۰۸ نویسه رشد کرده‌اند؛ قرارداد component state هنوز review کامل می‌خواهد.
+
+### یافته‌های زنده و اولویت اقدام
+
+| اولویت | Evidence واقعی | اقدام محدود بعدی |
+| --- | --- | --- |
+| P1 | تصویر 04 دسکتاپ: نشان Sidebar در ارتفاع ۹۰۰px به خط باریک فشرده شده و انتهای Navigation در viewport دیده نمی‌شود | MS34: جلوگیری از flex shrink، اسکرول مستقل و focus/keyboard قابل دسترس |
+| P2 | تصاویر 20–23 موبایل: Navigation افقی بخشی از متن لبه را قطع می‌کند و affordance اسکرول روشن نیست | MS34: affordance، انتخاب فعال و دسترس‌پذیری در عرض ۳۹۰/۳۲۰px |
+| P2 | تصویر 18 مدیریت ظاهر Login: کنترل‌های بومی انتخاب فایل متن انگلیسی دارند | مهاجرت shared FileInput و RTL/locale در Micro-Step بعدی |
+| P2 | تصویر 26 Portfolio در Loading تقریباً خالی است | قرارداد Loading/Skeleton و کاهش جابه‌جایی محتوا |
+
+تصاویر Run 379 نقطهٔ شروع Command Center موبایل را از میانهٔ کارت نشان دادند؛
+Run 380 با scroll policy صریح، تصویرهای 04/21/28 را اصلاح کرد. Stateهای
+Conflict، Preview تکثیر، خطای Login، Print/PDF و فونت جایگزین هنوز Evidence
+بصری کافی ندارند؛ بنابراین `VX-G1` باز است و این Audit معادل Qualification نیست.
 
 نشان شفاف رسمی فعلی تأیید شده است. مسیر نسخه‌دار تعویض فونت در MS32 ساخته شد؛
 فونت فارسی تازه و Qualification چاپ/تصویر هنوز انجام نشده است. `VX-G2` مصوب
