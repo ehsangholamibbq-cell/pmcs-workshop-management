@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.99.0`
+- نسخه سند: `1.100.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1064,6 +1064,13 @@ UX2-MS16 روی source `56fdf8be44646901cc7d51b2f2c742e05fa4f9e7` / tree
 فایل قرنطینه‌شده هنوز پیوست پیام نیست. Exact next `UX2-MS17` اتصال صریح
 سند Released و تأیید پاسخ سرور است؛ Gateهای UX2 بازند.
 
+UX2-MS17 روی source `ff11d7848e0f0fbab32ddd017b1f5bae0730e009` / tree
+`6c8c8cfe185248611b12ddc74cc572f6e89e787c` در Run 345
+(`36397698204`) هر هشت Job را پاس کرد. تنها سند Released از مسیر نویسنده
+با پاسخ محدوده/هش تأییدشده به پیام متصل می‌شود؛ فهرست بعد از اتصال و Reload
+بازخوانی می‌شود و قرنطینه قابل اتصال نیست. Exact next `UX2-MS18` ویرایش
+پیام خود با Revision و Conflict است؛ حذف/تعدیل، تبدیل و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1403,3 +1410,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.97.0` | UX2-MS14 سنجاق با مجوز تعدیل و Run 339 هشت Job سبز؛ MS15 پیوست خواندنی و Gateهای UX2 باز |
 | `1.98.0` | UX2-MS15 فهرست و دانلود پیوست Released با تطبیق SHA-256 و Run 341 هشت Job سبز؛ MS16 آپلود محدود و Gateهای UX2 باز |
 | `1.99.0` | UX2-MS16 آپلود نویسنده و وضعیت قرنطینهٔ محدود با Run 343 هشت Job سبز؛ MS17 اتصال Released و Gateهای UX2 باز |
+| `1.100.0` | UX2-MS17 اتصال صریح سند Released با Run 345 هشت Job سبز؛ MS18 ویرایش پیام خود و Gateهای UX2 باز |
