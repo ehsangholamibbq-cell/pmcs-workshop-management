@@ -36,11 +36,21 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: node tools/qa/regression-runner.mjs run backend
+      - name: Render isolated MS45 PDF and XLSX font review
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: dotnet run --project tools/qa/FontReview/FontReview.csproj --configuration Release -- --output artifacts/qa/ms45-font-review
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qa-regression-backend
           path: artifacts/qa/regression/backend.json
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms45-font-review
+          path: artifacts/qa/ms45-font-review/
           if-no-files-found: error
 
   integration:
