@@ -7,6 +7,11 @@
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Runtime change: ندارد
 
+> بخش‌های ۱ تا ۶ یافته‌های تاریخی baseline روز ۲۰۲۶-۰۹-۱۷ هستند. وضعیت زندهٔ
+> مسیرها و stateها و Evidence جدید در پیوست UX2-MS33 پایین و سند
+> `pmcs-v1.1-route-state-baseline.md` ثبت می‌شود؛ یافتهٔ تاریخی را وضعیت فعلی
+> لوگو یا Design System تفسیر نکنید.
+
 ## ۱. دامنه ممیزی
 
 ممیزی مستقیم روی Source فعال Web انجام شد و این محدوده را پوشش داد:
@@ -90,3 +95,16 @@ V1 از نظر Function و Operational State قابل اتکاست، اما ظا
 3. مهاجرت Identity، Shell، Portfolio و Project Command Center؛
 4. اجرای screenshot، accessibility، responsive و performance qualification.
 
+## ۷. پیوست UX2-MS33 — Inventory زنده و Screenshot Candidate
+
+Source فعال اکنون ۱۱ Route و ۳۸ Capture قراردادی از Identity، Shell، Portfolio،
+Project، پروفایل، مدیریت، Collaboration و Reporting دارد. حالت‌های فیلتر خالی،
+Loading، خطا، عدم دسترسی، مجازِ محدود به پروژه، Offline/Validation، 404،
+Desktop/Tablet/Mobile و Featureهای پیش‌فرض خاموش در این مجموعه‌اند. فایل
+`src/web/e2e/visual-baseline.json` و سند
+`docs/ux/pmcs-v1.1-route-state-baseline.md` مالک فهرست فعلی‌اند. Source و
+Artifact CI باید پیش از بستن `VX-G1` با هم تطبیق داده شوند.
+
+نشان شفاف رسمی فعلی تأیید شده است. مسیر نسخه‌دار تعویض فونت در MS32 ساخته شد؛
+فونت فارسی تازه و Qualification چاپ/تصویر هنوز انجام نشده است. `VX-G2` مصوب
+است؛ `VX-G3`، `VX-G4` و `VX-G5` بازند.

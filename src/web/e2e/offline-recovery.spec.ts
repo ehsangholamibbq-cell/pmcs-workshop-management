@@ -8,6 +8,7 @@ import {
   userId,
   waitForProjectReady,
 } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
 
 test("offline queue survives a browser restart and reconnects exactly once", async ({}, testInfo) => {
   const profileDirectory = testInfo.outputPath("persistent-browser-profile");
@@ -22,6 +23,7 @@ test("offline queue survives a browser restart and reconnects exactly once", asy
       locale: "fa-IR",
       timezoneId: "Asia/Tehran",
       serviceWorkers: "allow",
+      viewport: { width: 1440, height: 900 },
     });
     let page = context.pages()[0] ?? await context.newPage();
     await loginThroughOidc(page);
@@ -41,6 +43,7 @@ test("offline queue survives a browser restart and reconnects exactly once", asy
     await page.locator("#fact-location").selectOption({ index: 1 });
     await page.getByRole("button", { name: "ذخیره پیش‌نویس آفلاین" }).click();
     await expect(page.locator(".capture-form output")).toContainText("شرح واقعیت الزامی است");
+    await captureVisualBaseline(page, "30-offline-validation");
 
     await page.locator("#fact-category").fill("فعالیت آزمون مرورگر");
     await page.locator("#fact-quantity").fill("1");
@@ -65,10 +68,12 @@ test("offline queue survives a browser restart and reconnects exactly once", asy
       timezoneId: "Asia/Tehran",
       serviceWorkers: "allow",
       offline: true,
+      viewport: { width: 1440, height: 900 },
     });
     page = context.pages()[0] ?? await context.newPage();
     await page.goto(projectPath);
     await expect(page.getByRole("heading", { name: "اتصال به سامانه برقرار نیست" })).toBeVisible();
+    await captureVisualBaseline(page, "31-offline-restart");
 
     const afterRestart = await readStoredOperations(page);
     expect(afterRestart).toContainEqual(expect.objectContaining({

@@ -1,8 +1,7 @@
 import { test as setup, expect } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
-import path from "node:path";
 import { authenticationState } from "../playwright.config";
 import { loginThroughOidc, tenantId, userId } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
 
 setup("OIDC login establishes the scoped BFF session", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -18,9 +17,7 @@ setup("OIDC login establishes the scoped BFF session", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.getByRole("heading", { name: "ورود به حساب کاربری" })).toBeVisible();
   await expect(page.getByRole("button", { name: "ورود امن" })).toBeEnabled();
-  const tourDirectory = path.resolve("artifacts/visual-tour");
-  await mkdir(tourDirectory, { recursive: true });
-  await page.screenshot({ path: path.join(tourDirectory, "01-login.png"), animations: "disabled" });
+  await captureVisualBaseline(page, "01-login");
   await expect(page.locator(".blueprint-grid path").first()).toHaveCSS("animation-name", "none");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(page.locator(".blueprint-grid path").first()).toHaveCSS("animation-name", "login-draw");

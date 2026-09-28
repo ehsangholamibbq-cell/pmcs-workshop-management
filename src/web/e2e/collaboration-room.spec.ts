@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { projectId, userId } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
 
 const path = `/projects/${projectId}/collaboration`;
 
@@ -23,6 +24,7 @@ test("revoked project membership never reveals a conversation", async ({ page })
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.locator(".collaboration-message")).toHaveCount(0);
+  await captureVisualBaseline(page, "33-chat-forbidden");
 });
 
 test("project Chat renders only the scoped latest messages, including tombstones", async ({ page }) => {
@@ -58,6 +60,7 @@ test("project Chat renders only the scoped latest messages, including tombstones
   await expect(page.getByText("متن حذف‌شده")).toHaveCount(0);
   await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
   await expect(page.getByRole("button", { name: "تازه‌سازی" })).toBeEnabled();
+  await captureVisualBaseline(page, "34-chat-scoped");
   await page.getByLabel("پیام به گروه همین پروژه").fill("پیام جدید گروه");
   await page.getByRole("button", { name: "ارسال به گروه پروژه" }).click();
   await expect(page.getByText("پیام جدید گروه")).toBeVisible();

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { projectId, projectPath, tenantId, userId } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
 
 test("authenticated cold start keeps the Persian RTL tenant and project boundary", async ({ page }) => {
   await page.goto("/portfolio");
@@ -22,6 +23,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   const search = page.getByPlaceholder("نام، کد یا مدیر پروژه");
   await search.fill("پروژه‌ای که وجود ندارد");
   await expect(page.getByText("پروژه‌ای مطابق فیلترهای انتخاب‌شده پیدا نشد.")).toBeVisible();
+  await captureVisualBaseline(page, "25-portfolio-empty");
   await search.clear();
   await expect(projectLink).toBeVisible();
 
@@ -36,6 +38,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect(calendar).toBeVisible();
   await expect(calendar.getByRole("gridcell")).toHaveCount(42);
   await expect(calendar.getByRole("button", { name: "امروز" })).toBeVisible();
+  await captureVisualBaseline(page, "29-calendar-dialog");
   await calendarTrigger.click();
   await expect(calendar).toBeHidden();
 
@@ -81,11 +84,13 @@ test("loading and failure states stay explicit and localized", async ({ page }) 
 
   await page.goto("/portfolio");
   await expect(page.getByText("در حال ساخت نمای مدیریتی از آخرین وضعیت‌های رسمی…")).toBeVisible();
+  await captureVisualBaseline(page, "26-portfolio-loading");
   releaseRequest?.();
 
   await expect(page.getByRole("heading", { name: "داده سبد در دسترس نیست" })).toBeVisible();
   await expect(page.getByText("Sensitive upstream failure must not reach the user")).toHaveCount(0);
   await expect(page.locator(".portfolio-empty-panel").getByText(/در حال حاضر مشکلی در سرور رخ داده است/u)).toBeVisible();
+  await captureVisualBaseline(page, "27-portfolio-failure");
 });
 
 test("member profile and login presentation administration work through the real UI", async ({ page }) => {

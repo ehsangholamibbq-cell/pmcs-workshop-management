@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { projectId } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
 
 const path = `/projects/${projectId}/reports`;
 const catalog = `**/api/pmcs/api/v1/projects/${projectId}/reports/catalog`;
@@ -20,6 +21,7 @@ test("Reporting Center denies the catalog without reading runs", async ({ page }
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "دسترسی به گزارش‌ها ندارید" })).toBeVisible();
   expect(runReads).toBe(0);
+  await captureVisualBaseline(page, "35-project-reporting-forbidden");
 });
 
 test("Reporting Center displays only catalog and runs authorized for the same project", async ({ page }) => {
@@ -36,6 +38,7 @@ test("Reporting Center displays only catalog and runs authorized for the same pr
   await expect(page.getByText("داده ناکافی")).toBeVisible();
   await expect(page.getByText("خروجی ثبت نشده است")).toBeVisible();
   await expect(page.locator(".reporting-card")).toHaveCount(2);
+  await captureVisualBaseline(page, "36-project-reporting-authorized");
 });
 
 test("Reporting Center refuses a cross-project run even when catalog was authorized", async ({ page }) => {

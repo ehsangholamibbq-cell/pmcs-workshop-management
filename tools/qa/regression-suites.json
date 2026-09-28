@@ -16,6 +16,11 @@
           "id": "system-contract-audit",
           "file": "node",
           "args": ["tools/audit-system-contracts.mjs"]
+        },
+        {
+          "id": "visual-baseline-inventory",
+          "file": "node",
+          "args": ["tools/qa/visual-baseline.mjs", "check-source"]
         }
       ]
     },

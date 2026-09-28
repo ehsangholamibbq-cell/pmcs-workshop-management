@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createHash } from "node:crypto";
+import { captureVisualBaseline } from "./visual-baseline";
 
 const path = "/portfolio/reports";
 const catalog = "**/api/pmcs/api/v1/portfolio/reports/catalog";
@@ -29,6 +30,7 @@ test("Portfolio Reporting Center stops before history on denied tenant catalog",
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "دسترسی به گزارش‌های سبد ندارید" })).toBeVisible();
   expect(historyReads).toBe(0);
+  await captureVisualBaseline(page, "37-portfolio-reporting-forbidden");
 });
 
 test("Portfolio Reporting Center displays only the authorized tenant catalog and run", async ({ page }) => {
@@ -41,6 +43,7 @@ test("Portfolio Reporting Center displays only the authorized tenant catalog and
   await expect(page.getByText("بدون داده")).toBeVisible();
   await expect(page.getByText("خروجی ثبت نشده است")).toBeVisible();
   await expect(page.locator(".reporting-card")).toHaveCount(2);
+  await captureVisualBaseline(page, "38-portfolio-reporting-authorized");
 });
 
 test("Portfolio Reporting Center rejects a project-scoped run", async ({ page }) => {
