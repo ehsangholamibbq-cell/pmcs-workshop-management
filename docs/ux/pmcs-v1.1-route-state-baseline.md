@@ -37,7 +37,9 @@ Chat فقط گروه پروژه است؛ هیچ DM/صوت/تصویر در این
 
 CI با Commit مشخص، Docker Compose مجزا، Fixture OIDC، دادهٔ QA، Chromium،
 viewportهای `1440×900` / `820×1180` / `390×844`، locale فارسی، timezone تهران،
-Light و reduced motion اجرا می‌شود. Helper هر تصویر را پس از Assertion state،
+Light و reduced motion اجرا می‌شود. تصاویر Command Center در هر سه viewport
+پس از تغییر اندازه و آماده‌شدن فونت صریحاً به ابتدای صفحه برمی‌گردند. Helper هر
+تصویر را پس از Assertion state،
 آماده‌شدن فونت، کنترل URL و RTL می‌گیرد؛ انیمیشن و caret غیرفعال‌اند.
 
 پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۳۸ PNG

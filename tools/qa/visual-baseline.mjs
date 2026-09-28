@@ -44,6 +44,7 @@ export async function validateInventory(manifest, projectRoot = root) {
       (capture.route === "/missing-visual-baseline-route" && capture.state === "not-found"),
     `Unregistered route: ${capture.route}`);
     assert.ok(manifest.viewports[capture.viewport], `Unknown viewport: ${capture.viewport}`);
+    assert.ok(capture.scroll === undefined || capture.scroll === "top", `Invalid scroll policy: ${capture.id}`);
     const source = path.join(projectRoot, "src/web/e2e", capture.source);
     const text = await readFile(source, "utf8");
     assert.ok(text.includes(`"${capture.id}"`), `Capture ${capture.id} is absent from ${capture.source}`);

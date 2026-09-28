@@ -15,6 +15,9 @@ const pixel = Buffer.from(
 
 test("every active Next page and critical state has a declared, executable capture", async () => {
   assert.deepEqual(await validateInventory(inventory, root), { routes: 11, captures: 38 });
+  for (const id of ["04-project-command", "21-mobile-project", "28-tablet-project"]) {
+    assert.equal(inventory.captures.find((item) => item.id === id)?.scroll, "top");
+  }
   await assert.rejects(validateInventory({ ...inventory, captures: inventory.captures.filter(
     (item) => item.route !== "/admin/users",
   ) }, root), /Missing route baseline/u);

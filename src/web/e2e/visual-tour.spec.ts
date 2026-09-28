@@ -46,11 +46,9 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
     await captureVisualBaseline(page, baselineId);
   }
 
-  await page.locator("#pulse").evaluate((element) => element.scrollIntoView({ block: "start" }));
   await captureVisualBaseline(page, "28-tablet-project");
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator("#pulse").evaluate((element) => element.scrollIntoView({ block: "start" }));
   await captureVisualBaseline(page, "21-mobile-project");
 
   await page.goto(`${projectPath}/collaboration`);

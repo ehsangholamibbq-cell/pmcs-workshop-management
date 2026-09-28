@@ -7,6 +7,7 @@ interface Capture {
   readonly id: string;
   readonly route: string;
   readonly viewport: "desktop" | "tablet" | "mobile";
+  readonly scroll?: "top";
 }
 
 const manifestPath = fileURLToPath(new URL("./visual-baseline.json", import.meta.url));
@@ -28,6 +29,10 @@ export async function captureVisualBaseline(page: Page, id: string): Promise<voi
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.evaluate(() => document.fonts.ready);
+  if (entry.scroll === "top") {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  }
   await mkdir(directory, { recursive: true });
   await page.screenshot({ path: path.join(directory, `${id}.png`), animations: "disabled", caret: "hide" });
 }
