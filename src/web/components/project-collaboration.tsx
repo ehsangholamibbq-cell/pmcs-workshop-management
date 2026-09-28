@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import { loadProjectConversation, type ProjectConversationView } from "@/lib/collaboration-room";
+import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
+import {
+  enqueueCollaborationMessage, listQueuedCollaborationMessages, syncCollaborationMessages,
+} from "@/lib/collaboration-offline";
 import { formatPersianDateTime } from "@/lib/persian-date";
 
 export function ProjectCollaboration({ projectId }: { readonly projectId: string }) {
@@ -16,6 +20,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [view, setView] = useState<ProjectConversationView | null>(null);
   const [failure, setFailure] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [pending, setPending] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [sendStatus, setSendStatus] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -29,6 +37,68 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     });
     return () => { active = false; };
   }, [projectId, refresh]);
+
+  useEffect(() => {
+    if (view?.kind !== "ready") return undefined;
+    const controller = new AbortController();
+    void watchCollaborationEvents("/api/pmcs", projectId, view.lastSequence,
+      () => setRefresh((value) => value + 1), controller.signal).catch((error: unknown) => {
+      if (controller.signal.aborted) return;
+      if (error instanceof CollaborationAccessError) {
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+        setDraft("");
+      }
+    });
+    return () => controller.abort();
+  }, [projectId, view]);
+
+  useEffect(() => {
+    if (view?.kind !== "ready") return undefined;
+    let active = true;
+    const recover = async () => {
+      try {
+        if (navigator.onLine) {
+          const result = await syncCollaborationMessages("/api/pmcs", projectId);
+          if (active && result.sent > 0) {
+            setRefresh((value) => value + 1);
+            setSendStatus("پیام‌های صف به گفت‌وگوی پروژه رسیدند.");
+          }
+        }
+        const queue = await listQueuedCollaborationMessages(projectId);
+        if (active) setPending(queue.length);
+      } catch {
+        if (active) setSendStatus("بررسی صف پیام‌ها کامل نشد؛ دوباره تلاش کنید.");
+      }
+    };
+    void recover();
+    window.addEventListener("online", recover);
+    return () => { active = false; window.removeEventListener("online", recover); };
+  }, [projectId, view?.kind]);
+
+  async function submitMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (view?.kind !== "ready" || sending) return;
+    setSending(true);
+    setSendStatus("");
+    try {
+      await enqueueCollaborationMessage({
+        tenantId: session.tenantId, userId: session.userId, projectId, body: draft,
+      });
+      setDraft("");
+      const result = navigator.onLine
+        ? await syncCollaborationMessages("/api/pmcs", projectId)
+        : null;
+      const queue = await listQueuedCollaborationMessages(projectId);
+      setPending(queue.length);
+      if (result?.sent) setRefresh((value) => value + 1);
+      setSendStatus(queue.length ? "پیام در صف امن دستگاه باقی ماند؛ پس از اتصال دوباره تلاش می‌شود."
+        : "پیام در گفت‌وگوی پروژه ثبت شد.");
+    } catch {
+      setSendStatus("ثبت پیام کامل نشد؛ متن و نشست خود را بررسی کنید.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <main className="app-shell collaboration-shell">
@@ -85,6 +155,17 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                 ))}
               </ol>
             )}
+            <form className="collaboration-composer" onSubmit={(event) => void submitMessage(event)}>
+              <label htmlFor="collaboration-message-draft">پیام به گروه همین پروژه</label>
+              <textarea id="collaboration-message-draft" value={draft} maxLength={4000} rows={3}
+                onChange={(event) => setDraft(event.target.value)} placeholder="پیام کاری خود را بنویسید…" />
+              <div className="collaboration-composer-actions">
+                <span aria-live="polite">{pending ? `${pending.toLocaleString("fa-IR")} پیام در صف ارسال` : sendStatus}</span>
+                <button type="submit" disabled={sending || !draft.trim()}>
+                  {sending ? "در حال ثبت…" : "ارسال به گروه پروژه"}
+                </button>
+              </div>
+            </form>
           </section>
         )}
       </section>
