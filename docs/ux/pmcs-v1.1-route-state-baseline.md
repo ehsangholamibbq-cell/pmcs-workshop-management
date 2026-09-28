@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS35`؛ source Run 388 موفق، Full CI مستندات شرط اعتبار `PMCS-V1.1-UX2-MS35-C1`
+- مرحله: `UX2-MS36`؛ MS35 Runهای 388/389 موفق، source correction MS36 Run 393 موفق، CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -25,7 +25,7 @@ Routeها کنترل می‌کند؛ اضافه‌شدن صفحهٔ جدید ب�
 | `/profile` | پروفایل شخصی | اطلاعات عضو | 16 |
 | `/admin/users` | مدیریت کاربران | فهرست/دعوت/عضویت | 17 |
 | `/admin/login-experience` | مدیریت ظاهر ورود | نسخه و گزینه‌های ظاهر | 18 |
-| `/project-bootstraps` | تکثیر پروژه | انتخاب پروژهٔ مبدأ | 19 |
+| `/project-bootstraps` | تکثیر پروژه | انتخاب پروژهٔ مبدأ، پیش‌نمایش با تعارض و مانع اجرا | 19، 41 |
 
 Capture 32 صفحهٔ 404 را پوشش می‌دهد. Capture 39 انتهای Sidebar دسکتاپ را پس از
 focus آخرین لینک با نشان غیرفشرده و اسکرول مستقل ثبت می‌کند. Inventory دقیق ID، نام state، viewport و
@@ -35,6 +35,10 @@ focus آخرین لینک با نشان غیرفشرده و اسکرول مست�
 Chat فقط گروه پروژه است؛ هیچ DM/صوت/تصویر در این inventory وجود ندارد.
 Capture 40 در همان سناریوی E2E تعارض ویرایش پیام خود، نسخهٔ فعلی سرور و
 پیش‌نویس حفظ‌شدهٔ نویسنده را پیش از تأیید مجدد ثبت می‌کند.
+Capture 41 پیش‌نمایش نسخه‌دار تکثیر را با یک ردیف افزودنی، یک تعارض و یک مانع
+ثبت می‌کند. Fixture مرورگر فقط پاسخ ساخت برنامه را شبیه‌سازی می‌کند؛ آزمون
+Payload و کلید Idempotency را کنترل می‌کند و حتی پس از تیک تأیید، دکمهٔ اجرا
+غیرفعال و تعداد درخواست اجرا صفر می‌ماند. هیچ مقصدی در API واقعی ساخته نمی‌شود.
 
 ## دستور بازتولید و Evidence
 
@@ -45,7 +49,7 @@ Light و reduced motion اجرا می‌شود. تصاویر Command Center در
 تصویر را پس از Assertion state،
 آماده‌شدن فونت، کنترل URL و RTL می‌گیرد؛ انیمیشن و caret غیرفعال‌اند.
 
-پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۰ PNG
+پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۱ PNG
 اعلام‌شده را از نظر حضور، عدم فایل اضافی، ساختار PNG و اندازهٔ viewport کنترل
 می‌کند. `index.json` برای هر تصویر SHA-256، اندازه، Route، state و viewport و
 برای کل بسته Manifest SHA-256، Commit و Run/Attempt GitHub را ثبت می‌کند. Artifact
@@ -68,8 +72,11 @@ node tools/qa/visual-baseline.mjs verify
 Artifact ۳۹تایی Run 386 با index، ابعاد و SHA-256 همهٔ تصویرها تطبیق شد؛
 قاب‌های 04/39/21 بازبینی شدند. Artifact ۴۰تایی Run 388 با index و SHA/ابعاد
 همهٔ فایل‌ها تطبیق شد؛ تصویر 40 نسخهٔ فعلی سرور، پیش‌نویس نویسنده و مسیر
-ویرایش دوباره را هم‌زمان در viewport نشان می‌دهد.
-پوشش Gapهای conflict، preview تکثیر، خطای Login و چاپ در Micro-Stepهای بعدی
-نیازمند screenshot/qualification مستقل است؛ `VX-G1` هنوز بسته نیست.
+ویرایش دوباره را هم‌زمان در viewport نشان می‌دهد. Artifact ۴۱تایی Run 393
+نیز با index و SHA/ابعاد و Source/Run تطبیق شد؛ تصویر 41 Preview مسدود،
+تأیید و دکمهٔ اجرای غیرفعال را در قاب نشان می‌دهد.
+Conflict پیام و Preview مسدود تکثیر اکنون قاب مستقل دارند؛ خطای Login، چاپ و
+بازبینی نهایی در Micro-Stepهای بعدی به Evidence مستقل نیاز دارند؛ `VX-G1` هنوز
+بسته نیست.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.118.0`
+- نسخه سند: `1.119.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1256,6 +1256,22 @@ Run 388 هر هشت Job را پاس کرد و Artifact چهل‌تصویری ب�
 `UX2-MS36` Preview تکثیر و مانع اجرایی در baseline است. `VX-G1/G3/G4/G5`
 و INT1/QA1 همچنان بازند.
 
+UX2-MS35 documentation `7270f8e3dd7c164788019c003f7a56f5a293ba85` در Run 389
+هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS35-C1` Safe شد. UX2-MS36 Source
+Candidate `e99fc97f8d877a180e01f0711c1ceefd6953e078` / tree
+`9813c31337f6985f38da01c5d1c110de1b266933` یک Capture از Preview
+تکثیر با Added/Conflict/Blocked، تأیید صریح و دکمهٔ اجرای غیرفعال دارد. Fixture
+فقط پاسخ مرورگر را کنترل می‌کند و به API واقعی برای ساخت مقصد یا اجرا درخواست
+نمی‌زند. Run 390 در UI-E2E روی انتظار دکمهٔ Wizard شکست خورد. Run 391
+گذار مرحله‌ها را Assert کرد و Run 392 نشان داد Preview پیش از Submit صریح
+آزمون ساخته می‌شد؛ قاب خطا خود state درست را آشکار کرد. Correction نهایی
+`9202660180e48a0124130123ae43fc1d6821597c` / tree
+`6f9242e1063d8448091f958e0e7eb5b36c0530a9` از Navigation مستقل
+به مرحلهٔ اعضا می‌رود و صفر بودن درخواست ساخت را پیش از Submit کنترل می‌کند.
+Run 393 هر هشت Job سبز شد و Artifact ۴۱تصویری با SHA/ابعاد معتبر و قاب 41
+بازبینی شد؛ CI مستندات شرط اعتبار Checkpoint است. بعد از Gateهای MS36،
+MS37 به خطای Login می‌پردازد. `VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1614,3 +1630,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.116.0` | UX2-MS33 inventory یازده Route و baseline سی‌وهشت screenshot با index/SHA-256 در Runهای 379/380؛ اصلاح قاب‌بندی Command Center، MS34 و Gateهای Visual باز |
 | `1.117.0` | UX2-MS34 Candidate نشان ثابت، Sidebar مستقل و keyboard reachability در ۳۹ screenshot؛ Run 386 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار؛ MS35 و Gateهای Visual باز |
 | `1.118.0` | UX2-MS34 documentation Run 387 هشت Job سبز و Safe؛ UX2-MS35 Candidate تصویر تعارض Chat گروه پروژه در baseline چهل‌تایی، Run 388 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS36 و Gateهای Visual باز |
+| `1.119.0` | UX2-MS35 documentation Run 389 هشت Job سبز و Safe؛ UX2-MS36 Preview مسدود تکثیر در baseline چهل‌ویک‌تایی، Runهای 390–392 علت گذار آزمون را آشکار و correction Run 393 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS37 و Gateهای Visual باز |
