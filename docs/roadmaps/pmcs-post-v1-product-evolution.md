@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.105.0`
+- نسخه سند: `1.106.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1111,6 +1111,17 @@ UX2-MS22 روی source `ac2fe6e03496cc3f2805f1b96b5cca558d438cf5` / tree
 هیچ رکورد رسمی نمی‌سازد. Exact next `UX2-MS23` تبدیل تأییدشده به Action
 با مسئول خود کاربر است؛ پنج مقصد دیگر/پیوست‌ها و Gateهای UX2 بازند.
 
+UX2-MS23 روی source `3ff5a49d9478a21ec6d2d2481c7af5c5c3caf80b` / tree
+`c8cbca067b87126ea100d085c52f05d23340fed6` در Run 359
+(`36416141135`) هر هشت Job را پاس کرد. Room قابلیت Action را تنها با
+مجوز تبدیل و ساخت Action می‌دهد؛ فرم تأییدشده با مسئول خود کاربر، مهلت
+شمسی، Revision و هویت پایدار درخواست، تبار را پیش و پس از ساخت کنترل
+می‌کند. Conflict تأیید دوباره، نتیجهٔ نامعلوم Retry با همان هویت و 403
+بستن نما را الزام می‌کند. هیچ سندی خودکار منتقل نمی‌شود. Run 358 به دلیل
+ابهام انتخاب‌گر تست مرورگر واجد Checkpoint نبود و در Run 359 اصلاح شد.
+Exact next `UX2-MS24` تبدیل تأییدشدهٔ Issue است؛ چهار مقصد دیگر، پیوست‌ها
+و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1456,3 +1467,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.103.0` | UX2-MS20 Redaction و Legal Hold با دلیل/Revision و Run 352 هشت Job سبز؛ MS21 تاریخچه و Gateهای UX2 باز |
 | `1.104.0` | UX2-MS21 تاریخچهٔ خصوصی Revision/تعدیل با Run 354 هشت Job سبز؛ MS22 مجوز تبدیل و lineage خواندنی باز |
 | `1.105.0` | UX2-MS22 مجوز مؤثر تبدیل و lineage خواندنی با Run 356 هشت Job سبز؛ MS23 Action و Gateهای UX2 باز |
+| `1.106.0` | UX2-MS23 تبدیل تأییدشدهٔ Action با Revision/Idempotency و Run 359 هشت Job سبز؛ MS24 Issue و Gateهای UX2 باز |
