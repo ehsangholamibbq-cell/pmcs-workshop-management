@@ -1,10 +1,13 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.1`
+- نسخه Candidate: `1.0.0-rc.2`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
+- تأیید مالک محصول در ۲۰۲۶-۰۹-۲۸: نشان کامل و برش شفاف نماد از
+  `assets/brand/official-mark.pdf` برای مبنای فعلی PMCS تأیید شدند؛ منشأ و Hash در
+  `docs/ux/pmcs-v1.1-brand-source.md` ثبت است. این تأیید، Gate مهاجرت و Visual QA را نمی‌بندد.
 
 ## ۱. اصول غیرقابل مذاکره
 
@@ -56,9 +59,18 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 
 ## ۳. Typography و اعداد
 
-- فونت فارسی Candidate: `Vazirmatn Variable` به‌صورت Self-hosted؛
+- فونت فارسی Candidate: `Vazirmatn Variable` به‌صورت Self-hosted؛ انتخاب فونت نهایی هنوز باز است؛
 - Fallback: `Tahoma, Segoe UI, sans-serif`؛
 - وزن‌های Production: 400، 500، 600 و 700؛
+- الزام مالک محصول در ۲۰۲۶-۰۹-۲۸: تغییر آیندهٔ فونت فارسی باید در تمام بخش‌های فعال
+  از یک قرارداد مرکزی، نسخه‌دار و قابل بازگشت ممکن باشد؛ Login، Shell، Portfolio،
+  Project، فرم و جدول، Chat، Reporting، نمایش موبایل و صفحهٔ Offline نباید
+  font-family مستقل و پراکنده داشته باشند؛
+- فونت گزارش PDF و Print از قرارداد نسخه‌دار خروجی استفاده می‌کند و با تغییر فونت
+  باید Embedding، شکل‌گیری متن فارسی/اعداد، صفحه‌بندی و Goldenهای چاپ دوباره
+  تأیید شوند. XLSX نام فونت را در Style ثبت می‌کند؛ نمایش همان قلم در نرم‌افزار
+  گیرنده وابسته به نصب فونت روی دستگاه اوست؛
+- تعویض فونت، متن ذخیره‌شده، دادهٔ Domain، تاریخ و مقدار Canonical را تغییر نمی‌دهد؛
 - Headingها فشرده اما نه تزئینی؛ Body برای استفاده طولانی با Line-height باز؛
 - عدد، درصد، ارز، واحد و تاریخ از Formatter مرکزی استفاده می‌کنند؛
 - نمایش فارسی اعداد در UI و خروجی؛ مقدار Canonical در Domain تغییر نمی‌کند؛
@@ -153,5 +165,7 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 - Screen reader announcement برای Sync، Error و نتیجه Action؛
 - Visual regression روی Desktop/Tablet/Mobile؛
 - Print golden test و Performance budget؛
+- Gate فونت: جایگزینی آزمایشی یک خانوادهٔ فارسی از تنظیم مرکزی باید در تمام مسیرهای
+  فعال، Offline و PDF/Print با Regression دسکتاپ/تبلت/موبایل، RTL، اعداد و
+  نبود clipping پاس شود؛ هر استثنای فنی مستند و پیش از `VX-G5` بسته شود؛
 - UX-G3 فقط بعد از تأیید بصری مالک محصول بسته می‌شود.
-

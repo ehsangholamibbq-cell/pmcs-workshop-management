@@ -114,6 +114,32 @@ internal static partial class CollaborationEndpoints
         return Results.Ok(new { lastReadSequence = Math.Max(previous, request.LastReadSequence) });
     }
 
+    private static async Task<IResult> GetReactionsAsync(
+        Guid projectId, Guid messageId, CollaborationRuntimeOptions runtime, ICurrentActor actor,
+        IProjectCollaborationMembership membership, IProjectPermissionService permissions,
+        IProjectDirectory projects, CollaborationDbContext db,
+        CancellationToken cancellationToken)
+    {
+        var gate = await GateAsync(projectId, "collaboration.read", runtime,
+            actor, membership, permissions, projects, cancellationToken);
+        if (gate is not null) return gate;
+        if (!await MessageExistsAsync(db, actor, projectId, messageId, cancellationToken))
+            return Results.NotFound();
+
+        var reactions = await db.Reactions.AsNoTracking()
+            .Where(item => item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+                item.MessageId == messageId)
+            .GroupBy(item => item.Emoji)
+            .Select(group => new MessageReactionResponse(group.Key, group.Count(),
+                group.Any(item => item.ActorUserId == actor.UserId)))
+            .ToArrayAsync(cancellationToken);
+        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        var canReact = await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+            projectId, "collaboration.send", cancellationToken);
+        return Results.Ok(new { messageId, canReact, reactions });
+    }
+
     private static async Task<IResult> AddReactionAsync(
         Guid projectId, Guid messageId, string emoji, HttpContext http,
         CollaborationRuntimeOptions runtime, ICurrentActor actor,
@@ -241,5 +267,7 @@ internal static partial class CollaborationEndpoints
                     JsonSerializer.Serialize(new { messageId, projectId, eventType }, JsonOptions),
                     http.TraceIdentifier)), cancellationToken);
 }
+
+internal sealed record MessageReactionResponse(string Emoji, int Count, bool ReactedByMe);
 
 internal sealed record AdvanceProjectReadCursorRequest(long LastReadSequence);

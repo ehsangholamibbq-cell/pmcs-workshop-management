@@ -1410,6 +1410,30 @@ textarea {
 .collaboration-message-meta strong { color: var(--text-primary); }
 .collaboration-message p { white-space: pre-wrap; line-height: 1.8; }
 .collaboration-message small { margin-inline-end: 0.75rem; color: var(--state-draft); }
+.collaboration-reactions { margin-top: 0.6rem; }
+.collaboration-reaction-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.6rem;
+  color: var(--text-secondary);
+}
+.collaboration-reaction-button {
+  min-width: 3.25rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.75rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.collaboration-reaction-button[aria-pressed="true"] {
+  border-color: var(--brand-green-700);
+  background: var(--status-success-surface);
+}
+.collaboration-reaction-button:disabled { opacity: 0.65; cursor: not-allowed; }
 .collaboration-composer {
   display: grid;
   gap: 0.7rem;

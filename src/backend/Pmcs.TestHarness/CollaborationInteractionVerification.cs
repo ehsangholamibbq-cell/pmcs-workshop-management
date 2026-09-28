@@ -80,6 +80,36 @@ internal static partial class Program
             reaction.StatusCode == HttpStatusCode.OK && reactionRepeat.StatusCode == HttpStatusCode.OK,
             $"observer={(int)observerReaction.StatusCode};send={(int)reaction.StatusCode}");
 
+        var reactionSummaryPath = $"{path}/messages/{originalId}/reactions";
+        var ownSummary = await SendAsync(client, key, supervisor, HttpMethod.Get, reactionSummaryPath);
+        var readOnlySummary = await SendAsync(client, key, observer, HttpMethod.Get, reactionSummaryPath);
+        var missingSummary = await SendAsync(client, key, supervisor, HttpMethod.Get,
+            $"{path}/messages/{Guid.NewGuid()}/reactions");
+        var ownReaction = ownSummary.Payload.GetProperty("reactions").EnumerateArray()
+            .Single(item => item.GetProperty("emoji").GetString() == "👍");
+        var observerView = readOnlySummary.Payload.GetProperty("reactions").EnumerateArray()
+            .Single(item => item.GetProperty("emoji").GetString() == "👍");
+        Record(assertions, "collaboration.interaction.scoped-reaction-summary",
+            ownSummary.StatusCode == HttpStatusCode.OK &&
+            readOnlySummary.StatusCode == HttpStatusCode.OK &&
+            missingSummary.StatusCode == HttpStatusCode.NotFound &&
+            ownSummary.Payload.GetProperty("canReact").GetBoolean() &&
+            !readOnlySummary.Payload.GetProperty("canReact").GetBoolean() &&
+            ownReaction.GetProperty("count").GetInt32() == 1 &&
+            ownReaction.GetProperty("reactedByMe").GetBoolean() &&
+            observerView.GetProperty("count").GetInt32() == 1 &&
+            !observerView.GetProperty("reactedByMe").GetBoolean() &&
+            !ownSummary.Payload.ToString().Contains("actorUserId", StringComparison.Ordinal),
+            $"owner={(int)ownSummary.StatusCode};reader={(int)readOnlySummary.StatusCode}");
+
+        var removal = await SendAsync(client, key, supervisor, HttpMethod.Delete, reactionPath);
+        var afterRemoval = await SendAsync(client, key, supervisor, HttpMethod.Get, reactionSummaryPath);
+        Record(assertions, "collaboration.interaction.reaction-removal-reflects-in-summary",
+            removal.StatusCode == HttpStatusCode.NoContent &&
+            afterRemoval.StatusCode == HttpStatusCode.OK &&
+            !afterRemoval.Payload.GetProperty("reactions").EnumerateArray().Any(),
+            $"remove={(int)removal.StatusCode};read={(int)afterRemoval.StatusCode}");
+
         var supervisorPin = await SendAsync(client, key, supervisor, HttpMethod.Put,
             $"{path}/messages/{originalId}/pin");
         var pin = await SendAsync(client, key, controller, HttpMethod.Put,

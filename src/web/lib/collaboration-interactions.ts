@@ -14,6 +14,69 @@ async function checked(response: Response): Promise<Response> {
   return response;
 }
 
+export const PROJECT_REACTION_EMOJIS = ["👍", "✅", "⚠️", "❤️"] as const;
+export type ProjectReactionEmoji = (typeof PROJECT_REACTION_EMOJIS)[number];
+
+export interface ProjectMessageReaction {
+  readonly emoji: ProjectReactionEmoji;
+  readonly count: number;
+  readonly reactedByMe: boolean;
+}
+
+export interface ProjectMessageReactionsView {
+  readonly canReact: boolean;
+  readonly reactions: readonly ProjectMessageReaction[];
+}
+
+function messageReactionsUrl(apiBaseUrl: string, projectId: string, messageId: string): string {
+  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(messageId)) {
+    throw new Error("شناسه پیام معتبر نیست.");
+  }
+  return `${roomUrl(apiBaseUrl, projectId)}/messages/${encodeURIComponent(messageId)}/reactions`;
+}
+
+export async function loadProjectMessageReactions(apiBaseUrl: string, projectId: string,
+  messageId: string, signal?: AbortSignal): Promise<ProjectMessageReactionsView> {
+  const response = await checked(await fetch(messageReactionsUrl(apiBaseUrl, projectId, messageId),
+    { cache: "no-store", signal }));
+  const value = await response.json() as {
+    messageId?: string; canReact?: boolean; reactions?: ProjectMessageReaction[];
+  };
+  if (value?.messageId?.toLowerCase() !== messageId.toLowerCase() ||
+      typeof value.canReact !== "boolean" ||
+      !Array.isArray(value.reactions) || value.reactions.length > PROJECT_REACTION_EMOJIS.length ||
+      value.reactions.some((reaction) => !reaction ||
+        !PROJECT_REACTION_EMOJIS.some((emoji) => emoji === reaction.emoji) ||
+        !Number.isSafeInteger(reaction.count) || reaction.count < 1 ||
+        typeof reaction.reactedByMe !== "boolean" ||
+        (reaction.reactedByMe && reaction.count < 1)) ||
+      new Set(value.reactions.map((reaction) => reaction.emoji)).size !== value.reactions.length) {
+    throw new Error("وضعیت واکنش‌های پیام معتبر نیست.");
+  }
+  return {
+    canReact: value.canReact,
+    reactions: PROJECT_REACTION_EMOJIS.map((emoji) =>
+      value.reactions!.find((reaction) => reaction.emoji === emoji) ??
+        { emoji, count: 0, reactedByMe: false }),
+  };
+}
+
+export async function setProjectMessageReaction(apiBaseUrl: string, projectId: string,
+  messageId: string, emoji: ProjectReactionEmoji, reacted: boolean): Promise<void> {
+  if (!PROJECT_REACTION_EMOJIS.some((allowed) => allowed === emoji)) {
+    throw new Error("این واکنش پشتیبانی نمی‌شود.");
+  }
+  const response = await checked(await fetch(
+    `${messageReactionsUrl(apiBaseUrl, projectId, messageId)}/${encodeURIComponent(emoji)}`,
+    { method: reacted ? "PUT" : "DELETE", cache: "no-store" }));
+  if (!reacted) return;
+  const result = await response.json() as { messageId?: string; emoji?: string; reacted?: boolean };
+  if (result?.messageId?.toLowerCase() !== messageId.toLowerCase() ||
+      result.emoji !== emoji || result.reacted !== true) {
+    throw new Error("تأیید واکنش پیام معتبر نیست.");
+  }
+}
+
 export async function searchProjectConversation(apiBaseUrl: string, projectId: string,
   query: string): Promise<readonly ProjectConversationMessage[]> {
   const term = query.trim();

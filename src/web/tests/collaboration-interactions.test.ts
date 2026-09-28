@@ -2,10 +2,52 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
-  loadProjectConversationUnread, markProjectConversationRead, searchProjectConversation,
+  loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
+  searchProjectConversation, setProjectMessageReaction,
 } from "../lib/collaboration-interactions.ts";
 
 const projectId = "10000000-0000-4000-8000-000000000001";
+const messageId = "10000000-0000-4000-8000-000000000011";
+
+test("reaction summary verifies message scope and restores the four supported choices", async () => {
+  const previous = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => Response.json({ messageId, canReact: true,
+      reactions: [{ emoji: "👍", count: 2, reactedByMe: true }] });
+    const view = await loadProjectMessageReactions("/api/pmcs", projectId, messageId);
+    assert.equal(view.canReact, true);
+    assert.deepEqual(view.reactions.map(({ emoji, count, reactedByMe }) =>
+      [emoji, count, reactedByMe]), [
+      ["👍", 2, true], ["✅", 0, false], ["⚠️", 0, false], ["❤️", 0, false],
+    ]);
+    globalThis.fetch = async () => Response.json({ messageId: projectId, canReact: true, reactions: [] });
+    await assert.rejects(loadProjectMessageReactions("/api/pmcs", projectId, messageId), /واکنش‌های پیام معتبر/u);
+    globalThis.fetch = async () => Response.json({ messageId, canReact: true,
+      reactions: [{ emoji: "👍", count: 0, reactedByMe: true }] });
+    await assert.rejects(loadProjectMessageReactions("/api/pmcs", projectId, messageId), /واکنش‌های پیام معتبر/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("reaction mutations use the scoped endpoint and respect permission loss", async () => {
+  const previous = globalThis.fetch;
+  const calls: Array<{ url: string; method?: string }> = [];
+  try {
+    globalThis.fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method });
+      return init?.method === "DELETE" ? new Response(null, { status: 204 }) :
+        Response.json({ messageId, emoji: "⚠️", reacted: true });
+    };
+    await setProjectMessageReaction("/api/pmcs", projectId, messageId, "⚠️", true);
+    await setProjectMessageReaction("/api/pmcs", projectId, messageId, "⚠️", false);
+    assert.equal(calls[0].method, "PUT");
+    assert.equal(calls[1].method, "DELETE");
+    assert.equal(calls[0].url, calls[1].url);
+    assert.match(calls[0].url, new RegExp(`${projectId}/collaboration/messages/${messageId}/reactions/%E2%9A%A0%EF%B8%8F$`, "u"));
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(loadProjectMessageReactions("/api/pmcs", projectId, messageId),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+  } finally { globalThis.fetch = previous; }
+});
 
 test("project search encodes a bounded query and rejects another project's messages", async () => {
   const previous = globalThis.fetch;

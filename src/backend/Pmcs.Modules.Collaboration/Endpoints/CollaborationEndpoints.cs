@@ -32,6 +32,7 @@ internal static partial class CollaborationEndpoints
         group.MapPut("/read-cursor", AdvanceReadCursorAsync);
         group.MapPut("/messages/{messageId:guid}/reactions/{emoji}", AddReactionAsync);
         group.MapDelete("/messages/{messageId:guid}/reactions/{emoji}", RemoveReactionAsync);
+        group.MapGet("/messages/{messageId:guid}/reactions", GetReactionsAsync);
         group.MapPut("/messages/{messageId:guid}/pin", PinMessageAsync);
         group.MapDelete("/messages/{messageId:guid}/pin", UnpinMessageAsync);
         group.MapPut("/messages/{messageId:guid}/attachments/{documentId:guid}", AttachDocumentAsync);

@@ -184,3 +184,56 @@ test("project Chat searches, advances read cursor, and replies within the same r
   await expect(page.getByText("پیام در گفت‌وگوی پروژه ثبت شد.")).toBeVisible();
   expect(replyTo).toBe(firstMessageId);
 });
+
+test("project reactions persist across reload, allow read-only viewing and clear on revoked access", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let reacted = false;
+  let canReact = true;
+  let revoked = false;
+  const mutations: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام برای واکنش", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/reactions`,
+    (route) => route.fulfill(revoked ? { status: 403 } : { status: 200,
+      contentType: "application/json", body: JSON.stringify({ messageId, canReact,
+        reactions: reacted ? [{ emoji: "👍", count: 1, reactedByMe: true }] : [] }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/reactions/*`,
+    (route) => {
+      mutations.push(route.request().method());
+      reacted = route.request().method() === "PUT";
+      return route.fulfill(reacted ? { status: 200, contentType: "application/json",
+        body: JSON.stringify({ messageId, emoji: "👍", reacted: true }) } : { status: 204 });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  const thumb = page.getByRole("button", { name: "👍، ۰ واکنش" });
+  await expect(thumb).toHaveAttribute("aria-pressed", "false");
+  await thumb.click();
+  await expect(page.getByRole("button", { name: "👍، ۱ واکنش" })).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۱ واکنش" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "👍، ۱ واکنش" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۰ واکنش" })).toHaveAttribute("aria-pressed", "false");
+  expect(mutations).toEqual(["PUT", "DELETE"]);
+
+  canReact = false;
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۰ واکنش" })).toBeDisabled();
+  await expect(page.getByText("نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.")).toBeVisible();
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام برای واکنش")).toHaveCount(0);
+});

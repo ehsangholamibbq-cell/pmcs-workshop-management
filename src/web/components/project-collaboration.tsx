@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
@@ -9,8 +9,9 @@ import {
 } from "@/lib/collaboration-room";
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
-  loadProjectConversationUnread, markProjectConversationRead, searchProjectConversation,
-  type ProjectConversationUnread,
+  loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
+  searchProjectConversation, setProjectMessageReaction,
+  type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
   enqueueCollaborationMessage, listQueuedCollaborationMessages, syncCollaborationMessages,
@@ -35,6 +36,14 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [searchResults, setSearchResults] = useState<readonly ProjectConversationMessage[] | null>(null);
   const [searchStatus, setSearchStatus] = useState("");
   const [unread, setUnread] = useState<ProjectConversationUnread | null>(null);
+
+  const closeRestrictedConversation = useCallback((status: number) => {
+    setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+    setDraft("");
+    setReplyTo(null);
+    setSearchResults(null);
+    setUnread(null);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -244,6 +253,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     {message.editedAt && !message.deletedAt && !message.redactedAt && <small>ویرایش‌شده</small>}
                     {message.pinnedAt && <small>سنجاق‌شده</small>}
                     {!message.deletedAt && !message.redactedAt &&
+                      <ProjectMessageReactions projectId={projectId} messageId={message.id}
+                        refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
+                    {!message.deletedAt && !message.redactedAt &&
                       <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
                         پاسخ به پیام
                       </button>}
@@ -271,4 +283,67 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       </section>
     </main>
   );
+}
+
+function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessLoss }: {
+  readonly projectId: string;
+  readonly messageId: string;
+  readonly refreshToken: number;
+  readonly onAccessLoss: (status: number) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [view, setView] = useState<ProjectMessageReactionsView | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const controller = new AbortController();
+    void loadProjectMessageReactions("/api/pmcs", projectId, messageId, controller.signal)
+      .then((result) => { if (!controller.signal.aborted) { setView(result); setError(""); } })
+      .catch((failure: unknown) => {
+        if (controller.signal.aborted) return;
+        if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+        else setError("دریافت واکنش‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+      });
+    return () => controller.abort();
+  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+
+  async function toggle(emoji: ProjectReactionEmoji, reactedByMe: boolean) {
+    if (!view?.canReact || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await setProjectMessageReaction("/api/pmcs", projectId, messageId, emoji, !reactedByMe);
+      setView(await loadProjectMessageReactions("/api/pmcs", projectId, messageId));
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+      else setError("ثبت واکنش کامل نشد؛ دوباره تلاش کنید.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <div className="collaboration-reactions">
+    <button className="secondary-button" type="button" aria-expanded={expanded}
+      aria-controls={`reactions-${messageId}`}
+      onClick={() => { setExpanded((value) => !value); setView(null); setError(""); }}>
+      واکنش‌ها
+    </button>
+    {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel"
+      aria-label="واکنش‌های همین پیام">
+      {!view && !error && <span role="status">در حال دریافت واکنش‌ها…</span>}
+      {view && <>
+        {view.reactions.map((reaction) => <button key={reaction.emoji} type="button"
+          className="collaboration-reaction-button" aria-pressed={reaction.reactedByMe}
+          aria-label={`${reaction.emoji}، ${reaction.count.toLocaleString("fa-IR")} واکنش`}
+          disabled={!view.canReact || busy}
+          onClick={() => void toggle(reaction.emoji, reaction.reactedByMe)}>
+          <span aria-hidden="true">{reaction.emoji}</span> {reaction.count.toLocaleString("fa-IR")}
+        </button>)}
+        {!view.canReact && <span>نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.</span>}
+      </>}
+      {error && <span role="alert">{error}</span>}
+    </div>}
+  </div>;
 }
