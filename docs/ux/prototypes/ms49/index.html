@@ -160,6 +160,12 @@
     confirm.addEventListener("change", () => { action.disabled = !confirm.checked; });
     action.addEventListener("click", () => { document.getElementById("dialog-result").textContent = "تأیید نمایشی انجام شد؛ هیچ درخواستی صادر نشد."; action.disabled = true; });
     close.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const first = confirm, last = close;
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
     dialog.addEventListener("close", () => open.focus());
     toggle.addEventListener("click", () => { const expanded = toggle.getAttribute("aria-expanded") !== "true"; toggle.setAttribute("aria-expanded", String(expanded)); toggle.textContent = expanded ? "بستن فهرست بخش‌ها" : "باز کردن فهرست بخش‌ها"; nav.dataset.open = String(expanded); });
     nav.addEventListener("click", (event) => { if (event.target.closest("a") && toggle.getAttribute("aria-expanded") === "true") toggle.click(); });
