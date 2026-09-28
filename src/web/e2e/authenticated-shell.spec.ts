@@ -57,6 +57,8 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
     element.scrollWidth > element.clientWidth)).toBe(true);
   const profileNavigation = mobileSidebar.getByRole("link", { name: "پروفایل من" });
   await profileNavigation.focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
   await expect(profileNavigation).toHaveCSS("outline-style", "solid");
   await expect(profileNavigation).toHaveCSS("white-space", "nowrap");
 });
