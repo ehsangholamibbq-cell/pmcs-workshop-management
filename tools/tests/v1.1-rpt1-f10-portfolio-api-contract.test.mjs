@@ -11,7 +11,7 @@ test("F10 catalog is Portfolio scoped and the project catalog remains F01-F09", 
   assert.match(migration, /Version => "20260927-012"[\s\S]*'portfolio-summary-certified'[\s\S]*'Portfolio'/u);
   assert.match(migration, /portfolio\.read[\s\S]*project-state\.read[\s\S]*pmcs\.reporting\.portfolio-summary\.parameters\/v1/u);
   assert.doesNotMatch(policy, /PortfolioSummaryReportRuntimeContract\.DefinitionCode/u);
-  assert.match(db, /canonical migration ledger size[\s\S]*?"60"[\s\S]*portfolio summary catalog migration identity/u);
+  assert.match(db, /canonical migration ledger size[\s\S]*?"62"[\s\S]*portfolio summary catalog migration identity/u);
 });
 
 test("F10 tenant API pins cohort and mask, strictly accepts empty parameters and hides other runs", () => {

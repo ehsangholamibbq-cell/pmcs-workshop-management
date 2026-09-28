@@ -42,6 +42,8 @@ internal static partial class CollaborationEndpoints
         group.MapPost("/messages/{messageId:guid}/redact", RedactMessageAsync);
         group.MapPut("/messages/{messageId:guid}/legal-hold", SetLegalHoldAsync);
         group.MapGet("/messages/{messageId:guid}/history", GetMessageHistoryAsync);
+        group.MapPost("/messages/{messageId:guid}/conversions", ConvertMessageAsync);
+        group.MapGet("/messages/{messageId:guid}/conversions", ListConversionsAsync);
     }
 
     private static async Task<IResult> GetRoomAsync(

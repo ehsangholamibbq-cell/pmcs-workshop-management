@@ -14,7 +14,8 @@ public sealed class ManagementAction : AggregateRoot
 
     public Guid ProjectId { get; private set; }
 
-    public Guid SourceFactId { get; private set; }
+    public Guid? SourceFactId { get; private set; }
+    public Guid? SourceMessageId { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
 
@@ -91,6 +92,20 @@ public sealed class ManagementAction : AggregateRoot
             ReportingHistoryJson = GovernanceReportingHistory.Start(createdAt,
                 ManagementActionStatus.Open.ToString(), dueDate, priority.ToString())
         };
+    }
+
+    public static ManagementAction CreateFromMessage(
+        Guid id, Guid tenantId, Guid projectId, Guid sourceMessageId,
+        string title, string? description, Guid assigneeUserId,
+        string assigneeDisplayName, DateOnly dueDate, ActionPriority priority,
+        Guid createdBy, DateTimeOffset createdAt)
+    {
+        var action = Create(id, tenantId, projectId, sourceMessageId, title,
+            description, assigneeUserId, assigneeDisplayName, dueDate, priority,
+            createdBy, createdAt);
+        action.SourceFactId = null;
+        action.SourceMessageId = sourceMessageId;
+        return action;
     }
 
     public void Transition(

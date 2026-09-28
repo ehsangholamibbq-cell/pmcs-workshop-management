@@ -17,7 +17,7 @@ public sealed record TransitionActionRequest(long BaseRevision, ManagementAction
 public sealed record ManagementActionResponse(
     Guid Id,
     Guid ProjectId,
-    Guid SourceFactId,
+    Guid? SourceFactId,
     string Title,
     string? Description,
     Guid AssigneeUserId,
@@ -28,7 +28,8 @@ public sealed record ManagementActionResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? LastChangedAt,
     DateTimeOffset? CompletedAt,
-    long Revision)
+    long Revision,
+    Guid? SourceMessageId)
 {
     internal static ManagementActionResponse From(ManagementAction action) => new(
         action.Id,
@@ -44,7 +45,8 @@ public sealed record ManagementActionResponse(
         action.CreatedAt,
         action.LastChangedAt,
         action.CompletedAt,
-        action.Revision);
+        action.Revision,
+        action.SourceMessageId);
 }
 
 public sealed record AttentionDismissalResponse(

@@ -12,6 +12,7 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
     public DbSet<ProjectMessageAttachment> Attachments => Set<ProjectMessageAttachment>();
     public DbSet<ProjectMessageRevision> Revisions => Set<ProjectMessageRevision>();
     public DbSet<ProjectModerationRecord> ModerationRecords => Set<ProjectModerationRecord>();
+    public DbSet<ProjectMessageConversion> Conversions => Set<ProjectMessageConversion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,6 +119,25 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
             builder.Property(item => item.Reason).HasColumnName("reason").HasMaxLength(500);
             builder.Property(item => item.ActorUserId).HasColumnName("actor_user_id");
             builder.Property(item => item.OccurredAt).HasColumnName("occurred_at");
+        });
+        modelBuilder.Entity<ProjectMessageConversion>(builder =>
+        {
+            builder.ToTable("message_conversions");
+            builder.HasKey(item => item.Id);
+            builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(item => item.TenantId).HasColumnName("tenant_id");
+            builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.MessageId).HasColumnName("message_id");
+            builder.Property(item => item.MessageRevision).HasColumnName("message_revision");
+            builder.Property(item => item.DestinationType).HasColumnName("destination_type").HasMaxLength(40);
+            builder.Property(item => item.DestinationId).HasColumnName("destination_id");
+            builder.Property(item => item.DestinationReference).HasColumnName("destination_reference").HasMaxLength(500);
+            builder.Property(item => item.DocumentReferencesJson).HasColumnName("document_references_json").HasColumnType("jsonb");
+            builder.Property(item => item.RequestHash).HasColumnName("request_hash").HasMaxLength(64);
+            builder.Property(item => item.ConfirmedBy).HasColumnName("confirmed_by");
+            builder.Property(item => item.ConfirmedAt).HasColumnName("confirmed_at");
+            builder.HasIndex(item => new { item.TenantId, item.ProjectId,
+                item.DestinationType, item.DestinationId }).IsUnique();
         });
     }
 }

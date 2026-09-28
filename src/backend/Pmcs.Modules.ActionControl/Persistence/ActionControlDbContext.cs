@@ -27,6 +27,7 @@ internal sealed class ActionControlDbContext(DbContextOptions<ActionControlDbCon
             builder.Property(x => x.TenantId).HasColumnName("tenant_id");
             builder.Property(x => x.ProjectId).HasColumnName("project_id");
             builder.Property(x => x.SourceFactId).HasColumnName("source_fact_id");
+            builder.Property(x => x.SourceMessageId).HasColumnName("source_message_id");
             builder.Property(x => x.Title).HasColumnName("title").HasMaxLength(240);
             builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(2_000);
             builder.Property(x => x.AssigneeUserId).HasColumnName("assignee_user_id");

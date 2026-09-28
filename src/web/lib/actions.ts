@@ -6,7 +6,8 @@ export type ManagementActionStatus = "Open" | "InProgress" | "Blocked" | "Done" 
 export interface ManagementActionModel {
   readonly id: string;
   readonly projectId: string;
-  readonly sourceFactId: string;
+  readonly sourceFactId: string | null;
+  readonly sourceMessageId: string | null;
   readonly title: string;
   readonly description: string | null;
   readonly assigneeUserId: string;

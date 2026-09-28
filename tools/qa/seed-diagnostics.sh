@@ -156,3 +156,14 @@ stop_api
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
 ./tools/qa/verify-sync-database.sh
+
+# Conversion fixtures are created after the reporting Golden and baseline
+# database assertions, so new official Action/Issue rows cannot change them.
+start_api false Unconfigured
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-action-conversions
+stop_api
+conversion_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align --command "select (select count(*) from collaboration.message_conversions where project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from action_control.actions where id = 'ca110000-0000-4000-8000-000000000201' and source_fact_id is null and source_message_id is not null)::text || '|' || (select count(*) from action_control.issues where id = 'ca110000-0000-4000-8000-000000000202' and source_module = 'collaboration' and source_revision = 1)::text || '|' || (select count(*) from foundation.audit_events where event_type in ('ProjectChatConvertedToAction','ProjectChatConvertedToIssue') and project_id = '33333333-3333-3333-3333-333333333333')::text;")"
+if [[ "${conversion_state}" != "2|1|1|2" ]]; then
+  echo "Collaboration conversion lineage and owner state diverged: ${conversion_state}." >&2
+  exit 1
+fi

@@ -87,7 +87,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "60" \
+  "62" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -109,6 +109,16 @@ expect_equal \
   "collaboration governance migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'collaboration' and version = '20260928-004';"
+
+expect_equal \
+  "collaboration conversion lineage migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'collaboration' and version = '20260928-005';"
+
+expect_equal \
+  "action source distinction migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'action-control' and version = '20260928-004';"
 
 expect_equal \
   "collaboration stable retry, concurrent send and live recovery yield distinct messages" \
