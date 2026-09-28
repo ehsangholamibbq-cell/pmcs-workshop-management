@@ -913,7 +913,7 @@ test("RPT1-F03 connects its checkpointed semantic runtime and renderers without 
   assert.match(matrix, /## ۲۸\.[\s\S]*Golden matrix هفده‌سناریویی/u);
   assert.match(matrix, /## ۳۰\.[\s\S]*Renderer\/Golden خانواده F03/u);
   assert.match(matrix, /## ۳۱\.[\s\S]*Catalog\/API\/Worker wiring متصل خانواده F03/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(registry, /Slice 07 MS06[\s\S]*Run 146[\s\S]*Runtime not implemented/u);
   assert.match(canonical, /PMCS-RPT1-F03-SEMANTIC-001 v1\.3\.1/u);
   assert.match(rootReadme, /F03 متصل و checkpointed/u);
@@ -1133,7 +1133,7 @@ test("RPT1-F04 keeps bounded semantics while its connected pipeline remains defa
   assert.match(matrix, /## ۳۳\.[\s\S]*Runtime Core محدود خانواده F04/u);
   assert.match(matrix, /## ۳۴\.[\s\S]*Renderer\/Golden خانواده F04/u);
   assert.match(matrix, /## ۳۵\.[\s\S]*اتصال Catalog\/API\/Worker خانواده F04/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(registry, /Slice 07 MS10[\s\S]*Run 158[\s\S]*Runtime not implemented/u);
   assert.match(registry, /Slice 07 MS13[\s\S]*4c48c03aad126a594e5328fc7995a72728ba2274[\s\S]*Run 169/u);
   assert.match(canonical, /F04 Connected Source MS13:[\s\S]*4c48c03aad126a594e5328fc7995a72728ba2274[\s\S]*Run 169/u);
@@ -1270,7 +1270,7 @@ test("RPT1-F04 Runtime Core records the S07-MS11 safe checkpoint without opening
   assert.match(checkpoint, /هیچ گزارش F04 هنوز از API قابل ایجاد، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS11-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط قرارداد[\s\S]*Template\/Renderer\/Layout/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.43\.0` \| ثبت Safe Checkpoint `S07-MS11`/u);
   assert.match(registry, /Slice 07 MS11[\s\S]*deb1571ec66d820868e8f4b77b631471e3c8207c[\s\S]*Run 163/u);
   assert.match(canonical, /F04 Runtime Core Source:[\s\S]*deb1571ec66d820868e8f4b77b631471e3c8207c[\s\S]*Run 163/u);
@@ -1326,7 +1326,7 @@ test("RPT1-F04 Renderer and Golden record the S07-MS12 safe checkpoint without o
   assert.match(checkpoint, /هیچ گزارش F04 هنوز از API قابل ایجاد، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS12-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Catalog\/Template[\s\S]*Worker wiring/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.45\.0` \| ثبت Safe Checkpoint `S07-MS12`/u);
   assert.match(registry, /Slice 07 MS12[\s\S]*6a717f10e4bff167ad7e2643313008f5afcc8264[\s\S]*Run 167/u);
   assert.match(canonical, /F04 Renderer\/Golden Source:[\s\S]*6a717f10e4bff167ad7e2643313008f5afcc8264[\s\S]*Run 167/u);
@@ -1379,7 +1379,7 @@ test("RPT1-F04 Catalog API and Worker record the S07-MS13 connected safe checkpo
   assert.match(checkpoint, /Phase1Enabled=false[\s\S]*PdfLicense=Unconfigured/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS13-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی باید فقط با DoR[\s\S]*`RPT1-F05`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.46\.0` \| ثبت Safe Checkpoint `S07-MS13`/u);
   assert.match(registry, /Slice 07 MS13[\s\S]*4c48c03aad126a594e5328fc7995a72728ba2274[\s\S]*Run 169/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -1466,7 +1466,7 @@ test("RPT1-F05 keeps the certified financial position contract aligned with its 
   assert.match(api, /خانواده F05 روی API متصل — Safe Checkpoint/u);
   assert.match(security, /سیاست ثابت F05/u);
   assert.match(matrix, /## ۳۶\.[\s\S]*Golden matrix دقیقاً بیست‌وپنج‌سناریویی/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(registry, /Slice 07 MS14[\s\S]*Run 171[\s\S]*Runtime not implemented/u);
   assert.match(canonical, /`RPT1-F01` تا `RPT1-F10` checkpoint متصل دارند[\s\S]*UX2 و Production enablement بازند/u);
   assert.match(rootReadme, /F05 متصل و checkpointed برای وضعیت مالی/u);
@@ -1730,7 +1730,7 @@ test("RPT1-F05 Renderer and Golden record the S07-MS16 safe checkpoint without o
   assert.match(checkpoint, /هیچ گزارش F05 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS16-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Catalog\/Template[\s\S]*Worker dispatch متصل/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.50\.0` \| ثبت Safe Checkpoint `S07-MS16`[\s\S]*Run 178/u);
   assert.match(registry, /Slice 07 MS16[\s\S]*9ddf7f1d96324e7ffb22d2abec83071a6c087ec2[\s\S]*Run 178/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -1786,7 +1786,7 @@ test("RPT1-F05 Catalog API and Worker record the S07-MS17 connected safe checkpo
   assert.match(checkpoint, /Phase1Enabled=false[\s\S]*PdfLicense=Unconfigured/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS17-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی باید فقط با DoR[\s\S]*`RPT1-F06`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.51\.0` \| ثبت Connected Safe Checkpoint `S07-MS17`[\s\S]*Run 185/u);
   assert.match(registry, /Slice 07 MS17[\s\S]*6de1e9ac3b457426be5e50064d1767106cd50c39[\s\S]*Run 185/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2179,7 +2179,7 @@ test("RPT1-F06 Renderer and Golden record the S07-MS20 safe checkpoint without o
   assert.match(checkpoint, /هیچ گزارش F06 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS20-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Catalog\/Template[\s\S]*Worker\/Renderer/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.54\.0` \| ثبت Safe Checkpoint `S07-MS20`[\s\S]*Run 196/u);
   assert.match(registry, /Slice 07 MS20[\s\S]*fb88b94d6949e7780f5f40aa567e2ea3f187a6e8[\s\S]*Run 196/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2238,7 +2238,7 @@ test("RPT1-F06 Catalog API and Worker record the S07-MS21 connected safe checkpo
   assert.match(checkpoint, /Phase1Enabled=false[\s\S]*PdfLicense=Unconfigured/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS21-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی باید فقط با DoR[\s\S]*`RPT1-F07`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.55\.0` \| ثبت Connected Safe Checkpoint `S07-MS21`[\s\S]*Run 202/u);
   assert.match(registry, /Slice 07 MS21[\s\S]*df3879dd8b17403787154a398cc114b27c7172bc[\s\S]*Run 202/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2297,7 +2297,7 @@ test("RPT1-F06 Runtime Core records the S07-MS19 safe checkpoint without opening
   assert.match(checkpoint, /هیچ گزارش F06 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS19-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط قرارداد[\s\S]*Template\/Renderer\/Layout/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.53\.0` \| ثبت Safe Checkpoint `S07-MS19`[\s\S]*Run 192/u);
   assert.match(registry, /Slice 07 MS19[\s\S]*177a1d89a07c23b2ae446218e98556cfbcf57a21[\s\S]*Run 192/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2354,7 +2354,7 @@ test("RPT1-F06 semantic contract records the S07-MS18 safe checkpoint without cl
   assert.match(checkpoint, /هیچ Runtime identity\/schema[\s\S]*Migration[\s\S]*Renderer/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS18-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Runtime Core محدود[\s\S]*F06/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.52\.0` \| ثبت Safe Checkpoint `S07-MS18`[\s\S]*Run 188/u);
   assert.match(registry, /Slice 07 MS18[\s\S]*4c5d026466cb3f76f351221297540a0936337335[\s\S]*Run 188/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2411,7 +2411,7 @@ test("RPT1-F05 Runtime Core records the S07-MS15 safe checkpoint without opening
   assert.match(checkpoint, /هیچ گزارش F05 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS15-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط قرارداد[\s\S]*Template\/Renderer\/Layout/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.49\.0` \| ثبت Safe Checkpoint `S07-MS15`[\s\S]*Run 175/u);
   assert.match(registry, /Slice 07 MS15[\s\S]*77ad46cbac12b899116516b0a58665ae888b3bf2[\s\S]*Run 175/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -2467,7 +2467,7 @@ test("RPT1-F05 semantic contract preserves the historical S07-MS14 checkpoint", 
   assert.match(checkpoint, /هیچ گزارش F05 هنوز از API قابل ایجاد، اجرا، retry، مشاهده، verify یا دانلود نیست/u);
   assert.match(checkpoint, /Safe Resume Point اکنون `PMCS-V1\.1-RPT1-S07-MS14-C1`/u);
   assert.match(checkpoint, /Micro-Step بعدی فقط Runtime identity[\s\S]*Application Contract\/Projection/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.47\.0` \| ثبت Safe Checkpoint `S07-MS14`/u);
   assert.match(registry, /Slice 07 MS14[\s\S]*72fa88349d01edd4c6455eb0af1aebfdeced8c35[\s\S]*Run 171/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -3003,7 +3003,7 @@ test("RPT1-F07 semantic contract records the S07-MS22 safe checkpoint without Ru
   assert.match(checkpoint, /Contract Ready \/ Runtime Not Implemented/u);
   assert.match(contract, /MS26 Runtime\/Renderer\/historical producer connected/u);
   assert.equal((contract.match(/^\| `F07-[A-Z]\d{2}` \|/gmu) ?? []).length, 27);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.56\.0` \| ثبت Safe Checkpoint `S07-MS22`[\s\S]*Run 205/u);
   assert.match(registry, /Slice 07 MS22[\s\S]*11168534372487bff3cc798861ca036489b3dea0[\s\S]*Run 205/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -3063,7 +3063,7 @@ test("RPT1-F07 bounded Runtime Core records S07-MS23 evidence and preserves open
   assert.match(checkpoint, /گام بعدی `S07-MS24` فقط\s+Renderer contract و Golden قطعی PDF\/XLSX محدود F07/u);
   assert.match(checkpoint, /RFI\/Submittal.*`InsufficientData`/su);
   assert.match(contract, /MS26 Runtime\/Renderer\/historical producer connected/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(roadmap, /\| `1\.57\.0` \| ثبت Safe Checkpoint `S07-MS23`[\s\S]*Run 211/u);
   assert.match(registry, /Slice 07 MS23[\s\S]*7f66113d3fe091829747d1f5059eb8f16c82cb88[\s\S]*Run 211/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
@@ -3100,7 +3100,7 @@ test("RPT1-F07 bounded Renderer/Golden records MS24 and leaves connected wiring 
   assert.match(checkpoint, /HistoricalTransitionUnavailable/u);
   assert.match(checkpoint, /OfficialCount=null/u);
   assert.match(checkpoint, /Migration \/ Catalog \/ API \/ Worker change: None/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
   assert.match(canonical, /S07-MS31[\s\S]*F09 فقط contract ready است/u);
   assert.match(matrix, /## ۴۶\.[\s\S]*Run 215/u);
@@ -3184,7 +3184,7 @@ test("RPT1-F07 connected MS26 checkpoint pins green qualification and leaves F08
   assert.match(checkpoint, /`523\/523` C#[\s\S]*`50` Migration/u);
   assert.match(checkpoint, /TechnicalOffice[\s\S]*ContractAdministrator/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS27/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS27/u);
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۴۸\.[\s\S]*17\/17/u);
   assert.match(contract, /S07-MS26 — اتصال مستقل[\s\S]*technical\.confidential\.read/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
@@ -3204,7 +3204,7 @@ test("RPT1-F08 MS27 semantic checkpoint pins owner boundary without runtime", ()
   assert.match(checkpoint, /Run 224 \(`36307100818`\)[\s\S]*هشت Job `success`/u);
   assert.match(contract, /MS27 contract-only Runtime \/ Renderer \/ Migration \/ Catalog \/ API \/ Worker change: None/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*Runtime Core محدود F08 در MS28/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*Runtime Core محدود F08 در MS28/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3229,7 +3229,7 @@ test("RPT1-F08 MS28 bounded owner source and Runtime Core pin green checkpoint",
   assert.match(builder, /SourceManifestSha256[\s\S]*SemanticSha256/u);
   assert.match(runtime, /"quality\.read", "hse\.read", "hse\.confidential\.read"/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS28/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS28/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3251,7 +3251,7 @@ test("RPT1-F08 MS29 Renderer and Golden pin green checkpoint", () => {
   assert.match(render, /ProjectQualityHseReport/u);
   assert.match(xlsx, /ProjectQualityHseReport/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS29/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS29/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3325,7 +3325,7 @@ test("RPT1-F08 MS30 connected checkpoint pins CI and F09 semantic exact next", (
   assert.match(checkpoint, /Run 237 \(`36310745011`\)[\s\S]*هشت Job `success`/u);
   assert.match(checkpoint, /Restore Drill `51` Migration[\s\S]*F08 `20\/20`[\s\S]*S07-MS31/u);
   assert.match(canonical, /Safe Resume Point قطعی فعلی آن `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*F08 Quality\/HSE Connected/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*F08 Quality\/HSE Connected/u);
   assert.match(api, /Status: F01–F09 connected[\s\S]*F10 open/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
@@ -3346,7 +3346,7 @@ test("RPT1-F09 MS31 pins a green semantic checkpoint and leaves Runtime unwired"
   assert.match(contract, /MS31 contract-only Runtime \/ Renderer \/ Migration \/ Catalog \/ API \/ Worker change: None/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
   assert.match(canonical, /گام بعدی طبق ترتیب Roadmap، `V1\.1-COL1` با DoR مستقل Project Collaboration/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*Run 239/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*Run 239/u);
   assert.match(matrix, /## ۵۳\.[\s\S]*۲۷ fixture مستقل[\s\S]*Migration همچنان ۵۱/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
@@ -3370,7 +3370,7 @@ test("RPT1-F09 MS32 pins bounded owner Source and Runtime Core after eight green
   assert.match(snapshot, /MaximumSnapshotBytes[\s\S]*CountMatches/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
   assert.match(canonical, /گام بعدی طبق ترتیب Roadmap، `V1\.1-COL1` با DoR مستقل Project Collaboration/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*Run 242/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*Run 242/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3394,7 +3394,7 @@ test("RPT1-F09 MS33 pins five-section PDF XLSX and immutable golden evidence", (
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۵۵\.[\s\S]*Run 245/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
   assert.match(canonical, /گام بعدی طبق ترتیب Roadmap، `V1\.1-COL1` با DoR مستقل Project Collaboration/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*Run 245/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*Run 245/u);
   assert.equal(settings.ReportingCenter.Phase1Enabled, false);
   assert.equal(settings.ReportingCenter.OutputAccessEnabled, false);
   assert.equal(settings.ReportingCenter.WorkerEnabled, false);
@@ -3413,7 +3413,7 @@ test("RPT1-F09 MS36 connected checkpoint pins eight green jobs and F10 as exact 
   assert.match(checkpoint, /Run 252 \(`36331528136`\)[\s\S]*هشت Job `success`[\s\S]*18\/18[\s\S]*S07-MS37/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
   assert.match(canonical, /گام بعدی طبق ترتیب Roadmap، `V1\.1-COL1` با DoR مستقل Project Collaboration/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS36[\s\S]*Run 252/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS36[\s\S]*Run 252/u);
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۵۸\.[\s\S]*18\/18/u);
   assert.match(architecture, /نسخه: `1\.57\.0`[\s\S]*F09 S07-MS36 Connected Pipeline/u);
   assert.match(api, /Status: F01–F09 connected[\s\S]*۱\.۱۳ خانواده F09/u);
@@ -3431,7 +3431,7 @@ test("RPT1-F10 MS37 semantic checkpoint records eight green jobs without claimin
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS37-C1[\s\S]*bb17a37fa19b06d111443fad178c2589e376bb25[\s\S]*82eba0ffebc1c631281a78727f4b2325a50f0ecb/u);
   assert.match(checkpoint, /Run 254 \(`36333343004`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS38/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS37[\s\S]*Run 254/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS37[\s\S]*Run 254/u);
 });
 
 
@@ -3443,7 +3443,7 @@ test("RPT1-F10 MS38 tenant scope checkpoint pins 55 migrations and eight green j
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS38-C1[\s\S]*ea5215e26ba382bdecd756adec1083dd3ef28d06[\s\S]*63e5542679e9d0427c6ec96ad7fa3404810f340d/u);
   assert.match(checkpoint, /Run 256 \(`36335141253`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS39/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS38[\s\S]*Run 256/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS38[\s\S]*Run 256/u);
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۶۰\.[\s\S]*544\/544/u);
 });
 
@@ -3455,7 +3455,7 @@ test("RPT1-F10 MS39 owner Runtime checkpoint pins eight green jobs and MS40", ()
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS39-C1[\s\S]*c45b72be7bc913a6dc65b656bea0188f7da0dc8c[\s\S]*00ad037a2eec41c2d5dbacfe0c186e04c4584cce/u);
   assert.match(checkpoint, /Run 261 \(`36338179481`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS40/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS39[\s\S]*Run 261/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS39[\s\S]*Run 261/u);
 });
 
 
@@ -3467,7 +3467,7 @@ test("RPT1-F10 MS40 renderer golden checkpoint pins full CI and MS41", () => {
   assert.match(checkpoint, /Run 264 \(`36340600926`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS41/u);
   assert.match(checkpoint, /a441575ad5f561d44a37d767dd2ef0c9ad16489edf26bee3a5f57aa297b09db9[\s\S]*6f221d2f8de5c4af8079aaec65a9d0c11c669036a5777767b3b263cdd69834ec/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS40[\s\S]*Run 264/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS40[\s\S]*Run 264/u);
 });
 
 
@@ -3478,7 +3478,7 @@ test("RPT1-F10 MS41 tenant API checkpoint pins 56 migrations and full CI", () =>
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS41-C1[\s\S]*c22f08778a4c9b523d926f1aedc9f8d9142655d4[\s\S]*3e5c6f93fae75200f3abba18b292eac4a17d3069/u);
   assert.match(checkpoint, /Run 266 \(`36343299949`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS42/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS41[\s\S]*Run 266/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS41[\s\S]*Run 266/u);
 });
 
 
@@ -3490,7 +3490,7 @@ test("RPT1-F10 MS42 tenant worker checkpoint pins connected documents and eight 
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS42-C1[\s\S]*7a8a560fec6da560aa6982f1b9f11fc253dafef4[\s\S]*0683b1cbe844a321862e3e25fe2aa4e01e93174c/u);
   assert.match(checkpoint, /Run 272 \(`36349571188`\)[\s\S]*هشت Job `success`[\s\S]*S07-MS43/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS42[\s\S]*Run 272/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS42[\s\S]*Run 272/u);
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۶۴\.[\s\S]*554\/554/u);
 });
 
@@ -3503,7 +3503,7 @@ test("RPT1-F10 MS43 connected checkpoint pins tenant output access and next Road
   assert.match(checkpoint, /PMCS-V1\.1-RPT1-S07-MS43-C1[\s\S]*84e4e76ca6173f834cec5ea481adc475e9dfd22f[\s\S]*033b2e4cc3652735b60b7fa9b849707906f8acc0/u);
   assert.match(checkpoint, /Run 275 \(`36352517816`\)[\s\S]*هشت Job `success`[\s\S]*V1\.1-COL1/u);
   assert.match(canonical, /RPT1 predecessor safe checkpoint \| `PMCS-V1\.1-RPT1-S07-MS43-C1`[\s\S]*F01 تا F10 End-to-End/u);
-  assert.match(roadmap, /نسخه سند: `1\.88\.0`[\s\S]*S07-MS43[\s\S]*Run 275/u);
+  assert.match(roadmap, /نسخه سند: `1\.89\.0`[\s\S]*S07-MS43[\s\S]*Run 275/u);
   assert.match(matrix, /نسخه: `1\.60\.0`[\s\S]*## ۶۵\.[\s\S]*130\/130/u);
   assert.match(architecture, /نسخه: `1\.57\.0`[\s\S]*F10 S07-MS43 Tenant OutputAccess/u);
 });
