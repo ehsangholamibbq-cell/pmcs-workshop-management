@@ -84,7 +84,17 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
 
   await page.goto("/admin/login-experience");
   await expect(page.getByRole("heading", { name: "مدیریت ظاهر صفحه ورود" })).toBeVisible();
+  await expect(page.locator(".pmcs-file-input-name")).toHaveText(["فایلی انتخاب نشده", "فایلی انتخاب نشده"]);
   await captureVisualBaseline(page, "18-login-appearance");
+  const logoInput = page.getByLabel("لوگو اختیاری");
+  await logoInput.setInputFiles({ name: "نمونه.png", mimeType: "image/png", buffer: Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXcAAAAASUVORK5CYII=", "base64") });
+  await expect(page.locator(".pmcs-file-input-name").first()).toHaveText("نمونه.png");
+  await captureVisualBaseline(page, "44-login-asset-selected");
+  await logoInput.focus();
+  await expect(page.locator(".pmcs-file-input-control").first()).toHaveCSS("outline-style", "solid");
+  await page.getByRole("button", { name: "حذف انتخاب" }).click();
+  await expect(page.locator(".pmcs-file-input-name").first()).toHaveText("فایلی انتخاب نشده");
 
   await page.goto("/project-bootstraps");
   await expect(page.getByRole("heading", { name: "ساخت از روی پروژهٔ موجود" })).toBeVisible();

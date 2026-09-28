@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ChangeEvent, type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import {
   enqueueDocumentUpload,
   syncPendingDocumentUploads,
@@ -21,6 +21,7 @@ import type {
 import { loadDocumentState, releaseOwnProfileImage } from "@/lib/member-profile";
 import { toUserMessage } from "@/lib/localization";
 import { SessionBadge, usePmcsSession } from "@/components/pmcs-session";
+import { PmcsFileInput } from "@/components/pmcs-file-input";
 
 export function LoginExperienceAdministration() {
   const session = usePmcsSession();
@@ -128,10 +129,6 @@ export function LoginExperienceAdministration() {
     }
   }
 
-  function selectFile(setter: (file: File | null) => void, event: ChangeEvent<HTMLInputElement>): void {
-    setter(event.target.files?.[0] ?? null);
-  }
-
   if (session.tenantRole !== "TenantAdministrator") {
     return <main className="auth-state"><div className="auth-state-card"><h1>دسترسی محدود</h1><p>مدیریت ظاهر ورود فقط برای مدیر سازمان مجاز است.</p><Link href="/portfolio">بازگشت</Link></div></main>;
   }
@@ -153,8 +150,10 @@ export function LoginExperienceAdministration() {
             <label>عنوان کوتاه<input value={eyebrow} maxLength={80} required onChange={(event) => setEyebrow(event.target.value)} /></label>
             <label>تیتر اصلی<input value={headline} maxLength={140} required onChange={(event) => setHeadline(event.target.value)} /></label>
             <label className="wide">متن همراه<textarea value={supportingText} maxLength={320} required onChange={(event) => setSupportingText(event.target.value)} /></label>
-            <label>لوگو اختیاری<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" onChange={(event) => selectFile(setLogo, event)} /></label>
-            <label>تصویر زمینه اختیاری<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" onChange={(event) => selectFile(setHero, event)} /></label>
+            <PmcsFileInput label="لوگو اختیاری" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              file={logo} disabled={isBusy} onFileChange={setLogo} />
+            <PmcsFileInput label="تصویر زمینه اختیاری" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              file={hero} disabled={isBusy} onFileChange={setHero} />
           </div>
           <div className="login-admin-preview" data-tone={surfaceTone} data-accent={accentPalette}>
             <span>{eyebrow}</span><strong>{headline}</strong><p>{supportingText}</p><small>{compositionLabel(compositionVariant)} · موشن {motionLabel(motionPolicy)}</small>
