@@ -37,6 +37,11 @@ internal static partial class CollaborationEndpoints
         group.MapPut("/messages/{messageId:guid}/attachments/{documentId:guid}", AttachDocumentAsync);
         group.MapGet("/messages/{messageId:guid}/attachments", ListAttachmentsAsync);
         group.MapGet("/messages/{messageId:guid}/attachments/{documentId:guid}/content", DownloadAttachmentAsync);
+        group.MapPatch("/messages/{messageId:guid}", EditMessageAsync);
+        group.MapPost("/messages/{messageId:guid}/delete", DeleteMessageAsync);
+        group.MapPost("/messages/{messageId:guid}/redact", RedactMessageAsync);
+        group.MapPut("/messages/{messageId:guid}/legal-hold", SetLegalHoldAsync);
+        group.MapGet("/messages/{messageId:guid}/history", GetMessageHistoryAsync);
     }
 
     private static async Task<IResult> GetRoomAsync(
@@ -146,7 +151,8 @@ internal static partial class CollaborationEndpoints
         {
             reply = await db.Messages.AsNoTracking().SingleOrDefaultAsync(item =>
                 item.Id == request.ReplyToMessageId.Value && item.TenantId == actor.TenantId &&
-                item.ProjectId == projectId, cancellationToken);
+                item.ProjectId == projectId && item.DeletedAt == null &&
+                item.RedactedAt == null, cancellationToken);
             if (reply is null) return Results.NotFound(new { code = "collaboration.reply.not_found" });
         }
         foreach (var mentionedUserId in mentions)
@@ -226,11 +232,15 @@ internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSeq
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,
-    DateTimeOffset? PinnedAt, Guid? PinnedBy)
+    DateTimeOffset? PinnedAt, Guid? PinnedBy, long Revision,
+    DateTimeOffset? EditedAt, DateTimeOffset? DeletedAt,
+    DateTimeOffset? RedactedAt, bool LegalHold)
 {
     public static ProjectMessageResponse From(ProjectMessage message) => new(
         message.Id, message.ProjectId, message.Sequence, message.AuthorUserId,
         message.ClientMessageId, message.Body, message.CreatedAt,
-        message.ReplyToMessageId, message.MentionedUserIds, message.PinnedAt, message.PinnedBy);
+        message.ReplyToMessageId, message.MentionedUserIds, message.PinnedAt, message.PinnedBy,
+        message.Revision, message.EditedAt, message.DeletedAt, message.RedactedAt,
+        message.LegalHold);
 }
 internal sealed record MessagePageResponse(IReadOnlyList<ProjectMessageResponse> Messages, long NextSequence);

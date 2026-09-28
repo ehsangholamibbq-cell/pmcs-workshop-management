@@ -26,7 +26,8 @@ internal static partial class CollaborationEndpoints
         if (gate is not null) return gate;
         var message = await db.Messages.AsNoTracking().SingleOrDefaultAsync(item =>
             item.Id == messageId && item.TenantId == actor.TenantId &&
-            item.ProjectId == projectId && item.AuthorUserId == actor.UserId,
+            item.ProjectId == projectId && item.AuthorUserId == actor.UserId &&
+            item.DeletedAt == null && item.RedactedAt == null,
             cancellationToken);
         if (message is null) return Results.NotFound();
         var released = (await documents.FindReleasedAsync(actor.TenantId, [documentId],
@@ -34,13 +35,23 @@ internal static partial class CollaborationEndpoints
         if (released is null || released.ProjectId != projectId ||
             released.OwnerType != DocumentOwnerType.ProjectChat || released.OwnerId != messageId)
             return Results.NotFound(new { code = "collaboration.attachment.not_released" });
-        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
+        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "collaboration.upload", cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var attached = ProjectMessageAttachment.Create(actor.TenantId, projectId,
             messageId, documentId, released.Sha256, released.VersionNumber,
             actor.UserId, clock.UtcNow);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        // Serialize attachment association with edit/delete/moderation of the owner.
+        var locked = await db.Database.ExecuteSqlInterpolatedAsync($"""
+            update collaboration.messages set revision = revision
+            where tenant_id = {actor.TenantId} and project_id = {projectId} and
+                id = {messageId} and author_user_id = {actor.UserId} and
+                deleted_at is null and redacted_at is null
+            """, cancellationToken);
+        if (locked != 1) return Results.NotFound();
         var inserted = await db.Database.ExecuteSqlInterpolatedAsync($"""
             insert into collaboration.message_attachments(id, tenant_id, project_id,
                 message_id, document_id, document_sha256, document_version,
@@ -94,7 +105,9 @@ internal static partial class CollaborationEndpoints
             .ToArrayAsync(cancellationToken);
         var released = await documents.FindReleasedAsync(actor.TenantId,
             attached.Select(item => item.DocumentId).ToArray(), cancellationToken);
-        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
+        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "collaboration.read", cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         return Results.Ok(released.Where(document =>
             document.ProjectId == projectId && document.OwnerType == DocumentOwnerType.ProjectChat &&
@@ -115,6 +128,8 @@ internal static partial class CollaborationEndpoints
         var gate = await GateAsync(projectId, "collaboration.read", runtime,
             actor, membership, permissions, projects, cancellationToken);
         if (gate is not null) return gate;
+        if (!await MessageExistsAsync(db, actor, projectId, messageId, cancellationToken))
+            return Results.NotFound();
         var attachment = await db.Attachments.AsNoTracking().SingleOrDefaultAsync(item =>
             item.TenantId == actor.TenantId && item.ProjectId == projectId &&
             item.MessageId == messageId && item.DocumentId == documentId,
@@ -132,8 +147,12 @@ internal static partial class CollaborationEndpoints
             : await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
                 projectId, "documents.read", cancellationToken);
         if (!allowed || !await membership.IsActiveAsync(actor.TenantId, projectId,
-                actor.UserId, cancellationToken))
+                actor.UserId, cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "collaboration.read", cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
+        if (!await MessageExistsAsync(db, actor, projectId, messageId, cancellationToken))
+            return Results.NotFound();
         await audit.WriteAsync(new AuditEntry(actor.TenantId, projectId, actor.UserId,
             "ProjectMessageDocumentDownloaded", "ProjectMessage", messageId.ToString(),
             clock.UtcNow, new Dictionary<string, object?>

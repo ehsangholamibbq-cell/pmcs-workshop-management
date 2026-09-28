@@ -146,4 +146,21 @@ public sealed class CollaborationMessageTests
             TenantId, ProjectId, messageId, documentId, "unknown", 1,
             ActorId, DateTimeOffset.UtcNow));
     }
+
+    [Fact]
+    public void EditAndTombstoneKeepPreviousContentInImmutableRevisions()
+    {
+        var message = ProjectMessage.Create(Guid.NewGuid(), TenantId, ProjectId,
+            1, ActorId, Guid.NewGuid(), "اصل", DateTimeOffset.UtcNow);
+        var first = message.Edit(1, "ویرایش", ActorId, DateTimeOffset.UtcNow);
+        Assert.Equal("اصل", first.Body);
+        Assert.Equal(1, first.FromRevision);
+        Assert.Equal(2, message.Revision);
+        var deleted = message.Tombstone(2, ActorId, DateTimeOffset.UtcNow);
+        Assert.Equal("ویرایش", deleted.Body);
+        Assert.Equal(3, message.Revision);
+        Assert.NotNull(message.DeletedAt);
+        Assert.Throws<DomainRuleException>(() => message.Edit(3, "دوباره", ActorId,
+            DateTimeOffset.UtcNow));
+    }
 }

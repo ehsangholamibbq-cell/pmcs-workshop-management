@@ -61,6 +61,7 @@ public sealed class CollaborationModule : IModule
         services.AddSingleton<IDatabaseMigration, CollaborationInitialMigration>();
         services.AddSingleton<IDatabaseMigration, CollaborationInteractionMigration>();
         services.AddSingleton<IDatabaseMigration, CollaborationAttachmentMigration>();
+        services.AddSingleton<IDatabaseMigration, CollaborationGovernanceMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapCollaborationEndpoints();

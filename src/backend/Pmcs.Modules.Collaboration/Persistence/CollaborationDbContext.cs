@@ -10,6 +10,8 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
     public DbSet<ProjectReaction> Reactions => Set<ProjectReaction>();
     public DbSet<ProjectReadCursor> ReadCursors => Set<ProjectReadCursor>();
     public DbSet<ProjectMessageAttachment> Attachments => Set<ProjectMessageAttachment>();
+    public DbSet<ProjectMessageRevision> Revisions => Set<ProjectMessageRevision>();
+    public DbSet<ProjectModerationRecord> ModerationRecords => Set<ProjectModerationRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +42,11 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
             builder.Property(item => item.MentionedUserIds).HasColumnName("mentioned_user_ids").HasColumnType("uuid[]");
             builder.Property(item => item.PinnedAt).HasColumnName("pinned_at");
             builder.Property(item => item.PinnedBy).HasColumnName("pinned_by");
+            builder.Property(item => item.Revision).HasColumnName("revision");
+            builder.Property(item => item.EditedAt).HasColumnName("edited_at");
+            builder.Property(item => item.DeletedAt).HasColumnName("deleted_at");
+            builder.Property(item => item.RedactedAt).HasColumnName("redacted_at");
+            builder.Property(item => item.LegalHold).HasColumnName("legal_hold");
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Sequence }).IsUnique();
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.AuthorUserId, item.ClientMessageId }).IsUnique();
         });
@@ -81,6 +88,36 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
             builder.Property(item => item.AttachedBy).HasColumnName("attached_by");
             builder.Property(item => item.AttachedAt).HasColumnName("attached_at");
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.DocumentId }).IsUnique();
+        });
+        modelBuilder.Entity<ProjectMessageRevision>(builder =>
+        {
+            builder.ToTable("message_revisions");
+            builder.HasKey(item => item.Id);
+            builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(item => item.TenantId).HasColumnName("tenant_id");
+            builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.MessageId).HasColumnName("message_id");
+            builder.Property(item => item.FromRevision).HasColumnName("from_revision");
+            builder.Property(item => item.Body).HasColumnName("body").HasMaxLength(4_000);
+            builder.Property(item => item.Action).HasColumnName("action").HasMaxLength(32);
+            builder.Property(item => item.ActorUserId).HasColumnName("actor_user_id");
+            builder.Property(item => item.OccurredAt).HasColumnName("occurred_at");
+            builder.HasIndex(item => new { item.TenantId, item.ProjectId,
+                item.MessageId, item.FromRevision }).IsUnique();
+        });
+        modelBuilder.Entity<ProjectModerationRecord>(builder =>
+        {
+            builder.ToTable("moderation_records");
+            builder.HasKey(item => item.Id);
+            builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(item => item.TenantId).HasColumnName("tenant_id");
+            builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.MessageId).HasColumnName("message_id");
+            builder.Property(item => item.MessageRevision).HasColumnName("message_revision");
+            builder.Property(item => item.Action).HasColumnName("action").HasMaxLength(32);
+            builder.Property(item => item.Reason).HasColumnName("reason").HasMaxLength(500);
+            builder.Property(item => item.ActorUserId).HasColumnName("actor_user_id");
+            builder.Property(item => item.OccurredAt).HasColumnName("occurred_at");
         });
     }
 }

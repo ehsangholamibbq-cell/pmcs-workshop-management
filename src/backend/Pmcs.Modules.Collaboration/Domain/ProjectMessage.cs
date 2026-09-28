@@ -21,6 +21,11 @@ public sealed class ProjectMessage
     public Guid[] MentionedUserIds { get; private set; } = [];
     public DateTimeOffset? PinnedAt { get; private set; }
     public Guid? PinnedBy { get; private set; }
+    public long Revision { get; private set; } = 1;
+    public DateTimeOffset? EditedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public DateTimeOffset? RedactedAt { get; private set; }
+    public bool LegalHold { get; private set; }
 
     public static ProjectMessage Create(
         Guid id, Guid tenantId, Guid projectId, long sequence,
@@ -82,6 +87,68 @@ public sealed class ProjectMessage
             throw new DomainRuleException("collaboration.pin.moderator.invalid", "Moderator identity is required.");
         PinnedBy = moderatorId;
         PinnedAt = at;
+    }
+
+    public ProjectMessageRevision Edit(long baseRevision, string? body,
+        Guid actorUserId, DateTimeOffset at)
+    {
+        EnsureWritable(baseRevision, actorUserId);
+        var normalized = NormalizeBody(body);
+        if (normalized == Body)
+            throw new DomainRuleException("collaboration.edit.no_change", "Message content is unchanged.");
+        var history = ProjectMessageRevision.Capture(this, "Edited", actorUserId, at);
+        Body = normalized;
+        EditedAt = at;
+        Revision++;
+        return history;
+    }
+
+    public ProjectMessageRevision Tombstone(long baseRevision, Guid actorUserId,
+        DateTimeOffset at)
+    {
+        EnsureWritable(baseRevision, actorUserId);
+        var history = ProjectMessageRevision.Capture(this, "Deleted", actorUserId, at);
+        Body = "پیام حذف شده است";
+        DeletedAt = at;
+        PinnedAt = null;
+        PinnedBy = null;
+        Revision++;
+        return history;
+    }
+
+    public ProjectMessageRevision Redact(long baseRevision, Guid moderatorId,
+        DateTimeOffset at)
+    {
+        EnsureWritable(baseRevision, moderatorId);
+        var history = ProjectMessageRevision.Capture(this, "Redacted", moderatorId, at);
+        Body = "پیام توسط ناظر پنهان شده است";
+        RedactedAt = at;
+        PinnedAt = null;
+        PinnedBy = null;
+        Revision++;
+        return history;
+    }
+
+    public void SetLegalHold(long baseRevision, bool enabled, Guid moderatorId)
+    {
+        EnsureRevision(baseRevision);
+        if (moderatorId == Guid.Empty || LegalHold == enabled)
+            throw new DomainRuleException("collaboration.hold.invalid", "A changed hold and moderator are required.");
+        LegalHold = enabled;
+        Revision++;
+    }
+
+    private void EnsureWritable(long baseRevision, Guid actorUserId)
+    {
+        EnsureRevision(baseRevision);
+        if (actorUserId == Guid.Empty || DeletedAt.HasValue || RedactedAt.HasValue)
+            throw new DomainRuleException("collaboration.message.not_writable", "Message is no longer writable.");
+    }
+
+    private void EnsureRevision(long baseRevision)
+    {
+        if (baseRevision != Revision)
+            throw new DomainRuleException("collaboration.message.revision.conflict", "Message revision changed.");
     }
 
     public void ClearPin()

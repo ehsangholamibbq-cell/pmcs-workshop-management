@@ -20,6 +20,7 @@ internal sealed class ProjectChatDocumentOwner(
             projectId, "collaboration.upload", cancellationToken) &&
         await db.Messages.AsNoTracking().AnyAsync(message =>
             message.TenantId == tenantId && message.ProjectId == projectId &&
-            message.Id == messageId && message.AuthorUserId == actorUserId,
+            message.Id == messageId && message.AuthorUserId == actorUserId &&
+            message.DeletedAt == null && message.RedactedAt == null,
             cancellationToken);
 }

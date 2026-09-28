@@ -29,6 +29,7 @@ internal static partial class CollaborationEndpoints
             .Replace("_", "\\_", StringComparison.Ordinal) + "%";
         var matches = await db.Messages.AsNoTracking()
             .Where(item => item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+                item.DeletedAt == null && item.RedactedAt == null &&
                 EF.Functions.ILike(item.Body, pattern, "\\"))
             .OrderByDescending(item => item.Sequence).ThenBy(item => item.Id)
             .Take(50).ToArrayAsync(cancellationToken);
@@ -53,7 +54,8 @@ internal static partial class CollaborationEndpoints
             .SingleOrDefaultAsync(cancellationToken) ?? 0;
         var count = await db.Messages.AsNoTracking().CountAsync(item =>
             item.TenantId == actor.TenantId && item.ProjectId == projectId &&
-            item.Sequence > cursor && item.AuthorUserId != actor.UserId,
+            item.Sequence > cursor && item.AuthorUserId != actor.UserId &&
+            item.DeletedAt == null && item.RedactedAt == null,
             cancellationToken);
         if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
@@ -201,7 +203,8 @@ internal static partial class CollaborationEndpoints
         if (gate is not null) return gate;
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var message = await db.Messages.SingleOrDefaultAsync(item => item.Id == messageId &&
-            item.TenantId == actor.TenantId && item.ProjectId == projectId, cancellationToken);
+            item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+            item.DeletedAt == null && item.RedactedAt == null, cancellationToken);
         if (message is null) return Results.NotFound();
         if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
             return Results.StatusCode(StatusCodes.Status403Forbidden);
@@ -221,7 +224,8 @@ internal static partial class CollaborationEndpoints
     private static Task<bool> MessageExistsAsync(CollaborationDbContext db, ICurrentActor actor,
         Guid projectId, Guid messageId, CancellationToken cancellationToken) =>
         db.Messages.AsNoTracking().AnyAsync(item => item.Id == messageId &&
-            item.TenantId == actor.TenantId && item.ProjectId == projectId, cancellationToken);
+            item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+            item.DeletedAt == null && item.RedactedAt == null, cancellationToken);
 
     private static Task WriteInteractionEventAsync(CollaborationDbContext db,
         IDbContextTransaction transaction, ITransactionalSideEffectWriter sideEffects,
