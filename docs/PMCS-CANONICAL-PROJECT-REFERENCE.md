@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.78.0`
+- نسخه: `1.79.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS18 Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS19 Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `c740abebc5ba46f610a0365113cebfef7c90b216`؛ tree `c637ea3d5b2fead0c26c1519d9b0c3cd8976afe1` |
-| Current evidence-bearing source checkpoint | `c740abebc5ba46f610a0365113cebfef7c90b216`؛ Run 348، هر هشت Job سبز |
-| Source lineage | UX2-MS18 ادامهٔ مستقیم MS17 documentation `e268ad326c9d129f7f3c4add9b24b7d6a1c2971f` با اصلاح جلوبرنده است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS18-C1`؛ ویرایش پیام خود با Revision/Conflict، UX2-MS19 بعدی |
+| آخرین Source Candidate واجد Evidence | `a746981e2f0e1bac58d29880b49f3970bf1fe51c`؛ tree `aa6696686868c0c095eb5484911ad43b38b306fa` |
+| Current evidence-bearing source checkpoint | `a746981e2f0e1bac58d29880b49f3970bf1fe51c`؛ Run 350، هر هشت Job سبز |
+| Source lineage | UX2-MS19 ادامهٔ مستقیم MS18 documentation `da9fe9b4364a22341859b869828de385d176f770` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS19-C1`؛ حذف نمایشی پیام خود با Revision/Legal Hold، UX2-MS20 بعدی |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS18-C1`؛ ویرایش پیام خود، Run 348 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS17-C1`؛ اتصال سند Released، Run 345 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS16-C1`؛ آپلود/قرنطینه، Run 343 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS15-C1`؛ پیوست خواندنی و دانلود، Run 341 سبز |
@@ -46,7 +47,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.101.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.102.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -59,7 +60,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.100.0` | Superseded؛ `v1.101.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.101.0` | Superseded؛ `v1.102.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS33` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -158,6 +159,9 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
   و اصلاح `c740abebc5ba46f610a0365113cebfef7c90b216` / tree
   `c637ea3d5b2fead0c26c1519d9b0c3cd8976afe1` در Run 348 هشت Job
   را پاس کرد؛ ویرایش نویسنده با Conflict، Reload و 403 در مرورگر تأیید شد.
+- UX2-MS19 روی source `a746981e2f0e1bac58d29880b49f3970bf1fe51c` / tree
+  `aa6696686868c0c095eb5484911ad43b38b306fa` در Run 350 هشت Job
+  را پاس کرد؛ حذف نمایشی نویسنده با Legal Hold، Conflict، Reload و 403 در مرورگر تأیید شد.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -754,7 +758,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده برای Source: Run 337 (`36390541888`) — هر ۸ Job
+- آخرین CI بررسی‌شده برای Source: Run 350 (`36400977033`) — هر ۸ Job
   `architecture/backend/integration/pilot-contract/web/ui-e2e/identity-container/qualification-report` موفق.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
@@ -772,8 +776,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی `V1.1-UX2-MS19` است؛ حذف نمایشی پیام خود با Revision، Legal Hold و تأیید پاسخ سرور.**
-تعدیل، تاریخچه و تبدیل رسمی، مهاجرت UX2، INT1/QA1 و Production بازند.
+**گام دقیق بعدی `V1.1-UX2-MS20` است؛ تعدیل پیام با Redaction، دلیل، Revision و Legal Hold.**
+تاریخچه و تبدیل رسمی، مهاجرت UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
 
