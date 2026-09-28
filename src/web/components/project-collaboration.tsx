@@ -9,7 +9,7 @@ import {
 } from "@/lib/collaboration-room";
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
-  downloadProjectMessageAttachment, loadProjectMessageAttachments,
+  attachProjectChatDocument, downloadProjectMessageAttachment, loadProjectMessageAttachments,
   loadProjectChatUploadState, type ProjectChatUploadState, type ProjectMessageAttachment,
 } from "@/lib/collaboration-attachments";
 import {
@@ -463,20 +463,27 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       {notice && <span role="status">{notice}</span>}
       {error && <span role="alert">{error}</span>}
       {canUpload && <ProjectMessageUpload projectId={projectId} messageId={messageId}
-        onAccessLoss={onAccessLoss} />}
+        attachedDocumentIds={attachments?.map((attachment) => attachment.documentId) ?? []}
+        onAccessLoss={onAccessLoss} onAttached={async () => {
+          setAttachments(await loadProjectMessageAttachments("/api/pmcs", projectId, messageId));
+          setNotice("پیوست آزادشده به همین پیام متصل شد.");
+        }} />}
     </div>}
   </div>;
 }
 
-function ProjectMessageUpload({ projectId, messageId, onAccessLoss }: {
+function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAccessLoss, onAttached }: {
   readonly projectId: string;
   readonly messageId: string;
+  readonly attachedDocumentIds: readonly string[];
   readonly onAccessLoss: (status: number) => void;
+  readonly onAttached: () => Promise<void>;
 }) {
   const session = usePmcsSession();
   const [uploads, setUploads] = useState<readonly QueuedDocumentUpload[]>([]);
   const [states, setStates] = useState<Record<string, ProjectChatUploadState>>({});
   const [busy, setBusy] = useState(false);
+  const [attachingId, setAttachingId] = useState("");
   const [notice, setNotice] = useState("");
 
   const refreshUploads = useCallback(async (retry: boolean) => {
@@ -528,11 +535,26 @@ function ProjectMessageUpload({ projectId, messageId, onAccessLoss }: {
 
   function uploadLabel(item: QueuedDocumentUpload): string {
     const state = states[item.assetId];
-    if (state?.status === "Released") return "آزادشده؛ اتصال به پیام در مرحلهٔ بعد";
+    if (attachedDocumentIds.some((id) => id.toLowerCase() === item.assetId.toLowerCase()))
+      return "متصل به پیام";
+    if (state?.status === "Released") return "آزادشده و آمادهٔ اتصال";
     if (state?.status === "Quarantined") return "در انتظار بررسی و آزادسازی";
     if (item.status === "rejected" || state?.status === "Rejected") return "ردشده در کنترل امنیتی";
     if (item.status === "queued") return "در صف ارسال";
     return "در حال بررسی وضعیت";
+  }
+
+  async function attach(item: QueuedDocumentUpload) {
+    if (states[item.assetId]?.status !== "Released" || busy || attachingId) return;
+    setAttachingId(item.assetId);
+    setNotice("");
+    try {
+      await attachProjectChatDocument("/api/pmcs", projectId, messageId, item);
+      await onAttached();
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+      else setNotice(failure instanceof Error ? failure.message : "اتصال پیوست کامل نشد.");
+    } finally { setAttachingId(""); }
   }
 
   return <section className="collaboration-upload" aria-label="آپلود فایل برای همین پیام">
@@ -546,6 +568,12 @@ function ProjectMessageUpload({ projectId, messageId, onAccessLoss }: {
     {notice && <span role="status">{notice}</span>}
     {uploads.length > 0 && <ul>{uploads.map((item) => <li key={item.assetId}>
       <span>{item.originalFileName} · {uploadLabel(item)}</span>
+      {states[item.assetId]?.status === "Released" &&
+        !attachedDocumentIds.some((id) => id.toLowerCase() === item.assetId.toLowerCase()) &&
+        <button className="secondary-button" type="button" disabled={busy || Boolean(attachingId)}
+          onClick={() => void attach(item)}>
+          {attachingId === item.assetId ? "در حال اتصال…" : "اتصال پیوست به پیام"}
+        </button>}
     </li>)}</ul>}
   </section>;
 }

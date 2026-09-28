@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
-  downloadProjectMessageAttachment, loadProjectMessageAttachments,
+  attachProjectChatDocument, downloadProjectMessageAttachment, loadProjectMessageAttachments,
   loadProjectChatUploadState,
   type ProjectMessageAttachment,
 } from "../lib/collaboration-attachments.ts";
@@ -102,6 +102,28 @@ test("author-only upload status validates owner identity and quarantine transiti
       /وضعیت آپلود/u);
     globalThis.fetch = async () => new Response(null, { status: 403 });
     await assert.rejects(loadProjectChatUploadState("/api/pmcs", projectId, messageId, expected),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("Released association requires a matching server response and rejects access loss", async () => {
+  const previous = globalThis.fetch;
+  const calls: Array<{ url: string; method?: string }> = [];
+  const expected = { assetId: documentId, originalFileName: attachment.originalFileName,
+    contentType: attachment.contentType, sizeBytes: attachment.sizeBytes, sha256: attachment.sha256 };
+  try {
+    globalThis.fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method });
+      return Response.json(attachment);
+    };
+    assert.deepEqual(await attachProjectChatDocument("/api/pmcs", projectId, messageId, expected), attachment);
+    assert.deepEqual(calls, [{ url: `/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${documentId}`,
+      method: "PUT" }]);
+    globalThis.fetch = async () => Response.json({ ...attachment, documentId: projectId });
+    await assert.rejects(attachProjectChatDocument("/api/pmcs", projectId, messageId, expected),
+      /تأیید اتصال/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(attachProjectChatDocument("/api/pmcs", projectId, messageId, expected),
       (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
   } finally { globalThis.fetch = previous; }
 });

@@ -341,8 +341,17 @@ test("only the message author queues a Chat document and sees quarantine status 
   const bytes = Buffer.from("%PDF-1.7\nPMCS project Chat upload\n%%EOF\n", "utf8");
   let canUpload = true;
   let revoked = false;
+  let released = false;
+  let attached = false;
   let uploadedId = "";
   let uploadedSha = "";
+  const attachmentPath = `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`;
+  const metadata = () => ({
+    messageId, documentId: uploadedId, originalFileName: "scope.pdf", contentType: "application/pdf",
+    sizeBytes: bytes.length, sha256: uploadedSha, classification: "Internal",
+    retentionPolicy: "Standard", legalHold: false, releasedAt: "2026-09-28T00:02:00Z",
+    versionNumber: 1, contentUrl: `${attachmentPath}/${uploadedId}/content`,
+  });
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
     status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1, canUpload }),
   }));
@@ -354,7 +363,15 @@ test("only the message author queues a Chat document and sees quarantine status 
         body: "پیام نویسنده", createdAt: "2026-09-28T00:00:00Z" }],
     }) }));
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
-    (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+    (route) => route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(attached ? [metadata()] : []) }));
+  await page.route(new RegExp(`/api/pmcs${attachmentPath}/[^/]+$`, "u"), (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(released).toBe(true);
+    attached = true;
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(metadata()) });
+  });
   await page.route(`**/api/pmcs/api/v1/upload-sessions`, (route) => {
     const payload = route.request().postDataJSON() as {
       clientGeneratedId: string; projectId: string; ownerType: string; ownerId: string; sha256: string;
@@ -380,8 +397,8 @@ test("only the message author queues a Chat document and sees quarantine status 
     (route) => route.fulfill(revoked ? { status: 403 } : { status: 200,
       contentType: "application/json", body: JSON.stringify({
         id: uploadedId, messageId, originalFileName: "scope.pdf", contentType: "application/pdf",
-        sizeBytes: bytes.length, sha256: uploadedSha, status: "Quarantined",
-        versionNumber: 1, releasedAt: null,
+        sizeBytes: bytes.length, sha256: uploadedSha, status: released ? "Released" : "Quarantined",
+        versionNumber: 1, releasedAt: released ? "2026-09-28T00:02:00Z" : null,
       }) }));
 
   await page.goto(path);
@@ -394,6 +411,16 @@ test("only the message author queues a Chat document and sees quarantine status 
   await page.reload();
   await page.getByRole("button", { name: "پیوست‌ها" }).click();
   await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
+  released = true;
+  await page.getByRole("button", { name: "بررسی وضعیت آپلود" }).click();
+  await expect(page.getByRole("button", { name: "اتصال پیوست به پیام" })).toBeVisible();
+  await page.getByRole("button", { name: "اتصال پیوست به پیام" }).click();
+  await expect(page.getByText("پیوست آزادشده به همین پیام متصل شد.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "دریافت پیوست" })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("متصل به پیام", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "اتصال پیوست به پیام" })).toHaveCount(0);
   canUpload = false;
   await page.reload();
   await page.getByRole("button", { name: "پیوست‌ها" }).click();

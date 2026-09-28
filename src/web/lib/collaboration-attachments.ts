@@ -84,6 +84,24 @@ export async function loadProjectChatUploadState(apiBaseUrl: string, projectId: 
   return state;
 }
 
+/** Associates only the author-owned Released document after scoped server confirmation. */
+export async function attachProjectChatDocument(apiBaseUrl: string, projectId: string,
+  messageId: string, upload: ProjectChatUploadExpectation): Promise<ProjectMessageAttachment> {
+  const path = attachmentPath(projectId, messageId, upload.assetId).replace(/\/content$/u, "");
+  const response = await checked(await fetch(`${apiBaseUrl.replace(/\/$/u, "")}${path}`,
+    { method: "PUT", cache: "no-store" }));
+  const attached = await response.json() as ProjectMessageAttachment;
+  if (!validAttachment(attached, projectId, messageId) ||
+      attached.documentId.toLowerCase() !== upload.assetId.toLowerCase() ||
+      attached.originalFileName !== upload.originalFileName ||
+      attached.contentType !== upload.contentType ||
+      attached.sizeBytes !== upload.sizeBytes ||
+      attached.sha256.toLowerCase() !== upload.sha256.toLowerCase()) {
+    throw new Error("تأیید اتصال پیوست معتبر نیست.");
+  }
+  return attached;
+}
+
 function validAttachment(item: ProjectMessageAttachment, projectId: string, messageId: string): boolean {
   return item && item.messageId?.toLowerCase() === messageId.toLowerCase() &&
     uuid.test(item.documentId ?? "") &&
