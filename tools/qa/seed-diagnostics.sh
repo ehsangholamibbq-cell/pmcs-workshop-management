@@ -174,3 +174,17 @@ if [[ "${field_conversion_state}" != "1|1|2" ]]; then
   echo "Field and evidence conversion owner state diverged: ${field_conversion_state}." >&2
   exit 1
 fi
+
+# Final COL1 gate: a shared destination is serialized across two authorized
+# actors, then official file access is revoked with the project membership.
+start_api false Unconfigured
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-qualification
+race_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align --command "select (select count(*) from collaboration.message_conversions where destination_type = 'RFI' and destination_id = 'ca110000-0000-4000-8000-000000000502')::text || '|' || (select count(*) from technical_office.rfis where id = 'ca110000-0000-4000-8000-000000000502')::text || '|' || (select count(*) from foundation.audit_events where event_type = 'ProjectChatConvertedToRfi' and resource_id = 'ca110000-0000-4000-8000-000000000502')::text;")"
+if [[ "${race_state}" != "1|1|1" ]]; then
+  echo "Concurrent owner conversion diverged: ${race_state}." >&2
+  exit 1
+fi
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --command "update identity_access.project_memberships set status = 'Suspended' where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' and tenant_id = '11111111-1111-1111-1111-111111111111' and project_id = '33333333-3333-3333-3333-333333333333';" >/dev/null
+PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify-collaboration-official-revoked
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --command "update identity_access.project_memberships set status = 'Active' where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' and tenant_id = '11111111-1111-1111-1111-111111111111' and project_id = '33333333-3333-3333-3333-333333333333';" >/dev/null
+stop_api

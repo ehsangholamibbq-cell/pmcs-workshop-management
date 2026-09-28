@@ -68,6 +68,8 @@ internal static partial class Program
                 "verify-collaboration-action-conversions" => await VerifyCollaborationActionConversionsAsync(),
                 "verify-collaboration-technical-conversions" => await VerifyCollaborationTechnicalConversionsAsync(),
                 "verify-collaboration-field-evidence-conversions" => await VerifyCollaborationFieldEvidenceConversionsAsync(),
+                "verify-collaboration-qualification" => await VerifyCollaborationQualificationAsync(),
+                "verify-collaboration-official-revoked" => await VerifyCollaborationOfficialRevokedAsync(),
                 "verify-reporting-golden" => await VerifyReportingGoldenAsync(),
                 "verify-reporting-pdf-golden" => await VerifyReportingPdfGoldenAsync(),
                 "verify-reporting-periodic" => await VerifyReportingPeriodicAsync(),
