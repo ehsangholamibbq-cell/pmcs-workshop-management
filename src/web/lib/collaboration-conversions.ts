@@ -179,7 +179,8 @@ export interface ProjectIssueConversionDetails {
 /** Creates one general-project Issue through the governance owner command. */
 export async function convertProjectMessageToIssue(apiBaseUrl: string, projectId: string,
   message: ProjectConversationMessage, actorUserId: string, details: ProjectIssueConversionDetails,
-  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  destinationId: string, idempotencyKey: string,
+  selectedAttachments: readonly ProjectMessageAttachment[] = []): Promise<ProjectMessageConversionLineage> {
   const title = details.title.trim();
   const observedFact = details.observedFact.trim();
   const category = details.category.trim();
@@ -197,6 +198,7 @@ export async function convertProjectMessageToIssue(apiBaseUrl: string, projectId
       !category || category.length > 120 ||
       !["Low", "Medium", "High", "Critical"].includes(details.severity) ||
       !["Routine", "Soon", "Immediate"].includes(details.urgency) ||
+      !validSelectedAttachments(message.id, selectedAttachments) ||
       /[\x00-\x08\x0b-\x1f\x7f]/u.test(title + observedFact + category)) {
     throw new Error("مشخصات تبدیل به مسئله معتبر نیست.");
   }
@@ -208,7 +210,8 @@ export async function convertProjectMessageToIssue(apiBaseUrl: string, projectId
     body: JSON.stringify({ destinationId, destinationType: "Issue", baseRevision: message.revision,
       confirmed: true, details: { ownerUserId: actorUserId, targetResolutionDate: date,
         title, observedFact, category, severity: details.severity, urgency: details.urgency,
-        confidentiality: "GeneralProject" }, documentIds: [] }),
+        confidentiality: "GeneralProject" },
+      documentIds: selectedAttachments.map((item) => item.documentId) }),
   });
   if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
   if (response.status === 409) {
@@ -232,7 +235,7 @@ export async function convertProjectMessageToIssue(apiBaseUrl: string, projectId
       result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
       result.messageRevision !== message.revision ||
       result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
-      result.documents.length !== 0) {
+      !matchingLineageDocuments(result.documents, selectedAttachments)) {
     throw new Error("تأیید تبدیل مسئلهٔ رسمی معتبر نیست.");
   }
   return result;

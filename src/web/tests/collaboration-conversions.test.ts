@@ -366,6 +366,44 @@ test("confirmed Issue conversion keeps general-project classification, actor and
   } finally { globalThis.fetch = previous; }
 });
 
+test("Issue conversion pins selected Released files as exact official evidence references", async () => {
+  const previous = globalThis.fetch;
+  const actor = item.confirmedBy;
+  const destinationId = "10000000-0000-4000-8000-000000000032";
+  const key = "10000000-0000-4000-8000-000000000062";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مدرک مسئله" } as ProjectConversationMessage;
+  const details = { ownerUserId: actor, targetResolutionDate: "2099-01-01", title: "مسئلهٔ مستند",
+    observedFact: "مشاهده", category: "هماهنگی", severity: "High" as const,
+    urgency: "Immediate" as const };
+  const attachment = { messageId, documentId: item.documents[0].id,
+    originalFileName: item.documents[0].fileName, contentType: item.documents[0].contentType,
+    sizeBytes: item.documents[0].sizeBytes, sha256: item.documents[0].sha256,
+    versionNumber: item.documents[0].versionNumber, releasedAt: "2026-09-28T00:00:00Z",
+  } as ProjectMessageAttachment;
+  const response = { ...item, destinationType: "Issue", destinationId, destinationReference: "ISS-001" };
+  try {
+    let payload: { documentIds: string[] } | undefined;
+    globalThis.fetch = async (_input, init) => {
+      payload = JSON.parse(String(init?.body)) as { documentIds: string[] };
+      return Response.json(response, { status: 201 });
+    };
+    const result = await convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]);
+    assert.deepEqual(payload?.documentIds, [attachment.documentId]);
+    assert.deepEqual(result.documents, item.documents);
+    globalThis.fetch = async () => Response.json({ ...response,
+      documents: [{ ...item.documents[0], versionNumber: 2 }] }, { status: 201 });
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]), /تأیید تبدیل/u);
+    globalThis.fetch = async () => { throw new Error("Invalid attachment reached server"); };
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment, attachment]), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToIssue("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [{ ...attachment, messageId: projectId }]), /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
 test("confirmed RFI creates only a Draft owner command with explicit impact flags and scoped identity", async () => {
   const previous = globalThis.fetch;
   const actor = "10000000-0000-4000-8000-000000000041";

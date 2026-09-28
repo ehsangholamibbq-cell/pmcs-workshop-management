@@ -829,6 +829,15 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
 
 test("confirmed Issue conversion requires owner permission and survives conflict, reload and revocation", async ({ page }) => {
   const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `issue-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
   let canConvertIssue = false;
   let revision = 2;
   let body = "مسئلهٔ هماهنگی کارگاه";
@@ -846,6 +855,8 @@ test("confirmed Issue conversion requires owner permission and survives conflict
       nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
         body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
     }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
     (route) => {
       if (revoked) return route.fulfill({ status: 403 });
@@ -861,7 +872,7 @@ test("confirmed Issue conversion requires owner permission and survives conflict
       expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
       expect(request.destinationType).toBe("Issue");
       expect(request.confirmed).toBe(true);
-      expect(request.documentIds).toEqual([]);
+      expect(request.documentIds).toEqual([documentId]);
       expect(request.details.ownerUserId).toBe(userId);
       expect(request.details.title).toBe("مسئلهٔ تأییدشده");
       expect(request.details.observedFact).toBe("واقعیت مشاهده‌شده");
@@ -877,7 +888,9 @@ test("confirmed Issue conversion requires owner permission and survives conflict
       }
       issue = { id: "10000000-0000-4000-8000-000000000022", messageId,
         messageRevision: revision, destinationType: "Issue", destinationId: request.destinationId,
-        destinationReference: "ISS-001", documents: [], confirmedBy: userId,
+        destinationReference: "ISS-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
         confirmedAt: "2026-09-28T00:01:00Z" };
       return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(issue) });
     });
@@ -891,6 +904,8 @@ test("confirmed Issue conversion requires owner permission and survives conflict
   await page.getByLabel("واقعیت مشاهده‌شده").fill("واقعیت مشاهده‌شده");
   await page.getByRole("combobox", { name: /^شدت مسئله/u }).selectOption("High");
   await page.getByRole("combobox", { name: /^فوریت مسئله/u }).selectOption("Immediate");
+  await page.getByRole("checkbox", { name: /فایل issue-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل issue-2\.pdf/u })).not.toBeChecked();
   await page.getByRole("checkbox", { name: /ایجاد مسئلهٔ عمومی رسمی/u }).check();
   await page.getByRole("button", { name: "تأیید و ساخت مسئلهٔ رسمی" }).click();
   await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
