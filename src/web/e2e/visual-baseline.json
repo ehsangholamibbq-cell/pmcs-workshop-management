@@ -53,6 +53,7 @@
     { "id": "41-bootstrap-preview-blocked", "route": "/project-bootstraps", "state": "preview-conflict-blocked", "viewport": "desktop", "source": "project-bootstrap-preview.spec.ts" },
     { "id": "42-login-identity-error", "route": "/login", "state": "identity-callback-error", "viewport": "desktop", "source": "authentication.setup.ts" },
     { "id": "43-project-print-preview", "route": "/projects/[projectId]", "state": "browser-print-media-audit", "viewport": "desktop", "media": "print", "scroll": "top", "pdfFile": "43-project-print-preview.pdf", "source": "project-print-baseline.spec.ts" },
-    { "id": "44-login-asset-selected", "route": "/admin/login-experience", "state": "local-asset-selected", "viewport": "desktop", "scroll": "top", "source": "visual-tour.spec.ts" }
+    { "id": "44-login-asset-selected", "route": "/admin/login-experience", "state": "local-asset-selected", "viewport": "desktop", "scroll": "top", "source": "visual-tour.spec.ts" },
+    { "id": "45-bootstrap-disabled-hover", "route": "/project-bootstraps", "state": "preview-blocked-disabled-hover", "viewport": "desktop", "source": "project-bootstrap-preview.spec.ts" }
   ]
 }

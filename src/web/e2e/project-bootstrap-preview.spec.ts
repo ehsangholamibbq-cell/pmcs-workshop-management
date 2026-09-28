@@ -75,10 +75,16 @@ test("project bootstrap preview shows conflicts and blocks execution before conf
   const blocked = page.getByText("پیش‌نمایش دارای مانع اجرایی است", { exact: false });
   await expect(blocked).toBeVisible();
   await page.locator(".bootstrap-confirm input").check();
-  await expect(page.getByRole("button", { name: "تأیید و اجرای کنترل‌شده" })).toBeDisabled();
+  const executeButton = page.getByRole("button", { name: "تأیید و اجرای کنترل‌شده" });
+  await expect(executeButton).toBeDisabled();
   await blocked.scrollIntoViewIfNeeded();
   await expect(blocked).toBeInViewport();
   await captureVisualBaseline(page, "41-bootstrap-preview-blocked");
+  const backgroundBeforeHover = await executeButton.evaluate((button) => getComputedStyle(button).backgroundColor);
+  await executeButton.hover({ force: true });
+  await expect(executeButton).toBeDisabled();
+  expect(await executeButton.evaluate((button) => getComputedStyle(button).backgroundColor)).toBe(backgroundBeforeHover);
+  await captureVisualBaseline(page, "45-bootstrap-disabled-hover");
   expect(createRequests).toBe(1);
   expect(executeRequests).toBe(0);
 });

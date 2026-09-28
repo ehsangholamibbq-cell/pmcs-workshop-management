@@ -2298,7 +2298,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:not(:disabled):hover {
   background: #125a52;
 }
 
@@ -2313,7 +2313,7 @@ button:disabled {
   background: transparent;
 }
 
-.secondary-button:hover {
+.secondary-button:not(:disabled):hover {
   background: var(--soft-teal);
 }
 
