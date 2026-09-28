@@ -187,7 +187,9 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
       localStorage.setItem(commandCenterCacheKey, JSON.stringify(model));
       setCommandMessage(model.isOutdated
         ? "داده تأییدشده جدیدتر از تصویر رسمی وضعیت است؛ محاسبه مجدد لازم است."
-        : "تصویر رسمی و قابل ردیابی وضعیت از سرور دریافت شد.");
+        : model.snapshot
+          ? "تصویر رسمی و قابل ردیابی وضعیت از سرور دریافت شد."
+          : "مشخصات پروژه دریافت شد؛ تصویر رسمی وضعیت هنوز ساخته نشده است.");
     } catch (error) {
       if (cached) {
         setCommandCenter(cached);
