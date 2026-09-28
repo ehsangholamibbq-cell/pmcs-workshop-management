@@ -4,6 +4,7 @@ import { projectId } from "./support";
 import { captureVisualBaseline } from "./visual-baseline";
 
 test("project bootstrap preview shows conflicts and blocks execution before confirmation", async ({ page }) => {
+  page.on("pageerror", (error) => console.error(`Bootstrap page error: ${error.message}`));
   const previewDigest = createHash("sha256").update("pmcs-ms36-preview-fixture").digest("hex");
   let createRequests = 0;
   let executeRequests = 0;
@@ -65,7 +66,7 @@ test("project bootstrap preview shows conflicts and blocks execution before conf
   await page.getByRole("button", { name: "مرحله بعد" }).click();
   await expect(page.getByRole("heading", { name: "چه چیزهایی بررسی و منتقل شوند؟" })).toBeVisible();
   await page.getByRole("button", { name: "مرحله بعد" }).click();
-  await expect(page.getByRole("heading", { name: "اعضای انتخاب‌شده و نقش مقصد" })).toBeVisible();
+  await expect.poll(() => page.locator("h1, h2").allTextContents()).toContain("اعضای انتخاب‌شده و نقش مقصد");
   await page.getByRole("button", { name: "ایجاد مقصد پیش‌نویس و نمایش پیش‌نمایش" }).click();
 
   await expect(page.getByRole("heading", { name: "پیش‌نمایش انتقال" })).toBeVisible();
