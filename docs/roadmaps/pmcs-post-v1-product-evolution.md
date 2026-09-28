@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.117.0`
+- نسخه سند: `1.118.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1245,6 +1245,17 @@ baseline افزوده شده‌اند. Gateهای `VX-G1/G3/G4/G5` بازند؛ 
 بازبینی Artifact، MS35 به state تعارض ویرایش Chat گروه پروژه می‌پردازد؛ Preview
 تکثیر و Login failure در Micro-Stepهای مستقل بعدی‌اند. INT1/QA1 طبق ترتیب بعد از UX2 هستند.
 
+UX2-MS34 documentation `2c5154a1f743902effab1e964038bf1e8a53eced` در Run 387
+هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS34-C1` Safe Checkpoint شد. UX2-MS35
+source Candidate `31d6ea01515e49e8b9974f30768afcaeb4650a65` / tree
+`6369a120cdcd3bf349015065cb9e82d2d3866911` تصویر 40 تعارض Revision
+ویرایش پیام گروه پروژه را در E2E موجود ثبت می‌کند: نسخهٔ سرور و پیش‌نویس
+نویسنده هم‌زمان دیده می‌شوند و مسیر تأیید دوباره پس از capture ادامه دارد.
+Run 388 هر هشت Job را پاس کرد و Artifact چهل‌تصویری با index/SHA و تصویر 40
+بازبینی شد؛ CI مستندات هنوز شرط اعتبار Checkpoint است. Exact next پس از Gateهای MS35،
+`UX2-MS36` Preview تکثیر و مانع اجرایی در baseline است. `VX-G1/G3/G4/G5`
+و INT1/QA1 همچنان بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1602,3 +1613,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.115.0` | UX2-MS32 قرارداد نسخه‌دار فونت UI/Offline/PDF/XLSX/Print با Run 377 هشت Job سبز؛ MS33 ممیزی بصری و Gateهای UX2 باز |
 | `1.116.0` | UX2-MS33 inventory یازده Route و baseline سی‌وهشت screenshot با index/SHA-256 در Runهای 379/380؛ اصلاح قاب‌بندی Command Center، MS34 و Gateهای Visual باز |
 | `1.117.0` | UX2-MS34 Candidate نشان ثابت، Sidebar مستقل و keyboard reachability در ۳۹ screenshot؛ Run 386 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار؛ MS35 و Gateهای Visual باز |
+| `1.118.0` | UX2-MS34 documentation Run 387 هشت Job سبز و Safe؛ UX2-MS35 Candidate تصویر تعارض Chat گروه پروژه در baseline چهل‌تایی، Run 388 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS36 و Gateهای Visual باز |
