@@ -5,6 +5,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useSt
 import { BrandMark } from "@/components/brand-mark";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { ProjectRfiConversion } from "@/components/project-rfi-conversion";
+import { ProjectDailyFactConversion } from "@/components/project-daily-fact-conversion";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
   loadProjectConversation, type ProjectConversationMessage, type ProjectConversationView,
@@ -616,6 +617,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     {view.canConvertRfi && !message.deletedAt && !message.redactedAt &&
                       <ProjectRfiConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
+                        onChanged={() => setRefresh((value) => value + 1)} />}
+                    {view.canConvertDailyFact && !message.deletedAt && !message.redactedAt &&
+                      <ProjectDailyFactConversion projectId={projectId} message={message}
+                        tenantId={session.tenantId} actorUserId={session.userId}
+                        onAccessLoss={closeRestrictedConversation}
                         onChanged={() => setRefresh((value) => value + 1)} />}
                   </li>
                 ))}

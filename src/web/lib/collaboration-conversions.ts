@@ -1,6 +1,7 @@
 import { CollaborationAccessError } from "./collaboration-events.ts";
 import { CollaborationRevisionConflict } from "./collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "./collaboration-room.ts";
+import type { DailyFactKind, DailyImpactLevel } from "./field-facts.ts";
 
 export interface ProjectMessageConversionLineage {
   readonly id: string;
@@ -293,6 +294,100 @@ export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: 
       result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
       result.documents.length !== 0) {
     throw new Error("تأیید تبدیل RFI رسمی معتبر نیست.");
+  }
+  return result;
+}
+
+export class CollaborationDailyFactAlreadyExists extends Error {
+  constructor() { super("از این پیام قبلاً واقعیت روزانهٔ رسمی ساخته شده است؛ تبار تبدیل را تازه‌سازی کنید."); }
+}
+
+export class CollaborationDailyFactTargetConflict extends Error {
+  constructor() { super("نسخه یا وضعیت گزارش روزانه تغییر کرده است؛ گزارش را دوباره بررسی و تأیید کنید."); }
+}
+
+export class CollaborationDailyFactValidationError extends Error {
+  constructor() { super("گزارش، محل یا مشخصات واقعیت روزانه پذیرفته نشد."); }
+}
+
+export interface ProjectDailyFactConversionDetails {
+  readonly reportId: string;
+  readonly baseReportRevision: number;
+  readonly kind: DailyFactKind;
+  readonly description: string;
+  readonly locationId: string;
+  readonly category: string | null;
+  readonly quantity: number | null;
+  readonly unit: string | null;
+  readonly resourceCount: number | null;
+  readonly hours: number | null;
+  readonly impactLevel: DailyImpactLevel | null;
+}
+
+/** Appends a confirmed fact to an existing Draft daily report through Field Operations. */
+export async function convertProjectMessageToDailyFact(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, actorUserId: string, details: ProjectDailyFactConversionDetails,
+  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  const description = details.description.trim();
+  const category = details.category?.trim() || null;
+  const unit = details.unit?.trim() || null;
+  const quantity = details.quantity;
+  const count = details.resourceCount;
+  const hours = details.hours;
+  if (!guid(projectId) || !guid(message.id) || !guid(actorUserId) ||
+      !guid(destinationId) || !guid(idempotencyKey) ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      message.deletedAt || message.redactedAt ||
+      !guid(details.reportId) || !guid(details.locationId) ||
+      !Number.isSafeInteger(details.baseReportRevision) || details.baseReportRevision < 1 ||
+      !["WorkProgress", "Labor", "Equipment", "Material", "Issue", "Stoppage", "SiteCondition", "Note"].includes(details.kind) ||
+      !description || description.length > 1000 || category !== null && category.length > 120 ||
+      unit !== null && unit.length > 40 ||
+      quantity !== null && (!Number.isFinite(quantity) || quantity < 0) ||
+      count !== null && (!Number.isSafeInteger(count) || count <= 0) ||
+      hours !== null && (!Number.isFinite(hours) || hours < 0 || hours > 100_000) ||
+      quantity !== null && !unit ||
+      ["Labor", "Equipment"].includes(details.kind) && (!category || count === null) ||
+      details.kind === "Material" && (!category || quantity === null || !unit) ||
+      details.kind === "WorkProgress" && !category ||
+      details.impactLevel !== null && !["Low", "Medium", "High", "Critical"].includes(details.impactLevel) ||
+      /[\x00-\x08\x0b-\x1f\x7f]/u.test(description + (category ?? "") + (unit ?? ""))) {
+    throw new Error("مشخصات تبدیل به واقعیت روزانه معتبر نیست.");
+  }
+  const url = `${apiBaseUrl.replace(/\/$/u, "")}/api/v1/projects/${encodeURIComponent(projectId)}` +
+    `/collaboration/messages/${encodeURIComponent(message.id)}/conversions`;
+  const response = await fetch(url, {
+    method: "POST", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ destinationId, destinationType: "DailyFact", baseRevision: message.revision,
+      confirmed: true, details: { ...details, description, category, unit }, documentIds: [] }),
+  });
+  if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as {
+      code?: string; currentRevision?: number;
+    } | null;
+    if (conflict?.code === "collaboration.message.revision.conflict") {
+      const revision = conflict.currentRevision;
+      throw new CollaborationRevisionConflict(Number.isSafeInteger(revision) && revision! > 0 ? revision! : null);
+    }
+    if (conflict?.code === "collaboration.conversion.fact.report.conflict")
+      throw new CollaborationDailyFactTargetConflict();
+    if (conflict?.code === "collaboration.conversion.fact.already_created" ||
+        conflict?.code === "collaboration.conversion.destination_id.reused")
+      throw new CollaborationDailyFactAlreadyExists();
+    throw new Error("تعارض در تبدیل رسمی؛ تبار پیام را بازخوانی کنید.");
+  }
+  if (response.status === 422) throw new CollaborationDailyFactValidationError();
+  if (![200, 201].includes(response.status)) throw new Error("ثبت واقعیت روزانهٔ رسمی کامل نشد.");
+  const result = await response.json() as ProjectMessageConversionLineage;
+  if (!validLineage(result, message.id) || result.destinationType !== "DailyFact" ||
+      result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
+      result.messageRevision !== message.revision ||
+      result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
+      result.documents.length !== 0) {
+    throw new Error("تأیید تبدیل واقعیت روزانهٔ رسمی معتبر نیست.");
   }
   return result;
 }

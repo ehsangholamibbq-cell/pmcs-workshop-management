@@ -3,6 +3,8 @@ import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import { CollaborationActionValidationError, CollaborationIssueAlreadyExists,
   CollaborationIssueValidationError, CollaborationRfiAlreadyExists, CollaborationRfiValidationError,
+  CollaborationDailyFactAlreadyExists, CollaborationDailyFactTargetConflict,
+  CollaborationDailyFactValidationError, convertProjectMessageToDailyFact,
   convertProjectMessageToAction, convertProjectMessageToIssue, convertProjectMessageToRfi,
   loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
 import { CollaborationRevisionConflict } from "../lib/collaboration-interactions.ts";
@@ -41,6 +43,67 @@ test("formal conversion lineage is a bounded scoped read with verified document 
     globalThis.fetch = async () => new Response(null, { status: 403 });
     await assert.rejects(loadProjectMessageConversions("/api/pmcs", projectId, messageId),
       (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("confirmed Daily Fact appends to one Draft report revision with stable identity and scope", async () => {
+  const previous = globalThis.fetch;
+  const actor = "10000000-0000-4000-8000-000000000041";
+  const destinationId = "10000000-0000-4000-8000-000000000034";
+  const key = "10000000-0000-4000-8000-000000000064";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const locationId = "10000000-0000-4000-8000-000000000072";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مشاهدهٔ روزانهٔ کارگاه" } as ProjectConversationMessage;
+  const details = { reportId, baseReportRevision: 5, locationId,
+    kind: "Material" as const, description: "  ورود مصالح  ", category: " بتن ",
+    quantity: 12, unit: " مترمکعب ", resourceCount: null, hours: null, impactLevel: null };
+  const response = { ...item, destinationType: "DailyFact", destinationId, documents: [],
+    destinationReference: `${reportId}/${destinationId}`, confirmedBy: actor };
+  try {
+    let payload: unknown;
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), new RegExp(`${messageId}/conversions$`, "u"));
+      assert.equal(init?.method, "POST");
+      assert.equal(init?.cache, "no-store");
+      assert.equal(new Headers(init?.headers).get("Idempotency-Key"), key);
+      payload = JSON.parse(String(init?.body)) as unknown;
+      return Response.json(response, { status: 201 });
+    };
+    assert.equal((await convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key)).destinationType, "DailyFact");
+    assert.deepEqual(payload, { destinationId, destinationType: "DailyFact", baseRevision: 2,
+      confirmed: true, details: { ...details, description: "ورود مصالح", category: "بتن", unit: "مترمکعب" },
+      documentIds: [] });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 3 }, { status: 409 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationRevisionConflict && error.currentRevision === 3);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.fact.report.conflict" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationDailyFactTargetConflict);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.fact.already_created" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationDailyFactAlreadyExists);
+    globalThis.fetch = async () => new Response(null, { status: 422 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), CollaborationDailyFactValidationError);
+    globalThis.fetch = async () => Response.json({ ...response, destinationId: reportId }, { status: 201 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), /تأیید تبدیل/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, details, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, { ...details, baseReportRevision: 0 }, destinationId, key), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId, message,
+      actor, { ...details, kind: "Labor", resourceCount: 0 }, destinationId, key), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId,
+      { ...message, projectId: reportId }, actor, details, destinationId, key), /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });
 

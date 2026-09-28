@@ -976,3 +976,105 @@ test("confirmed RFI conversion keeps impact flags, rebases and prevents a second
   await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
 });
+
+test("Daily Fact conversion selects a scoped Draft and active location, rebases report and blocks duplicates", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const locationId = "10000000-0000-4000-8000-000000000072";
+  let canConvertDailyFact = false;
+  let reportRevision = 2;
+  let revoked = false;
+  let fact: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertDailyFact }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "مشاهدهٔ مصالح کارگاه", revision: 2, deletedAt: null, redactedAt: null,
+        createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: reportId, projectId, reportDate: "2099-01-03", locationName: "کارگاه",
+        status: "Draft", revision: reportRevision },
+      { id: "10000000-0000-4000-8000-000000000073", projectId, reportDate: "2099-01-02",
+        locationName: "کارگاه", status: "Approved", revision: 3 },
+    ]),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/locations`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: locationId, projectId, code: "SITE", name: "کارگاه", status: "Active" },
+      { id: "10000000-0000-4000-8000-000000000074", projectId,
+        code: "OLD", name: "محل غیرفعال", status: "Retired" },
+    ]),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(fact ? [fact] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { reportId: string; baseReportRevision: number; locationId: string;
+          kind: string; description: string; category: string; quantity: number; unit: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("DailyFact");
+      expect(request.confirmed).toBe(true);
+      expect(request.baseRevision).toBe(2);
+      expect(request.documentIds).toEqual([]);
+      expect(request.details.reportId).toBe(reportId);
+      expect(request.details.locationId).toBe(locationId);
+      expect(request.details.kind).toBe("Material");
+      expect(request.details.description).toBe("ورود مصالح تأییدشده");
+      expect(request.details.category).toBe("بتن");
+      expect(request.details.quantity).toBe(12);
+      expect(request.details.unit).toBe("مترمکعب");
+      expect(request.details.baseReportRevision).toBe(posts === 1 ? 2 : 3);
+      if (posts === 1) {
+        reportRevision = 3;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.conversion.fact.report.conflict" }) });
+      }
+      fact = { id: "10000000-0000-4000-8000-000000000024", messageId,
+        messageRevision: 2, destinationType: "DailyFact", destinationId: request.destinationId,
+        destinationReference: `${reportId}/${request.destinationId}`, documents: [], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(fact) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" })).toHaveCount(0);
+  canConvertDailyFact = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" }).click();
+  const form = page.getByRole("region", { name: "تبدیل پیام به واقعیت روزانهٔ رسمی" });
+  await expect(form.getByLabel("گزارش روزانهٔ پیش‌نویس").locator("option")).toHaveCount(1);
+  await expect(form.getByLabel("محل فعال پروژه").locator("option")).toHaveCount(1);
+  await form.getByLabel("نوع واقعیت").selectOption("Material");
+  await form.getByLabel("شرح واقعیت").fill("ورود مصالح تأییدشده");
+  await form.getByLabel("رسته، فعالیت یا موضوع").fill("بتن");
+  await form.getByLabel("مقدار واقعی").fill("12");
+  await form.getByLabel("واحد").fill("مترمکعب");
+  await form.getByRole("checkbox", { name: /افزودن این واقعیت/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت واقعیت رسمی" }).click();
+  await expect(form.getByText("نسخه یا وضعیت گزارش روزانه تغییر کرده است", { exact: false })).toBeVisible();
+  await form.getByRole("button", { name: "بازخوانی گزارش و تأیید دوباره" }).click();
+  await form.getByRole("checkbox", { name: /افزودن این واقعیت/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت واقعیت رسمی" }).click();
+  await expect(form.getByText("واقعیت روزانهٔ رسمی با ارجاع", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" }).click();
+  await expect(page.getByText("برای این پیام واقعیت روزانهٔ رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});

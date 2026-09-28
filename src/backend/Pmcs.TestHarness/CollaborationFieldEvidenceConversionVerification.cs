@@ -20,6 +20,14 @@ internal static partial class Program
         var assertions = new List<VerificationAssertion>();
         var reportId = Guid.Parse("ca110000-0000-4000-8000-000000000401");
         var factId = Guid.Parse("ca110000-0000-4000-8000-000000000403");
+        var supervisorRoom = await SendAsync(client, key, supervisor, HttpMethod.Get, path);
+        var observerRoom = await SendAsync(client, key, observer, HttpMethod.Get, path);
+        Record(assertions, "collaboration.field.fact-effective-capability",
+            supervisorRoom.StatusCode == HttpStatusCode.OK &&
+            supervisorRoom.Payload.GetProperty("canConvertDailyFact").GetBoolean() &&
+            observerRoom.StatusCode == HttpStatusCode.OK &&
+            !observerRoom.Payload.GetProperty("canConvertDailyFact").GetBoolean(),
+            $"supervisor={(int)supervisorRoom.StatusCode};observer={(int)observerRoom.StatusCode}");
         var message = await SendAsync(client, key, supervisor, HttpMethod.Post,
             $"{path}/messages", new
             {
@@ -48,18 +56,28 @@ internal static partial class Program
             $"{path}/messages/{messageId}/conversions", factRequest, "qa-col1-field-fact");
         var replay = await SendAsync(client, key, supervisor, HttpMethod.Post,
             $"{path}/messages/{messageId}/conversions", factRequest, "qa-col1-field-fact");
+        var duplicate = await SendAsync(client, key, supervisor, HttpMethod.Post,
+            $"{path}/messages/{messageId}/conversions", new
+            {
+                destinationId = Guid.Parse("ca110000-0000-4000-8000-000000000406"),
+                destinationType = "DailyFact", confirmed = true, baseRevision = 1,
+                details = new { reportId, baseReportRevision = 2, kind = "Note",
+                    locationId = PmcsTestDataSet.RootLocationId }
+            }, "qa-col1-field-fact-duplicate");
         var owner = await SendAsync(client, key, supervisor, HttpMethod.Get,
             $"{reportPath}/{reportId}");
         Record(assertions, "collaboration.field.fact-owner-revision-and-idempotence",
             fact.StatusCode == HttpStatusCode.Created &&
             replay.StatusCode == HttpStatusCode.Created &&
+            duplicate.StatusCode == HttpStatusCode.Conflict &&
+            duplicate.Payload.GetProperty("code").GetString() == "collaboration.conversion.fact.already_created" &&
             owner.StatusCode == HttpStatusCode.OK &&
             owner.Payload.GetProperty("status").GetString() == "Draft" &&
             ReadInt64(owner.Payload, "revision") == 2 &&
             owner.Payload.GetProperty("facts").EnumerateArray().Any(item =>
                 HasGuid(item, "id", factId) &&
                 item.GetProperty("referenceCode").GetString() == $"chat:{messageId:N}:v1"),
-            $"fact={(int)fact.StatusCode};replay={(int)replay.StatusCode};owner={(int)owner.StatusCode}");
+            $"fact={(int)fact.StatusCode};replay={(int)replay.StatusCode};duplicate={(int)duplicate.StatusCode};owner={(int)owner.StatusCode}");
 
         var documentId = Guid.Parse("ca110000-0000-4000-8000-000000000404");
         var evidenceId = Guid.Parse("ca110000-0000-4000-8000-000000000405");
