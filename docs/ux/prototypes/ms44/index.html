@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — بستهٔ بازبینی بصری MS44</title>
+  <style>
+    @font-face { font-family: "Vazirmatn Review"; src: url("fonts/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Estedad Review"; src: url("fonts/Estedad-variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    :root { font-family: Tahoma, "Segoe UI", Arial, sans-serif; color: #17242e; background: #fbf8f1; }
+    :root[data-font="vazirmatn"] { font-family: "Vazirmatn Review", Tahoma, sans-serif; }
+    :root[data-font="estedad"] { font-family: "Estedad Review", Tahoma, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; line-height: 1.65; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -6rem; right: 1rem; background: white; padding: .5rem; z-index: 10; }
+    .skip:focus { top: 1rem; }
+    .review-bar { background: #071525; color: #fff; padding: 1rem max(1rem, calc((100vw - 1440px)/2)); }
+    .review-bar h1 { font-size: 1.14rem; margin: 0 0 .25rem; }
+    .review-bar p { margin: 0; color: #d5dee2; font-size: .88rem; }
+    .controls { display: flex; gap: .8rem; flex-wrap: wrap; align-items: end; padding: .9rem max(1rem, calc((100vw - 1440px)/2)); background: #f5efe4; border-bottom: 1px solid #e9dfcf; }
+    .controls label { display: grid; gap: .2rem; font-size: .78rem; font-weight: 700; }
+    .controls select { min-height: 44px; min-width: 12rem; border: 1px solid #9ca8a8; border-radius: 8px; background: white; color: #17242e; padding: .35rem .65rem; }
+    .controls .print { min-height: 44px; padding: .35rem .8rem; border: 1px solid #11643b; border-radius: 8px; background: #11643b; color: white; }
+    .stage { max-width: 1440px; margin: auto; padding: 1rem; }
+    .sample-note { display: flex; gap: .7rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: .6rem .8rem; margin-bottom: 1rem; border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; font-size: .82rem; }
+    .sample-note strong { font-weight: 750; }
+    .app { display: grid; grid-template-columns: 225px minmax(0, 1fr); min-height: 570px; border: 1px solid #d9d0c2; border-radius: 18px; background: white; box-shadow: 0 16px 36px #0c203610; overflow: hidden; }
+    .side { background: #0c2036; color: #fff; padding: 1.25rem .9rem; display: flex; flex-direction: column; gap: 1.5rem; }
+    .side img { width: 155px; max-height: 70px; object-fit: contain; object-position: right center; }
+    .side small { color: #c9d4d8; }
+    .side nav { display: grid; gap: .25rem; }
+    .side nav span { display: block; border-radius: 9px; padding: .5rem .7rem; color: #dce5e7; }
+    .side nav span.current { color: white; background: #15334d; border-right: 3px solid #64bb82; font-weight: 700; }
+    .side footer { margin-top: auto; border-top: 1px solid #456079; padding-top: .8rem; font-size: .75rem; color: #c9d4d8; }
+    .workspace { min-width: 0; background: #fbf8f1; }
+    .topbar { min-height: 74px; padding: .8rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: white; border-bottom: 1px solid #e9dfcf; }
+    .topbar strong { color: #0c2036; }
+    .topbar small { color: #51636d; }
+    .content { padding: clamp(1rem, 2vw, 2rem); }
+    .eyebrow { margin: 0 0 .1rem; color: #11643b; font-size: .75rem; letter-spacing: .03em; font-weight: 700; }
+    h2 { font-size: clamp(1.3rem, 2vw, 1.8rem); line-height: 1.4; margin: 0 0 .25rem; color: #0c2036; }
+    h3 { font-size: 1rem; margin: 0 0 .5rem; color: #0c2036; }
+    .sub { color: #51636d; margin: 0 0 1.2rem; font-size: .9rem; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; }
+    .panel { min-width: 0; border: 1px solid #e9dfcf; border-radius: 12px; padding: 1rem; background: white; }
+    .panel.wide { grid-column: 1 / -1; }
+    .metric { font-size: 1.45rem; line-height: 1.35; font-weight: 750; color: #0c2036; font-variant-numeric: tabular-nums; }
+    .muted { color: #51636d; font-size: .85rem; }
+    .tag { display: inline-block; border-radius: 99px; padding: .15rem .6rem; background: #e8f3eb; color: #11643b; font-weight: 700; font-size: .75rem; }
+    .tag.warn { background: #fff2d9; color: #774d0d; }
+    .tag.error { background: #fce9e7; color: #a12d27; }
+    .row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; justify-content: space-between; }
+    .button { display: inline-block; border-radius: 8px; padding: .45rem .85rem; min-height: 42px; border: 1px solid #11643b; background: #11643b; color: white; font-size: .84rem; font-weight: 700; }
+    .button.secondary { background: white; color: #11643b; }
+    .button.disabled { background: #ececea; color: #51636d; border-color: #adb5b6; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 550px; border-collapse: collapse; font-size: .85rem; }
+    th, td { text-align: right; padding: .6rem .45rem; border-bottom: 1px solid #e9dfcf; }
+    th { color: #51636d; font-weight: 700; }
+    td.numeric { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .field { display: grid; gap: .25rem; min-width: 0; font-size: .85rem; font-weight: 700; }
+    .field span { display: block; border: 1px solid #9ca8a8; background: white; border-radius: 8px; padding: .55rem; min-height: 44px; color: #263d4b; font-weight: 400; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+    .message { border-right: 3px solid #11643b; padding: .5rem .8rem; margin: .5rem 0; background: #f5f9f3; border-radius: 8px; }
+    .message.mine { border-color: #748995; background: #f0f5f7; }
+    .state { border: 1px solid #b8c9ce; background: #f1f6f8; padding: 1.1rem; border-radius: 12px; }
+    .state.error { border-color: #d8a5a0; background: #fff1ef; }
+    .state.warn { border-color: #d8bb80; background: #fff8e8; }
+    .skeleton { height: 16px; margin: .5rem 0; width: 65%; border-radius: 5px; background: #e8ecea; }
+    .skeleton.short { width: 40%; }
+    .footer-note { margin: 1rem 0 0; color: #51636d; font-size: .76rem; }
+    .print-only { display: none; }
+    @media (max-width: 850px) { .app { grid-template-columns: 170px minmax(0, 1fr); } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px) {
+      .app { display: block; } .side { display: block; padding: .7rem; }
+      .side img { width: 105px; max-height: 45px; vertical-align: middle; }
+      .side small, .side footer { display: none; }
+      .side nav { display: flex; overflow-x: auto; margin-top: .45rem; white-space: nowrap; }
+      .side nav span { flex: none; }
+      .topbar { padding: .7rem 1rem; min-height: 58px; }
+      .topbar small { display: none; }
+      .grid, .fields { grid-template-columns: 1fr; }
+      .controls label, .controls select { width: 100%; }
+      .panel.wide { grid-column: auto; }
+    }
+    @media (prefers-reduced-motion: no-preference) { .button { transition: background-color .15s ease; } }
+    @page { size: A4; margin: 13mm; }
+    @media print {
+      :root { color: #17242e; background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .skip, .review-bar, .controls, .sample-note, .side, .topbar, .button { display: none !important; }
+      .stage, .content { padding: 0; margin: 0; }
+      .app { display: block; border: 0; box-shadow: none; min-height: 0; }
+      .workspace { background: white; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .print-only { display: block; font-size: 9pt; margin-bottom: 7mm; border-bottom: 1px solid #9ba4a8; padding-bottom: 3mm; }
+      .panel, .state { break-inside: avoid; }
+      .panel.wide { grid-column: 1 / -1; }
+      .footer-note { margin-top: 5mm; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#review-main">رفتن به نمونه</a>
+  <header class="review-bar"><h1>PMCS · بازبینی UX2-MS44</h1><p>نمونهٔ مستقل و تعاملی برای مقایسهٔ فونت، سلسله‌مراتب، حالت‌ها و چاپ؛ هیچ داده یا عملکرد عملیاتی ندارد.</p></header>
+  <form class="controls" aria-label="کنترل‌های نمونه" onsubmit="return false">
+    <label>سناریو<select id="scenario"><option value="portfolio">سبد پروژه‌ها</option><option value="command">مرکز فرمان پروژه</option><option value="bootstrap">ساخت پروژه / پیش‌نمایش</option><option value="work">کارهای من / اعلان‌ها</option><option value="table">جدول و فرم پرتراکم</option><option value="chat">گفتگوی گروه پروژه</option><option value="report">مرکز گزارش و چاپ</option><option value="agent">مرکز هوشمندی اجرایی</option><option value="login">ورود و هویت</option><option value="profile">نمایه و تصویر عضو</option></select></label>
+    <label>حالت<select id="state"><option value="default">عادی</option><option value="empty">بدون داده</option><option value="loading">در حال بارگذاری</option><option value="error">خطا</option><option value="permission">بدون دسترسی</option><option value="offline">آفلاین</option><option value="conflict">تعارض</option></select></label>
+    <label>قلم<select id="font"><option value="baseline">مبنای فعلی: Tahoma / fallback</option><option value="vazirmatn">گزینهٔ ۱: وزیرمتن</option><option value="estedad">گزینهٔ ۲: استعداد</option></select></label>
+    <button class="print" id="print" type="button">چاپ نمونهٔ مقایسه‌ای</button>
+  </form>
+  <main class="stage" id="review-main">
+    <div class="sample-note"><strong>نمونهٔ طراحی — اعداد و متن‌ها فرضی‌اند و سند رسمی نیستند.</strong><span id="selection" aria-live="polite"></span></div>
+    <section class="app" aria-label="نمونهٔ رابط PMCS">
+      <aside class="side"><div><img src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><br><small>محیط مدیریت پروژه</small></div><nav aria-label="بخش‌های نمایشی"><span class="current">نمای کلی</span><span>کارهای من</span><span>گزارش‌ها</span><span>گفتگوی پروژه</span></nav><footer>نمونهٔ مستقل · UX2-MS44</footer></aside>
+      <div class="workspace"><div class="topbar"><strong id="top-title">سبد پروژه‌ها</strong><small>شنبه ۱۴۰۵/۰۷/۰۴ · کاربر نمایشی</small></div><div class="content"><p class="print-only">PMCS · نمونهٔ غیررسمی بررسی قلم و چاپ · UX2-MS44 · داده‌های فرضی</p><div id="surface"></div><p class="footer-note">این صفحه صرفاً Prototype است؛ مجوز، وضعیت واقعی، خروجی رسمی Reporting یا تأیید بصری محصول را نشان نمی‌دهد.</p></div></div>
+    </section>
+  </main>
+  <script>
+    const titles = { portfolio: "سبد پروژه‌ها", command: "مرکز فرمان پروژه", bootstrap: "پیش‌نمایش ساخت پروژه", work: "کارهای من و اعلان‌ها", table: "جدول و فرم کنترلی", chat: "گفتگوی گروه پروژه", report: "مرکز گزارش‌ها", agent: "مرکز هوشمندی اجرایی", login: "ورود به PMCS", profile: "نمایهٔ عضو" };
+    const scenes = {
+      portfolio: `<div class="grid"><div class="panel"><h3>پروژه‌های فعال</h3><div class="metric">۱۲</div><span class="muted">نمونهٔ عدد نمایشی</span></div><div class="panel"><h3>اقدام‌های نیازمند بررسی</h3><div class="metric">۳</div><span class="tag warn">نیازمند توجه</span></div><div class="panel"><h3>گزارش‌های آماده</h3><div class="metric">۵</div><span class="muted">آخرین به‌روزرسانی: ۱۴۰۵/۰۷/۰۴</span></div><div class="panel wide"><div class="row"><h3>پروژه‌ها</h3><span class="button">مشاهدهٔ پروژه</span></div><div class="table-wrap"><table><thead><tr><th>پروژه</th><th>مرحله</th><th>وضعیت</th><th>تاریخ شمسی</th></tr></thead><tbody><tr><td>مجموعهٔ اداری نمونه</td><td>اجرای سازه</td><td><span class="tag">در جریان</span></td><td>۱۴۰۵/۰۷/۰۴</td></tr><tr><td>طرح توسعهٔ نمونه</td><td>برنامه‌ریزی</td><td><span class="tag warn">نیازمند بررسی</span></td><td>۱۴۰۵/۰۷/۰۳</td></tr></tbody></table></div></div></div>`,
+      command: `<div class="grid"><div class="panel"><h3>تصویر رسمی وضعیت</h3><strong>هنوز ساخته نشده است</strong><p class="muted">نبود Snapshot را به‌عنوان وضعیت واقعی نشان می‌دهیم.</p></div><div class="panel"><h3>منبع</h3><strong>مشخصات پروژه</strong><p class="muted">دادهٔ نمایشی؛ بدون ادعای تأیید</p></div><div class="panel"><h3>تازگی</h3><span class="tag warn">قابل تعیین نیست</span><p class="muted">نیازمند Snapshot رسمی</p></div><div class="panel wide"><h3>تفکیک حقیقت و اقدام</h3><p>اطلاعات پروژه دریافت شده است. برای تصمیم مدیریتی، نسخه و زمان Snapshot رسمی باید جداگانه بررسی شود.</p><span class="button disabled">تصمیم بر اساس Snapshot غیرفعال</span></div></div>`,
+      bootstrap: `<div class="grid"><div class="panel wide"><div class="row"><h3>پیش‌نمایش انتقال</h3><span class="tag warn">نیازمند تأیید صریح</span></div><div class="table-wrap"><table><thead><tr><th>قلم</th><th>نتیجه</th><th>توضیح</th></tr></thead><tbody><tr><td>ساختار برنامه</td><td><span class="tag">افزودن</span></td><td>بدون تغییر دادهٔ موجود</td></tr><tr><td>کد مشترک</td><td><span class="tag warn">تعارض</span></td><td>انتخاب لازم است</td></tr><tr><td>قلم محدود</td><td><span class="tag error">مسدود</span></td><td>دسترسی کافی نیست</td></tr></tbody></table></div></div><div class="panel wide"><span class="button disabled">اجرای انتقال مجاز نیست</span><p class="muted">تا رفع تعارض و تأیید صریح، عملیات انجام نمی‌شود.</p></div></div>`,
+      work: `<div class="grid"><div class="panel wide"><h3>اقدام‌های من</h3><div class="row"><strong>بازبینی تغییر برنامهٔ نمونه</strong><span class="tag warn">نیازمند اقدام</span></div><p class="muted">پروژهٔ نمونه · سررسید ۱۴۰۵/۰۷/۰۶</p><hr><div class="row"><strong>اعلان نسخهٔ تازهٔ سند</strong><span class="tag">اطلاع‌رسانی</span></div><p class="muted">فقط نمایش؛ اقدام رسمی از مسیر مجوزدار انجام می‌شود.</p></div></div>`,
+      table: `<div class="grid"><div class="panel wide"><h3>فیلترها و فرم نمونه</h3><div class="fields"><label class="field">عنوان اقدام<span>کنترل کیفیت بتن‌ریزی</span></label><label class="field">تاریخ شمسی<span>۱۴۰۵/۰۷/۰۴</span></label><label class="field">مسئول<span>نقش سرپرست پروژه</span></label><label class="field">وضعیت<span>در انتظار بررسی</span></label></div></div><div class="panel wide"><h3>جدول پرتراکم</h3><div class="table-wrap"><table><thead><tr><th>شناسه</th><th>شرح</th><th>مقدار</th><th>واحد</th><th>تاریخ</th><th>وضعیت</th></tr></thead><tbody><tr><td>Q-۰۱</td><td>کنترل نمونه</td><td class="numeric">۱٬۲۵۰٫۵</td><td>متر مکعب</td><td>۱۴۰۵/۰۷/۰۴</td><td><span class="tag warn">در انتظار</span></td></tr><tr><td>Q-۰۲</td><td>بازبینی نتیجه</td><td class="numeric">۳۷۵٫۲</td><td>متر مکعب</td><td>۱۴۰۵/۰۷/۰۳</td><td><span class="tag">تکمیل</span></td></tr></tbody></table></div></div></div>`,
+      chat: `<div class="grid"><div class="panel wide"><div class="row"><h3>گفتگوی گروه پروژه</h3><span class="tag">گروهی</span></div><p class="muted">پیام خصوصی، تماس صوتی و تصویری در این سناریو وجود ندارد.</p><div class="message"><strong>هماهنگ‌کنندهٔ نمونه</strong><p>نسخهٔ سند برای بررسی گروه منتشر شده است.</p><small>۱۴۰۵/۰۷/۰۴ · ۱۰:۱۵</small></div><div class="message mine"><strong>پیام نمایشی من</strong><p>پیش‌نویس پاسخ تا تأیید حفظ می‌شود.</p><small>۱۴۰۵/۰۷/۰۴ · ۱۰:۲۲</small></div><label class="field">متن پیام<span>پیام فقط به گروه پروژه ارسال می‌شود…</span></label></div></div>`,
+      report: `<div class="grid"><div class="panel wide"><div class="row"><h3>درخواست گزارش</h3><span class="tag warn">دسترسی خروجی در این نمونه خاموش</span></div><div class="fields"><label class="field">نوع خروجی<span>PDF / XLSX</span></label><label class="field">بازهٔ شمسی<span>۱۴۰۵/۰۷/۰۱ تا ۱۴۰۵/۰۷/۰۴</span></label></div><p class="muted">ثبت درخواست، انتشار فایل و دریافت، هر کدام مجوز و وضعیت مستقل دارند.</p><span class="button disabled">دریافت خروجی غیرفعال</span></div></div>`,
+      agent: `<div class="grid"><div class="panel wide"><div class="row"><h3>مرکز هوشمندی اجرایی</h3><span class="tag warn">پیشنهاد آزمایشی، نه Fact</span></div><p>سیگنال نمونه: برای بررسی تأخیر احتمالی، داده و منشأ را در گزارش رسمی کنترل کنید.</p><div class="fields"><label class="field">منبع داده<span>در این نمونه متصل نیست</span></label><label class="field">زمان ارزیابی<span>نامشخص</span></label></div><p class="muted">هیچ اقدام یا تصمیم رسمی از این Prototype صادر نمی‌شود.</p></div></div>`,
+      login: `<div class="grid"><div class="panel wide"><span class="tag">نشان رسمی تأییدشده</span><h3>ورود به فضای مدیریت پروژه</h3><p>ساختار معماری آرام، سطح گرم و جلوه‌های غیرمزاحم.</p><div class="fields"><label class="field">حساب کاربری<span>شناسهٔ سازمانی</span></label><label class="field">گذرواژه<span>••••••••</span></label></div><p><span class="button">ورود نمایشی</span></p><p class="muted">این فرم ورودی واقعی ندارد و هیچ احراز هویتی انجام نمی‌دهد.</p></div></div>`,
+      profile: `<div class="grid"><div class="panel"><h3>تصویر عضو</h3><div class="metric" aria-label="تصویر موجود نیست">م</div><p class="muted">Fallback حروفی؛ نمایش تصویر تابع حریم خصوصی است.</p></div><div class="panel wide"><h3>اطلاعات نمایه</h3><div class="fields"><label class="field">نام نمایشی<span>عضو نمونه</span></label><label class="field">نقش در پروژه<span>هماهنگ‌کننده</span></label></div><p class="muted">انتخاب و برش تصویر در نسخهٔ واقعی نیازمند تأیید و بررسی حریم خصوصی است.</p></div></div>`
+    };
+    const states = {
+      empty: ["هنوز داده‌ای برای نمایش وجود ندارد", "هیچ موردی در این نمای نمونه ثبت نشده است.", ""],
+      loading: ["در حال دریافت اطلاعات", "لطفاً منتظر بمانید. عدد یا وضعیت ساختگی نمایش داده نمی‌شود.", ""],
+      error: ["دریافت اطلاعات ناموفق بود", "اطلاعات فعلی قابل اتکا نیست. پس از بررسی اتصال دوباره تلاش کنید.", "error"],
+      permission: ["دسترسی به این بخش ندارید", "نمایش اطلاعات و اقدام‌ها به مجوز فعال وابسته است.", "warn"],
+      offline: ["ارتباط با سرور برقرار نیست", "اطلاعات قدیمی ممکن است معتبر نباشد؛ عملیات حساس تا اتصال دوباره انجام نمی‌شود.", "warn"],
+      conflict: ["نسخهٔ داده تغییر کرده است", "پیش‌نویس شما حفظ می‌شود؛ نسخهٔ جدید را بررسی کنید و سپس تصمیم بگیرید.", "warn"]
+    };
+    const scenario = document.getElementById("scenario"), state = document.getElementById("state"), font = document.getElementById("font");
+    function render() {
+      const title = titles[scenario.value];
+      const status = states[state.value];
+      document.documentElement.dataset.font = font.value;
+      document.getElementById("top-title").textContent = title;
+      document.getElementById("selection").textContent = `${title} · ${state.selectedOptions[0].textContent} · ${font.selectedOptions[0].textContent}`;
+      document.getElementById("surface").innerHTML = `<p class="eyebrow">نمونهٔ طراحی / UX2-MS44</p><h2>${title}</h2><p class="sub">سلسله‌مراتب Fact، وضعیت، هشدار و اقدام در صفحهٔ فارسی و راست‌به‌چپ.</p>` + (status ? `<section class="state ${status[2]}" role="status"><h3>${status[0]}</h3><p>${status[1]}</p>${state.value === "loading" ? '<div class="skeleton" aria-hidden="true"></div><div class="skeleton short" aria-hidden="true"></div>' : ""}</section>` : scenes[scenario.value]);
+    }
+    for (const input of [scenario, state, font]) input.addEventListener("change", render);
+    document.getElementById("print").addEventListener("click", () => window.print());
+    render();
+  </script>
+</body>
+</html>

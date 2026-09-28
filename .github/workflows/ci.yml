@@ -190,6 +190,8 @@ jobs:
       - name: Prepare isolated OIDC browser fixture
         run: node tools/qa/prepare-ui-e2e.mjs
       - name: Verify real browser login, RTL, responsive and offline recovery
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node tools/qa/regression-runner.mjs run ui-e2e
       - name: Verify complete VX-G1 screenshot inventory and record SHA-256 index
         env:
@@ -218,6 +220,12 @@ jobs:
         with:
           name: pmcs-current-ui-tour
           path: src/web/artifacts/visual-tour/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms44-prototype-review
+          path: src/web/artifacts/ms44-prototype/
           if-no-files-found: error
 
   identity-container:
