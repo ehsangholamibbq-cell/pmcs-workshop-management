@@ -43,7 +43,7 @@ cleanup() {
   set +e
   if (( exit_code != 0 )); then
     sed -n '1,240p' "${log_file}" >&2
-    rg -A 12 'Portfolio report worker loop failed|Portfolio report run .* failed unexpectedly' "${log_file}" | tail -100 >&2 || true
+    grep -E -A 12 'Portfolio report worker loop failed|Portfolio report run .* failed unexpectedly' "${log_file}" | tail -100 >&2 || true
   fi
   stop_api
   rm -f -- "${log_file}"

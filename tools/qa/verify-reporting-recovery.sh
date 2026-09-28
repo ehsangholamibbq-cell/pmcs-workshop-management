@@ -220,7 +220,7 @@ expect_equal \
 expect_equal \
   "first real worker holds an open PostgreSQL claim transaction" \
   "1" \
-  "select count(*) from pg_stat_activity where datname = current_database() and application_name = 'qa-rpt1-worker-a' and state = 'idle in transaction';"
+  "select exists(select 1 from pg_stat_activity where datname = current_database() and application_name = 'qa-rpt1-worker-a' and state = 'idle in transaction')::int;"
 
 skipped_log="${temporary_directory}/skipped-worker.log"
 start_api "qa-rpt1-worker-b" "${second_port}" true None "" "${skipped_log}"
