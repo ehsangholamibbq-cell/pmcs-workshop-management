@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.80.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS03، UX2/INT1/QA1 باز
+- نسخه سند: `1.81.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS04، UX2/INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -908,6 +908,14 @@ fallback long-poll از BFF، recheck عضویت، صف IndexedDB هویت‌م�
 TestHarness شکست خورد و با commit اصلاحی fast-forward شد؛ checkpoint فقط به
 Run 286 متکی است. Exact Next `COL1-MS04`؛ UX2/Production بازند.
 
+MS04 روی source `7f3a09cb5ca5e305b9d20fdd4cb7a10079803d5d` / tree
+`f0f1e526043bda8f4689f64be9fb86a7db0b8ef9` در Run 294
+(`36363690667`) هر هشت Job را پاس کرد. پیوست Chat با owner contract و
+quarantine/release، دانلود خصوصی و hash/version، و تاریخچهٔ immutable،
+تعدیل با دلیل، tombstone و Legal Hold در تست متصل اثبات شد؛ ۶۰ Migration
+Restore شدند. پاک‌سازی فیزیکی تا سیاست retention تأییدشده خاموش است.
+Exact Next `COL1-MS05` شش تبدیل رسمی؛ MS06 و UX2/Production بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1228,3 +1236,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.78.0` | DoR مستقل COL1 و MS01 هستهٔ Room/Message با Evidence سبز Runهای 280/281؛ MS02–MS06 و UX2/Production باز |
 | `1.79.0` | MS02 تعامل و read state متصل با Evidence سبز Run 283؛ MS03–MS06 و UX2/Production باز |
 | `1.80.0` | MS03 live/reconnect/fallback و صف آفلاین با Evidence سبز Run 286؛ MS04–MS06 و UX2/Production باز |
+| `1.81.0` | MS04 سند Chat و حاکمیت پیام با Evidence سبز Run 294 و ۶۰ Migration؛ MS05–MS06 و UX2/Production باز |

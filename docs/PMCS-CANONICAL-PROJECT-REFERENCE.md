@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.57.0`
-- آخرین کنترل: ۱۴۰۵/۰۷/۰۵ (۲۰۲۶-۰۹-۲۷)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 COL1 / MS03 Connected Safe Checkpoint`
+- نسخه: `1.58.0`
+- آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 COL1 / MS04 Connected Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,12 +23,12 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-COL1 — Project Collaboration` |
-| آخرین Source Candidate واجد Evidence | `c47c7e4202b9c7616602bedda587bc24b75246ed`؛ tree `2ebc69d8b528274b2828ccdc8ef367e3fc8f0fe7` |
-| Current evidence-bearing source checkpoint | `c47c7e4202b9c7616602bedda587bc24b75246ed`؛ Run 286، هر هشت Job سبز |
-| Source lineage | COL1-MS03 فرزند MS02 سبز `005e25dad7925ea4d7d3f28a0b3b0b94a7af506d` روی خط مستقیم S07-MS43 است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-COL1-MS03-C1`؛ live/reconnect/fallback و صف آفلاین متصل، MS04–MS06 باز |
+| آخرین Source Candidate واجد Evidence | `7f3a09cb5ca5e305b9d20fdd4cb7a10079803d5d`؛ tree `f0f1e526043bda8f4689f64be9fb86a7db0b8ef9` |
+| Current evidence-bearing source checkpoint | `7f3a09cb5ca5e305b9d20fdd4cb7a10079803d5d`؛ Run 294، هر هشت Job سبز |
+| Source lineage | COL1-MS04 ادامهٔ مستقیم MS03 سبز `c47c7e4202b9c7616602bedda587bc24b75246ed` و S07-MS43 است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-COL1-MS04-C1`؛ اسناد Chat و history/moderation متصل، MS05–MS06 باز |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
-| Migration count | Safe Resume: `58` و Restore Drill سبز |
+| Migration count | Safe Resume: `60` و Restore Drill سبز |
 
 PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
 نیست. Baseline قفل‌شده V1 نیز باز نشده است.
@@ -37,7 +37,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.80.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.81.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -686,8 +686,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 
 ## Exact Next Micro-Step
 
-در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS03 اکنون سبزند.
-**گام دقیق بعدی `COL1-MS04` است؛ اسناد مشترک، history، moderation و retention/legal hold.**
+در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS04 اکنون سبزند.
+**گام دقیق بعدی `COL1-MS05` است؛ شش تبدیل رسمی با تأیید انسان و Command مالک مقصد.**
 UI اختصاصی Reporting در UX2، Production enablement و Report Designer همچنان بازند.
 
 ## Resume Rule
