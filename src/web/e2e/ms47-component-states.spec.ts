@@ -23,7 +23,7 @@ test("MS47 component states retain semantics, keyboard access and responsive rev
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(pathToFileURL(prototype).href);
-  await expect(page.getByRole("heading", { name: "PMCS · Stateهای اجزای مشترک" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "حالت‌های اجزای مشترک" })).toBeVisible();
   expect(await page.locator(".brand").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   const select = page.locator("#state"), primary = page.locator("#primary"), secondary = page.locator("#secondary");
   const field = page.locator("#sample-field");

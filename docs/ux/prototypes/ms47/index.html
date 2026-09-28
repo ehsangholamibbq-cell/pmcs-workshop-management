@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>PMCS — آزمایش State اجزای مشترک</title>
+  <title>PMCS — حالت‌های اجزای مشترک</title>
   <style>
     :root {
       font-family: Tahoma, "Segoe UI", Arial, sans-serif;
@@ -95,23 +95,23 @@
   <a class="skip" href="#main">رفتن به نمونهٔ اجزا</a>
   <header class="header"><div class="header-inner">
     <img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین">
-    <div><h1>PMCS · Stateهای اجزای مشترک</h1><p>UX2-MS47 · نمونهٔ مستقل، داده‌های فرضی و بدون اتصال عملیاتی</p></div>
+    <div><h1>حالت‌های اجزای مشترک</h1><p>PMCS · UX2-MS47 · نمونهٔ مستقل و بدون اتصال عملیاتی</p></div>
   </div></header>
   <div class="controls"><label for="state">حالت نمایشی
     <select id="state">
-      <option value="default">عادی</option><option value="hover">Hover</option>
-      <option value="focus">Focus با صفحه‌کلید</option><option value="pressed">فشرده / انتخاب‌شده</option>
+      <option value="default">عادی</option><option value="hover">اشارهٔ ماوس</option>
+      <option value="focus">تمرکز صفحه‌کلید</option><option value="pressed">فشرده / انتخاب‌شده</option>
       <option value="disabled">غیرفعال</option><option value="loading">در حال انجام</option>
       <option value="error">خطا</option><option value="success">موفق</option>
       <option value="offline">آفلاین</option>
     </select>
   </label></div>
   <main class="layout" id="main">
-    <div class="note"><strong>نمونهٔ طراحی:</strong> هیچ درخواست، تصمیم مدیریتی یا Fact رسمی تولید نمی‌شود.</div>
-    <div class="intro"><h2 id="state-title">اجزای پایه · عادی</h2><p>Action، Field، Status و Feedback با نشانهٔ متنی و معنایی مستقل از رنگ.</p></div>
+    <div class="note"><strong>نمونهٔ طراحی:</strong> هیچ درخواست، تصمیم مدیریتی یا واقعیت رسمی تولید نمی‌شود.</div>
+    <div class="intro"><h2 id="state-title">اجزای پایه · عادی</h2><p>دکمه، ورودی، برچسب وضعیت و پیام با نشانهٔ متنی مستقل از رنگ.</p></div>
     <div class="grid">
       <section class="card" aria-labelledby="action-title"><h3 id="action-title">اقدام</h3>
-        <p>عملیات آزمایشی؛ Disabled و Offline دلیل روشن دارند.</p>
+        <p>عملیات آزمایشی؛ غیرفعال‌بودن یا قطع ارتباط دلیل روشن دارد.</p>
         <div class="actions">
           <button class="action primary" id="primary" type="button">بررسی نمایشی</button>
           <button class="action secondary" id="secondary" type="button" aria-pressed="false">نمایش جزئیات: خاموش</button>
@@ -139,17 +139,17 @@
         </table></div>
       </section>
     </div>
-    <p class="foot">مسیر فونت تولیدی هنوز نسخهٔ 1.0 و Tahoma/DejaVu/Arial است. این نمونه انتخاب یا Qualification فونت و صفحهٔ رسمی نیست.</p>
+    <p class="foot">قرارداد فونت تولیدی هنوز نسخهٔ ۱٫۰ و خانواده‌های Tahoma/DejaVu/Arial است. این نمونه تأیید فونت یا صفحهٔ رسمی نیست.</p>
   </main>
   <script>
     const labels = {
       default: ["عادی", "نمونهٔ نمایشی", "آمادهٔ بررسی", "داده‌ها صرفاً برای مقایسهٔ ظاهر هستند.", "info"],
-      hover: ["Hover", "قابل تعامل", "اشارهٔ ماوس", "عمل اصلی با صفحه‌کلید هم در دسترس است.", "info"],
-      focus: ["Focus", "تمرکز صفحه‌کلید", "Focus قابل مشاهده", "دورخط باید بدون نیاز به ماوس دیده شود.", "info"],
-      pressed: ["فشرده / انتخاب‌شده", "انتخاب نمونه", "حالت انتخاب", "دکمهٔ جزئیات با aria-pressed وضعیت خود را اعلام می‌کند.", "info"],
+      hover: ["اشارهٔ ماوس", "قابل تعامل", "اشارهٔ ماوس", "عمل اصلی با صفحه‌کلید هم در دسترس است.", "info"],
+      focus: ["تمرکز صفحه‌کلید", "تمرکز صفحه‌کلید", "تمرکز قابل مشاهده", "دورخط باید بدون نیاز به ماوس دیده شود.", "info"],
+      pressed: ["فشرده / انتخاب‌شده", "انتخاب نمونه", "حالت انتخاب", "دکمهٔ جزئیات وضعیت روشن یا خاموش خود را اعلام می‌کند.", "info"],
       disabled: ["غیرفعال", "اقدام غیرفعال", "امکان اقدام نیست", "این حالت، درخواست آزمایشی هم صادر نمی‌کند.", "warning"],
       loading: ["در حال انجام", "در حال بررسی", "منتظر پاسخ", "نتیجهٔ فرضی پیش از پاسخ نمایش داده نمی‌شود.", "info"],
-      error: ["خطا", "خطای ورودی", "عنوان معتبر نیست", "خطا با متن و ارتباط معنایی Field مشخص است.", "error"],
+      error: ["خطا", "خطای ورودی", "عنوان معتبر نیست", "پیام خطا به ورودی مربوط است و فقط با رنگ نشان داده نمی‌شود.", "error"],
       success: ["موفق", "اعتبارسنجی موفق", "عنوان معتبر است", "فقط اعتبارسنجی نمایشی انجام شد؛ ثبت عملیاتی نشده است.", "success"],
       offline: ["آفلاین", "ارتباط قطع است", "اقدام متوقف شد", "اطلاعات قدیمی قابل اتکا نیست و هیچ درخواست حساسی فرستاده نمی‌شود.", "warning"]
     };
