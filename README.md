@@ -4,10 +4,11 @@
 
 ## وضعیت فعلی
 
-Current connected COL1 safe checkpoint: `PMCS-V1.1-COL1-MS06-C1`, source
-`856089b4070ef4c8720aa01a4289139a9a0e4adc`, Full CI Run 304 (8/8).
-Six human-confirmed owner conversions and concurrency/revocation qualification
-are connected with 63 migrations; UX2 is next, then INT1/QA1. Rollout
+Current safe checkpoint: `PMCS-V1.1-UX2-MS01-C1`, source
+`16ade7062aef5090b1b6ebc2b9d9409d3db46e19`, Full CI Run 306 (8/8).
+The official transparent brand mark is in Login/Shell; COL1 connected build
+and qualification remain closed with 63 migrations. UX2-MS02 is next, then
+dedicated Chat/Reporting UI, INT1/QA1 and their separate gates. Rollout
 flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
 
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.

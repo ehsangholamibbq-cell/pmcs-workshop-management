@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.83.0`
+- نسخه سند: `1.84.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -932,6 +932,14 @@ MS06 روی source `856089b4070ef4c8720aa01a4289139a9a0e4adc` / tree
 ساخت متصل COL1 بسته است؛ `Collaboration:Enabled=false` و Gateهای UX2، INT1،
 QA1، Pilot و Production بازند. Exact Next `V1.1-UX2`.
 
+UX2-MS01 روی source `16ade7062aef5090b1b6ebc2b9d9409d3db46e19` / tree
+`df807f044995ef6957089b4e699028d44f4e58ba` در Run 306
+(`36369509553`) هر هشت Job را پاس کرد. PDF رسمی نشان با ماسک شفاف،
+خروجی‌های PNG و منشأ/Hash ثبت شد؛ Shell و Login Fallback بدون تغییر
+Descriptor نسخه‌دار یا احراز هویت از نماد رسمی استفاده می‌کنند.
+`VX-G3` و مهاجرت Chat/Reporting/ماژول‌ها و Visual Qualification بازند.
+Exact Next `UX2-MS02` Token/Focus/Reduced Motion و ناوبری موبایل است.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1255,3 +1263,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.81.0` | MS04 سند Chat و حاکمیت پیام با Evidence سبز Run 294 و ۶۰ Migration؛ MS05–MS06 و UX2/Production باز |
 | `1.82.0` | MS05 شش تبدیل مالک رسمی با Evidence سبز Runهای 297/299/301 و ۶۳ Migration؛ MS06 و UX2/Production باز |
 | `1.83.0` | MS06 Qualification متصل و پایان ساخت COL1 با Run 304 و Restore ۶۳ Migration؛ UX2/INT1/QA1 و Production باز |
+| `1.84.0` | UX2-MS01 نشان رسمی در Shell/Login با Run 306 و هشت Job سبز؛ MS02 و Gateهای Design System/مهاجرت/Visual Qualification باز |
