@@ -225,6 +225,7 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseRouting();
 app.UseCors("PmcsWeb");
+app.UseWebSockets();
 app.UseAuthentication();
 app.UseMiddleware<ActorAccessMiddleware>();
 app.UseMiddleware<ProjectLifecycleMiddleware>();

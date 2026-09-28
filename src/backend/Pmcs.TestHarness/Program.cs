@@ -62,6 +62,7 @@ internal static partial class Program
                 "verify-collaboration-core" => await VerifyCollaborationCoreAsync(),
                 "verify-collaboration-revoked" => await VerifyCollaborationRevokedAsync(),
                 "verify-collaboration-interactions" => await VerifyCollaborationInteractionsAsync(),
+                "verify-collaboration-live" => await VerifyCollaborationLiveAsync(),
                 "verify-reporting-golden" => await VerifyReportingGoldenAsync(),
                 "verify-reporting-pdf-golden" => await VerifyReportingPdfGoldenAsync(),
                 "verify-reporting-periodic" => await VerifyReportingPeriodicAsync(),

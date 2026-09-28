@@ -26,6 +26,8 @@ internal static partial class CollaborationEndpoints
         group.MapGet("/messages", ListMessagesAsync);
         group.MapPost("/messages", SendMessageAsync);
         group.MapGet("/messages/search", SearchMessagesAsync);
+        group.MapGet("/events", PollEventsAsync);
+        group.MapGet("/live", StreamEventsAsync);
         group.MapGet("/unread", GetUnreadAsync);
         group.MapPut("/read-cursor", AdvanceReadCursorAsync);
         group.MapPut("/messages/{messageId:guid}/reactions/{emoji}", AddReactionAsync);

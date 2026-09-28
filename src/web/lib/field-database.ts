@@ -1,8 +1,9 @@
 export const legacyFieldDatabaseName = "pmcs-field-v1";
-export const fieldDatabaseVersion = 7;
+export const fieldDatabaseVersion = 8;
 export const operationStoreName = "operations";
 export const attachmentStoreName = "attachments";
 export const documentUploadStoreName = "document-uploads";
+export const collaborationMessageStoreName = "collaboration-messages";
 export const qualitySafetyIntakeStoreName = "quality-safety-intakes";
 export const syncMetadataStoreName = "sync-metadata";
 export const appliedChangeStoreName = "applied-changes";
@@ -73,6 +74,13 @@ export function openFieldDatabase(): Promise<IDBDatabase> {
         uploads.createIndex("by-status", "status", { unique: false });
         uploads.createIndex("by-scope", "scopeKey", { unique: false });
         uploads.createIndex("by-created-at", "createdAtDevice", { unique: false });
+      }
+
+      if (!database.objectStoreNames.contains(collaborationMessageStoreName)) {
+        const messages = database.createObjectStore(collaborationMessageStoreName,
+          { keyPath: "clientMessageId" });
+        messages.createIndex("by-project", "projectId", { unique: false });
+        messages.createIndex("by-created-at", "createdAtDevice", { unique: false });
       }
 
       if (!database.objectStoreNames.contains(qualitySafetyIntakeStoreName)) {

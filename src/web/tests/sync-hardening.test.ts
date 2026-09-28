@@ -31,7 +31,7 @@ test("offline push sends the immutable lease, sequence and correlation envelope"
 });
 
 test("local schema keeps sync metadata and idempotent applied changes in separate stores", () => {
-  assert.match(fieldDatabase, /fieldDatabaseVersion = 7/u);
+  assert.match(fieldDatabase, /fieldDatabaseVersion = 8/u);
   assert.match(fieldDatabase, /sync-metadata/u);
   assert.match(fieldDatabase, /applied-changes/u);
   assert.match(fieldDatabase, /sync-recovery/u);
