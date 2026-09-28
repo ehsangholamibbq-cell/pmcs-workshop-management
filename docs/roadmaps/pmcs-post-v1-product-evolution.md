@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.120.0`
+- نسخه سند: `1.121.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1287,6 +1287,17 @@ SHA/ابعاد معتبر و قاب 42 بازبینی شد؛ CI مستندات �
 گام بعدی MS38، baseline چاپ و Print Preview است؛
 `VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
 
+UX2-MS37 documentation `796ea6f6dd5c6b6807aa705bc38e62647a0e1a6e` در Run 397
+هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS37-C1` Safe شد. UX2-MS38 Source
+`8cdad07eb97a67f81e46f3e4bb0e34b0ace8a84b` / tree
+`9835d0b8eff3d5f0f0ccf2a0726addb5cba738cc` baseline را به ۴۳ Capture
+و یک PDF A4 چاپ مرورگر رساند. Run 398 هر هشت Job را پاس کرد؛ Artifact
+`10990673834` با index و SHA/ابعاد تمام ۴۳ تصویر و PDF تطبیق شد. PDF ۲۲صفحه‌ای
+در صفحهٔ نخست Navigation بریده و فرم‌های تعاملی دارد؛ این Evidence شکاف چاپ
+است و Print System یا خروجی رسمی نیست. CI مستندات شرط پذیرش MS38 است. Exact
+next پس از Gateهای MS38، `UX2-MS39` بازبینی یکپارچهٔ inventory و Evidence
+`VX-G1` است؛ `VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1647,3 +1658,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.118.0` | UX2-MS34 documentation Run 387 هشت Job سبز و Safe؛ UX2-MS35 Candidate تصویر تعارض Chat گروه پروژه در baseline چهل‌تایی، Run 388 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS36 و Gateهای Visual باز |
 | `1.119.0` | UX2-MS35 documentation Run 389 هشت Job سبز و Safe؛ UX2-MS36 Preview مسدود تکثیر در baseline چهل‌ویک‌تایی، Runهای 390–392 علت گذار آزمون را آشکار و correction Run 393 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS37 و Gateهای Visual باز |
 | `1.120.0` | UX2-MS36 documentation Run 394 هشت Job سبز و Safe؛ UX2-MS37 Candidate خطای callback هویت در baseline چهل‌ودوتایی، Run 395 Setup assertion شکست و correction Run 396 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS38 Print و Gateهای Visual باز |
+| `1.121.0` | UX2-MS37 documentation Run 397 هشت Job سبز و Safe؛ UX2-MS38 Candidate چاپ مرورگر با ۴۳ PNG و PDF A4 بیست‌ودوصفحه‌ای، Run 398 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS39 و Gateهای Visual باز |
