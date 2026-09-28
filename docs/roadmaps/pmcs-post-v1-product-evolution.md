@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.100.0`
+- نسخه سند: `1.101.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1071,6 +1071,15 @@ UX2-MS17 روی source `ff11d7848e0f0fbab32ddd017b1f5bae0730e009` / tree
 بازخوانی می‌شود و قرنطینه قابل اتصال نیست. Exact next `UX2-MS18` ویرایش
 پیام خود با Revision و Conflict است؛ حذف/تعدیل، تبدیل و Gateهای UX2 بازند.
 
+UX2-MS18 روی source `8698034157666b36fc147aba52529cdc19af3bf4` / tree
+`9657f9d39ace8e76b1f8350757f6c92ef28be549` در Run 347 سبز شد؛
+اصلاح تأیید envelope پیام روی `c740abebc5ba46f610a0365113cebfef7c90b216`
+/ tree `c637ea3d5b2fead0c26c1519d9b0c3cd8976afe1` در Run 348
+(`36399518663`) هر هشت Job را پاس کرد. ویرایش فقط با مجوز نویسنده، Revision
+و Idempotency انجام می‌شود؛ Conflict پیش‌نویس را حفظ و بازخوانی و انتخاب
+صریح را الزامی می‌کند. Exact next `UX2-MS19` حذف نمایشی پیام خود با Legal
+Hold است؛ تعدیل، تبدیل و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1411,3 +1420,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.98.0` | UX2-MS15 فهرست و دانلود پیوست Released با تطبیق SHA-256 و Run 341 هشت Job سبز؛ MS16 آپلود محدود و Gateهای UX2 باز |
 | `1.99.0` | UX2-MS16 آپلود نویسنده و وضعیت قرنطینهٔ محدود با Run 343 هشت Job سبز؛ MS17 اتصال Released و Gateهای UX2 باز |
 | `1.100.0` | UX2-MS17 اتصال صریح سند Released با Run 345 هشت Job سبز؛ MS18 ویرایش پیام خود و Gateهای UX2 باز |
+| `1.101.0` | UX2-MS18 ویرایش پیام خود با Revision/Conflict و Run 348 هشت Job سبز؛ MS19 حذف نمایشی و Gateهای UX2 باز |
