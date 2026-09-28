@@ -953,10 +953,10 @@ test("RPT1-F03 connects its checkpointed semantic runtime and renderers without 
   assert.match(xlsxRenderer, /rightToLeft/u);
   assert.match(xlsxRenderer, /MaximumXlsxRows/u);
   assert.match(rendererRegistry, /ExecutiveProjectStateReportRendererRegistry/u);
-  assert.match(renderingTests, /e19809b6c3ffa5ff3443babe683c9f286c3b928986d176f1d515166f336cf5a3/u);
-  assert.match(renderingTests, /d765dfc98873fbc07e28b7320524fd156cfa5acc80c6f4da2b2d42941c4e09d1/u);
-  assert.match(renderingTests, /6d18d03ff3e9100ffe0e12c5da05a6f1976c3d7c1d2ba7f27b36656dcc5ff0ba/u);
-  assert.match(renderingTests, /252a6dd6c8562242a37e4466dfb4d0a0155831abb39c30e2751309eb3acfa205/u);
+  assert.match(renderingTests, /f57eda74304a2035eccd9d447926b2eee255736b24de0b32e32fb1c116ce4ac7/u);
+  assert.match(renderingTests, /bb2e52bd2210cbe09884c1b290fb5afe3fda0451759e5062b4499bf910bdddde/u);
+  assert.match(renderingTests, /61be2a42023985a4ef1bda0abf7f637463696cb8435ead1209ea2b2230d04b41/u);
+  assert.match(renderingTests, /df6c0c290b3c270c38f8d033d636c7fbf5d5b15258a686fd9634bcff05d46dae/u);
   assert.match(policy, /ProjectStateSourcePermission = "project-state\.read"/u);
   assert.match(
     policy,
@@ -1192,8 +1192,8 @@ test("RPT1-F04 keeps bounded semantics while its connected pipeline remains defa
   assert.match(xlsxRenderer, /MetadataSheet\(model\)[\s\S]*LineageSheet\(model\)/u);
   assert.match(xlsxRenderer, /rightToLeft/u);
   assert.match(rendererRegistry, /ProjectProgressReportRendererRegistry/u);
-  assert.match(renderingTests, /8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7/u);
-  assert.match(renderingTests, /bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef/u);
+  assert.match(renderingTests, /d22391baca187bd6fc22a9e08ec12e0510dcdf47287de1285244d2879fa2c66f/u);
+  assert.match(renderingTests, /c2fb93dc5d25f27c25998aadb0de7e3d6ce41ce9a2617f94a33dd2f8b4a4d80a/u);
   assert.match(renderingTests, /NoDataWorkbookKeepsSemanticSheetsHeaderOnly/u);
   assert.match(renderingTests, /RendererRejectsOversizedTextAndFutureActual/u);
 
@@ -1661,7 +1661,7 @@ test("RPT1-F05 certified renderer is versioned deterministic and connected throu
   );
   assert.match(
     renderingTests,
-    /cadb7f0dc5670f401df879f04efdd930cf799213194e7cdf43c0d5d5e75a6222/u,
+    /710a17033dfca123da0a1dc53775fc16bd1aa4a5640d4e92c324e7658e8bfbf4/u,
   );
   assert.match(
     renderingTests,
@@ -2098,23 +2098,23 @@ test("RPT1-F06 certified renderer is versioned deterministic and connected throu
   );
   assert.match(
     renderingTests,
-    /42ab487014979eb5916628a782e46b8f6095ae0f2fd0c1f6e6a573cdbcd19750/u,
+    /5b3ac3de2865cc84e410576bbb692a208f318f8c60ba96c60423c9d99369c9ed/u,
   );
   assert.match(
     renderingTests,
-    /7d33988f4c86df11c9da002816eae2f9e2f758004f670ea0ec86ded236e522cb/u,
+    /275cfa12ea631d18613cd446d8726f579a898407cf11f92d84f97d66f748722a/u,
   );
   assert.match(
     renderingTests,
-    /dbe3fbc103ebc99a892a2690986a786f039a6c4e0910baea0c463658318e6994/u,
+    /e676f6448aa48a9a7a4e9d0f2a1011ee7b836d6dfdbefe96ef0934c09c01afb1/u,
   );
   assert.match(
     renderingTests,
-    /04e1754b19c6ba21a44f57dd79b121975c72f51b133401025493d1ff98216e50/u,
+    /197dea8707756d15c576196496bce2186f770a461e3304516e3885a23c9c5b47/u,
   );
   assert.match(
     renderingTests,
-    /fab7c75f5638077f056448606c50018ead10d29450e0c1b15fda221a45fb2609/u,
+    /009702ac149b1718d867607ce359590435142006713b52998ee9f409eebc2edb/u,
   );
   assert.doesNotMatch(
     `${renderingContracts}\n${pdfRenderer}\n${xlsxRenderer}`,
@@ -2778,10 +2778,10 @@ test("RPT1-F02 renderer contract stays deterministic while wiring remains produc
   assert.match(xlsx, /CompressionLevel\.NoCompression/u);
   assert.match(xlsx, /execution\.MaximumXlsxRows/u);
   assert.doesNotMatch(xlsx, /<f>|WriteStartElement\("f"/u);
-  assert.match(tests, /83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d/u);
-  assert.match(tests, /52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989/u);
-  assert.match(tests, /058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396/u);
-  assert.match(tests, /d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770/u);
+  assert.match(tests, /340d8a940f13672ccaa02883b554fc72cbae1f264d6572ca426363359ce65c02/u);
+  assert.match(tests, /f0a9ff9ca2d4428258b1e7407490a9ad0944be34a935f662a1fd4d565ead57a0/u);
+  assert.match(tests, /380c16e464b448e15bd6d2edea19b8e09bfc995a3cd27c4b48c1a24fb5429b94/u);
+  assert.match(tests, /6278785472fc03b0e3b9a0a69c84ae485538c4ceb3f12a6a854a902b61b740fd/u);
   assert.match(tests, /MonthlyWorkbookUsesCanonicalPersianMonthBoundariesAndIdentity/u);
   assert.match(tests, /NoDataWorkbookKeepsSemanticSheetsHeaderOnly/u);
   assert.match(tests, /NotConfiguredWorkbookCarriesExplicitReasons/u);

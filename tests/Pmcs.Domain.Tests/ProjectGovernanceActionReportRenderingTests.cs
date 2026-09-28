@@ -20,11 +20,11 @@ public sealed class ProjectGovernanceActionReportRenderingTests
         ["Metadata", "Coverage", "Issue", "Risk", "Decision", "Escalation", "Action"];
     private static readonly string[] ExpectedVisualDigests =
     [
-        "6cf11dd7ef26b414355e7619a26c934c8d1d25c38ec45c4edb1da28544bd56fb",
-        "b1814cefff50d40d1e4ead503d5e68db12bce5e5e1663bb3d6b4212dca2eeab5",
-        "4b9e1f3aa6403475cdb060c1e816d1bcad3189eb1a96ca4678d2b39127978ccf",
-        "673d82016d65bc9220dcdd97b575e2cd6001dfc75afb4fc352e5c006c548c1bc",
-        "161c61d90f75da2d8cb2b3c31a203c0b2876305b472c5331e8b8e056acb54f4b"
+        "b99f1c8b5f8ab07d5ba71868972bf84644c915e13f78b061b3f34a3c1e05bc35",
+        "20e4cded71dace52a61e6cef512d60ccf292de97719a91e6a651453f0b30fb99",
+        "5c5e3bd5e4dc2960d2fff53f38b59ff559f8e819a6d2a0dead3b9099fa224af9",
+        "ba449d454ba41841fee1491a94c3cbf17054de74554a71cf19e026fe5947ed56",
+        "7e814c297ee4def23da4eed5bb0b28d50e5b391633d2c03458c48970b0ac226b"
     ];
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class ProjectGovernanceActionReportRenderingTests
         Assert.DoesNotContain("SourceFactId", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("AssigneeDisplayName", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
         Ms48FontGoldenArtifacts.Save("project-governance-action-golden.xlsx", first.Bytes);
-        Assert.True(first.Sha256 == "7b41d33ea7db98fada6a041b9fd6bc5c265a8ab8400513fe643ca830d27efb1f",
+        Assert.True(first.Sha256 == "4f59c6e4a57491f301ecca0c2e853cbf08fc4246de3d0e46381e199bbca47890",
             $"F09_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -114,7 +114,7 @@ public sealed class ProjectGovernanceActionReportRenderingTests
         Ms48FontGoldenArtifacts.Save("project-governance-action-golden.pdf", first.Bytes);
         for (var index = 0; index < images.Count; index++)
             Ms48FontGoldenArtifacts.Save($"project-governance-action-page-{index + 1}.png", images[index]);
-        Assert.True(first.Sha256 == "85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1" &&
+        Assert.True(first.Sha256 == "42c03cd8de417624355e4f92d6eef3ae857f964ab99ed06c605e84567b628fe3" &&
                 visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F09_PDF_GOLDEN_SHA256={first.Sha256}; F09_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }

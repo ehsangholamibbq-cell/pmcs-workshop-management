@@ -18,8 +18,8 @@ public sealed class ProjectQualityHseReportRenderingTests
     private static readonly DateTimeOffset Cutoff = new(2026, 9, 27, 8, 0, 0, TimeSpan.Zero);
     private static readonly string[] SheetNames = ["Metadata", "Coverage", "Quality", "HSE"];
     private static readonly string[] ExpectedVisualDigests =
-        ["54e9b27c34442fe5257d506e4fb9d8013d335569976d0f39932452ff1a01edec",
-            "fd8ed2eb21a3264ab08f853d9301ceeec6379d8b5a2d7d2beb963554d1b28a36"];
+        ["f3b4ea0ecedcceea61439216a769409038a19c7bc9d2c9a92b4e540aa6d5a712",
+            "13cf7b7a8060781136ad4ce3b191dc1110e22452be5fe796074ba0c28c8caba2"];
 
     [Fact]
     public void F08RendererPinsTemplateSnapshotAndWholeClassification()
@@ -82,7 +82,7 @@ public sealed class ProjectQualityHseReportRenderingTests
         Assert.Single(XDocument.Parse(sheets[3]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("PersonReference", string.Concat(sheets), StringComparison.Ordinal);
         Ms48FontGoldenArtifacts.Save("project-quality-hse-golden.xlsx", first.Bytes);
-        Assert.True(first.Sha256 == "8a22452579b105b2927184caa97ddc4c64c99b91b59d440961c4e0c733fcc626",
+        Assert.True(first.Sha256 == "b1fcfc49885640319e83c165707767d03b7f6cedb806841c607cd883199112f3",
             $"F08_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -109,7 +109,7 @@ public sealed class ProjectQualityHseReportRenderingTests
         Ms48FontGoldenArtifacts.Save("project-quality-hse-golden.pdf", first.Bytes);
         for (var index = 0; index < images.Count; index++)
             Ms48FontGoldenArtifacts.Save($"project-quality-hse-page-{index + 1}.png", images[index]);
-        Assert.True(first.Sha256 == "b7e4ed87273b5270c124cdb54d76cfee7e50492630c3d5425090c30958f54213" &&
+        Assert.True(first.Sha256 == "b91d7185d1ec327e607ea6d70671b4f96f482d33bab796223fffadc9cfd4a30f" &&
                 visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F08_PDF_GOLDEN_SHA256={first.Sha256}; F08_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }

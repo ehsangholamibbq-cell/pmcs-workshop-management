@@ -396,7 +396,7 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
     {
         container.Column(column =>
         {
-            column.Spacing(7);
+            column.Spacing(5);
             column.Item().Element(aging => ComposeAging(aging, model));
             column.Item().Element(rows => ComposeOpenObligations(rows, model));
             column.Item().Element(counts => ComposeSourceCounts(counts, model));
@@ -631,10 +631,10 @@ internal sealed class ProjectFinancialPositionReportPdfRenderer(
         table.Cell().Element(header ? SummaryHeaderCell : SummaryValueCell).Text(value);
 
     private static IContainer SummaryHeaderCell(IContainer container) => container
-        .Background("#EEF3F9").Border(0.5f).BorderColor("#C8D6E8").Padding(4);
+        .Background("#EEF3F9").Border(0.5f).BorderColor("#C8D6E8").Padding(2);
 
     private static IContainer SummaryValueCell(IContainer container) => container
-        .Border(0.5f).BorderColor("#C8D6E8").Padding(4);
+        .Border(0.5f).BorderColor("#C8D6E8").Padding(2);
 
     private static void TableHeader(TableCellDescriptor header, string value) => header.Cell()
         .Background("#DCE8F5").Border(0.5f).BorderColor("#AFC3DE").Padding(3)

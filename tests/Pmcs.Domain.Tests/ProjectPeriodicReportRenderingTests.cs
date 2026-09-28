@@ -134,7 +134,7 @@ public sealed class ProjectPeriodicReportRenderingTests
             File.WriteAllBytes(Path.Combine(qualificationOutput, "project-periodic-weekly-golden.xlsx"), first.Bytes);
         }
         Assert.Equal(
-            "83fd80eedaa1024e84eb253bec76591379fe2f088be12c5b322573d63eb1909d",
+            "340d8a940f13672ccaa02883b554fc72cbae1f264d6572ca426363359ce65c02",
             first.Sha256);
     }
 
@@ -194,12 +194,12 @@ public sealed class ProjectPeriodicReportRenderingTests
             }
         }
         Assert.Equal(
-            "52ec4e80c34e682f6994ef7a674b161b748a772e34b4e04ec12e27e94c98f989",
+            "f0a9ff9ca2d4428258b1e7407490a9ad0944be34a935f662a1fd4d565ead57a0",
             first.Sha256);
         Assert.Equal(
             [
-                "058a3da3045408a1d87dc9e5c942cd38ffdf7da1921b6594e6ee88a0aa22b396",
-                "d61a1090d07d5f21a5d57c15b3abb197a341332b124ba3e8a98461996a42b770"
+                "380c16e464b448e15bd6d2edea19b8e09bfc995a3cd27c4b48c1a24fb5429b94",
+                "6278785472fc03b0e3b9a0a69c84ae485538c4ceb3f12a6a854a902b61b740fd"
             ],
             visualDigests);
     }

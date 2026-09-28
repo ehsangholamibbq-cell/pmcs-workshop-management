@@ -148,7 +148,7 @@ public sealed class ProjectProgressReportRenderingTests
         WriteQualificationArtifacts("project-progress-golden.xlsx", first.Bytes);
         Assert.True(
             string.Equals(
-                "8a1866b7bdb3b9cb96d83a1897d80db4584c1590b3727e9ebb6a17856d672fb7",
+                "d22391baca187bd6fc22a9e08ec12e0510dcdf47287de1285244d2879fa2c66f",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F04_XLSX_GOLDEN_SHA256={first.Sha256}");
@@ -207,12 +207,12 @@ public sealed class ProjectProgressReportRenderingTests
 
         var expectedVisualDigests = new[]
         {
-            "556d3b6a56d59e0c4ac8e8fcd526fca405fe9ba066ae5823b2c9c7482ea4b69b",
-            "8fbb9b69d9322522e8a55f041e16c8785716dc7554660bf2eacdf9030fe5e850"
+            "aa4e073979b86ab343f632d24695ca85293072a8f9436150a97866c9473538bd",
+            "874807c8f9674a27f0005cc329227275368b2c5d47b93329b6399424e6075d02"
         };
         Assert.True(
             string.Equals(
-                "bdc9c3a99c1dc5a0da57f9431d7bc7f04830fbbfbeb578b24c7234df708785ef",
+                "c2fb93dc5d25f27c25998aadb0de7e3d6ce41ce9a2617f94a33dd2f8b4a4d80a",
                 first.Sha256,
                 StringComparison.Ordinal) &&
                 expectedVisualDigests.SequenceEqual(visualDigests),

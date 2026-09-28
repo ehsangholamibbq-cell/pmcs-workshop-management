@@ -162,7 +162,7 @@ public sealed class ProjectFinancialPositionReportRenderingTests
         WriteQualificationArtifacts("project-financial-position-golden.xlsx", first.Bytes);
         Assert.True(
             string.Equals(
-                "cadb7f0dc5670f401df879f04efdd930cf799213194e7cdf43c0d5d5e75a6222",
+                "710a17033dfca123da0a1dc53775fc16bd1aa4a5640d4e92c324e7658e8bfbf4",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F05_XLSX_GOLDEN_SHA256={first.Sha256}");

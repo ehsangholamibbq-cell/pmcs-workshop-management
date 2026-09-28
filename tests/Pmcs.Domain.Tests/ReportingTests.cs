@@ -458,7 +458,7 @@ public sealed class ReportingTests
             }
         }
         Assert.Equal(
-            ["95d6e71de15d9d130041d5c295c94239b9fe9095e6572e581aa9a655ee85c9b2"],
+            ["e6f78eb5ed6bcf2226c4805d72a989352265c3d33fbc423e280236be5f281fc7"],
             visualDigests);
     }
 

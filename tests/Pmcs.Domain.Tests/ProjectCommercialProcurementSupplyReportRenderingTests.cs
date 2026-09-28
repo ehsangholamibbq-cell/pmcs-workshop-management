@@ -175,7 +175,7 @@ public sealed class ProjectCommercialProcurementSupplyReportRenderingTests
             first.Bytes);
         Assert.True(
             string.Equals(
-                "42ab487014979eb5916628a782e46b8f6095ae0f2fd0c1f6e6a573cdbcd19750",
+                "5b3ac3de2865cc84e410576bbb692a208f318f8c60ba96c60423c9d99369c9ed",
                 first.Sha256,
                 StringComparison.Ordinal),
             $"F06_XLSX_GOLDEN_SHA256={first.Sha256}");
@@ -244,13 +244,13 @@ public sealed class ProjectCommercialProcurementSupplyReportRenderingTests
 
         var expectedVisualDigests = new[]
         {
-            "dbe3fbc103ebc99a892a2690986a786f039a6c4e0910baea0c463658318e6994",
-            "04e1754b19c6ba21a44f57dd79b121975c72f51b133401025493d1ff98216e50",
-            "fab7c75f5638077f056448606c50018ead10d29450e0c1b15fda221a45fb2609"
+            "e676f6448aa48a9a7a4e9d0f2a1011ee7b836d6dfdbefe96ef0934c09c01afb1",
+            "197dea8707756d15c576196496bce2186f770a461e3304516e3885a23c9c5b47",
+            "009702ac149b1718d867607ce359590435142006713b52998ee9f409eebc2edb"
         };
         Assert.True(
             string.Equals(
-                "7d33988f4c86df11c9da002816eae2f9e2f758004f670ea0ec86ded236e522cb",
+                "275cfa12ea631d18613cd446d8726f579a898407cf11f92d84f97d66f748722a",
                 first.Sha256,
                 StringComparison.Ordinal) &&
                 expectedVisualDigests.SequenceEqual(visualDigests),

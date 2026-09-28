@@ -102,7 +102,7 @@ public sealed class ProjectTechnicalOfficeReportRenderingTests
         Assert.Single(XDocument.Parse(sheets[5]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("<f>", string.Concat(sheets), StringComparison.Ordinal);
         WriteQualificationArtifact("project-technical-office-golden.xlsx", first.Bytes);
-        Assert.True(first.Sha256 == "d25bc987e3411f159b7aba04f6daadc8c0d30758ac77c953e8c28edb9a709547",
+        Assert.True(first.Sha256 == "a93140304603a0f9bffc0cc36058df27bb67df86413400fd8bbe675dc0856643",
             $"F07_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -144,13 +144,13 @@ public sealed class ProjectTechnicalOfficeReportRenderingTests
         WriteQualificationArtifact("project-technical-office-golden.pdf", first.Bytes);
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
-        Assert.True(first.Sha256 == "2c149cd41d1765c960964816df13bf4054adb0f009fc827a7abfd49c4d513f43" &&
+        Assert.True(first.Sha256 == "50a20053f0e954ac57fb0450cf2157049ee6c1a2f29473b8bf454ee4612dc0fd" &&
             visualDigests.SequenceEqual(new[]
             {
-                "7436cf1c07158a13d61bf0984c40a8008dd6bb081d8989ff2e1941a8ce1d22b1",
-                "c789e79abd262238ea8a9a39ce938fbac71fd5d6bde2f0a935d0101c39545a4c",
-                "c311f0571a42637cb1462c0033bb9ea3f168f61e7dd68b20f991d5099d5205df",
-                "40d55bd9871af6b3932e00dd5194c7d19f9ed6f7cf1f497134cef43c0a4032ab"
+                "c9f30dc4de3d83f3d8bf90d1dcdec7e726a018599e58e37b003381c1986773d0",
+                "75a544ebeb4b21878807813cc32f5325799254cf22b96243cdabc3ffd387c4cd",
+                "f96cd6c73245740afa2d22195eb2edba557182e3e87357f0a6f7c92aae068559",
+                "4bd6dc818490b41333abf4eb5d6432eed669c7dde915b435873fc8ba752aa112"
             }),
             $"F07_PDF_GOLDEN_SHA256={first.Sha256}; F07_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
     }

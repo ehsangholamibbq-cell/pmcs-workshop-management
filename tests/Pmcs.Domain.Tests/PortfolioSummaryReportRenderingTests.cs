@@ -19,9 +19,9 @@ public sealed class PortfolioSummaryReportRenderingTests
     private static readonly DateOnly LocalDate = new(2026, 9, 27);
     private static readonly string[] ExpectedVisualDigests =
     [
-        "f0e127deefd3c240be0ff573e86a4c9ed386eb052ef09d1dbf95481de15aaa11",
-        "a2834b4d79ddcc90eed36b4cbcfcfef4fd40301bce2f998d109d9c333f693719",
-        "35d603e3354b3aa85eeb9532cb96cc219ff1af3ea0342853d3fbb73c9521f690"
+        "60d4d57b2878597981f0af3434924d48e85a7d4928c8c33330f73c95f4f80ac8",
+        "4e8b245135302a8bd39a4eeb5aee405b1952f2a76b7c2ea7afd519e83cf1e37a",
+        "d16d42796838c05ae94892c3672f009dc743b2ce774ce4d936fa29e5ba71c3d2"
     ];
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class PortfolioSummaryReportRenderingTests
         Assert.Contains("بدون مجوز", sheets[5], StringComparison.Ordinal);
         Assert.DoesNotContain("TotalPortfolio", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
         Ms48FontGoldenArtifacts.Save("portfolio-summary-golden.xlsx", first.Bytes);
-        Assert.True(first.Sha256 == "6f221d2f8de5c4af8079aaec65a9d0c11c669036a5777767b3b263cdd69834ec",
+        Assert.True(first.Sha256 == "c0b23f66a0044e187a8d176099571dbd8eca7eda2b88c5d5d084630a97a620e5",
             $"F10_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
 
@@ -119,7 +119,7 @@ public sealed class PortfolioSummaryReportRenderingTests
         Ms48FontGoldenArtifacts.Save("portfolio-summary-golden.pdf", first.Bytes);
         for (var index = 0; index < images.Count; index++)
             Ms48FontGoldenArtifacts.Save($"portfolio-summary-page-{index + 1}.png", images[index]);
-        Assert.True(first.Sha256 == "a441575ad5f561d44a37d767dd2ef0c9ad16489edf26bee3a5f57aa297b09db9" &&
+        Assert.True(first.Sha256 == "0407ff05a5760327dd064ce81c54036bb401f37377502b18147e15a7e91da356" &&
                 digests.SequenceEqual(ExpectedVisualDigests),
             $"F10_PDF_GOLDEN_SHA256={first.Sha256}; F10_PDF_VISUAL_SHA256={string.Join(',', digests)}");
     }
