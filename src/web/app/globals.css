@@ -1,16 +1,46 @@
 :root {
   color-scheme: light;
-  --ink: #14211f;
-  --muted: #66726f;
-  --paper: #f2f4ef;
-  --surface: #ffffff;
-  --line: #dfe5df;
-  --deep: #112a2a;
-  --teal: #176b62;
-  --amber: #c4832f;
-  --soft-teal: #dceee8;
-  --soft-amber: #f4ead9;
-  --shadow: 0 18px 48px rgba(17, 42, 42, 0.08);
+  /* PMCS-DS-001: brand, surfaces and states have separate semantic roles. */
+  --brand-navy-950: #071525;
+  --brand-navy-900: #0c2036;
+  --brand-navy-800: #15334d;
+  --brand-green-700: #11643b;
+  --brand-green-600: #187a49;
+  --brand-silver-400: #9ba4a8;
+  --surface-canvas: #fbf8f1;
+  --surface-subtle: #f5efe4;
+  --surface-card: #ffffff;
+  --border-default: #e9dfcf;
+  --text-primary: #17242e;
+  --text-secondary: #68747c;
+  --status-info: #235c99;
+  --status-info-surface: #e9f2fa;
+  --status-success: #17684c;
+  --status-success-surface: #e4f2e9;
+  --status-warning: #996017;
+  --status-warning-surface: #fff0d9;
+  --status-danger: #aa3740;
+  --status-danger-surface: #fff0ed;
+  --state-draft: #576373;
+  --state-offline: #825c26;
+  --state-stale: #795b32;
+  --state-no-data: #66727a;
+  --state-no-permission: #95424b;
+  --insight-ai: #5e518a;
+  --focus-color: var(--brand-green-700);
+
+  /* Legacy component aliases, retained while the active modules migrate. */
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --paper: var(--surface-canvas);
+  --surface: var(--surface-card);
+  --line: var(--border-default);
+  --deep: var(--brand-navy-900);
+  --teal: var(--brand-green-700);
+  --amber: var(--status-warning);
+  --soft-teal: var(--status-success-surface);
+  --soft-amber: var(--status-warning-surface);
+  --shadow: 0 12px 28px rgba(7, 21, 37, 0.07);
 }
 
 /* V1.1 IAM1 — configurable, allowlisted premium login presentation */
@@ -1280,11 +1310,29 @@ html {
   scroll-behavior: smooth;
 }
 
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 3px;
+}
+
+.sidebar {
+  --focus-color: #c4f1d8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   margin: 0;
   color: var(--ink);
   background:
-    radial-gradient(circle at 85% -10%, rgba(23, 107, 98, 0.11), transparent 32rem),
+    radial-gradient(circle at 85% -10%, rgba(17, 100, 59, 0.08), transparent 32rem),
     var(--paper);
   font-family: Tahoma, "Segoe UI", Arial, sans-serif;
 }
@@ -3440,10 +3488,23 @@ output {
     align-items: center;
     gap: 1rem;
     overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9ba4a8 var(--brand-navy-900);
+    scroll-padding-inline: 1rem;
   }
 
   .sidebar nav {
     display: flex;
+    flex: 0 0 auto;
+    gap: 0.25rem;
+  }
+
+  .sidebar .nav-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
   }
 
   .sidebar-meta {

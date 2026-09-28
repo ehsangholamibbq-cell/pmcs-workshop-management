@@ -36,6 +36,8 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect(calendar).toBeVisible();
   await expect(calendar.getByRole("gridcell")).toHaveCount(42);
   await expect(calendar.getByRole("button", { name: "امروز" })).toBeVisible();
+  await calendarTrigger.click();
+  await expect(calendar).toBeHidden();
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -49,6 +51,14 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
     }))).toEqual({ clientWidth: viewport.width, scrollWidth: viewport.width });
     await expect(page.getByRole("navigation")).toBeVisible();
   }
+
+  const mobileSidebar = page.locator(".sidebar");
+  await expect.poll(() => mobileSidebar.evaluate((element) =>
+    element.scrollWidth > element.clientWidth)).toBe(true);
+  const profileNavigation = mobileSidebar.getByRole("link", { name: "پروفایل من" });
+  await profileNavigation.focus();
+  await expect(profileNavigation).toHaveCSS("outline-style", "solid");
+  await expect(profileNavigation).toHaveCSS("white-space", "nowrap");
 });
 
 test("loading and failure states stay explicit and localized", async ({ page }) => {

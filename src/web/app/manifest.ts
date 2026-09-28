@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "ثبت واقعیت کارگاه و تبدیل آن به اطلاعات مدیریتی",
     start_url: "/",
     display: "standalone",
-    background_color: "#f2f4ef",
-    theme_color: "#112a2a",
+    background_color: "#fbf8f1",
+    theme_color: "#0c2036",
     lang: "fa",
     dir: "rtl",
     icons: [
