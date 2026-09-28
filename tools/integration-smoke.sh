@@ -928,6 +928,7 @@ if [[ "${profile_event_safety}" != "2" ]]; then
   exit 1
 fi
 
+current_step="checking duplicate shared document session"
 document_duplicate="$(curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -939,6 +940,7 @@ document_duplicate="$(curl --silent --fail \
 grep -q '"status":"Released"' <<<"${document_duplicate}"
 grep -q '"versionNumber":1' <<<"${document_duplicate}"
 
+current_step="creating a second shared document version"
 document_version_session="$(curl --silent --fail \
   --request POST \
   --header "X-Tenant-Id: ${tenant_id}" \
@@ -949,6 +951,7 @@ document_version_session="$(curl --silent --fail \
   "http://127.0.0.1:${port}/api/v1/upload-sessions")"
 grep -q '"versionNumber":2' <<<"${document_version_session}"
 
+current_step="verifying infected shared document scan"
 infected_file="${temporary_directory}/scanner-test.txt"
 printf 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE' > "${infected_file}"
 infected_size="$(wc -c < "${infected_file}" | tr -d '[:space:]')"
@@ -959,7 +962,7 @@ curl --silent --fail \
   --header "X-User-Id: ${document_uploader_id}" \
   --header 'Idempotency-Key: integration-document-infected-session' \
   --header 'Content-Type: application/json' \
-  --data "{\"clientGeneratedId\":\"${document_infected_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectChat\",\"ownerId\":\"${report_id}\",\"originalFileName\":\"scanner-test.txt\",\"contentType\":\"text/plain\",\"sizeBytes\":${infected_size},\"sha256\":\"${infected_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
+  --data "{\"clientGeneratedId\":\"${document_infected_id}\",\"projectId\":\"${project_id}\",\"ownerType\":\"ProjectGeneral\",\"ownerId\":\"${project_id}\",\"originalFileName\":\"scanner-test.txt\",\"contentType\":\"text/plain\",\"sizeBytes\":${infected_size},\"sha256\":\"${infected_sha}\",\"classification\":\"Internal\",\"retentionPolicy\":\"Standard\",\"retainUntil\":null,\"legalHold\":false}" \
   "http://127.0.0.1:${port}/api/v1/upload-sessions" >/dev/null
 infected_response_file="${temporary_directory}/infected-response.json"
 infected_status="$(curl --silent --output "${infected_response_file}" --write-out '%{http_code}' \
