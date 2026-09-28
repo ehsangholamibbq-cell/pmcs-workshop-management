@@ -36,7 +36,8 @@ setup("OIDC login establishes the scoped BFF session", async ({ page }) => {
   }
 
   await page.goto("/login?error=identity");
-  await expect(page.getByRole("alert")).toHaveText("ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید.");
+  await expect(page.locator(".login-card .login-error[role='alert']"))
+    .toHaveText("ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید.");
   await expect(page.getByRole("button", { name: "ورود امن" })).toBeEnabled();
   await captureVisualBaseline(page, "42-login-identity-error");
 
