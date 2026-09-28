@@ -67,6 +67,19 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
     { width: 320, height: 720 },
   ]) {
     await page.setViewportSize(viewport);
+    if (viewport.width === 320) {
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth
+        ? [...document.querySelectorAll(".app-shell, .workspace, .workspace *")]
+          .filter((element) => {
+            const box = element.getBoundingClientRect();
+            return box.left < -2 || box.right > window.innerWidth + 2;
+          })
+          .slice(0, 12)
+          .map((element) => ({ tag: element.tagName, className: element.className,
+            width: Math.round(element.getBoundingClientRect().width) }))
+        : []);
+      if (overflow.length > 0) console.log("Narrow viewport overflow", overflow);
+    }
     await expect.poll(() => page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
