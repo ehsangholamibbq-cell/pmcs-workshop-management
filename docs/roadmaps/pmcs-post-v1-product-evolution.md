@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.112.0`
+- نسخه سند: `1.113.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1183,6 +1183,16 @@ UX2-MS29 روی source `bd6c8ce271ae28c5a1ebd47c4f2f0bf859b460c4` / tree
 Exact next `UX2-MS30` انتخاب اختیاری پیوست برای تبدیل Issue است؛ RFI،
 مهاجرت و Gateهای بصری بازند.
 
+UX2-MS30 روی source `02823eee601aba7a60b3772202e091f4f9688380` / tree
+`fae7baa2e64a49601a822f6c637e581062754f9c` در Run 373
+(`36435409906`) هر هشت Job را پاس کرد. فرم Issue انتخاب صریح حداکثر ده
+فایل Released همان پیام را به فرمان رسمی می‌دهد؛ هیچ فایل پیش‌فرض نیست.
+مالک ActionControl شواهد مسئله را به پیام و نسخه‌اش و شناسهٔ سند با SHA-256
+پیوند می‌دهد و نسخه/Hash/نام/MIME/اندازهٔ پاسخ کنترل می‌شود. Conflict فایل‌ها
+و تبار را تازه می‌خواند و تأیید را پاک می‌کند؛ مرورگر انتخاب یک فایل از دو،
+تعارض، Reload و 403 را تأیید کرد. Exact next `UX2-MS31` پیوست RFI است؛
+مهاجرت و Gateهای بصری بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1535,3 +1545,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.110.0` | UX2-MS27 تبدیل فایل Released به Evidence رسمی با Hash و جلوگیری از تکرار و Run 367 هشت Job سبز؛ MS28 Technical Document و Gateهای UX2 باز |
 | `1.111.0` | UX2-MS28 تبدیل فایل Released به Technical Document Draft/Revision با Run 369 هشت Job سبز؛ MS29 پیوست Action و Gateهای UX2 باز |
 | `1.112.0` | UX2-MS29 انتخاب صریح پیوست Released برای تبار Action با Run 371 هشت Job سبز؛ MS30 پیوست Issue و Gateهای UX2 باز |
+| `1.113.0` | UX2-MS30 انتخاب صریح پیوست Released برای شواهد Issue با Run 373 هشت Job سبز؛ MS31 پیوست RFI و Gateهای UX2 باز |
