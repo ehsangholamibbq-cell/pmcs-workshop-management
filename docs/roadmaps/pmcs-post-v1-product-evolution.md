@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.84.0`
+- نسخه سند: `1.85.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -940,6 +940,14 @@ Descriptor نسخه‌دار یا احراز هویت از نماد رسمی ا�
 `VX-G3` و مهاجرت Chat/Reporting/ماژول‌ها و Visual Qualification بازند.
 Exact Next `UX2-MS02` Token/Focus/Reduced Motion و ناوبری موبایل است.
 
+UX2-MS02 روی source `62bf1ef6c5c5b23478a0580786a4875b990f4ef8` / tree
+`f690245e91ac362fcc5abf290088718562e6955a` در Run 309
+(`36370829403`) هر هشت Job را پاس کرد. Tokenهای `PMCS-DS-001`، Focus-visible،
+Reduced Motion و ناوبری موبایل به UI وصل‌اند؛ Run 308 شکست آزمون Focus
+برنامه‌ای را با آزمون Tab/Shift+Tab واقعی در Commit جلوبرنده رفع کرد.
+Exact Next `UX2-MS03` رابط خواندنی Chat محدود به پروژه است؛ Gateهای
+Design System، مهاجرت کامل، Reporting UI و Qualification همچنان بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1264,3 +1272,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.82.0` | MS05 شش تبدیل مالک رسمی با Evidence سبز Runهای 297/299/301 و ۶۳ Migration؛ MS06 و UX2/Production باز |
 | `1.83.0` | MS06 Qualification متصل و پایان ساخت COL1 با Run 304 و Restore ۶۳ Migration؛ UX2/INT1/QA1 و Production باز |
 | `1.84.0` | UX2-MS01 نشان رسمی در Shell/Login با Run 306 و هشت Job سبز؛ MS02 و Gateهای Design System/مهاجرت/Visual Qualification باز |
+| `1.85.0` | UX2-MS02 Token/Focus/Reduced Motion/Mobile با Run 309 و هشت Job سبز؛ MS03 و Gateهای UX2 باز |

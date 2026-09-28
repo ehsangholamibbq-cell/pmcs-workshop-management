@@ -4,10 +4,10 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS01-C1`, source
-`16ade7062aef5090b1b6ebc2b9d9409d3db46e19`, Full CI Run 306 (8/8).
-The official transparent brand mark is in Login/Shell; COL1 connected build
-and qualification remain closed with 63 migrations. UX2-MS02 is next, then
+Current safe checkpoint: `PMCS-V1.1-UX2-MS02-C1`, source
+`62bf1ef6c5c5b23478a0580786a4875b990f4ef8`, Full CI Run 309 (8/8).
+The official brand mark, shared tokens, focus and mobile navigation are in UI;
+COL1 connected build remains closed with 63 migrations. UX2-MS03 is next, then
 dedicated Chat/Reporting UI, INT1/QA1 and their separate gates. Rollout
 flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
 
