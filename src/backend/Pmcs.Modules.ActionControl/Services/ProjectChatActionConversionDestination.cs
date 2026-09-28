@@ -84,6 +84,12 @@ internal sealed class ProjectChatActionConversionDestination(
                 .ToArrayAsync(cancellationToken);
             var deadline = rules.Length == 0 ? null :
                 GovernanceDeadlineCalculator.Calculate(command.At, rules[0], project);
+            var evidenceReferences = new[]
+            {
+                $"collaboration:message:{command.MessageId:N}:revision:{command.MessageRevision}"
+            }.Concat(command.Documents.Select(item =>
+                $"collaboration:document:{item.Id:N}:sha256:{item.Sha256}"))
+                .ToArray();
             var issue = ManagementIssue.Create(command.DestinationId,
                 command.TenantId, command.ProjectId, details.Title,
                 details.ObservedFact ?? command.MessageBody, details.Category,
@@ -91,7 +97,7 @@ internal sealed class ProjectChatActionConversionDestination(
                 details.TargetResolutionDate, "collaboration", "ProjectMessage",
                 command.MessageId, command.MessageRevision,
                 command.MessageBody[..Math.Min(1_000, command.MessageBody.Length)],
-                null, command.Documents.Select(item => item.Id.ToString("D")).ToArray(),
+                null, evidenceReferences,
                 details.Confidentiality, deadline?.DueAt, deadline?.RuleVersionId,
                 command.ActorUserId, command.At);
             db.Issues.Add(issue);

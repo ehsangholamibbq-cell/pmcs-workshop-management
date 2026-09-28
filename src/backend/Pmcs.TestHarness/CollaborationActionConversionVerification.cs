@@ -91,7 +91,9 @@ internal static partial class Program
             governance.StatusCode == HttpStatusCode.OK &&
             governance.Payload.GetProperty("issues").EnumerateArray().Any(item =>
                 HasGuid(item, "id", issueId) &&
-                item.GetProperty("sourceModule").GetString() == "collaboration"),
+                item.GetProperty("sourceModule").GetString() == "collaboration" &&
+                item.GetProperty("evidenceReferences").EnumerateArray().Any(reference =>
+                    reference.GetString() == $"collaboration:message:{sourceId:N}:revision:1")),
             $"issue={(int)issue.StatusCode};lineage={(int)lineage.StatusCode};governance={(int)governance.StatusCode}");
 
         var failed = assertions.Count(item => !item.Passed);
