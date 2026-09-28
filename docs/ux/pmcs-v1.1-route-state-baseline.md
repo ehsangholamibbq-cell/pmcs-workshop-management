@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS38`؛ MS37 Runهای 396/397 موفق و Safe، source MS38 Run 398 موفق، CI مستندات شرط اعتبار
+- مرحله: `UX2-MS39`؛ MS38 Runهای 398/399 موفق و Safe، source MS39 Run 400 موفق، CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -88,6 +88,14 @@ Artifact ۴۲تایی Run 396 نیز با index و SHA/ابعاد و Source/Run 
 Artifact ۴۳تصویری Run 398 با index و SHA/ابعاد و Source/Run تطبیق شد؛ PDF همراه
 هم از نظر digest و ساختار معتبر است. قاب 43 همان UI تعاملی را در media چاپ نشان
 می‌دهد. PDF A4 در ۲۲ صفحه تولید می‌شود؛ صفحهٔ نخست ناوبری بریده و کنترل‌های
-فرم را چاپ می‌کند. بنابراین Print System و بازبینی نهایی `VX-G1` بازند.
+فرم را چاپ می‌کند. در MS38، Print System و بازبینی نهایی `VX-G1` باز بودند.
+
+Run 399 مستندات MS38 هشت Job سبز شد. Source MS39 در Run 400 نیز هر هشت Job
+را پاس کرد؛ Artifact `10992023150` تمام ۴۳ PNG و PDF را با SHA/ابعاد و
+Source/Run معتبر دارد. قاب 19 کنتراست کارت حساب Wizard را پس از اصلاح و
+قاب 41 همان مانع Preview را نشان می‌دهد. جمع‌بندی ممیزی، پوشش ۱۱ Route و
+۳۰ State و Gapهای باقی‌مانده در `pmcs-v1.1-vx-g1-audit-review.md` است.
+پذیرش `VX-G1` فقط پس از CI مستندات MS39 انجام می‌شود؛ `VX-G3/G4/G5`
+برای سیستم طراحی، مهاجرت و Qualification بازند.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.

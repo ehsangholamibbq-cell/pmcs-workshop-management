@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `Evidence In Progress`
+- وضعیت: `VX-G1 Audit Complete Candidate تا CI مستندات MS39؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -202,3 +202,20 @@ Source فعال Web قانون `@media print` اختصاصی ندارد. این 
 تولید PDF نیستند؛ نشان می‌دهند چاپ مرورگر هنوز برای ارائهٔ مدیریتی Qualified
 نیست. فونت فارسی تازه نیز انتخاب و در تصویر/چاپ Qualification نشده است.
 `VX-G1` تا بازبینی نهایی inventory/state باز، و `VX-G3/G4/G5` نیز بازند.
+
+## ۱۳. پیوست UX2-MS39 — جمع‌بندی Gate ممیزی و کنتراست Wizard
+
+Source `57d33dc05900f1a0a7994817b7cb84dabe34377e` / tree
+`ea1bc9ca4259ea461c4ac2853df1a1401ec71b9a` در Run 400 هر هشت Job را
+پاس کرد. کارت حساب Wizard در قاب 19 قبلاً متن سفید روی زمینهٔ روشن داشت؛
+اکنون متن اصلی، توضیح و دکمه با Tokenهای خوانا دیده می‌شوند و E2E نسبت
+کنتراست حداقل ۴٫۵ به ۱ را نسبت به زمینهٔ روشن کنترل می‌کند. Artifact
+`10992023150` با ۴۳ PNG و PDF از نظر Source/Run، SHA و ابعاد بررسی شد؛
+قاب 19 خوانا و قاب 41 Preview مسدود را بدون تغییر مسیر اجرا نشان می‌دهد.
+
+سند `pmcs-v1.1-vx-g1-audit-review.md` اکنون پوشش ۱۱ Route، ۳۰ State و
+۴۳ Capture را با یافته‌های اولویت‌دار ثبت می‌کند. P1 چاپ مرورگر، affordance
+ناوبری موبایل، Loading خالی و FileInput انگلیسی به Gateهای پیاده‌سازی و
+Qualification بعدی رفته‌اند. جدول Gate تاریخی بخش ۵ وضعیت فعلی نیست؛
+`VX-G1` پس از Full CI مستندات MS39 قابل پذیرش است. `VX-G3/G4/G5`، فونت
+فارسی تازه و Qualification چاپ بازند.

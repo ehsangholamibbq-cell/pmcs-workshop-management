@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.121.0`
+- نسخه سند: `1.122.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1298,6 +1298,18 @@ UX2-MS37 documentation `796ea6f6dd5c6b6807aa705bc38e62647a0e1a6e` در Run 397
 next پس از Gateهای MS38، `UX2-MS39` بازبینی یکپارچهٔ inventory و Evidence
 `VX-G1` است؛ `VX-G1/G3/G4/G5` و INT1/QA1 باز می‌مانند.
 
+UX2-MS38 documentation `5efed8b2260ac169109efcf982dc06fa5319aed2` در Run 399
+هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS38-C1` Safe شد. UX2-MS39 Source
+`57d33dc05900f1a0a7994817b7cb84dabe34377e` / tree
+`ea1bc9ca4259ea461c4ac2853df1a1401ec71b9a` کنتراست کارت حساب Wizard
+را با Tokenهای متن خوانا اصلاح کرد و E2E نسبت حداقل ۴٫۵ به ۱ را کنترل می‌کند.
+Run 400 هشت Job سبز و Artifact `10992023150` با ۴۳ تصویر/PDF و index معتبر
+است؛ قاب 19 خوانا و قاب 41 Preview مسدود همچنان حاضر است. ممیزی `VX-G1`
+در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md` پوشش ۱۱ Route، ۳۰ State و
+Gapهای اولویت‌دار را ثبت کرد؛ CI مستندات شرط پذیرش Gate است. Exact next
+`UX2-MS40` FileInput فارسی/دسترس‌پذیر در مدیریت ظاهر Login است؛ `VX-G3/G4/G5`
+و INT1/QA1 باز می‌مانند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1659,3 +1671,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.119.0` | UX2-MS35 documentation Run 389 هشت Job سبز و Safe؛ UX2-MS36 Preview مسدود تکثیر در baseline چهل‌ویک‌تایی، Runهای 390–392 علت گذار آزمون را آشکار و correction Run 393 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS37 و Gateهای Visual باز |
 | `1.120.0` | UX2-MS36 documentation Run 394 هشت Job سبز و Safe؛ UX2-MS37 Candidate خطای callback هویت در baseline چهل‌ودوتایی، Run 395 Setup assertion شکست و correction Run 396 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS38 Print و Gateهای Visual باز |
 | `1.121.0` | UX2-MS37 documentation Run 397 هشت Job سبز و Safe؛ UX2-MS38 Candidate چاپ مرورگر با ۴۳ PNG و PDF A4 بیست‌ودوصفحه‌ای، Run 398 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS39 و Gateهای Visual باز |
+| `1.122.0` | UX2-MS38 documentation Run 399 هشت Job سبز و Safe؛ UX2-MS39 اصلاح کنتراست کارت حساب Wizard و جمع‌بندی ممیزی ۱۱ Route/۳۰ State/۴۳ تصویر، Run 400 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار VX-G1، MS40 FileInput و Gateهای G3/G4/G5 باز |
