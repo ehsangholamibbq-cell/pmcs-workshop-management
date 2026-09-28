@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.90.0`
+- نسخه سند: `1.91.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -987,6 +987,14 @@ UX2-MS07 روی source `70c547c2993c521246ff61e688b9ba98e28f70eb` / tree
 در مرورگر واقعی همان هویت را نگه می‌دارد. Exact Next `UX2-MS08` ورودی
 گزارش روزانه/دوره‌ای F01/F02 است؛ OutputAccess و Gateهای UX2 بازند.
 
+UX2-MS08 روی source `89b6e378f25d5e7c470896c6c35013ccc8bb2dec` / tree
+`19841f9f92ac013bb8efb4199047473ec2d2a8a0` در Run 323
+(`36377269239`) هر هشت Job را پاس کرد. F01 فقط گزارش‌های روزانهٔ تأییدشدهٔ
+همان پروژه را انتخاب می‌کند و Revision را صریح می‌فرستد. F02 ورودی هفته
+و ماه شمسی دارد؛ آغاز شنبه/اول ماه و دامنهٔ دوره در UI و Backend اعتبارسنجی
+می‌شوند. Client ID پایدار و مرزهای مجوز/پروژه حفظ شده‌اند. Exact Next
+`UX2-MS09` دسترسی امن و دانلود خروجی مجاز است؛ باقی Chat/UX2 و Gateها بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1317,3 +1325,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.88.0` | UX2-MS05 جست‌وجو/Reply/read cursor گروه پروژه با Run 317 و هشت Job سبز؛ MS06 Reporting و باقی UX2 باز |
 | `1.89.0` | UX2-MS06 مرکز گزارش‌های خواندنی پروژه با Run 319 و هشت Job سبز؛ MS07 درخواست و خروجی/Gateهای UX2 باز |
 | `1.90.0` | UX2-MS07 درخواست استاندارد هفت خانواده با Retry پایدار و Run 321 هشت Job سبز؛ F01/F02 و OutputAccess/UX2 باز |
+| `1.91.0` | UX2-MS08 انتخاب F01 و دورهٔ شمسی F02 با Run 323 هشت Job سبز؛ OutputAccess و باقی UX2 باز |

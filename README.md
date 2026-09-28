@@ -4,16 +4,16 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS07-C1`, source
-`70c547c2993c521246ff61e688b9ba98e28f70eb`, Full CI Run 321 (8/8).
-The official brand mark, shared tokens, focus, mobile navigation and scoped
-project Chat with send/live/offline, search, reply and read cursor are in UI;
-COL1 connected build remains closed with 63 migrations. The dedicated
-Reporting Center now reads scoped catalog/history and requests standard reports
-with durable idempotency. UX2-MS08 daily/period inputs and remaining Chat/UX2
-migration follow, then
-remaining UX2 migration, INT1/QA1 and their separate gates. Rollout
-flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
+Current safe checkpoint: `PMCS-V1.1-UX2-MS08-C1`, source
+`89b6e378f25d5e7c470896c6c35013ccc8bb2dec`, Full CI Run 323 (8/8).
+COL1 connected build is closed with 63 migrations. The official brand mark,
+shared tokens, focus, mobile navigation and scoped project Chat are in UI.
+The dedicated Reporting Center reads authorized catalog/history and requests
+seven parameterless standard reports with durable idempotency; F01 daily
+selection and F02 Persian weekly/monthly inputs are now connected. Secure
+output access, remaining Chat/UX2 migration, INT1/QA1 and their separate
+gates follow. Rollout flags remain off; PR #2 remains Draft. See the canonical
+reference and active roadmap.
 
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
