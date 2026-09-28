@@ -1,9 +1,9 @@
 # PMCS V1.1 — بستهٔ بازبینی Prototype و قلم، UX2-MS44
 
 - شناسه: `PMCS-UX-PROTOTYPE-REVIEW-001`
-- نسخهٔ Candidate: `0.1.0`
-- وضعیت: نمونهٔ مستقل برای بازبینی؛ `VX-G3/G4/G5` باز؛ انتخاب فونت نهایی باز
-- ورودی: مسیر مصوب «مدیریت ممتاز»، نشان شفاف رسمی، Design System `1.0.0-rc.6`، قرارداد فونت `PMCS-UX-TYPOGRAPHY-001`
+- نسخهٔ Candidate: `0.2.0`
+- وضعیت: نمونه‌های مستقل برای بازبینی؛ وزیرمتن MS48 پذیرفته، `VX-G3/G4/G5` باز
+- ورودی: مسیر مصوب «مدیریت ممتاز»، نشان شفاف رسمی، Design System `1.0.0-rc.10`، قرارداد فونت `PMCS-UX-TYPOGRAPHY-001 v1.5.0`
 
 ## باز کردن نمونه
 
@@ -28,10 +28,11 @@ Prototype رفتار اجرایی، Permission و خروجی Reporting را شب
 
 ## منشأ و مجوز قلم‌ها
 
-دو فایل WOFF2 بدون تغییر از Repository رسمی و Commit مشخص دریافت شده‌اند.
+در MS44، دو فایل WOFF2 بدون تغییر از Repository رسمی و Commit مشخص دریافت شدند.
 نسخهٔ کامل OFL 1.1 هر قلم در همان پوشه کنار آن است. SHA-256 در آزمون E2E
-کنترل می‌شود. این فایل‌ها فقط متعلق به Prototype هستند؛ manifest تولیدی
-`assets/typography/pmcs-fonts.json`، PDF، XLSX و cache آفلاین تغییر نکرده‌اند.
+کنترل می‌شود. آن هنگام این فایل‌ها فقط متعلق به Prototype بودند؛ manifest
+تولیدی `assets/typography/pmcs-fonts.json`، PDF، XLSX و cache آفلاین هنوز
+تغییر نکرده بودند. MS48 بعداً همان قلم pinned را متصل کرد.
 
 | قلم | Commit upstream | WOFF2 SHA-256 | مجوز |
 | --- | --- | --- | --- |
@@ -40,8 +41,8 @@ Prototype رفتار اجرایی، Permission و خروجی Reporting را شب
 
 قلم مبنا روی ماشین Chromium Linux ممکن است به fallback برسد؛ آن قاب بیانگر
 Baseline مرورگر QA است، نه تضمین نصب Tahoma روی دستگاه مقصد. مقایسهٔ PDF
-در این مرحله فقط Print مرورگر با WOFF2 است و Embedding/شکل‌گیری PDF رسمی
-QuestPDF و نام فونت XLSX باید در Candidate بعدی کنترل شوند.
+در MS44 فقط Print مرورگر با WOFF2 بود؛ Embedding PDF رسمی QuestPDF و
+نام فونت XLSX در MS48 با Golden واقعی کنترل شدند.
 
 ## شواهد و معیار بازبینی
 
@@ -61,11 +62,11 @@ Correction Run 412 (`36485197274`) هشت Job سبز و Artifact
 دارد. ۱۱ فایل با Source/Hash/حجم index تطبیق شدند؛ قاب‌های سه اندازه و
 حالت خطا بازبینی شدند. هر دو چاپ A4 یک صفحه با متن فارسی قابل استخراج و
 بدون کنترل تعاملی‌اند. در شواهد، تفاوت وزن و تراکم دو قلم دیده می‌شود؛
-انتخاب طبق اختیار واگذارشدهٔ مالک با مرور شواهد و سپس سنجش PDF/XLSX رسمی، Offline، Accessibility
-و Performance انجام شود.
+این مشاهده در MS48 با انتخاب وزیرمتن و Golden واقعی PDF/XLSX/Offline
+پیگیری شد؛ Accessibility و Performance جامع در `VX-G5` می‌مانند.
 
 برای بستن `VX-G3` هنوز contract همهٔ Component stateها، نمونهٔ دقیق‌تر
-Login/Shell/Chart و Mobile fallback، نقد بصری جهت کلی و انتخاب مستند قلم باقی است.
+Login/Shell/Chart و Mobile fallback و بازبینی بصری مالک روی بستهٔ ملموس باقی است.
 برای `VX-G4` مهاجرت همهٔ Routeهای فعال و برای `VX-G5` Visual Diff،
 Accessibility، Responsive، PDF/XLSX/Print Golden و Performance لازم‌اند.
 
@@ -74,5 +75,13 @@ MS45 تمرین TTF/PDF/XLSX را در `docs/ux/prototypes/ms45/README.md` جد�
 
 MS47 Prototype اجزای مشترک را در `docs/ux/prototypes/ms47/README.md`
 و نمونهٔ تعاملی همان پوشه ثبت کرد. شواهد MS44/45، وزیرمتن را برای
-MS48 به‌عنوان Candidate قابل بازگشت برگزیدند؛ انتخاب، تعویض یا
-Qualification نهایی فونت را به‌تنهایی انجام نمی‌دهد.
+MS48 انتخاب کردند؛ Source Run 425 و مستندات Run 426 هر هشت Job سبز
+و Goldenهای رسمی Web/Offline/PDF/XLSX/Print دارند.
+
+MS49 در `docs/ux/prototypes/ms49/` ناوبری جایگزین موبایل، پیام‌های
+NoData/Loading/Error/Permission/Offline/Conflict/Success و گفت‌وگوی
+تأیید نسخه را با دادهٔ فرضی برای مرور اضافه می‌کند. Index ۱۱ عکس
+Desktop/Tablet/Mobile و آزمون Focus/Escape/قفل اقدام در Source Run 429
+با هشت Job سبز و Artifact `11004643711` معتبر/بازبینی‌شده‌اند؛
+نمونه به‌تنهایی مجوز مهاجرت Routeهای فعال
+یا بستن `VX-G3` نیست.

@@ -1,14 +1,14 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.2.0` در `UX2-MS47`
+- نسخهٔ Candidate: `0.3.0` در `UX2-MS49`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
 این ماتریس، رفتار تعاملی Component را از وضعیت داده و Permission جدا می‌کند.
 `D` یعنی یک نمونه در UI فعال و آزمون/تصویر مشخص دارد؛ `S` یعنی Source
 فعال دارد ولی همهٔ Stateها در Browser/تصویر سنجیده نشده‌اند؛ `P` یعنی
-فقط Prototype مستقل MS44 است؛ `G` شکاف است. هیچ `D` به معنای
+فقط Prototype مستقل MS44/47/49 است؛ `G` شکاف است. هیچ `D` به معنای
 Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نیست.
 
 | خانواده | Default | Hover/Focus/Pressed | Disabled/Loading | Error/Success | Offline/Permission | Evidence فعلی و شکاف بعدی |
@@ -19,8 +19,8 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | StatusLabel، Badge و Fact/Draft | S | تعامل نامربوط | Loading نباید Fact بسازد D | Label همراه رنگ S | Offline/Stale/NoPermission Label S | semantic tokens در `globals.css`؛ تمایز Fact/Draft/AI و کنتراست هر مصرف باز |
 | Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D | Error و Retry D | Offline/NoPermission در Routeهای منتخب D | قاب‌های 25–27، 30–31، 33/35؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
-| Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ focus trap/return، Escape و Responsive در خانواده‌های دیگر باز |
-| Shell/Navigation و Print | D | Keyboard انتهای Sidebar D | Navigation جایگزین موبایل G | پیام وضعیت مستقل S | Print بدون Action/Navigation D | قاب‌های 39، 20–23، 43؛ جایگزین موبایل، Golden و PDF رسمی باز |
+| Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
+| Shell/Navigation و Print | D | Keyboard انتهای Sidebar D | Navigation جایگزین موبایل G | پیام وضعیت مستقل S | Print بدون Action/Navigation D | قاب‌های 39، 20–23، 43؛ Prototype MS49 Disclosure موبایل دارد، اما UI فعال هنوز مهاجرت نکرده است |
 | Chat، Reporting، Agent | D/S | Action Focus S | Flags خاموش D | تعارض Chat D؛ Preview گزارش محدود S | Permission/Offline نمونه‌های D/S | قاب‌های 22–24، 33–40 و Prototype MS44؛ مهاجرت و Visual Qualification باز |
 
 ## قرارداد حداقلی هر State
@@ -61,14 +61,26 @@ Responsive ۳۲۰px را کنترل و تصویرهای سه اندازه را �
 به `D` تبدیل نمی‌کنند؛ پس از بازبینی Artifact و CI مستندات
 فقط Prototype Foundation معتبر می‌شود.
 
+## نمونهٔ ناوبری و تأیید MS49
+
+`docs/ux/prototypes/ms49/index.html` با وزیرمتن نسخهٔ `2.0.0`،
+Navigation قابل باز و بسته شدن در موبایل، پیام‌های جدا برای NoData،
+Loading، Error، NoPermission، Offline، Conflict و Success و Dialog
+بومی `showModal` را نشان می‌دهد. Dialog نسخهٔ فعلی و پیش‌نویس محلی را
+روشن می‌کند، تا مرور صریح نسخه تأیید را قفل می‌کند، Escape و بازگشت
+تمرکز را نگه می‌دارد و هیچ درخواست عملیاتی نمی‌فرستد. E2E Run 429
+semantics/Keyboard، ۱۱ قاب Desktop/Tablet/Mobile و عرض ۳۲۰px را
+سنجید؛ Artifact `11004643711` با Index/Hash/ابعاد تطبیق و قاب‌های
+نماینده بازبینی شد. این `P` است؛ جایگزین Navigation موبایل و Dialogهای همهٔ
+مصرف‌کنندگان فعال در `VX-G4` هنوز انجام نشده است.
+
 ## خروجی بعدی برای `VX-G3`
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛
 - کنترل معنایی و تصویری فرم، جدول، Status، Dialog و Navigation در
   مصرف‌کنندگان فعال، سپس رفع شکاف‌های محدود در Candidateهای مستقل؛
-- انتخاب مستند و قابل بازگشت فونت با اختیار واگذارشدهٔ مالک در
-  ۲۰۲۶-۰۹-۲۹، سپس آزمون واقعی Web/Offline/PDF/XLSX/Print
-  پیش از تعویض خانوادهٔ تولیدی؛
+- وزیرمتن نسخهٔ `2.0.0` با Golden رسمی و Runهای 425/426 پذیرفته شده؛
+  آزمون جامع بصری همهٔ مسیرهای مهاجرت‌یافته در `VX-G5` باقی است؛
 - بازبینی مالک روی بستهٔ ملموس Prototype و Stateها پیش از اعلام
   `VX-G3`، سپس مهاجرت `VX-G4` و Qualification `VX-G5`.

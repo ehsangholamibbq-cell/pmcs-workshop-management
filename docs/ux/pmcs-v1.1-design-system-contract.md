@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.9`
+- نسخه Candidate: `1.0.0-rc.10`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -154,6 +154,12 @@ Action/Field/Status/Feedback/Table را در ۹ State قراردادی با
 رفتار واقعی Hover/Focus/Pressed و Label/ARIA نمایش می‌دهد. Browser
 E2E و قاب‌های Desktop/Tablet/Mobile، نمونه را قابل مرور می‌کنند؛
 مصرف‌کنندگان فعال و Visual Qualification هنوز Gateهای مستقل‌اند.
+
+در UX2-MS48، وزیرمتن از manifest مرکزی `2.0.0` برای Web/Offline/
+PDF/XLSX/Print با Golden رسمی و Runهای 425/426 متصل شد. UX2-MS49
+نمونهٔ مستقل Navigation موبایل، وضعیت‌های داده/Permission/Offline
+و Dialog تأیید نسخه را برای بازبینی `VX-G3` می‌افزاید؛ اجرای آن
+در تمام Shellها یا Dialogهای فعال و Qualification `VX-G4/G5` هنوز باز است.
 
 ## ۷. Login Experience Contract
 

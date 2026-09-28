@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS47 Safe، MS48 Font Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS48 Safe، MS49 State Prototype Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -310,5 +310,9 @@ MS46 documentation Run 417 هشت Job سبز و Safe شد. MS47 نمونهٔ
 Run 420 مستندات آن را با هشت Job سبز پذیرفت. MS48 وزیرمتن را در
 manifest نسخهٔ `2.0.0`، Web/Offline/PDF/XLSX/Print متصل کرد؛
 Goldenهای رسمی PDF/XLSX و ۴۵ قاب فعال بررسی شدند؛ Source Run 425
-هشت Job سبز و Artifactهای معتبر دارد. پذیرش MS48 به CI مستندات
-وابسته است؛ `VX-G3/G4/G5` بازند.
+و documentation Run 426 هشت Job سبز و Artifactهای معتبر دارند؛ MS48
+Safe است. MS49 نمونهٔ مستقل Navigation موبایل، Feedback و Dialog تأیید
+نسخه را با دادهٔ فرضی اضافه می‌کند؛ Run 429 هشت Job سبز و Artifact
+۱۱قابی معتبر/بازبینی‌شده دارد، CI مستندات شرط Checkpoint آن است.
+این نمونه Navigation مصرف‌کنندگان فعال را
+مهاجرت نمی‌دهد و `VX-G3/G4/G5` بازند.
