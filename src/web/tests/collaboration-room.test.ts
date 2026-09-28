@@ -11,7 +11,7 @@ test("conversation reads the latest bounded project window and denies caching", 
     requests.push({ url: String(input), cache: init?.cache });
     return Response.json(requests.length === 1
       ? { projectId, lastSequence: 205, canModerate: true, canUpload: true,
-        canEditOwn: true, canConvert: true }
+        canEditOwn: true, canConvert: true, canConvertAction: true }
       : { messages: [{ id: "m1", projectId, sequence: 205, authorUserId: "u1",
         body: "واقعیت پروژه", createdAt: "2026-09-28T00:00:00Z" }], nextSequence: 205 });
   };
@@ -23,6 +23,7 @@ test("conversation reads the latest bounded project window and denies caching", 
       assert.equal(result.canUpload, true);
       assert.equal(result.canEditOwn, true);
       assert.equal(result.canConvert, true);
+      assert.equal(result.canConvertAction, true);
     }
     assert.deepEqual(requests, [
       { url: `/api/pmcs/api/v1/projects/${projectId}/collaboration`, cache: "no-store" },
@@ -67,6 +68,7 @@ test("room capability is false without a validated moderator grant", async () =>
       assert.equal(view.canUpload, false);
       assert.equal(view.canEditOwn, false);
       assert.equal(view.canConvert, false);
+      assert.equal(view.canConvertAction, false);
     }
     globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canModerate: "true" });
     await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
@@ -75,6 +77,8 @@ test("room capability is false without a validated moderator grant", async () =>
     globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canEditOwn: "true" });
     await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
     globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canConvert: "true" });
+    await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
+    globalThis.fetch = async () => Response.json({ projectId, lastSequence: 0, canConvertAction: true });
     await assert.rejects(loadProjectConversation("/api/pmcs", projectId), /معتبر نیست/u);
   } finally { globalThis.fetch = original; }
 });

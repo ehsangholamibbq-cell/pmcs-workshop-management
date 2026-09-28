@@ -736,3 +736,78 @@ test("formal conversion lineage stays behind the room grant and closes on revoca
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام تبدیل‌شده")).toHaveCount(0);
 });
+
+test("confirmed Action conversion rebases on revision conflict and never duplicates after reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canConvertAction = false;
+  let revision = 2;
+  let body = "پیام نیازمند اقدام";
+  let revoked = false;
+  let action: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertAction }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(action ? [action] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { assigneeUserId: string; title: string; priority: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Action");
+      expect(request.confirmed).toBe(true);
+      expect(request.documentIds).toEqual([]);
+      expect(request.details.assigneeUserId).toBe(userId);
+      expect(request.details.title).toBe("اقدام تأییدشده");
+      expect(request.details.priority).toBe("High");
+      expect(request.baseRevision).toBe(revision);
+      if (posts === 1) {
+        revision = 3;
+        body = "پیام همزمان تغییر کرد";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      action = { id: "10000000-0000-4000-8000-000000000021", messageId,
+        messageRevision: revision, destinationType: "Action", destinationId: request.destinationId,
+        destinationReference: "ACT-001", documents: [], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(action) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" })).toHaveCount(0);
+  canConvertAction = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
+  await page.getByLabel("عنوان اقدام").fill("اقدام تأییدشده");
+  await page.getByLabel("اولویت").selectOption("High");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
+  await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
+  await expect(page.getByText("نسخهٔ فعلی پیام: پیام همزمان تغییر کرد")).toBeVisible();
+  await page.getByRole("button", { name: "تبدیل بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
+  await expect(page.getByText("اقدام رسمی با ارجاع ACT-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
+  await expect(page.getByText("برای این پیام اقدام رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});

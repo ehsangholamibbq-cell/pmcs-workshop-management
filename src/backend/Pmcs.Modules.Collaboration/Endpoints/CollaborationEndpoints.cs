@@ -74,8 +74,10 @@ internal static partial class CollaborationEndpoints
             projectId, "collaboration.edit-own", cancellationToken);
         var canConvert = await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
             projectId, "collaboration.convert", cancellationToken);
+        var canConvertAction = canConvert && await permissions.HasProjectPermissionAsync(actor.TenantId,
+            actor.UserId, projectId, "actions.create", cancellationToken);
         return Results.Ok(new ProjectRoomResponse(projectId, projectId, last,
-            canModerate, canUpload, canEditOwn, canConvert));
+            canModerate, canUpload, canEditOwn, canConvert, canConvertAction));
     }
 
     private static async Task<IResult> ListMessagesAsync(
@@ -246,7 +248,8 @@ internal static partial class CollaborationEndpoints
 internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? Body,
     Guid? ReplyToMessageId = null, Guid[]? MentionedUserIds = null);
 internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence,
-    bool CanModerate, bool CanUpload, bool CanEditOwn, bool CanConvert);
+    bool CanModerate, bool CanUpload, bool CanEditOwn, bool CanConvert,
+    bool CanConvertAction);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,

@@ -17,7 +17,8 @@ export interface ProjectConversationMessage {
 export type ProjectConversationView =
   | { readonly kind: "ready"; readonly messages: readonly ProjectConversationMessage[];
       readonly lastSequence: number; readonly canModerate: boolean;
-      readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean }
+      readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean;
+      readonly canConvertAction: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -35,6 +36,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     projectId?: string; lastSequence?: number; canModerate?: boolean;
     canUpload?: boolean; canEditOwn?: boolean;
     canConvert?: boolean;
+    canConvertAction?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
@@ -42,7 +44,9 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
       (roomValue.canModerate !== undefined && typeof roomValue.canModerate !== "boolean") ||
       (roomValue.canUpload !== undefined && typeof roomValue.canUpload !== "boolean") ||
       (roomValue.canEditOwn !== undefined && typeof roomValue.canEditOwn !== "boolean") ||
-      (roomValue.canConvert !== undefined && typeof roomValue.canConvert !== "boolean")) {
+      (roomValue.canConvert !== undefined && typeof roomValue.canConvert !== "boolean") ||
+      (roomValue.canConvertAction !== undefined && typeof roomValue.canConvertAction !== "boolean") ||
+      (roomValue.canConvertAction === true && roomValue.canConvert !== true)) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -73,5 +77,6 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     ...message, revision: message.revision ?? 0, legalHold: message.legalHold === true,
   })), lastSequence,
   canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true,
-  canEditOwn: roomValue.canEditOwn === true, canConvert: roomValue.canConvert === true };
+  canEditOwn: roomValue.canEditOwn === true, canConvert: roomValue.canConvert === true,
+  canConvertAction: roomValue.canConvertAction === true };
 }
