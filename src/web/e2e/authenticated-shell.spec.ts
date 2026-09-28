@@ -41,7 +41,9 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect.poll(() => sidebar.evaluate((element) => element.scrollHeight > element.clientHeight))
     .toBe(true);
   const lastNavigation = sidebar.getByRole("link", { name: "ظاهر صفحه ورود" });
-  await lastNavigation.focus();
+  await sidebar.getByRole("link", { name: "کاربران و دسترسی‌ها" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(lastNavigation).toBeFocused();
   await expect(lastNavigation).toBeInViewport();
   await expect(lastNavigation).toHaveCSS("outline-style", "solid");
   await expect.poll(() => sidebar.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
