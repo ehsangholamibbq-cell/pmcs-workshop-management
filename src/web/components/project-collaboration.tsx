@@ -19,6 +19,7 @@ import {
 import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
+  editOwnProjectMessage, CollaborationRevisionConflict,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
@@ -46,6 +47,12 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [unread, setUnread] = useState<ProjectConversationUnread | null>(null);
   const [pinningMessageId, setPinningMessageId] = useState<string | null>(null);
   const [pinStatus, setPinStatus] = useState("");
+  const [editing, setEditing] = useState<{
+    readonly base: ProjectConversationMessage; readonly body: string;
+    readonly key: string; readonly conflict: boolean;
+  } | null>(null);
+  const [editBusy, setEditBusy] = useState(false);
+  const [editStatus, setEditStatus] = useState("");
 
   const closeRestrictedConversation = useCallback((status: number) => {
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
@@ -54,6 +61,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setSearchResults(null);
     setUnread(null);
     setPinStatus("");
+    setEditing(null);
+    setEditStatus("");
   }, []);
 
   useEffect(() => {
@@ -64,6 +73,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setDraft("");
         setReplyTo(null);
         setSearchResults(null);
+        setEditing(null);
+        setEditStatus("");
       }
       setView(result);
       setFailure("");
@@ -81,14 +92,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       () => setRefresh((value) => value + 1), controller.signal).catch((error: unknown) => {
       if (controller.signal.aborted) return;
       if (error instanceof CollaborationAccessError) {
-        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
-        setDraft("");
-        setReplyTo(null);
-        setSearchResults(null);
+        closeRestrictedConversation(error.status);
       }
     });
     return () => controller.abort();
-  }, [projectId, view]);
+  }, [projectId, view, closeRestrictedConversation]);
 
   useEffect(() => {
     if (view?.kind !== "ready") return undefined;
@@ -120,14 +128,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       if (active) setUnread(result);
     }).catch((error: unknown) => {
       if (active && error instanceof CollaborationAccessError) {
-        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
-        setDraft("");
-        setReplyTo(null);
-        setSearchResults(null);
+        closeRestrictedConversation(error.status);
       }
     });
     return () => { active = false; };
-  }, [projectId, view?.kind, refresh]);
+  }, [projectId, view?.kind, refresh, closeRestrictedConversation]);
 
   async function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -138,10 +143,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       setSearchStatus(results.length ? "نتیجه‌های همین پروژه" : "پیامی با این عبارت در پروژه پیدا نشد.");
     } catch (error) {
       if (error instanceof CollaborationAccessError) {
-        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
-        setDraft("");
-        setReplyTo(null);
-        setSearchResults(null);
+        closeRestrictedConversation(error.status);
       } else {
         setSearchStatus(error instanceof Error ? error.message : "جست‌وجو کامل نشد.");
       }
@@ -155,10 +157,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       setUnread({ lastReadSequence: cursor, unreadCount: 0 });
     } catch (error) {
       if (error instanceof CollaborationAccessError) {
-        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
-        setDraft("");
-        setReplyTo(null);
-        setSearchResults(null);
+        closeRestrictedConversation(error.status);
       } else {
         setSendStatus("ثبت نشانگر خواندن انجام نشد؛ دوباره تلاش کنید.");
       }
@@ -213,6 +212,30 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     }
   }
 
+  async function submitEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (view?.kind !== "ready" || !view.canEditOwn || !editing || editing.conflict || editBusy) return;
+    setEditBusy(true);
+    setEditStatus("");
+    try {
+      const result = await editOwnProjectMessage("/api/pmcs", projectId,
+        editing.base, editing.body, editing.key);
+      setView((current) => current?.kind === "ready" ? {
+        ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
+      } : current);
+      setEditing(null);
+      setEditStatus("ویرایش پیام ثبت شد.");
+      setRefresh((value) => value + 1);
+    } catch (failure) {
+      if (failure instanceof CollaborationAccessError) closeRestrictedConversation(failure.status);
+      else if (failure instanceof CollaborationRevisionConflict) {
+        setEditing((current) => current ? { ...current, conflict: true } : null);
+        setEditStatus("پیام همزمان تغییر کرده است؛ نسخهٔ تازه را ببینید، سپس دربارهٔ پیش‌نویس تصمیم بگیرید.");
+        setRefresh((value) => value + 1);
+      } else setEditStatus(failure instanceof Error ? failure.message : "ویرایش پیام کامل نشد.");
+    } finally { setEditBusy(false); }
+  }
+
   return (
     <main className="app-shell collaboration-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -262,6 +285,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
               </div>
             </div>
             {pinStatus && <p role="status">{pinStatus}</p>}
+            {editStatus && <p role={editing?.conflict ? "alert" : "status"}>{editStatus}</p>}
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
@@ -285,6 +309,27 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     <p>{message.deletedAt || message.redactedAt ? "این پیام دیگر برای نمایش در دسترس نیست." : message.body}</p>
                     {message.editedAt && !message.deletedAt && !message.redactedAt && <small>ویرایش‌شده</small>}
                     {message.pinnedAt && <small>سنجاق‌شده</small>}
+                    {editing?.base.id === message.id && <form className="collaboration-edit"
+                      onSubmit={(event) => void submitEdit(event)}>
+                      <label htmlFor={`edit-${message.id}`}>ویرایش پیام خود</label>
+                      <textarea id={`edit-${message.id}`} rows={3} maxLength={4000}
+                        value={editing.body} onChange={(event) => setEditing((current) => current
+                          ? { ...current, body: event.target.value } : null)} />
+                      {editing.conflict && <p>نسخهٔ فعلی: {message.body}</p>}
+                      <div className="collaboration-message-actions">
+                        {editing.conflict && message.revision > editing.base.revision &&
+                          <button className="secondary-button" type="button" onClick={() => {
+                            setEditing({ ...editing, base: message, key: crypto.randomUUID(), conflict: false });
+                            setEditStatus("");
+                          }}>ویرایش دوباره بر پایهٔ نسخهٔ تازه</button>}
+                        <button type="submit" disabled={editBusy || editing.conflict ||
+                          !editing.body.trim() || editing.body.trim() === editing.base.body}>
+                          {editBusy ? "در حال ثبت…" : "ثبت ویرایش"}
+                        </button>
+                        <button className="secondary-button" type="button"
+                          onClick={() => { setEditing(null); setEditStatus(""); }}>لغو ویرایش</button>
+                      </div>
+                    </form>}
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
@@ -296,6 +341,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                       <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
                         پاسخ به پیام
                       </button>
+                      {view.canEditOwn && message.revision > 0 &&
+                        message.authorUserId.toLowerCase() === session.userId.toLowerCase() &&
+                        <button className="secondary-button" type="button" disabled={editBusy}
+                          onClick={() => { setEditing({ base: message, body: message.body,
+                            key: crypto.randomUUID(), conflict: false }); setEditStatus(""); }}>
+                          ویرایش پیام
+                        </button>}
                       {view.canModerate && <button className="secondary-button collaboration-pin" type="button"
                         aria-pressed={Boolean(message.pinnedAt)} disabled={pinningMessageId !== null}
                         onClick={() => void togglePin(message)}>

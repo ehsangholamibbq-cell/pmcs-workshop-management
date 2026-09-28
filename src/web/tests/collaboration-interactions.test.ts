@@ -2,12 +2,45 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
+  CollaborationRevisionConflict, editOwnProjectMessage,
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
 } from "../lib/collaboration-interactions.ts";
+import type { ProjectConversationMessage } from "../lib/collaboration-room.ts";
 
 const projectId = "10000000-0000-4000-8000-000000000001";
 const messageId = "10000000-0000-4000-8000-000000000011";
+
+test("own-message edit uses stable revision/key and keeps a conflict explicit", async () => {
+  const previous = globalThis.fetch;
+  const message = { id: messageId, projectId, authorUserId: "10000000-0000-4000-8000-000000000099",
+    body: "نسخه پیشین", revision: 2 } as ProjectConversationMessage;
+  const key = "10000000-0000-4000-8000-000000000123";
+  const calls: Array<{ url: string; method?: string; key?: string; body?: string }> = [];
+  try {
+    globalThis.fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method,
+        key: new Headers(init?.headers).get("idempotency-key") ?? undefined,
+        body: String(init?.body) });
+      return Response.json({ ...message, body: "نسخه تازه", revision: 3,
+        editedAt: "2026-09-28T01:00:00Z" });
+    };
+    assert.equal((await editOwnProjectMessage("/api/pmcs", projectId, message,
+      "  نسخه تازه  ", key)).revision, 3);
+    assert.equal(calls[0].method, "PATCH");
+    assert.equal(calls[0].key, key);
+    assert.deepEqual(JSON.parse(calls[0].body ?? ""), { baseRevision: 2, body: "نسخه تازه" });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 4 }, { status: 409 });
+    await assert.rejects(editOwnProjectMessage("/api/pmcs", projectId, message, "نسخه تازه", key),
+      (error: unknown) => error instanceof CollaborationRevisionConflict && error.currentRevision === 4);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(editOwnProjectMessage("/api/pmcs", projectId, message, "نسخه تازه", key),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(editOwnProjectMessage("/api/pmcs", projectId, message, message.body, key),
+      /پیش‌نویس ویرایش/u);
+  } finally { globalThis.fetch = previous; }
+});
 
 test("pin and unpin require a scoped server confirmation and fail closed on revocation", async () => {
   const previous = globalThis.fetch;

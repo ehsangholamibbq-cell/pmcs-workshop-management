@@ -4,6 +4,7 @@ export interface ProjectConversationMessage {
   readonly sequence: number;
   readonly authorUserId: string;
   readonly body: string;
+  readonly revision: number;
   readonly createdAt: string;
   readonly replyToMessageId: string | null;
   readonly pinnedAt: string | null;
@@ -14,7 +15,8 @@ export interface ProjectConversationMessage {
 
 export type ProjectConversationView =
   | { readonly kind: "ready"; readonly messages: readonly ProjectConversationMessage[];
-      readonly lastSequence: number; readonly canModerate: boolean; readonly canUpload: boolean }
+      readonly lastSequence: number; readonly canModerate: boolean;
+      readonly canUpload: boolean; readonly canEditOwn: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -29,13 +31,15 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   if (room.status === 403) return { kind: "forbidden" };
   if (!room.ok) throw new Error("دریافت گفت‌وگوی پروژه انجام نشد.");
   const roomValue = await room.json() as {
-    projectId?: string; lastSequence?: number; canModerate?: boolean; canUpload?: boolean;
+    projectId?: string; lastSequence?: number; canModerate?: boolean;
+    canUpload?: boolean; canEditOwn?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
       typeof lastSequence !== "number" || !Number.isSafeInteger(lastSequence) || lastSequence < 0 ||
       (roomValue.canModerate !== undefined && typeof roomValue.canModerate !== "boolean") ||
-      (roomValue.canUpload !== undefined && typeof roomValue.canUpload !== "boolean")) {
+      (roomValue.canUpload !== undefined && typeof roomValue.canUpload !== "boolean") ||
+      (roomValue.canEditOwn !== undefined && typeof roomValue.canEditOwn !== "boolean")) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -54,11 +58,16 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
         typeof message.id !== "string" || typeof message.authorUserId !== "string" ||
         typeof message.body !== "string" || typeof message.createdAt !== "string" ||
         !Number.isFinite(Date.parse(message.createdAt)) ||
+        (message.revision !== undefined &&
+          (!Number.isSafeInteger(message.revision) || message.revision < 1)) ||
         !Number.isSafeInteger(message.sequence) || message.sequence <= after ||
         (index > 0 && message.sequence <= messages[index - 1].sequence)) ||
       (messages.length > 0 && nextSequence < messages[messages.length - 1].sequence)) {
     throw new Error("فهرست پیام‌های پروژه معتبر نیست.");
   }
-  return { kind: "ready", messages, lastSequence,
-    canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true };
+  return { kind: "ready", messages: messages.map((message) => ({
+    ...message, revision: message.revision ?? 0,
+  })), lastSequence,
+  canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true,
+  canEditOwn: roomValue.canEditOwn === true };
 }

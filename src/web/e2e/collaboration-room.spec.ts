@@ -432,3 +432,71 @@ test("only the message author queues a Chat document and sees quarantine status 
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام نویسنده")).toHaveCount(0);
 });
+
+test("own-message edit keeps the draft on revision conflict and confirms a fresh revision", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canEditOwn = true;
+  let revoked = false;
+  let currentBody = "نسخه اولیه پیام";
+  let revision = 1;
+  let editedAt: string | null = null;
+  const keys: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canEditOwn }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: currentBody, revision, editedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}`,
+    (route) => {
+      expect(route.request().method()).toBe("PATCH");
+      const payload = route.request().postDataJSON() as { baseRevision: number; body: string };
+      keys.push(route.request().headers()["idempotency-key"]);
+      if (revoked) return route.fulfill({ status: 403 });
+      if (keys.length === 1) {
+        expect(payload.baseRevision).toBe(1);
+        currentBody = "ویرایش همزمان دیگر";
+        revision = 2;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ currentRevision: 2 }) });
+      }
+      expect(payload.baseRevision).toBe(2);
+      expect(payload.body).toBe("پیش‌نویس من");
+      currentBody = payload.body;
+      revision = 3;
+      editedAt = "2026-09-28T00:05:00Z";
+      return route.fulfill({ status: 200, contentType: "application/json",
+        body: JSON.stringify({ id: messageId, projectId, authorUserId: userId,
+          body: currentBody, revision, editedAt, deletedAt: null, redactedAt: null }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "ویرایش پیام" }).click();
+  await page.getByLabel("ویرایش پیام خود").fill("پیش‌نویس من");
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر")).toBeVisible();
+  await expect(page.getByLabel("ویرایش پیام خود")).toHaveValue("پیش‌نویس من");
+  await page.getByRole("button", { name: "ویرایش دوباره بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByText("ویرایش پیام ثبت شد.")).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).not.toBe(keys[1]);
+  await page.reload();
+  await expect(page.getByText("پیش‌نویس من")).toBeVisible();
+  canEditOwn = false;
+  await page.reload();
+  await expect(page.getByRole("button", { name: "ویرایش پیام" })).toHaveCount(0);
+  canEditOwn = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ویرایش پیام" }).click();
+  await page.getByLabel("ویرایش پیام خود").fill("تلاش جدید");
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیش‌نویس من")).toHaveCount(0);
+});

@@ -1496,6 +1496,13 @@ textarea {
 .collaboration-reply-preview span { overflow-wrap: anywhere; }
 .collaboration-message-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
 .collaboration-pin[aria-pressed="true"] { border-color: var(--brand-green-700); }
+.collaboration-edit {
+  display: grid; gap: 0.55rem; padding: 0.8rem; margin-top: 0.6rem;
+  border: 1px solid var(--border-default); border-radius: 0.75rem;
+  background: var(--status-info-surface);
+}
+.collaboration-edit textarea { resize: vertical; }
+.collaboration-edit p { margin: 0; }
 .reporting-workspace { max-width: 88rem; width: 100%; }
 .reporting-state, .reporting-card {
   padding: clamp(1.25rem, 2.5vw, 2rem);

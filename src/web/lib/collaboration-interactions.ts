@@ -17,6 +17,15 @@ async function checked(response: Response): Promise<Response> {
 export const PROJECT_REACTION_EMOJIS = ["👍", "✅", "⚠️", "❤️"] as const;
 export type ProjectReactionEmoji = (typeof PROJECT_REACTION_EMOJIS)[number];
 
+export class CollaborationRevisionConflict extends Error {
+  readonly currentRevision: number | null;
+
+  constructor(currentRevision: number | null) {
+    super("نسخهٔ پیام تغییر کرده است؛ متن تازه را ببینید و دربارهٔ پیش‌نویس تصمیم بگیرید.");
+    this.currentRevision = currentRevision;
+  }
+}
+
 export interface ProjectMessageReaction {
   readonly emoji: ProjectReactionEmoji;
   readonly count: number;
@@ -37,6 +46,40 @@ function messageUrl(apiBaseUrl: string, projectId: string, messageId: string): s
 
 function messageReactionsUrl(apiBaseUrl: string, projectId: string, messageId: string): string {
   return `${messageUrl(apiBaseUrl, projectId, messageId)}/reactions`;
+}
+
+export async function editOwnProjectMessage(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, body: string, idempotencyKey: string): Promise<ProjectConversationMessage> {
+  const normalized = body.replace(/\r\n/gu, "\n").trim();
+  if (!Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(idempotencyKey) ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !normalized || normalized.length > 4000 || normalized === message.body ||
+      /[\x00-\x08\x0b-\x1f\x7f]/u.test(normalized)) {
+    throw new Error("پیش‌نویس ویرایش پیام معتبر نیست.");
+  }
+  const response = await fetch(messageUrl(apiBaseUrl, projectId, message.id), {
+    method: "PATCH", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ baseRevision: message.revision, body: normalized }),
+  });
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as { currentRevision?: number } | null;
+    const current = conflict?.currentRevision;
+    throw new CollaborationRevisionConflict(Number.isSafeInteger(current) && current! > 0 ? current! : null);
+  }
+  await checked(response);
+  const result = await response.json() as ProjectConversationMessage;
+  if (result?.id?.toLowerCase() !== message.id.toLowerCase() ||
+      result.projectId?.toLowerCase() !== projectId.toLowerCase() ||
+      result.authorUserId?.toLowerCase() !== message.authorUserId.toLowerCase() ||
+      result.body !== normalized || !Number.isSafeInteger(result.revision) ||
+      result.revision <= message.revision ||
+      typeof result.editedAt !== "string" || !Number.isFinite(Date.parse(result.editedAt)) ||
+      result.deletedAt || result.redactedAt) {
+    throw new Error("تأیید ویرایش پیام معتبر نیست.");
+  }
+  return result;
 }
 
 export async function setProjectMessagePin(apiBaseUrl: string, projectId: string,

@@ -24,7 +24,8 @@ internal static partial class Program
             readerRoom.StatusCode == HttpStatusCode.OK &&
             moderatorRoom.Payload.GetProperty("canModerate").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canModerate").GetBoolean() &&
-            !readerRoom.Payload.GetProperty("canUpload").GetBoolean(),
+            !readerRoom.Payload.GetProperty("canUpload").GetBoolean() &&
+            !readerRoom.Payload.GetProperty("canEditOwn").GetBoolean(),
             $"moderator={(int)moderatorRoom.StatusCode};reader={(int)readerRoom.StatusCode}");
 
         var prior = await SendAsync(client, key, supervisor, HttpMethod.Get, $"{path}/messages");
