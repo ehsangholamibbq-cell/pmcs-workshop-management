@@ -24,7 +24,7 @@ internal static partial class Program
             source.StatusCode == HttpStatusCode.Created, $"http={(int)source.StatusCode}");
         if (source.StatusCode != HttpStatusCode.Created) return Report(assertions);
         var messageId = source.Payload.GetProperty("id").GetGuid();
-        var destinationId = Guid.Parse("ca110000-0000-4000-8000-000000000502");
+        var destinationId = Guid.Parse("cb120001-0000-4000-8000-000000000502");
         var request = new
         {
             destinationId, destinationType = "RFI", baseRevision = 1,
