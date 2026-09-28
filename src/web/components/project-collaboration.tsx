@@ -4,8 +4,14 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
-import { loadProjectConversation, type ProjectConversationView } from "@/lib/collaboration-room";
+import {
+  loadProjectConversation, type ProjectConversationMessage, type ProjectConversationView,
+} from "@/lib/collaboration-room";
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
+import {
+  loadProjectConversationUnread, markProjectConversationRead, searchProjectConversation,
+  type ProjectConversationUnread,
+} from "@/lib/collaboration-interactions";
 import {
   enqueueCollaborationMessage, listQueuedCollaborationMessages, syncCollaborationMessages,
 } from "@/lib/collaboration-offline";
@@ -24,11 +30,21 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [pending, setPending] = useState(0);
   const [sending, setSending] = useState(false);
   const [sendStatus, setSendStatus] = useState("");
+  const [replyTo, setReplyTo] = useState<ProjectConversationMessage | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<readonly ProjectConversationMessage[] | null>(null);
+  const [searchStatus, setSearchStatus] = useState("");
+  const [unread, setUnread] = useState<ProjectConversationUnread | null>(null);
 
   useEffect(() => {
     let active = true;
     void loadProjectConversation("/api/pmcs", projectId).then((result) => {
       if (!active) return;
+      if (result.kind !== "ready") {
+        setDraft("");
+        setReplyTo(null);
+        setSearchResults(null);
+      }
       setView(result);
       setFailure("");
     }).catch(() => {
@@ -47,6 +63,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       if (error instanceof CollaborationAccessError) {
         setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
         setDraft("");
+        setReplyTo(null);
+        setSearchResults(null);
       }
     });
     return () => controller.abort();
@@ -75,6 +93,58 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     return () => { active = false; window.removeEventListener("online", recover); };
   }, [projectId, view?.kind]);
 
+  useEffect(() => {
+    if (view?.kind !== "ready") return undefined;
+    let active = true;
+    void loadProjectConversationUnread("/api/pmcs", projectId).then((result) => {
+      if (active) setUnread(result);
+    }).catch((error: unknown) => {
+      if (active && error instanceof CollaborationAccessError) {
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+        setDraft("");
+        setReplyTo(null);
+        setSearchResults(null);
+      }
+    });
+    return () => { active = false; };
+  }, [projectId, view?.kind, refresh]);
+
+  async function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (view?.kind !== "ready") return;
+    try {
+      const results = await searchProjectConversation("/api/pmcs", projectId, searchQuery);
+      setSearchResults(results);
+      setSearchStatus(results.length ? "نتیجه‌های همین پروژه" : "پیامی با این عبارت در پروژه پیدا نشد.");
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) {
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+        setDraft("");
+        setReplyTo(null);
+        setSearchResults(null);
+      } else {
+        setSearchStatus(error instanceof Error ? error.message : "جست‌وجو کامل نشد.");
+      }
+    }
+  }
+
+  async function markRead() {
+    if (view?.kind !== "ready") return;
+    try {
+      const cursor = await markProjectConversationRead("/api/pmcs", projectId, view.lastSequence);
+      setUnread({ lastReadSequence: cursor, unreadCount: 0 });
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) {
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+        setDraft("");
+        setReplyTo(null);
+        setSearchResults(null);
+      } else {
+        setSendStatus("ثبت نشانگر خواندن انجام نشد؛ دوباره تلاش کنید.");
+      }
+    }
+  }
+
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (view?.kind !== "ready" || sending) return;
@@ -83,8 +153,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     try {
       await enqueueCollaborationMessage({
         tenantId: session.tenantId, userId: session.userId, projectId, body: draft,
+        replyToMessageId: replyTo?.id ?? null,
       });
       setDraft("");
+      setReplyTo(null);
       const result = navigator.onLine
         ? await syncCollaborationMessages("/api/pmcs", projectId)
         : null;
@@ -139,7 +211,26 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
           </section>
         ) : (
           <section className="collaboration-room" aria-label="پیام‌های اخیر پروژه">
-            <p className="collaboration-boundary">آخرین پیام‌های همین پروژه</p>
+            <div className="collaboration-room-heading">
+              <p className="collaboration-boundary">آخرین پیام‌های همین پروژه</p>
+              <div className="collaboration-read-state">
+                <span aria-live="polite">{unread ? `${unread.unreadCount.toLocaleString("fa-IR")} پیام خوانده‌نشده` : ""}</span>
+                <button className="secondary-button" type="button" onClick={() => void markRead()}
+                  disabled={!unread || unread.unreadCount === 0}>تا اینجا خواندم</button>
+              </div>
+            </div>
+            <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
+              <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
+              <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
+                onChange={(event) => setSearchQuery(event.target.value)} />
+                <button className="secondary-button" type="submit" disabled={searchQuery.trim().length < 2}>جست‌وجو</button></div>
+            </form>
+            {searchResults && <section className="collaboration-search-results" aria-label="نتیجه‌های جست‌وجوی پروژه">
+              <div className="collaboration-search-title"><strong>{searchStatus}</strong>
+                <button className="secondary-button" type="button" onClick={() => setSearchResults(null)}>بستن نتایج</button></div>
+              <ul>{searchResults.map((message) => <li key={message.id}>{message.body}</li>)}</ul>
+            </section>}
+            {!searchResults && searchStatus && <p role="status">{searchStatus}</p>}
             {view.messages.length === 0 ? <p className="collaboration-state">هنوز پیامی در این پروژه ثبت نشده است.</p> : (
               <ol className="collaboration-messages">
                 {view.messages.map((message) => (
@@ -151,11 +242,19 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     <p>{message.deletedAt || message.redactedAt ? "این پیام دیگر برای نمایش در دسترس نیست." : message.body}</p>
                     {message.editedAt && !message.deletedAt && !message.redactedAt && <small>ویرایش‌شده</small>}
                     {message.pinnedAt && <small>سنجاق‌شده</small>}
+                    {!message.deletedAt && !message.redactedAt &&
+                      <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
+                        پاسخ به پیام
+                      </button>}
                   </li>
                 ))}
               </ol>
             )}
             <form className="collaboration-composer" onSubmit={(event) => void submitMessage(event)}>
+              {replyTo && <div className="collaboration-reply-preview">
+                <span>در پاسخ به: {replyTo.body}</span>
+                <button className="secondary-button" type="button" onClick={() => setReplyTo(null)}>لغو پاسخ</button>
+              </div>}
               <label htmlFor="collaboration-message-draft">پیام به گروه همین پروژه</label>
               <textarea id="collaboration-message-draft" value={draft} maxLength={4000} rows={3}
                 onChange={(event) => setDraft(event.target.value)} placeholder="پیام کاری خود را بنویسید…" />

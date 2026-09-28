@@ -3,6 +3,12 @@ import { projectId, userId } from "./support";
 
 const path = `/projects/${projectId}/collaboration`;
 
+test.beforeEach(async ({ page }) => {
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/unread`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ lastReadSequence: 0, unreadCount: 0 }),
+  }));
+});
+
 test("project Chat respects the disabled default without exposing messages", async ({ page }) => {
   await page.goto(path);
   await expect(page.getByRole("heading", { name: "گفت‌وگوی گروهی پروژه" })).toBeVisible();
@@ -131,4 +137,50 @@ test("live membership revocation removes previously loaded messages", async ({ p
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("محتوای محرمانه پروژه")).toHaveCount(0);
   await expect(page.getByLabel("پیام به گروه همین پروژه")).toHaveCount(0);
+});
+
+test("project Chat searches, advances read cursor, and replies within the same room", async ({ page }) => {
+  const firstMessageId = "10000000-0000-4000-8000-000000000011";
+  let replyTo: string | null = null;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: firstMessageId, projectId, sequence: 1,
+        authorUserId: userId, body: "موضوع پیگیری فنی", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/unread`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ lastReadSequence: 0, unreadCount: 1 }),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/read-cursor`, (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(route.request().postDataJSON()).toEqual({ lastReadSequence: 1 });
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ lastReadSequence: 1 }) });
+  });
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/search\\?`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify([{ id: firstMessageId, projectId, sequence: 1, body: "موضوع پیگیری فنی" }]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages`, (route) => {
+    replyTo = (route.request().postDataJSON() as { replyToMessageId: string }).replyToMessageId;
+    const clientMessageId = (route.request().postDataJSON() as { clientMessageId: string }).clientMessageId;
+    return route.fulfill({ status: 201, contentType: "application/json",
+      body: JSON.stringify({ clientMessageId }) });
+  });
+  await page.goto(path);
+  await expect(page.getByText("۱ پیام خوانده‌نشده")).toBeVisible();
+  await page.getByRole("button", { name: "تا اینجا خواندم" }).click();
+  await expect(page.getByText("۰ پیام خوانده‌نشده")).toBeVisible();
+  await page.getByLabel("جست‌وجو در پیام‌های همین پروژه").fill("پیگیری فنی");
+  await page.getByRole("button", { name: "جست‌وجو", exact: true }).click();
+  await expect(page.getByRole("region", { name: "نتیجه‌های جست‌وجوی پروژه" })).toContainText("موضوع پیگیری فنی");
+  await page.locator(".collaboration-message").getByRole("button", { name: "پاسخ به پیام" }).click();
+  await expect(page.getByText("در پاسخ به: موضوع پیگیری فنی")).toBeVisible();
+  await page.getByLabel("پیام به گروه همین پروژه").fill("پاسخ محدود به پروژه");
+  await page.getByRole("button", { name: "ارسال به گروه پروژه" }).click();
+  await expect(page.getByText("پیام در گفت‌وگوی پروژه ثبت شد.")).toBeVisible();
+  expect(replyTo).toBe(firstMessageId);
 });
