@@ -89,9 +89,11 @@ function validOutputType(output: ReportOutputView): boolean {
 }
 
 export class ReportOutputAccessError extends Error {
-  constructor(readonly status: number) {
+  readonly status: number;
+  constructor(status: number) {
     super(status === 403 || status === 401 ? "دسترسی به خروجی گزارش مجاز نیست." :
       "خروجی گزارش در دسترس نیست.");
+    this.status = status;
   }
 }
 
