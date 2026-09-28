@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS44`؛ MS43 Runهای 409/410 موفق و Safe؛ Prototype مستقل MS44 افزوده شد، baseline فعال ۴۴ تصویر همان inventory است
+- مرحله: `UX2-MS46`؛ MS45 Runهای 414/415 موفق و Safe؛ ماتریس Component و قاب 45 Candidate است
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -73,7 +73,7 @@ Light و reduced motion اجرا می‌شود. تصاویر Command Center در
 تصویر را پس از Assertion state،
 آماده‌شدن فونت، کنترل URL و RTL می‌گیرد؛ انیمیشن و caret غیرفعال‌اند.
 
-پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۴ PNG
+پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۵ PNG
 اعلام‌شده را از نظر حضور، عدم فایل اضافی، ساختار PNG و اندازهٔ viewport کنترل
 می‌کند و تنها PDF اعلام‌شده را از نظر حضور، header/footer و SHA-256 می‌سنجد.
 `index.json` برای هر تصویر SHA-256، اندازه، Route، state و viewport و
@@ -145,3 +145,15 @@ MS42 documentation در Run 407 هشت Job سبز شد و Safe است. MS43 corr
 و PDF یک‌صفحه‌ای A4 با Poppler بازبینی شدند؛ فرم/Navigation چاپ نشده و متن
 NoSnapshot صادق است. CI مستندات شرط پذیرش MS43، Golden چاپ و `VX-G3/G4/G5`
 بازند.
+
+MS45 documentation در Run 415 هر هشت Job را پاس کرد و Safe است. Source
+MS46 `4d320c13e3a6f66c6c7d7d836891fcbbe14311b3` / tree
+`2984d1db45a9a466b7ea3cee31e4afea3c5fa326` قاب 45
+`45-bootstrap-disabled-hover` را به همان Preview مسدود می‌افزاید.
+E2E با Hover واقعی باید ثابت‌ماندن رنگ دکمهٔ Disabled و صفرماندن درخواست
+Execute را کنترل کند. این تصویر مکمل قاب 41 و State سی‌ودوم inventory
+است. Run 416 هشت Job سبز و Artifact `11001141954` با digest
+`sha256:903dcb4bd7710b82a8c96acccb6c268bf0fb148c3e6502cbc257022a57de19b6`
+از نظر ۴۵ PNG/PDF، Source/Manifest/Hash و ابعاد معتبر است. قاب‌های 41
+و 45 با Hover Disabled پیکسل‌به‌پیکسل برابر و پیام مانع و Action غیرفعال
+خوانا هستند؛ E2E نبود Execute را Assert کرد. CI مستندات شرط پذیرش است.

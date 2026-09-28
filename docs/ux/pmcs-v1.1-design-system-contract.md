@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.7`
+- نسخه Candidate: `1.0.0-rc.8`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -142,6 +142,12 @@ Reporting جدا می‌کند. برگهٔ نمونه فقط Snapshot مجاز �
 دو قلم خودمیزبان فقط در Prototype قرار دارند؛ این مشاهده انتخاب نهایی،
 مهاجرت Routeهای فعال یا تأیید بصری مالک نیست. شرط `VX-G3` تکمیل Contract
 همهٔ Stateهای لازم، نقد Prototype و تصمیم قلم است؛ `VX-G4/G5` جدا می‌مانند.
+
+در UX2-MS46، `PMCS-UX-COMPONENT-STATES-001` ماتریس پوشش واقعی و شکاف
+Componentهای مشترک را از روی Source و Captureهای فعال ثبت می‌کند. Hover
+دکمهٔ غیرفعال در Preview مسدود دیگر نباید سیگنال رنگ Action فعال بدهد؛
+قاب 45 و آزمون Browser شرط Evidence این اصلاح محدودند. این ماتریس
+همهٔ Stateها را Qualified یا `VX-G3` را بسته اعلام نمی‌کند.
 
 ## ۷. Login Experience Contract
 

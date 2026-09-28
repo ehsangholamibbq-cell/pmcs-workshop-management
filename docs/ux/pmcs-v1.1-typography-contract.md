@@ -1,7 +1,7 @@
 # PMCS V1.1 — قرارداد فونت نسخه‌دار
 
 - شناسه: `PMCS-UX-TYPOGRAPHY-001`
-- نسخه: `1.2.0`
+- نسخه: `1.3.0`
 - وضعیت: زیرساخت MS32 متصل؛ انتخاب فونت فارسی و Qualification بصری/چاپی باز
 - مرجع: `PMCS-V1.1-UX2-MS32-C1`، source Run 377 با هشت Job سبز
 
@@ -46,7 +46,7 @@ PDF با SHA-256 و خانوادهٔ XLSX است. وضعیت فعلی Web برا
 ثابت برای وزیرمتن و استعداد نگه می‌دارد. انتخابگر نمونه، هر قلم را با
 Baseline در ۱۰ سناریو و ۷ حالت و Web/Desktop/Tablet/Mobile/Print A4 مقایسه
 می‌کند. این آزمایش فقط Browser Print است؛ `assets/typography/pmcs-fonts.json`
-همچنان نسخهٔ `1.0.0` با Tahoma/DejaVu/Arial تولیدی است. انتخاب مالک و تمرین
+همچنان نسخهٔ `1.0.0` با Tahoma/DejaVu/Arial تولیدی است. انتخاب مستند و تمرین
 رندر رسمی PDF/XLSX، Golden و Offline، پیش از هر تعویض تولیدی لازم‌اند.
 
 ## تمرین ایزولهٔ UX2-MS45
@@ -61,3 +61,10 @@ Baseline در ۱۰ سناریو و ۷ حالت و Web/Desktop/Tablet/Mobile/Prin
 رسمی و Golden محصول استفاده نمی‌کند؛ Familyهای تولیدی Tahoma/DejaVu/Arial
 و `PdfLicense=Unconfigured` عوض نشده‌اند. نصب فونت روی دستگاه گیرنده برای
 نمایش همان قلم در XLSX همچنان شرط خارجی است.
+
+در ۲۰۲۶-۰۹-۲۹ مالک محصول اختیار انتخاب قلم را برای ادامهٔ بدون توقف UX2
+واگذار کرد. انتخاب از شواهد Web/Browser Print/تمرین PDF/XLSX با دلیل
+ثبت‌شده و Rollback نسخه‌دار انجام می‌شود؛ این اختیار جایگزین
+Qualification واقعی Offline، Renderer رسمی، Golden، Accessibility و
+چاپ پس از تغییر تولیدی نیست. تا Candidate بعدی، manifest تولیدی
+`1.0.0` و خانواده‌های موجود برقرارند.

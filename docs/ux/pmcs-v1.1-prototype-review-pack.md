@@ -61,13 +61,13 @@ Correction Run 412 (`36485197274`) هشت Job سبز و Artifact
 دارد. ۱۱ فایل با Source/Hash/حجم index تطبیق شدند؛ قاب‌های سه اندازه و
 حالت خطا بازبینی شدند. هر دو چاپ A4 یک صفحه با متن فارسی قابل استخراج و
 بدون کنترل تعاملی‌اند. در شواهد، تفاوت وزن و تراکم دو قلم دیده می‌شود؛
-انتخاب باید با مرور مالک و سپس سنجش PDF/XLSX رسمی، Offline، Accessibility
+انتخاب طبق اختیار واگذارشدهٔ مالک با مرور شواهد و سپس سنجش PDF/XLSX رسمی، Offline، Accessibility
 و Performance انجام شود.
 
 برای بستن `VX-G3` هنوز contract همهٔ Component stateها، نمونهٔ دقیق‌تر
-Login/Shell/Chart و Mobile fallback، نقد بصری مالک و انتخاب قلم باقی است.
+Login/Shell/Chart و Mobile fallback، نقد بصری جهت کلی و انتخاب مستند قلم باقی است.
 برای `VX-G4` مهاجرت همهٔ Routeهای فعال و برای `VX-G5` Visual Diff،
 Accessibility، Responsive، PDF/XLSX/Print Golden و Performance لازم‌اند.
 
 MS45 تمرین TTF/PDF/XLSX را در `docs/ux/prototypes/ms45/README.md` جداگانه
-ثبت کرد؛ بستهٔ مرور MS44 همچنان مبنای انتخاب بصری مالک است.
+ثبت کرد؛ بستهٔ مرور MS44 مبنای انتخاب مستند و قابل بازگشت قلم در UX2 است.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.128.0`
+- نسخه سند: `1.129.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1391,6 +1391,19 @@ PDF یک‌صفحه‌ای A4/PNG بازبینی بصری، XLSX با Parser م�
 Stateهای Component مشترک و اصلاح محدود شکاف‌ها است؛ انتخاب قلم، مهاجرت
 تولیدی، `VX-G3/G4/G5` و Goldenهای رسمی بازند.
 
+UX2-MS45 documentation `92cee0a9273f025f9f7cdba2709b9f3ae951fc0c`
+در Run 415 هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS45-C1` Safe شد.
+MS46 source `4d320c13e3a6f66c6c7d7d836891fcbbe14311b3` / tree
+`2984d1db45a9a466b7ea3cee31e4afea3c5fa326` ماتریس
+`PMCS-UX-COMPONENT-STATES-001` و اصلاح محدود Hover دکمهٔ Disabled
+را در UI فعال افزود. E2E Preview مسدود باید ثبات رنگ، قفل Action،
+نبود Execute و قاب 45 را Assert کرد. Run 416 هشت Job سبز و Artifact
+`11001141954` با ۴۵ PNG/PDF و Source/Hash/ابعاد معتبر است؛
+قاب‌های 41/45 در Hover Disabled همسان و یک‌صفحه‌ای‌بودن PDF A4
+بازبینی شد. CI مستندات شرط پذیرش MS46 است. Exact next `UX2-MS47` نمونهٔ
+تعاملی Stateهای Foundation و آزمون Responsive است؛
+`VX-G3/G4/G5`، تصمیم فونت و مهاجرت کامل بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1759,3 +1772,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.126.0` | UX2-MS42 documentation Run 407 هشت Job سبز و Safe؛ UX2-MS43 برگهٔ چاپ محدود/قرارداد Print System، Run 408 متن NoSnapshot را آشکار و correction Run 409 هشت Job سبز/PDF یک‌صفحه‌ای بازبینی‌شده؛ CI مستندات شرط اعتبار، MS44 Prototype/Font review و Gateهای G3/G4/G5 باز |
 | `1.127.0` | UX2-MS43 documentation Run 410 هشت Job سبز و Safe؛ UX2-MS44 Prototype مستقل با ۱۰ سناریو × ۷ حالت و مقایسهٔ دو قلم OFL، initial Run 411 و correction خوانایی نشان/Tablet در Run 412 هر دو هشت Job سبز؛ Artifact ۱۱فایلی/PDF A4 بازبینی‌شده، CI مستندات شرط اعتبار، G3/G4/G5 و انتخاب فونت باز |
 | `1.128.0` | UX2-MS44 documentation Run 413 هشت Job سبز و Safe؛ UX2-MS45 تمرین ایزولهٔ دو قلم TTF در QuestPDF/XLSX، Source Run 414 هشت Job سبز و شش خروجی PDF/PNG/XLSX بازبینی‌شده؛ CI مستندات شرط اعتبار، MS46 Component states و G3/G4/G5 باز |
+| `1.129.0` | UX2-MS45 documentation Run 415 هشت Job سبز و Safe؛ UX2-MS46 ماتریس Component states، اصلاح Hover دکمهٔ Disabled و قاب 45؛ Source Run 416 هشت Job سبز/Artifact ۴۵قابی معتبر، CI مستندات شرط اعتبار، MS47 و G3/G4/G5 باز |

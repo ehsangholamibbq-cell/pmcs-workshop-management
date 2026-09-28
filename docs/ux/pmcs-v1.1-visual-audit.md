@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS44 Safe، MS45 Font Rehearsal Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS45 Safe، MS46 Component State Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -296,3 +296,10 @@ MS44 documentation Run 413 هشت Job سبز و Safe شد. MS45 Source Run 414
 قلم دارد؛ PDFهای A4 یک‌صفحه‌ای و PNGهای فارسی بازبینی شدند. این تمرین نه
 خروجی رسمی Reporting و نه انتخاب بصری مالک است. CI مستندات شرط MS45؛
 ماتریس Component و `VX-G3/G4/G5` بازند.
+
+MS45 documentation Run 415 هشت Job سبز و Safe شد. MS46 ماتریس
+`PMCS-UX-COMPONENT-STATES-001` را با شکاف‌های صریح ثبت و Hover
+دکمهٔ Disabled Preview را محدود کرد. قاب 45 مکمل Preview مسدود است؛
+Run 416 هشت Job سبز و Artifact `11001141954` با ۴۵ PNG/PDF معتبر
+و قاب 45 بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است. این اصلاح
+به معنای تکمیل Component Contract یا `VX-G3/G4/G5` نیست.

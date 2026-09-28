@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.1.0` در `UX2-MS46`
+- نسخهٔ Candidate: `0.1.1` در `UX2-MS46`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -57,7 +57,8 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛
 - کنترل معنایی و تصویری فرم، جدول، Status، Dialog و Navigation در
   مصرف‌کنندگان فعال، سپس رفع شکاف‌های محدود در Candidateهای مستقل؛
-- انتخاب بصری فونت توسط مالک و آزمون واقعی Web/Offline/PDF/XLSX/Print
+- انتخاب مستند و قابل بازگشت فونت با اختیار واگذارشدهٔ مالک در
+  ۲۰۲۶-۰۹-۲۹، سپس آزمون واقعی Web/Offline/PDF/XLSX/Print
   پیش از تعویض خانوادهٔ تولیدی؛
 - بازبینی مالک روی بستهٔ ملموس Prototype و Stateها پیش از اعلام
   `VX-G3`، سپس مهاجرت `VX-G4` و Qualification `VX-G5`.
