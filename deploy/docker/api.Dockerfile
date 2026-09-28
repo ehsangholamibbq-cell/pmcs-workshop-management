@@ -18,9 +18,7 @@ LABEL org.opencontainers.image.revision="${PMCS_RELEASE_COMMIT}" \
 USER root
 WORKDIR /app
 COPY --from=build /app .
-COPY assets/reporting/fonts/DejaVuSans.ttf /app/fonts/DejaVuSans.ttf
-COPY assets/reporting/fonts/DejaVuSans-Bold.ttf /app/fonts/DejaVuSans-Bold.ttf
-COPY assets/reporting/fonts/LICENSE.txt /app/licenses/dejavu/LICENSE.txt
+COPY assets/reporting/fonts/ /app/fonts/
 USER $APP_UID
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "Pmcs.Api.dll"]

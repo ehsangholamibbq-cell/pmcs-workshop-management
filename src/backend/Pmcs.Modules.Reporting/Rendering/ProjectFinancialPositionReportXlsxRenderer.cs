@@ -650,7 +650,7 @@ internal sealed class ProjectFinancialPositionReportXlsxRenderer(ReportingExecut
         writer.WriteAttributeString("val", "10");
         writer.WriteEndElement();
         writer.WriteStartElement("name", SpreadsheetNamespace);
-        writer.WriteAttributeString("val", "Arial");
+        writer.WriteAttributeString("val", PmcsTypographyContract.XlsxFamily);
         writer.WriteEndElement();
         writer.WriteStartElement("family", SpreadsheetNamespace);
         writer.WriteAttributeString("val", "2");

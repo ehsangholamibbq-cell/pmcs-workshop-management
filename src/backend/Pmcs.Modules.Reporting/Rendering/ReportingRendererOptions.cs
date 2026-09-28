@@ -13,9 +13,9 @@ internal sealed record ReportingRendererOptions(
     public static ReportingRendererOptions Create(IConfiguration configuration) => new(
         configuration["ReportingCenter:PdfLicense"]?.Trim() ?? "Unconfigured",
         configuration["ReportingCenter:PdfRegularFontPath"]?.Trim()
-            ?? "/app/fonts/DejaVuSans.ttf",
+            ?? $"/app/fonts/{PmcsTypographyContract.PdfRegularFileName}",
         configuration["ReportingCenter:PdfBoldFontPath"]?.Trim()
-            ?? "/app/fonts/DejaVuSans-Bold.ttf",
+            ?? $"/app/fonts/{PmcsTypographyContract.PdfBoldFileName}",
         configuration["ReportingCenter:PdfRegularFontSha256"]?.Trim().ToLowerInvariant()
             ?? CertifiedPdfRuntimeContract.RegularFontSha256,
         configuration["ReportingCenter:PdfBoldFontSha256"]?.Trim().ToLowerInvariant()

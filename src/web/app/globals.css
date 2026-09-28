@@ -1334,7 +1334,7 @@ body {
   background:
     radial-gradient(circle at 85% -10%, rgba(17, 100, 59, 0.08), transparent 32rem),
     var(--paper);
-  font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+  font-family: var(--pmcs-font-family, sans-serif);
 }
 
 button,

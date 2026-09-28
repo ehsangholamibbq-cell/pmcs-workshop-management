@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import "./globals.css";
+import "./typography.generated.css";
 
 export const metadata: Metadata = {
   title: "سامانه کنترل مدیریت پروژه | مرکز فرمان پروژه",

@@ -312,8 +312,8 @@ test("connected RPT1 qualification covers API, worker, storage and database evid
   assert.match(pdfGolden, /reporting\.pdf\.golden\.end-to-end-budget/u);
   assert.match(seed, /-- verify-reporting-golden/u);
   assert.match(seed, /start_api true Community[\s\S]*?-- verify-reporting-pdf-golden/u);
-  assert.match(seed, /ReportingCenter__PdfRegularFontSha256=ae7b7855/u);
-  assert.match(seed, /ReportingCenter__PdfBoldFontSha256=5c1247ac/u);
+  assert.match(seed, /ReportingCenter__PdfRegularFontSha256="\$\{PMCS_PDF_REGULAR_FONT_SHA256\}"/u);
+  assert.match(seed, /ReportingCenter__PdfBoldFontSha256="\$\{PMCS_PDF_BOLD_FONT_SHA256\}"/u);
   assert.match(seed, /ReportingCenter__PdfRendererImageDigest=sha256:6a94333d/u);
   const cancellation = read("src/backend/Pmcs.TestHarness/ReportingCancellationVerification.cs");
   assert.match(cancellation, /reporting\.cancel\.accepted-before-rendering/u);

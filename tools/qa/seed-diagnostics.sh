@@ -13,6 +13,7 @@ command -v curl >/dev/null
 command -v docker >/dev/null
 command -v dotnet >/dev/null
 command -v psql >/dev/null
+. tools/qa/typography-env.sh
 
 dotnet build PMCS.slnx --configuration Release --nologo --verbosity minimal >&2
 database_name="$(dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- guard)"
@@ -70,10 +71,10 @@ start_api() {
   ReportingCenter__WorkerEnabled="${worker_enabled}" \
   ReportingCenter__PollSeconds=1 \
   ReportingCenter__PdfLicense="${pdf_license}" \
-  ReportingCenter__PdfRegularFontPath="${PWD}/assets/reporting/fonts/DejaVuSans.ttf" \
-  ReportingCenter__PdfBoldFontPath="${PWD}/assets/reporting/fonts/DejaVuSans-Bold.ttf" \
-  ReportingCenter__PdfRegularFontSha256=ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280 \
-  ReportingCenter__PdfBoldFontSha256=5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895 \
+  ReportingCenter__PdfRegularFontPath="${PMCS_PDF_REGULAR_FONT_PATH}" \
+  ReportingCenter__PdfBoldFontPath="${PMCS_PDF_BOLD_FONT_PATH}" \
+  ReportingCenter__PdfRegularFontSha256="${PMCS_PDF_REGULAR_FONT_SHA256}" \
+  ReportingCenter__PdfBoldFontSha256="${PMCS_PDF_BOLD_FONT_SHA256}" \
   ReportingCenter__PdfRendererImageDigest=sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c \
   ObjectStorage__ServiceUrl="${PMCS_QA_S3_ENDPOINT}" \
   ObjectStorage__AccessKey="${PMCS_QA_S3_ACCESS_KEY}" \

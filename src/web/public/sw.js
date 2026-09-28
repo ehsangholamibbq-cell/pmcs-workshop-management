@@ -1,5 +1,5 @@
-const cacheName = "pmcs-public-shell-v2";
-const shellAssets = ["/offline.html", "/manifest.webmanifest", "/icon.svg"];
+const cacheName = "pmcs-public-shell-font-v1.0.0";
+const shellAssets = ["/offline.html","/manifest.webmanifest","/icon.svg","/typography/pmcs-fonts.css"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(shellAssets)));

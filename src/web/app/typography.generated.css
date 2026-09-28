@@ -1,0 +1,2 @@
+/* Generated from assets/typography/pmcs-fonts.json; run node tools/typography/sync.mjs --write. */
+:root { --pmcs-font-family: "Tahoma", "Segoe UI", "Arial", sans-serif; }
