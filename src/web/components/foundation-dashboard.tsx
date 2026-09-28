@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { BrandMark } from "@/components/brand-mark";
 import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import {
@@ -261,7 +262,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const untriagedAttentionItems = attentionItems.filter((item) => item.disposition === "NeedsTriage");
 
   return (
-    <main className="app-shell">
+    <main className="app-shell project-print-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
         <nav>
@@ -294,6 +295,38 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <SessionBadge />
       </aside>
       <MobileNavigationHint />
+
+      <section className="project-print-sheet" aria-label="خلاصه چاپی مرکز فرمان پروژه">
+        <header className="project-print-heading">
+          <div>
+            <p className="eyebrow">مرکز فرمان پروژه · نمای چاپ مرورگر</p>
+            <h1>{commandCenter?.projectName ?? "مشخصات پروژه هنوز دریافت نشده است"}</h1>
+            <p>{commandCenter?.projectCode ?? projectId} · {today}</p>
+          </div>
+          <Image className="project-print-logo" src="/brand/bbq-official-symbol.png"
+            alt="نشان رسمی بتن بسپار قزوین" width={52} height={27} priority unoptimized />
+        </header>
+        <section className="project-print-status" aria-labelledby="project-print-status-title">
+          <p className="eyebrow">ارزیابی عملیاتی محدود</p>
+          <h2 id="project-print-status-title">{operationalStatusLabel(snapshot?.operationalStatus)}</h2>
+          <p>{operationalStatusDescription(snapshot, commandMessage)}</p>
+          {commandCenter?.isOutdated && <p className="project-print-warning">تصویر وضعیت قدیمی است؛ محاسبهٔ مجدد لازم است.</p>}
+          <p className="project-print-source">{commandMessage}</p>
+        </section>
+        {snapshot ? (
+          <section className="project-print-facts" aria-label="سنجه‌های تصویر وضعیت">
+            <dl>
+              <div><dt>تاریخ تصویر وضعیت</dt><dd>{formatPersianDate(snapshot.asOfDate)}</dd></div>
+              <div><dt>پوشش داده</dt><dd>{coverageLabel(snapshot)} · {coverageBasisLabel(snapshot)}</dd></div>
+              <div><dt>روز گزارش تأییدشده</dt><dd>{snapshot.approvedReportDays.toLocaleString("fa-IR")}</dd></div>
+              <div><dt>مورد نیازمند بررسی</dt><dd>{untriagedAttentionItems.length.toLocaleString("fa-IR")}</dd></div>
+            </dl>
+            <p>محاسبه: {formatPersianDateTime(snapshot.calculatedAt)} · نسخهٔ موتور: {snapshot.calculationVersion}</p>
+            <p className="project-print-snapshot">شناسهٔ تصویر رسمی: {snapshot.snapshotId}</p>
+          </section>
+        ) : <p className="project-print-absence">بدون تصویر رسمی وضعیت، سنجه‌ای برای چاپ وجود ندارد.</p>}
+        <footer>این نمونهٔ چاپ مرورگر برای ممیزی رابط است؛ گزارش رسمی امضاشده یا خروجی مرکز گزارش‌ها نیست.</footer>
+      </section>
 
       <section className="workspace">
         <header className="topbar">

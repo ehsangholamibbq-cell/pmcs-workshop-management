@@ -1386,6 +1386,123 @@ textarea {
   display: none;
 }
 
+.project-print-sheet {
+  display: none;
+}
+
+@media print {
+  .project-print-shell {
+    display: block;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .project-print-shell > :not(.project-print-sheet) {
+    display: none !important;
+  }
+
+  .project-print-sheet {
+    display: block;
+    padding: 0.35rem;
+    color: var(--text-primary);
+    background: #fff;
+    font-size: 10pt;
+    line-height: 1.7;
+  }
+
+  .project-print-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--brand-navy-900);
+  }
+
+  .project-print-heading h1 {
+    margin: 0.25rem 0;
+    font-size: 18pt;
+  }
+
+  .project-print-heading p,
+  .project-print-facts p {
+    margin: 0.25rem 0;
+  }
+
+  .project-print-logo {
+    width: 3.25rem;
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  .project-print-status {
+    margin-top: 1.25rem;
+    padding: 1.1rem;
+    border: 1px solid var(--border-default);
+    border-radius: 0.75rem;
+    break-inside: avoid;
+  }
+
+  .project-print-status h2 {
+    margin: 0.2rem 0;
+    font-size: 15pt;
+  }
+
+  .project-print-status p {
+    margin: 0.4rem 0;
+  }
+
+  .project-print-warning {
+    font-weight: 700;
+    color: var(--status-warning);
+  }
+
+  .project-print-source,
+  .project-print-snapshot {
+    overflow-wrap: anywhere;
+  }
+
+  .project-print-facts {
+    margin-top: 1rem;
+    break-inside: avoid;
+  }
+
+  .project-print-facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin: 0 0 0.8rem;
+  }
+
+  .project-print-facts dl > div,
+  .project-print-absence {
+    padding: 0.75rem;
+    border: 1px solid var(--border-default);
+    border-radius: 0.55rem;
+  }
+
+  .project-print-facts dt {
+    color: var(--text-secondary);
+  }
+
+  .project-print-facts dd {
+    margin: 0.1rem 0 0;
+    font-weight: 700;
+  }
+
+  .project-print-absence {
+    margin: 1rem 0;
+  }
+
+  .project-print-sheet footer {
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-default);
+    color: var(--text-secondary);
+    font-size: 8.5pt;
+  }
+}
+
 .brand-mark {
   width: 3.25rem;
   height: 3.25rem;

@@ -22,7 +22,7 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
 
   await page.goto(projectPath);
   await expect(page.getByRole("heading", { name: "مرکز فرمان پروژه" })).toBeVisible();
-  await expect(page.getByText("پروژه نمونه ساختمان اداری–تجاری")).toBeVisible();
+  await expect(page.locator(".workspace").getByText("پروژه نمونه ساختمان اداری–تجاری")).toBeVisible();
   await page.addStyleTag({ content: "html { scroll-behavior: auto !important; }" });
   await captureVisualBaseline(page, "04-project-command");
 

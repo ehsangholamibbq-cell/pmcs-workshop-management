@@ -30,7 +30,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await projectLink.click();
   await expect(page).toHaveURL(new RegExp(`/projects/${projectId}$`, "u"));
   await expect(page.getByRole("heading", { name: "مرکز فرمان پروژه" })).toBeVisible();
-  await expect(page.getByText("پروژه نمونه ساختمان اداری–تجاری")).toBeVisible();
+  await expect(page.locator(".workspace").getByText("پروژه نمونه ساختمان اداری–تجاری")).toBeVisible();
 
   await page.setViewportSize({ width: 1440, height: 900 });
   const sidebar = page.locator(".sidebar");
