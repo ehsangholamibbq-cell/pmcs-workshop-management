@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.59.0`
+- نسخه: `1.60.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 COL1 / MS05 Connected Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 COL1 / MS06 Connected Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -22,11 +22,11 @@
 | V1 source baseline | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
-| Stage فعال | `V1.1-COL1 — Project Collaboration` |
-| آخرین Source Candidate واجد Evidence | `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3`؛ tree `5ab89f36cc93f832bbc752f3ce0c8416e18b1689` |
-| Current evidence-bearing source checkpoint | `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3`؛ Run 301، هر هشت Job سبز |
-| Source lineage | COL1-MS05 ادامهٔ مستقیم MS04 سبز `7f3a09cb5ca5e305b9d20fdd4cb7a10079803d5d` و S07-MS43 است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-COL1-MS05-C1`؛ شش تبدیل رسمی متصل، MS06 باز |
+| Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
+| آخرین Source Candidate واجد Evidence | `856089b4070ef4c8720aa01a4289139a9a0e4adc`؛ tree `f98685e0dc45acdff075420d9d0a92408e3a7593` |
+| Current evidence-bearing source checkpoint | `856089b4070ef4c8720aa01a4289139a9a0e4adc`؛ Run 304، هر هشت Job سبز |
+| Source lineage | COL1-MS06 ادامهٔ مستقیم MS05 سبز `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3` و S07-MS43 است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ COL1 ساخت متصل و Qualification بسته، UX2 بعدی |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
 | Migration count | Safe Resume: `63` و Restore Drill سبز |
 
@@ -37,13 +37,13 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.82.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.83.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
-وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1 و PRJ1 بسته؛ F01–F10 متصل؛ COL1 فعال و UX2، INT1 و QA1 باز.
+وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1 و PRJ1 بسته؛ F01–F10 و COL1 متصل؛ UX2 فعال و INT1/QA1 باز.
 
 ## آخرین تصمیم‌های مؤثر و Supersededها
 
@@ -76,6 +76,9 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
 - COL1-MS05 شش تبدیل مالک رسمی را روی source `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3`
   / tree `5ab89f36cc93f832bbc752f3ce0c8416e18b1689` با Run 301 و هر هشت Job سبز بست؛
   MS05A/Action-Issue در Run 297 و MS05B/RFI-Technical Document در Run 299 نیز مستقل سبز شدند.
+- COL1-MS06 روی source `856089b4070ef4c8720aa01a4289139a9a0e4adc` / tree
+  `f98685e0dc45acdff075420d9d0a92408e3a7593` در Run 304 هر هشت Job را پاس کرد؛
+  رقابت دو نقش برای یک مقصد، قطع دسترسی پس از تعلیق، شش owner، ۶۳ Migration و Restore متصل سبزند.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -689,8 +692,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 
 ## Exact Next Micro-Step
 
-در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS05 اکنون سبزند.
-**گام دقیق بعدی `COL1-MS06` است؛ Qualification متصل امنیت، رقابت، مهاجرت و Restore.**
+در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
+**گام دقیق بعدی `V1.1-UX2` است؛ UI اختصاصی Chat و Reporting و مهاجرت محصول با جهت مصوب «مدیریت ممتاز».**
 UI اختصاصی Reporting در UX2، Production enablement و Report Designer همچنان بازند.
 
 ## Resume Rule
