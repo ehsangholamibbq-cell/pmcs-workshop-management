@@ -49,6 +49,7 @@
     { "id": "37-portfolio-reporting-forbidden", "route": "/portfolio/reports", "state": "permission-denied", "viewport": "desktop", "source": "portfolio-reporting-center.spec.ts" },
     { "id": "38-portfolio-reporting-authorized", "route": "/portfolio/reports", "state": "authorized-catalog", "viewport": "desktop", "source": "portfolio-reporting-center.spec.ts" },
     { "id": "39-desktop-navigation-end", "route": "/projects/[projectId]", "state": "keyboard-navigation-end", "viewport": "desktop", "source": "authenticated-shell.spec.ts" },
-    { "id": "40-chat-edit-conflict", "route": "/projects/[projectId]/collaboration", "state": "own-edit-revision-conflict", "viewport": "desktop", "source": "collaboration-room.spec.ts" }
+    { "id": "40-chat-edit-conflict", "route": "/projects/[projectId]/collaboration", "state": "own-edit-revision-conflict", "viewport": "desktop", "source": "collaboration-room.spec.ts" },
+    { "id": "41-bootstrap-preview-blocked", "route": "/project-bootstraps", "state": "preview-conflict-blocked", "viewport": "desktop", "source": "project-bootstrap-preview.spec.ts" }
   ]
 }
