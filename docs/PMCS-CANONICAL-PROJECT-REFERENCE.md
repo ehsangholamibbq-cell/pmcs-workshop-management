@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.68.0`
+- نسخه: `1.69.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS08 Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS09 Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,11 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `89b6e378f25d5e7c470896c6c35013ccc8bb2dec`؛ tree `19841f9f92ac013bb8efb4199047473ec2d2a8a0` |
-| Current evidence-bearing source checkpoint | `89b6e378f25d5e7c470896c6c35013ccc8bb2dec`؛ Run 323، هر هشت Job سبز |
-| Source lineage | UX2-MS08 ادامهٔ مستقیم MS07 checkpoint `2621eafe54bb8df806e055ad09d147ccae157e1c` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS08-C1`؛ ورودی F01/F02، UX2-MS09 بعدی |
-| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS07-C1`؛ Reporting Request، Run 322 سبز |
+| آخرین Source Candidate واجد Evidence | `73b170aa011dc61f78a4de6f45c7a8747eb14721`؛ tree `140b9c99bb69b5c81a9dd7705f5364249f4588d9` |
+| Current evidence-bearing source checkpoint | `73b170aa011dc61f78a4de6f45c7a8747eb14721`؛ Run 326، هر هشت Job سبز |
+| Source lineage | UX2-MS09 ادامهٔ مستقیم MS08 checkpoint `ac7c098913fdced9ccebb35778fbbc3c03b08372` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS09-C1`؛ دانلود خروجی امن، UX2-MS10 بعدی |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS08-C1`؛ ورودی F01/F02، Run 324 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS01-C1`؛ نشان رسمی در Shell/Login، Run 307 سبز |
 | COL1 predecessor safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ ساخت متصل و Qualification بسته، Run 305 سبز |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
@@ -40,7 +40,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.91.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.92.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -108,6 +108,10 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
   `19841f9f92ac013bb8efb4199047473ec2d2a8a0` در Run 323 هر هشت Job را
   پاس کرد؛ F01 انتخاب گزارش‌های روزانهٔ تأییدشدهٔ همان پروژه با Revision
   و F02 دورهٔ هفتگی/ماهانهٔ شمسی با اعتبارسنجی مرز دوره در مرورگر تأیید شد.
+- UX2-MS09 روی source `73b170aa011dc61f78a4de6f45c7a8747eb14721` / tree
+  `140b9c99bb69b5c81a9dd7705f5364249f4588d9` در Run 326 هر هشت Job را
+  پاس کرد؛ دانلود خروجی در مرز پروژه و Flag مستقل، اعتبارسنجی MIME/اندازه/هش
+  و لغو دسترسی در UI و مرورگر واقعی تأیید شد.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -722,8 +726,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی `V1.1-UX2-MS09` است؛ دسترسی امن و دانلود خروجی مجاز در Reporting UI.**
-مهاجرت باقی‌ماندهٔ UX2، INT1/QA1، Production enablement و Report Designer همچنان بازند.
+**گام دقیق بعدی `V1.1-UX2-MS10` است؛ رابط گزارش سبد پروژه‌ها با مرز Tenant و مجوز مستقل.**
+تعامل‌های باقی‌ماندهٔ Chat، مهاجرت UX2، INT1/QA1، Production enablement و Report Designer بازند.
 
 ## Resume Rule
 
