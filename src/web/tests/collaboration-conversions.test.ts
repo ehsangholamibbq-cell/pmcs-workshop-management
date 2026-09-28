@@ -460,3 +460,41 @@ test("confirmed RFI creates only a Draft owner command with explicit impact flag
     /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });
+
+test("Draft RFI conversion pins only selected Released files and exact versioned lineage", async () => {
+  const previous = globalThis.fetch;
+  const actor = item.confirmedBy;
+  const destinationId = "10000000-0000-4000-8000-000000000033";
+  const key = "10000000-0000-4000-8000-000000000063";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مدرک پرسش" } as ProjectConversationMessage;
+  const details = { title: "پرسش مستند", question: "مغایرت", requestedFrom: "مشاور",
+    discipline: "سازه", requiredByDate: "", potentialImpacts: ["Quality"] as const,
+    isBlocking: false, proposedSolution: "" };
+  const attachment = { messageId, documentId: item.documents[0].id,
+    originalFileName: item.documents[0].fileName, contentType: item.documents[0].contentType,
+    sizeBytes: item.documents[0].sizeBytes, sha256: item.documents[0].sha256,
+    versionNumber: item.documents[0].versionNumber, releasedAt: "2026-09-28T00:00:00Z",
+  } as ProjectMessageAttachment;
+  const response = { ...item, destinationType: "RFI", destinationId, destinationReference: "RFI-001" };
+  try {
+    let payload: { documentIds: string[] } | undefined;
+    globalThis.fetch = async (_input, init) => {
+      payload = JSON.parse(String(init?.body)) as { documentIds: string[] };
+      return Response.json(response, { status: 201 });
+    };
+    const result = await convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]);
+    assert.deepEqual(payload?.documentIds, [attachment.documentId]);
+    assert.deepEqual(result.documents, item.documents);
+    globalThis.fetch = async () => Response.json({ ...response,
+      documents: [{ ...item.documents[0], sizeBytes: 101 }] }, { status: 201 });
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]), /تأیید تبدیل/u);
+    globalThis.fetch = async () => { throw new Error("Invalid attachment reached server"); };
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment, attachment]), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToRfi("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [{ ...attachment, messageId: projectId }]), /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});

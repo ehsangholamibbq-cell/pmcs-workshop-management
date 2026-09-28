@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { CollaborationAccessError } from "@/lib/collaboration-events";
+import { loadProjectMessageAttachments, type ProjectMessageAttachment } from "@/lib/collaboration-attachments";
 import { CollaborationRevisionConflict } from "@/lib/collaboration-interactions";
 import {
   CollaborationRfiAlreadyExists, CollaborationRfiValidationError,
@@ -26,6 +27,8 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
     "uncertain" | "conflict" | "done" | "exists">("closed");
   const [base, setBase] = useState(message);
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
+  const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
   const [details, setDetails] = useState<ProjectRfiConversionDetails>({
     title: message.body.slice(0, 240), question: message.body,
     requestedFrom: "", discipline: "", requiredByDate: "",
@@ -38,12 +41,16 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
     if (phase !== "closed") return;
     setPhase("checking"); setStatus("");
     try {
-      const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
+      const [entries, attached] = await Promise.all([
+        loadProjectMessageConversions("/api/pmcs", projectId, message.id),
+        loadProjectMessageAttachments("/api/pmcs", projectId, message.id),
+      ]);
       if (entries.some((item) => item.destinationType === "RFI")) {
         setPhase("exists");
         setStatus("برای این پیام RFI رسمی قبلاً ثبت شده است؛ تبار تبدیل را ببینید.");
       } else {
         setBase(message);
+        setFiles(attached); setSelectedIds([]);
         setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
         setConfirmed(false); setPhase("editing");
       }
@@ -65,6 +72,38 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
     }
   }
 
+  async function rebase() {
+    if (phase !== "conflict" || message.revision <= base.revision ||
+        message.deletedAt || message.redactedAt) return;
+    setPhase("checking"); setStatus("");
+    try {
+      const [entries, attached] = await Promise.all([
+        loadProjectMessageConversions("/api/pmcs", projectId, message.id),
+        loadProjectMessageAttachments("/api/pmcs", projectId, message.id),
+      ]);
+      if (entries.some((item) => item.destinationType === "RFI")) {
+        setPhase("exists"); setStatus("برای این پیام RFI رسمی قبلاً ثبت شده است؛ تبار تبدیل را ببینید.");
+        return;
+      }
+      const retained = files.filter((file) => selectedIds.includes(file.documentId) &&
+        attached.some((current) => current.documentId.toLowerCase() === file.documentId.toLowerCase() &&
+          current.sha256.toLowerCase() === file.sha256.toLowerCase() &&
+          current.versionNumber === file.versionNumber &&
+          current.originalFileName === file.originalFileName &&
+          current.contentType === file.contentType && current.sizeBytes === file.sizeBytes));
+      setFiles(attached); setSelectedIds(retained.map((file) => file.documentId));
+      setBase(message);
+      setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+      setConfirmed(false);
+      setStatus(retained.length < selectedIds.length
+        ? "برخی فایل‌های انتخابی دیگر در فهرست آزادشده نیستند؛ انتخاب را دوباره بررسی کنید." : "");
+      setPhase("editing");
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else { setPhase("conflict"); setStatus("بازخوانی فایل‌ها و تبار کامل نشد؛ دوباره تلاش کنید."); }
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
@@ -72,7 +111,8 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
     setPhase("sending"); setStatus("در حال ثبت پیش‌نویس RFI رسمی…");
     try {
       const result = await convertProjectMessageToRfi("/api/pmcs", projectId, base,
-        actorUserId, details, identity.destinationId, identity.key);
+        actorUserId, details, identity.destinationId, identity.key,
+        files.filter((item) => selectedIds.includes(item.documentId)));
       setPhase("done");
       setStatus(`پیش‌نویس RFI رسمی با ارجاع ${result.destinationReference} ثبت شد؛ تبار پیام را تازه‌سازی کنید.`);
       onChanged();
@@ -109,11 +149,8 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
     {phase === "conflict" && <div>
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => {
-          setBase(message);
-          setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
-          setConfirmed(false); setStatus(""); setPhase("editing");
-        }}>تبدیل RFI بر پایهٔ نسخهٔ تازه</button>}
+        <button className="secondary-button" type="button" onClick={() => void rebase()}>
+          تبدیل RFI بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
       <form onSubmit={(event) => void submit(event)}>
@@ -146,6 +183,21 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
         <label>راه‌حل پیشنهادی، اختیاری<textarea value={details.proposedSolution} maxLength={4000}
           disabled={phase !== "editing"} rows={2} onChange={(event) => setDetails((current) =>
             ({ ...current, proposedSolution: event.target.value }))} /></label>
+        <fieldset disabled={phase !== "editing"}>
+          <legend>فایل‌های آزادشدهٔ همین پیام برای شواهد RFI، اختیاری (حداکثر ۱۰ فایل)</legend>
+          {files.length === 0 && <p>این پیام فایل آزادشده‌ای ندارد.</p>}
+          {files.map((file) => <label key={file.documentId}>
+            <input type="checkbox" checked={selectedIds.includes(file.documentId)}
+              disabled={!selectedIds.includes(file.documentId) && selectedIds.length >= 10}
+              onChange={(event) => {
+                setSelectedIds((current) => event.target.checked
+                  ? [...current, file.documentId] : current.filter((id) => id !== file.documentId));
+                setConfirmed(false);
+              }} />
+            فایل {file.originalFileName} · نسخهٔ {file.versionNumber}
+          </label>)}
+        </fieldset>
+        {selectedIds.length > 0 && <p>هش و نسخهٔ {selectedIds.length.toLocaleString("fa-IR")} فایل انتخاب‌شده در شواهد RFI ثبت می‌شود.</p>}
         <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
           onChange={(event) => setConfirmed(event.target.checked)} />
           ایجاد پیش‌نویس RFI رسمی با این پرسش، مخاطب و اثر احتمالی را تأیید می‌کنم.</label>

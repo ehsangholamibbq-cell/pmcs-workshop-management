@@ -265,7 +265,8 @@ export interface ProjectRfiConversionDetails {
 /** Creates a Draft RFI through Technical Office, leaving later review/issue transitions untouched. */
 export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: string,
   message: ProjectConversationMessage, actorUserId: string, details: ProjectRfiConversionDetails,
-  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  destinationId: string, idempotencyKey: string,
+  selectedAttachments: readonly ProjectMessageAttachment[] = []): Promise<ProjectMessageConversionLineage> {
   const title = details.title.trim();
   const question = details.question.trim();
   const requestedFrom = details.requestedFrom.trim();
@@ -288,6 +289,7 @@ export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: 
       new Set(impacts).size !== impacts.length ||
       impacts.some((item) => !["Time", "Cost", "Quality", "Scope", "Safety"].includes(item)) ||
       typeof details.isBlocking !== "boolean" ||
+      !validSelectedAttachments(message.id, selectedAttachments) ||
       /[\x00-\x08\x0b-\x1f\x7f]/u.test(title + question + requestedFrom + discipline + proposedSolution)) {
     throw new Error("مشخصات تبدیل به RFI معتبر نیست.");
   }
@@ -299,7 +301,8 @@ export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: 
     body: JSON.stringify({ destinationId, destinationType: "RFI", baseRevision: message.revision,
       confirmed: true, details: { title, question, requestedFrom, discipline,
         requiredByDate: date || null, potentialImpact: impacts.join(", ") || "None",
-        isBlocking: details.isBlocking, proposedSolution: proposedSolution || null }, documentIds: [] }),
+        isBlocking: details.isBlocking, proposedSolution: proposedSolution || null },
+      documentIds: selectedAttachments.map((item) => item.documentId) }),
   });
   if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
   if (response.status === 409) {
@@ -323,7 +326,7 @@ export async function convertProjectMessageToRfi(apiBaseUrl: string, projectId: 
       result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
       result.messageRevision !== message.revision ||
       result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
-      result.documents.length !== 0) {
+      !matchingLineageDocuments(result.documents, selectedAttachments)) {
     throw new Error("تأیید تبدیل RFI رسمی معتبر نیست.");
   }
   return result;

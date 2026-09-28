@@ -925,6 +925,15 @@ test("confirmed Issue conversion requires owner permission and survives conflict
 
 test("confirmed RFI conversion keeps impact flags, rebases and prevents a second Draft after reload", async ({ page }) => {
   const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `rfi-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
   let canConvertRfi = false;
   let revision = 2;
   let body = "پرسش فنی اولیه";
@@ -942,6 +951,8 @@ test("confirmed RFI conversion keeps impact flags, rebases and prevents a second
       nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
         body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
     }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
     (route) => {
       if (revoked) return route.fulfill({ status: 403 });
@@ -957,7 +968,7 @@ test("confirmed RFI conversion keeps impact flags, rebases and prevents a second
       expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
       expect(request.destinationType).toBe("RFI");
       expect(request.confirmed).toBe(true);
-      expect(request.documentIds).toEqual([]);
+      expect(request.documentIds).toEqual([documentId]);
       expect(request.details.title).toBe("پرسش تأییدشده");
       expect(request.details.question).toBe("تعارض مشخصات بتن");
       expect(request.details.requestedFrom).toBe("مشاور");
@@ -973,7 +984,9 @@ test("confirmed RFI conversion keeps impact flags, rebases and prevents a second
       }
       rfi = { id: "10000000-0000-4000-8000-000000000023", messageId,
         messageRevision: revision, destinationType: "RFI", destinationId: request.destinationId,
-        destinationReference: "RFI-001", documents: [], confirmedBy: userId,
+        destinationReference: "RFI-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
         confirmedAt: "2026-09-28T00:01:00Z" };
       return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(rfi) });
     });
@@ -990,6 +1003,8 @@ test("confirmed RFI conversion keeps impact flags, rebases and prevents a second
   await page.getByRole("checkbox", { name: "زمان" }).check();
   await page.getByRole("checkbox", { name: "کیفیت" }).check();
   await page.getByRole("checkbox", { name: "مانع اجرای کار است" }).check();
+  await page.getByRole("checkbox", { name: /فایل rfi-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل rfi-2\.pdf/u })).not.toBeChecked();
   await page.getByRole("checkbox", { name: /ایجاد پیش‌نویس RFI رسمی/u }).check();
   await page.getByRole("button", { name: "تأیید و ساخت پیش‌نویس RFI" }).click();
   await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ پرسش و نسخهٔ تازه را بررسی", { exact: false })).toBeVisible();
