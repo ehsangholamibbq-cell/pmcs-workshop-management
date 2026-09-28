@@ -9,6 +9,7 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
     public DbSet<ProjectMessage> Messages => Set<ProjectMessage>();
     public DbSet<ProjectReaction> Reactions => Set<ProjectReaction>();
     public DbSet<ProjectReadCursor> ReadCursors => Set<ProjectReadCursor>();
+    public DbSet<ProjectMessageAttachment> Attachments => Set<ProjectMessageAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -65,6 +66,21 @@ internal sealed class CollaborationDbContext(DbContextOptions<CollaborationDbCon
             builder.Property(item => item.UserId).HasColumnName("user_id");
             builder.Property(item => item.LastReadSequence).HasColumnName("last_read_sequence");
             builder.Property(item => item.UpdatedAt).HasColumnName("updated_at");
+        });
+        modelBuilder.Entity<ProjectMessageAttachment>(builder =>
+        {
+            builder.ToTable("message_attachments");
+            builder.HasKey(item => item.Id);
+            builder.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(item => item.TenantId).HasColumnName("tenant_id");
+            builder.Property(item => item.ProjectId).HasColumnName("project_id");
+            builder.Property(item => item.MessageId).HasColumnName("message_id");
+            builder.Property(item => item.DocumentId).HasColumnName("document_id");
+            builder.Property(item => item.DocumentSha256).HasColumnName("document_sha256").HasMaxLength(64);
+            builder.Property(item => item.DocumentVersion).HasColumnName("document_version");
+            builder.Property(item => item.AttachedBy).HasColumnName("attached_by");
+            builder.Property(item => item.AttachedAt).HasColumnName("attached_at");
+            builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.DocumentId }).IsUnique();
         });
     }
 }

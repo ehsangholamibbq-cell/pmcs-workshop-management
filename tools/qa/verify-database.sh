@@ -87,7 +87,7 @@ fi
 
 expect_equal \
   "canonical migration ledger size" \
-  "58" \
+  "59" \
   "select count(*) from foundation.schema_migrations;"
 
 expect_equal \
@@ -99,6 +99,11 @@ expect_equal \
   "collaboration interaction migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'collaboration' and version = '20260928-002';"
+
+expect_equal \
+  "collaboration attachment migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'collaboration' and version = '20260928-003';"
 
 expect_equal \
   "collaboration stable retry, concurrent send and live recovery yield distinct messages" \
@@ -114,6 +119,11 @@ expect_equal \
   "collaboration reply mention notifications and read cursor" \
   "2|1|0" \
   "select (select count(*) from work_management.notifications where target_type = 'ProjectMessage' and project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from collaboration.read_cursors where project_id = '33333333-3333-3333-3333-333333333333' and user_id = (select id from identity_access.users where email = 'qa.observer@pmcs.invalid'))::text || '|' || (select count(*) from collaboration.messages where project_id = '33333333-3333-3333-3333-333333333333' and pinned_at is not null)::text;"
+
+expect_equal \
+  "collaboration released attachment association is unique and audited" \
+  "1|1|1" \
+  "select (select count(*) from collaboration.message_attachments where project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from foundation.audit_events where event_type = 'ProjectMessageDocumentAttached' and project_id = '33333333-3333-3333-3333-333333333333')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'collaboration.message.document-attached' and project_id = '33333333-3333-3333-3333-333333333333')::text;"
 
 expect_equal \
   "governance reporting history migration identity" \

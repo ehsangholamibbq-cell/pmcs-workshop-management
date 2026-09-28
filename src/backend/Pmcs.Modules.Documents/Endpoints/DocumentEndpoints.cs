@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pmcs.BuildingBlocks.Application;
 using Pmcs.Modules.Documents.Domain;
+using Pmcs.Modules.Documents.Contracts;
 using Pmcs.Modules.Documents.Persistence;
 using Pmcs.Modules.Documents.Scanning;
 using Pmcs.Modules.Documents.Storage;
@@ -88,6 +89,7 @@ internal static class DocumentEndpoints
         var query = dbContext.Assets.AsNoTracking()
             .Where(asset => asset.TenantId == actor.TenantId &&
                 asset.Status != DocumentAssetStatus.Deleted &&
+                asset.OwnerType != DocumentOwnerType.ProjectChat &&
                 asset.OwnerType != DocumentOwnerType.ReportOutput &&
                 asset.OwnerType != DocumentOwnerType.TenantReportOutput);
         if (projectId.HasValue)
@@ -131,7 +133,8 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null || asset.OwnerType is DocumentOwnerType.ReportOutput or DocumentOwnerType.TenantReportOutput ||
+        if (asset is null || asset.OwnerType is DocumentOwnerType.ProjectChat or
+            DocumentOwnerType.ReportOutput or DocumentOwnerType.TenantReportOutput ||
             asset.Status == DocumentAssetStatus.Deleted)
         {
             return Results.NotFound();
@@ -151,6 +154,7 @@ internal static class DocumentEndpoints
         ICurrentActor actor,
         IProjectPermissionService permissionService,
         IProjectTenantDirectory projectDirectory,
+        IProjectChatDocumentOwner chatOwner,
         DocumentsDbContext dbContext,
         IClock clock,
         ITransactionalSideEffectWriter sideEffectWriter,
@@ -209,6 +213,12 @@ internal static class DocumentEndpoints
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
+
+        if (request.OwnerType == DocumentOwnerType.ProjectChat &&
+            (!request.ProjectId.HasValue || !await chatOwner.CanUploadAsync(
+                actor.TenantId, request.ProjectId.Value, request.OwnerId,
+                actor.UserId, cancellationToken)))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var customGovernance = request.Classification != DocumentClassification.Internal ||
             request.RetentionPolicy != DocumentRetentionPolicy.Standard ||
@@ -332,6 +342,7 @@ internal static class DocumentEndpoints
         HttpContext httpContext,
         ICurrentActor actor,
         IProjectPermissionService permissionService,
+        IProjectChatDocumentOwner chatOwner,
         DocumentsDbContext dbContext,
         IDocumentObjectStorage objectStorage,
         IContentScanner scanner,
@@ -362,6 +373,12 @@ internal static class DocumentEndpoints
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
+
+        if (asset.OwnerType == DocumentOwnerType.ProjectChat &&
+            (!asset.ProjectId.HasValue || !await chatOwner.CanUploadAsync(
+                actor.TenantId, asset.ProjectId.Value, asset.OwnerId,
+                actor.UserId, cancellationToken)))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var idempotency = await GetReplayAsync(
             httpContext,
@@ -719,7 +736,8 @@ internal static class DocumentEndpoints
         }
 
         var asset = await FindAsync(dbContext, actor.TenantId, documentId, cancellationToken);
-        if (asset is null || asset.OwnerType is DocumentOwnerType.ReportOutput or DocumentOwnerType.TenantReportOutput ||
+        if (asset is null || asset.OwnerType is DocumentOwnerType.ProjectChat or
+            DocumentOwnerType.ReportOutput or DocumentOwnerType.TenantReportOutput ||
             asset.Status == DocumentAssetStatus.Deleted)
         {
             return Results.NotFound();

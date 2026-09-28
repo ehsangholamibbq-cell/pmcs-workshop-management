@@ -128,4 +128,22 @@ public sealed class CollaborationMessageTests
         Assert.Equal("اصل", message.Body);
         Assert.Equal(ActorId, message.AuthorUserId);
     }
+
+    [Fact]
+    public void ReleasedAttachmentCapturesImmutableHashAndOwnerScope()
+    {
+        var messageId = Guid.NewGuid();
+        var documentId = Guid.NewGuid();
+        var attachment = ProjectMessageAttachment.Create(TenantId, ProjectId,
+            messageId, documentId, new string('A', 64), 2, ActorId, DateTimeOffset.UtcNow);
+        Assert.Equal(messageId, attachment.MessageId);
+        Assert.Equal(documentId, attachment.DocumentId);
+        Assert.Equal(new string('a', 64), attachment.DocumentSha256);
+        Assert.Throws<ArgumentException>(() => ProjectMessageAttachment.Create(
+            TenantId, Guid.Empty, messageId, documentId, new string('a', 64),
+            1, ActorId, DateTimeOffset.UtcNow));
+        Assert.Throws<ArgumentException>(() => ProjectMessageAttachment.Create(
+            TenantId, ProjectId, messageId, documentId, "unknown", 1,
+            ActorId, DateTimeOffset.UtcNow));
+    }
 }

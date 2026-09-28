@@ -34,6 +34,9 @@ internal static partial class CollaborationEndpoints
         group.MapDelete("/messages/{messageId:guid}/reactions/{emoji}", RemoveReactionAsync);
         group.MapPut("/messages/{messageId:guid}/pin", PinMessageAsync);
         group.MapDelete("/messages/{messageId:guid}/pin", UnpinMessageAsync);
+        group.MapPut("/messages/{messageId:guid}/attachments/{documentId:guid}", AttachDocumentAsync);
+        group.MapGet("/messages/{messageId:guid}/attachments", ListAttachmentsAsync);
+        group.MapGet("/messages/{messageId:guid}/attachments/{documentId:guid}/content", DownloadAttachmentAsync);
     }
 
     private static async Task<IResult> GetRoomAsync(

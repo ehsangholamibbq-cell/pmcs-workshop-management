@@ -30,6 +30,7 @@ const protocolManagedMutations = new Map([
   ["DELETE /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/reactions/{emoji}", "Deleting an actor's reaction is repeatable and has no side effect after the first delete."],
   ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Pin is a repeatable desired state; events emit only on transition."],
   ["DELETE /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Unpin is a repeatable desired state; events emit only on transition."],
+  ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/attachments/{documentId:guid}", "A released owner-scoped document has one unique natural association; repeated PUT emits no event."],
 ]);
 
 const missingIdempotency = mutations.filter((endpoint) =>

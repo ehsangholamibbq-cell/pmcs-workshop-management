@@ -73,7 +73,7 @@ public sealed record DocumentAssetResponse(
         asset.UploadedAt,
         asset.ReleasedAt,
         asset.Revision,
-        asset.Status == DocumentAssetStatus.Released
+        asset.Status == DocumentAssetStatus.Released && asset.OwnerType != DocumentOwnerType.ProjectChat
             ? $"/api/v1/documents/{asset.Id}/content"
             : null);
 }
