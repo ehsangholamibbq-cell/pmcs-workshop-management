@@ -1,22 +1,22 @@
 {
   "contractVersion": 1,
-  "family": "DejaVu Sans",
-  "upstreamVersion": "2.37",
-  "sourcePackage": "fonts-dejavu-core 2.37-8",
-  "source": "https://dejavu-fonts.github.io/",
-  "license": "Bitstream Vera; DejaVu changes are public domain",
+  "family": "Vazirmatn",
+  "upstreamVersion": "6e553e33489a8f9dfaccc76860a2e3f3c1e66de7",
+  "sourcePackage": "rastikerdar/vazirmatn upstream pinned commit",
+  "source": "https://github.com/rastikerdar/vazirmatn/tree/6e553e33489a8f9dfaccc76860a2e3f3c1e66de7",
+  "license": "SIL Open Font License 1.1; see Vazirmatn-OFL.txt",
   "files": [
     {
-      "path": "DejaVuSans.ttf",
-      "style": "Book",
-      "fontVersion": 155320,
-      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
+      "path": "Vazirmatn-Regular.ttf",
+      "style": "Regular",
+      "fontVersion": 2162885,
+      "sha256": "b69fd4c680b8f3f225feabcc655a2c585d97627b8f5f5c0f9985e894069f3a56"
     },
     {
-      "path": "DejaVuSans-Bold.ttf",
+      "path": "Vazirmatn-Bold.ttf",
       "style": "Bold",
-      "fontVersion": 155320,
-      "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895"
+      "fontVersion": 2162885,
+      "sha256": "f635fdbea28f265de395ba83b4b1570dcf2f58d13c65469e61903b1c2d2ae723"
     }
   ]
 }

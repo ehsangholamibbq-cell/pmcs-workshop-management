@@ -46,5 +46,13 @@
       <Link>fonts/DejaVuSans-Bold.ttf</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="../../assets/reporting/fonts/Vazirmatn-Regular.ttf">
+      <Link>fonts/Vazirmatn-Regular.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="../../assets/reporting/fonts/Vazirmatn-Bold.ttf">
+      <Link>fonts/Vazirmatn-Bold.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

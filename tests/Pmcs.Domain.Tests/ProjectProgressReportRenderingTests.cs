@@ -514,8 +514,8 @@ public sealed class ProjectProgressReportRenderingTests
         var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
         return new ReportingRendererOptions(
             CertifiedPdfRuntimeContract.LicenseDecision,
-            Path.Combine(fonts, "DejaVuSans.ttf"),
-            Path.Combine(fonts, "DejaVuSans-Bold.ttf"),
+            Path.Combine(fonts, PmcsTypographyContract.PdfRegularFileName),
+            Path.Combine(fonts, PmcsTypographyContract.PdfBoldFileName),
             CertifiedPdfRuntimeContract.RegularFontSha256,
             CertifiedPdfRuntimeContract.BoldFontSha256,
             CertifiedPdfRuntimeContract.RuntimeImageDigest);

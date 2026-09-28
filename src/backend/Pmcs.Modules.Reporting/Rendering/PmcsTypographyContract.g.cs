@@ -3,11 +3,11 @@ namespace Pmcs.Modules.Reporting.Rendering;
 
 internal static class PmcsTypographyContract
 {
-    public const string Version = "1.0.0";
-    public const string PdfFamily = "DejaVu Sans";
-    public const string PdfRegularFileName = "DejaVuSans.ttf";
-    public const string PdfBoldFileName = "DejaVuSans-Bold.ttf";
-    public const string PdfRegularSha256 = "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280";
-    public const string PdfBoldSha256 = "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895";
-    public const string XlsxFamily = "Arial";
+    public const string Version = "2.0.0";
+    public const string PdfFamily = "Vazirmatn";
+    public const string PdfRegularFileName = "Vazirmatn-Regular.ttf";
+    public const string PdfBoldFileName = "Vazirmatn-Bold.ttf";
+    public const string PdfRegularSha256 = "b69fd4c680b8f3f225feabcc655a2c585d97627b8f5f5c0f9985e894069f3a56";
+    public const string PdfBoldSha256 = "f635fdbea28f265de395ba83b4b1570dcf2f58d13c65469e61903b1c2d2ae723";
+    public const string XlsxFamily = "Vazirmatn";
 }

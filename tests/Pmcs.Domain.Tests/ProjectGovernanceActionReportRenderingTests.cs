@@ -86,6 +86,7 @@ public sealed class ProjectGovernanceActionReportRenderingTests
         Assert.Single(XDocument.Parse(sheets[4]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("SourceFactId", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("AssigneeDisplayName", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
+        Ms48FontGoldenArtifacts.Save("project-governance-action-golden.xlsx", first.Bytes);
         Assert.True(first.Sha256 == "7b41d33ea7db98fada6a041b9fd6bc5c265a8ab8400513fe643ca830d27efb1f",
             $"F09_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
@@ -110,6 +111,9 @@ public sealed class ProjectGovernanceActionReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
+        Ms48FontGoldenArtifacts.Save("project-governance-action-golden.pdf", first.Bytes);
+        for (var index = 0; index < images.Count; index++)
+            Ms48FontGoldenArtifacts.Save($"project-governance-action-page-{index + 1}.png", images[index]);
         Assert.True(first.Sha256 == "85858ce8df5340841553bb53108515a49feb6637c4c5efb676f8f24f81dfdbb1" &&
                 visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F09_PDF_GOLDEN_SHA256={first.Sha256}; F09_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
@@ -207,7 +211,7 @@ public sealed class ProjectGovernanceActionReportRenderingTests
     {
         var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
         return new ReportingRendererOptions(CertifiedPdfRuntimeContract.LicenseDecision,
-            Path.Combine(fonts, "DejaVuSans.ttf"), Path.Combine(fonts, "DejaVuSans-Bold.ttf"),
+            Path.Combine(fonts, PmcsTypographyContract.PdfRegularFileName), Path.Combine(fonts, PmcsTypographyContract.PdfBoldFileName),
             CertifiedPdfRuntimeContract.RegularFontSha256, CertifiedPdfRuntimeContract.BoldFontSha256,
             CertifiedPdfRuntimeContract.RuntimeImageDigest);
     }

@@ -33,7 +33,8 @@ function assertContract(value) {
   const asset = value.web.asset;
   if (asset !== null && (!asset || !validFile(asset.file) ||
       !asset.file.endsWith(".woff2") || !digest.test(asset.sha256) ||
-      !/^(?:[1-9]00|100 900)$/u.test(asset.weight))) {
+      !/^(?:[1-9]00|100 900)$/u.test(asset.weight) ||
+      !validFile(asset.licenseFile) || !digest.test(asset.licenseSha256))) {
     throw new Error("Invalid web font asset contract.");
   }
 }
@@ -92,6 +93,13 @@ function synchronize(mode) {
     const actual = createHash("sha256").update(bytes).digest("hex");
     if (actual !== contract.web.asset.sha256) throw new Error(`Web font digest mismatch: ${source}`);
     files.set(`src/web/public/typography/${contract.web.asset.file}`, bytes);
+    const licenseSource = `assets/typography/web/${contract.web.asset.licenseFile}`;
+    const licenseBytes = readFileSync(resolve(root, licenseSource));
+    const licenseDigest = createHash("sha256").update(licenseBytes).digest("hex");
+    if (licenseDigest !== contract.web.asset.licenseSha256) {
+      throw new Error(`Web font license digest mismatch: ${licenseSource}`);
+    }
+    files.set(`src/web/public/typography/${contract.web.asset.licenseFile}`, licenseBytes);
   }
   const sw = readFileSync(resolve(root, swPath), "utf8");
   const nextSw = sw.replace(/^const cacheName = "[^"]+";$/mu,

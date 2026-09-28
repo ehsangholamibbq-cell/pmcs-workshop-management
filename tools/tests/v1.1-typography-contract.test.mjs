@@ -16,6 +16,7 @@ test("one versioned font contract serves active UI, offline, PDF, XLSX and print
   assert.match(read("src/web/app/globals.css"), /font-family: var\(--pmcs-font-family/u);
   assert.match(read("src/web/public/offline.html"), /font-family: var\(--pmcs-font-family/u);
   assert.match(read("src/web/public/sw.js"), /\/typography\/pmcs-fonts\.css/u);
+  assert.match(read("src/web/public/sw.js"), /\/typography\/Vazirmatn-variable\.woff2/u);
   assert.match(read("src/backend/Pmcs.Modules.Reporting/Rendering/CertifiedPdfRuntimeContract.cs"),
     /PmcsTypographyContract\.PdfFamily/u);
   assert.match(read("src/backend/Pmcs.Modules.Reporting/Rendering/ReportingRendererOptions.cs"),
@@ -31,6 +32,11 @@ test("one versioned font contract serves active UI, offline, PDF, XLSX and print
       /PmcsTypographyContract\.XlsxFamily/u);
   }
   assert.doesNotMatch(read("src/backend/Pmcs.Api/appsettings.json"), /PdfRegularFontSha256|PdfBoldFontSha256/u);
+  assert.equal(contract.contractVersion, "2.0.0");
+  assert.equal(contract.web.family, "Vazirmatn");
+  assert.equal(contract.pdf.family, "Vazirmatn");
+  assert.equal(contract.xlsx.family, "Vazirmatn");
+  assert.match(read("src/web/public/typography/Vazirmatn-OFL.txt"), /SIL OPEN FONT LICENSE/u);
 });
 
 test("a future font swap changes generated UI, offline cache, PDF and XLSX from one manifest", () => {
@@ -45,7 +51,8 @@ test("a future font swap changes generated UI, offline cache, PDF and XLSX from 
   assert.match(generated.manifest, /"family": "New Persian PDF"/u);
   assert.equal(generated.cacheName, "pmcs-public-shell-font-v2.0.0");
   const selfHosted = compileTypography({ ...candidate, web: { ...candidate.web,
-    asset: { file: "NewPersian.woff2", sha256: "a".repeat(64), weight: "100 900" } } });
+    asset: { file: "NewPersian.woff2", sha256: "a".repeat(64), weight: "100 900",
+      licenseFile: "NewPersian-OFL.txt", licenseSha256: "b".repeat(64) } } });
   assert.match(selfHosted.css, /@font-face[\s\S]*font-display: swap/u);
   assert.ok(selfHosted.assets.includes("/typography/NewPersian.woff2"));
   assert.throws(() => compileTypography({ ...candidate, pdf: { ...candidate.pdf,

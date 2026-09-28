@@ -36,6 +36,15 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: node tools/qa/regression-runner.mjs run backend
+        env:
+          PMCS_PDF_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F02_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F03_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F04_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F05_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F06_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_F07_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_MS48_FONT_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
       - name: Render isolated MS45 PDF and XLSX font review
         env:
           PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -46,6 +55,12 @@ jobs:
           name: qa-regression-backend
           path: artifacts/qa/regression/backend.json
           if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms48-font-golden-candidate
+          path: artifacts/qa/ms48-font-golden/
+          if-no-files-found: ignore
       - if: success()
         uses: actions/upload-artifact@v4
         with:

@@ -81,6 +81,7 @@ public sealed class ProjectQualityHseReportRenderingTests
         Assert.Contains("PassWithObservation", sheets[2], StringComparison.Ordinal);
         Assert.Single(XDocument.Parse(sheets[3]).Descendants(spreadsheet + "row"));
         Assert.DoesNotContain("PersonReference", string.Concat(sheets), StringComparison.Ordinal);
+        Ms48FontGoldenArtifacts.Save("project-quality-hse-golden.xlsx", first.Bytes);
         Assert.True(first.Sha256 == "8a22452579b105b2927184caa97ddc4c64c99b91b59d440961c4e0c733fcc626",
             $"F08_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
@@ -105,6 +106,9 @@ public sealed class ProjectQualityHseReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var visualDigests = images.Select(page =>
             Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
+        Ms48FontGoldenArtifacts.Save("project-quality-hse-golden.pdf", first.Bytes);
+        for (var index = 0; index < images.Count; index++)
+            Ms48FontGoldenArtifacts.Save($"project-quality-hse-page-{index + 1}.png", images[index]);
         Assert.True(first.Sha256 == "b7e4ed87273b5270c124cdb54d76cfee7e50492630c3d5425090c30958f54213" &&
                 visualDigests.SequenceEqual(ExpectedVisualDigests),
             $"F08_PDF_GOLDEN_SHA256={first.Sha256}; F08_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
@@ -212,7 +216,7 @@ public sealed class ProjectQualityHseReportRenderingTests
     {
         var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
         return new ReportingRendererOptions(CertifiedPdfRuntimeContract.LicenseDecision,
-            Path.Combine(fonts, "DejaVuSans.ttf"), Path.Combine(fonts, "DejaVuSans-Bold.ttf"),
+            Path.Combine(fonts, PmcsTypographyContract.PdfRegularFileName), Path.Combine(fonts, PmcsTypographyContract.PdfBoldFileName),
             CertifiedPdfRuntimeContract.RegularFontSha256, CertifiedPdfRuntimeContract.BoldFontSha256,
             CertifiedPdfRuntimeContract.RuntimeImageDigest);
     }

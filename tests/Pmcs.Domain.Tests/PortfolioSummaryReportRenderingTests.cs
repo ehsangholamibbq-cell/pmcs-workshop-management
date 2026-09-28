@@ -92,6 +92,7 @@ public sealed class PortfolioSummaryReportRenderingTests
         Assert.Contains("داده ناکافی؛ صفر فرض نشود", sheets[4], StringComparison.Ordinal);
         Assert.Contains("بدون مجوز", sheets[5], StringComparison.Ordinal);
         Assert.DoesNotContain("TotalPortfolio", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
+        Ms48FontGoldenArtifacts.Save("portfolio-summary-golden.xlsx", first.Bytes);
         Assert.True(first.Sha256 == "6f221d2f8de5c4af8079aaec65a9d0c11c669036a5777767b3b263cdd69834ec",
             $"F10_XLSX_GOLDEN_SHA256={first.Sha256}");
     }
@@ -115,6 +116,9 @@ public sealed class PortfolioSummaryReportRenderingTests
             Assert.True(images[index].SequenceEqual(repeated[index]));
         var digests = images.Select(image => Convert.ToHexString(SHA256.HashData(image))
             .ToLowerInvariant()).ToArray();
+        Ms48FontGoldenArtifacts.Save("portfolio-summary-golden.pdf", first.Bytes);
+        for (var index = 0; index < images.Count; index++)
+            Ms48FontGoldenArtifacts.Save($"portfolio-summary-page-{index + 1}.png", images[index]);
         Assert.True(first.Sha256 == "a441575ad5f561d44a37d767dd2ef0c9ad16489edf26bee3a5f57aa297b09db9" &&
                 digests.SequenceEqual(ExpectedVisualDigests),
             $"F10_PDF_GOLDEN_SHA256={first.Sha256}; F10_PDF_VISUAL_SHA256={string.Join(',', digests)}");
@@ -174,7 +178,7 @@ public sealed class PortfolioSummaryReportRenderingTests
     {
         var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
         return new ReportingRendererOptions(CertifiedPdfRuntimeContract.LicenseDecision,
-            Path.Combine(fonts, "DejaVuSans.ttf"), Path.Combine(fonts, "DejaVuSans-Bold.ttf"),
+            Path.Combine(fonts, PmcsTypographyContract.PdfRegularFileName), Path.Combine(fonts, PmcsTypographyContract.PdfBoldFileName),
             CertifiedPdfRuntimeContract.RegularFontSha256, CertifiedPdfRuntimeContract.BoldFontSha256,
             CertifiedPdfRuntimeContract.RuntimeImageDigest);
     }

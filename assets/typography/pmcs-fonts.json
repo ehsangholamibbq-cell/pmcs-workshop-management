@@ -1,28 +1,41 @@
 {
-  "contractVersion": "1.0.0",
+  "contractVersion": "2.0.0",
   "web": {
-    "family": "Tahoma",
-    "fallback": ["Segoe UI", "Arial", "sans-serif"],
-    "asset": null
-  },
-  "pdf": {
-    "family": "DejaVu Sans",
-    "upstreamVersion": "2.37",
-    "sourcePackage": "fonts-dejavu-core 2.37-8",
-    "source": "https://dejavu-fonts.github.io/",
-    "license": "Bitstream Vera; DejaVu changes are public domain",
-    "regular": {
-      "file": "DejaVuSans.ttf",
-      "style": "Book",
-      "fontVersion": 155320,
-      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
-    },
-    "bold": {
-      "file": "DejaVuSans-Bold.ttf",
-      "style": "Bold",
-      "fontVersion": 155320,
-      "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895"
+    "family": "Vazirmatn",
+    "fallback": [
+      "Tahoma",
+      "Segoe UI",
+      "Arial",
+      "sans-serif"
+    ],
+    "asset": {
+      "file": "Vazirmatn-variable.woff2",
+      "sha256": "4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92",
+      "weight": "100 900",
+      "licenseFile": "Vazirmatn-OFL.txt",
+      "licenseSha256": "17e355067c8284f47743a1ee3b1ef7ff684ff0601eda357f9353b10b3016ab31"
     }
   },
-  "xlsx": { "family": "Arial" }
+  "pdf": {
+    "family": "Vazirmatn",
+    "upstreamVersion": "6e553e33489a8f9dfaccc76860a2e3f3c1e66de7",
+    "sourcePackage": "rastikerdar/vazirmatn upstream pinned commit",
+    "source": "https://github.com/rastikerdar/vazirmatn/tree/6e553e33489a8f9dfaccc76860a2e3f3c1e66de7",
+    "license": "SIL Open Font License 1.1; see Vazirmatn-OFL.txt",
+    "regular": {
+      "file": "Vazirmatn-Regular.ttf",
+      "style": "Regular",
+      "fontVersion": 2162885,
+      "sha256": "b69fd4c680b8f3f225feabcc655a2c585d97627b8f5f5c0f9985e894069f3a56"
+    },
+    "bold": {
+      "file": "Vazirmatn-Bold.ttf",
+      "style": "Bold",
+      "fontVersion": 2162885,
+      "sha256": "f635fdbea28f265de395ba83b4b1570dcf2f58d13c65469e61903b1c2d2ae723"
+    }
+  },
+  "xlsx": {
+    "family": "Vazirmatn"
+  }
 }

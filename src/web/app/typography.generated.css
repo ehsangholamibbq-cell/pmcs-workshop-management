@@ -1,2 +1,3 @@
 /* Generated from assets/typography/pmcs-fonts.json; run node tools/typography/sync.mjs --write. */
-:root { --pmcs-font-family: "Tahoma", "Segoe UI", "Arial", sans-serif; }
+@font-face { font-family: "Vazirmatn"; src: url("/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+:root { --pmcs-font-family: "Vazirmatn", "Tahoma", "Segoe UI", "Arial", sans-serif; }
