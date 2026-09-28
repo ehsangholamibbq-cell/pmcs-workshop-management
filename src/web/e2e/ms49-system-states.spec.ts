@@ -45,7 +45,10 @@ test("MS49 navigation, feedback and confirmation states remain accessible at des
   await expect(page.locator("#close-dialog")).toBeFocused();
   await expect(page.locator("#confirm-action")).toBeDisabled();
   await page.keyboard.press("Tab");
-  expect(await page.evaluate(() => document.activeElement?.closest("dialog")?.id)).toBe("review-dialog");
+  expect(await page.evaluate(() => {
+    const modal = document.getElementById("review-dialog");
+    return document.activeElement === modal || modal?.contains(document.activeElement);
+  })).toBe(true);
   await page.locator("#confirm").check();
   await expect(page.locator("#confirm-action")).toBeEnabled();
   await page.locator("#confirm-action").click();
