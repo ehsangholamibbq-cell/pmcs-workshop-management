@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.113.0`
+- نسخه سند: `1.114.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1193,6 +1193,16 @@ UX2-MS30 روی source `02823eee601aba7a60b3772202e091f4f9688380` / tree
 تعارض، Reload و 403 را تأیید کرد. Exact next `UX2-MS31` پیوست RFI است؛
 مهاجرت و Gateهای بصری بازند.
 
+UX2-MS31 روی source `63855ec910909f8cf133f36313240c0ae25a2202` / tree
+`39c67b515b0102124d6788301e32325f76871167` در Run 375
+(`36437725041`) هر هشت Job را پاس کرد. فرم Draft RFI انتخاب اختیاری و
+صریح حداکثر ده فایل Released همان پیام را به فرمان مالک Technical Office
+می‌برد؛ شماره و صدور از Browser تعیین نمی‌شوند. شواهد RFI به پیام/Revision
+و سند/Hash اشاره می‌کنند و پاسخ از نظر متادیتای کامل فایل تطبیق می‌شود.
+Conflict فایل‌ها/تبار را تازه می‌کند و تأیید دوباره لازم است؛ مرورگر انتخاب،
+Conflict، Reload و 403 را تأیید کرد. Exact next `UX2-MS32` قرارداد مرکزی
+نسخه‌دار فونت برای UI/Offline/PDF/XLSX/Print است؛ مهاجرت و Gateهای بصری بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1546,3 +1556,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.111.0` | UX2-MS28 تبدیل فایل Released به Technical Document Draft/Revision با Run 369 هشت Job سبز؛ MS29 پیوست Action و Gateهای UX2 باز |
 | `1.112.0` | UX2-MS29 انتخاب صریح پیوست Released برای تبار Action با Run 371 هشت Job سبز؛ MS30 پیوست Issue و Gateهای UX2 باز |
 | `1.113.0` | UX2-MS30 انتخاب صریح پیوست Released برای شواهد Issue با Run 373 هشت Job سبز؛ MS31 پیوست RFI و Gateهای UX2 باز |
+| `1.114.0` | UX2-MS31 انتخاب صریح پیوست Released برای شواهد Draft RFI با Run 375 هشت Job سبز؛ MS32 قرارداد فونت و Gateهای UX2 باز |
