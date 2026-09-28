@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.81.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS04، UX2/INT1/QA1 باز
+- نسخه سند: `1.82.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS05، UX2/INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -916,6 +916,14 @@ quarantine/release، دانلود خصوصی و hash/version، و تاریخچه
 Restore شدند. پاک‌سازی فیزیکی تا سیاست retention تأییدشده خاموش است.
 Exact Next `COL1-MS05` شش تبدیل رسمی؛ MS06 و UX2/Production بازند.
 
+MS05 روی source `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3` / tree
+`5ab89f36cc93f832bbc752f3ce0c8416e18b1689` در Run 301
+(`36367098137`) هر هشت Job را پاس کرد. Action/Issue، RFI/Technical Document،
+Daily Fact/Evidence از Command مالک مقصد و تراکنش واحد با lineage، Audit و
+Idempotency ساخته شدند. MS05A در Run 297 و MS05B در Run 299 مستقل سبز شدند؛
+۶۳ Migration و Restore Drill سبز است. Exact Next `COL1-MS06` Qualification
+امنیت/رقابت و Checkpoint پایان ساخت؛ UX2/Production بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1237,3 +1245,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.79.0` | MS02 تعامل و read state متصل با Evidence سبز Run 283؛ MS03–MS06 و UX2/Production باز |
 | `1.80.0` | MS03 live/reconnect/fallback و صف آفلاین با Evidence سبز Run 286؛ MS04–MS06 و UX2/Production باز |
 | `1.81.0` | MS04 سند Chat و حاکمیت پیام با Evidence سبز Run 294 و ۶۰ Migration؛ MS05–MS06 و UX2/Production باز |
+| `1.82.0` | MS05 شش تبدیل مالک رسمی با Evidence سبز Runهای 297/299/301 و ۶۳ Migration؛ MS06 و UX2/Production باز |

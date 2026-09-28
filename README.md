@@ -4,10 +4,10 @@
 
 ## وضعیت فعلی
 
-Current connected COL1 safe checkpoint: `PMCS-V1.1-COL1-MS03-C1`, source
-`c47c7e4202b9c7616602bedda587bc24b75246ed`, Full CI Run 286 (8/8).
-Live/reconnect/fallback and identity-scoped offline retry are connected with 58 migrations;
-MS04–MS06 and UX2/INT1/QA1 remain open. Collaboration and Reporting rollout
+Current connected COL1 safe checkpoint: `PMCS-V1.1-COL1-MS05-C1`, source
+`d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3`, Full CI Run 301 (8/8).
+Six human-confirmed owner conversions are connected with 63 migrations;
+MS06 and UX2/INT1/QA1 remain open. Collaboration and Reporting rollout
 flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
 
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
