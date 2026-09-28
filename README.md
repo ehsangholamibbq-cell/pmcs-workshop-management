@@ -4,14 +4,13 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS11-C1`, source
-`37cefe7bd76f2a1f4fa87fab03ecf07dfc05a69b`, Full CI Run 331 (8/8).
+Current safe checkpoint: `PMCS-V1.1-UX2-MS12-C1`, source
+`6a5b0649d1709eb3d483331ffcec0ee52f998920`, Full CI Run 334 (8/8).
 COL1 connected build is closed with 63 migrations. The official brand mark,
 shared tokens, focus, mobile navigation and scoped project Chat are in UI.
-The project Reporting Center reads authorized catalog/history, requests all
-project report families and verifies gated output bytes. The separate Portfolio
-Reporting Center reads Tenant-scoped catalog/history and requests F10 with
-durable idempotency. Portfolio output download, remaining Chat/UX2 migration,
+Project and Portfolio Reporting Centers now read authorized catalog/history,
+request standard reports with durable idempotency, and verify gated output
+bytes before download. Remaining Chat interactions and UX2 shared migration,
 INT1/QA1 and their separate gates follow. Rollout flags remain off; PR #2
 remains Draft. See the canonical reference and active roadmap.
 

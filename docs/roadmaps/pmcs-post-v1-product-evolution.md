@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.94.0`
+- نسخه سند: `1.95.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1020,6 +1020,15 @@ Portfolio با `parameters={}`، قالب مجاز و Client ID/Idempotency-Key 
 دسترسی را می‌بندد. Exact Next `UX2-MS12` دانلود امن خروجی سبد است؛ Chat
 و Gateهای UX2 بازند.
 
+UX2-MS12 روی source `6a5b0649d1709eb3d483331ffcec0ee52f998920` / tree
+`273511d67bc428d31e149e48e4630c45f465a3e3` در Run 334
+(`36381545470`) هر هشت Job را پاس کرد. UI فقط خروجی Run موفق سبد را از
+Endpoint Tenant دریافت می‌کند و MIME، اندازه و SHA-256 بایت‌ها را با متادیتای
+مجاز تطبیق می‌دهد؛ 403 نما را می‌بندد. Backend همچنان مرجع نهایی مجوز
+Tenant/cohort، Flag مستقل، Audit و یکپارچگی سند است. Exact Next
+`UX2-MS13` واکنش‌های محدود Chat گروهی پروژه است؛ تعامل‌های دیگر و Gateهای
+UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1354,3 +1363,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.92.0` | UX2-MS09 دانلود خروجی پروژه با تطبیق SHA-256 و Run 326 هشت Job سبز؛ Portfolio/Chat و باقی UX2 باز |
 | `1.93.0` | UX2-MS10 Catalog/History گزارش سبد با Run 328 هشت Job سبز؛ درخواست/خروجی سبد و Chat/UX2 باز |
 | `1.94.0` | UX2-MS11 درخواست استاندارد F10 با Retry پایدار و Run 331 هشت Job سبز؛ خروجی سبد و Chat/UX2 باز |
+| `1.95.0` | UX2-MS12 دانلود F10 با تطبیق SHA-256 و Run 334 هشت Job سبز؛ Chat و باقی UX2 باز |

@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.71.0`
+- نسخه: `1.72.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS11 Safe Checkpoint`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS12 Safe Checkpoint`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,11 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `37cefe7bd76f2a1f4fa87fab03ecf07dfc05a69b`؛ tree `2178071f82d7d9a8c7d356ff76ff7b8b74c7da25` |
-| Current evidence-bearing source checkpoint | `37cefe7bd76f2a1f4fa87fab03ecf07dfc05a69b`؛ Run 331، هر هشت Job سبز |
-| Source lineage | UX2-MS11 ادامهٔ مستقیم MS10 checkpoint `95090af79ae47bd711fb16f483223061f10ee18a` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS11-C1`؛ درخواست F10، UX2-MS12 بعدی |
-| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS10-C1`؛ Portfolio Catalog/History، Run 329 سبز |
+| آخرین Source Candidate واجد Evidence | `6a5b0649d1709eb3d483331ffcec0ee52f998920`؛ tree `273511d67bc428d31e149e48e4630c45f465a3e3` |
+| Current evidence-bearing source checkpoint | `6a5b0649d1709eb3d483331ffcec0ee52f998920`؛ Run 334، هر هشت Job سبز |
+| Source lineage | UX2-MS12 ادامهٔ مستقیم MS11 checkpoint `6bc678c926d1536a7176e02ec5c97707f60d8834` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS12-C1`؛ دانلود F10، UX2-MS13 بعدی |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS11-C1`؛ درخواست F10، Run 332 سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS01-C1`؛ نشان رسمی در Shell/Login، Run 307 سبز |
 | COL1 predecessor safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ ساخت متصل و Qualification بسته، Run 305 سبز |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
@@ -40,7 +40,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.94.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.95.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -120,6 +120,10 @@ Application Service استفاده کند و SQL/DB مستقیم نداشته ب
   `2178071f82d7d9a8c7d356ff76ff7b8b74c7da25` در Run 331 هر هشت Job را
   پاس کرد؛ درخواست F10 با Client ID پایدار و Retry قالب XLSX پس از Reload
   در مرورگر واقعی تأیید شد.
+- UX2-MS12 روی source `6a5b0649d1709eb3d483331ffcec0ee52f998920` / tree
+  `273511d67bc428d31e149e48e4630c45f465a3e3` در Run 334 هر هشت Job را
+  پاس کرد؛ دانلود F10 در مرز Tenant با MIME/اندازه/هش و ابطال 403 در مرورگر
+  واقعی تأیید شد.
 - RPT1 Core/Generated Documents و PostgreSQL/MinIO: Run 99.
 - Cancel/Security، دو Worker/Crash Recovery و Worker Revocation/Object Integrity: Runهای 102، 104 و 108.
 - Capacity و connected load/poison/fairness: MS01/MS02، Runهای 110 و 113.
@@ -734,8 +738,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی `V1.1-UX2-MS12` است؛ دانلود خروجی F10 با مرز Tenant و صحت‌سنجی فایل.**
-تعامل‌های باقی‌ماندهٔ Chat، مهاجرت UX2، INT1/QA1 و Production بازند.
+**گام دقیق بعدی `V1.1-UX2-MS13` است؛ واکنش‌های محدود گفت‌وگوی گروهی پروژه.**
+سنجاق، پیوست، تبدیل/تعدیل و مهاجرت UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
 
