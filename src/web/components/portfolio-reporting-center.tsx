@@ -159,7 +159,7 @@ function PortfolioReportingContent() {
         </section>
         : <div className="reporting-sections">
           {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
-          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>
+          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>}
           {pendingRun && <div className="reporting-notice reporting-pending" role="status">
             <span>یک درخواست نیمه‌تمام سبد محفوظ است؛ پس از بررسی سابقه همان درخواست را دوباره بفرستید.</span>
             <button className="secondary-button" type="button" onClick={() => remember(null)}>
