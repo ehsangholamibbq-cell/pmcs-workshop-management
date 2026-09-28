@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.78.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS01، UX2/INT1/QA1 باز
+- نسخه سند: `1.79.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 متصل، COL1 در MS02، UX2/INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -894,6 +894,12 @@ DoR مستقل `PMCS-V1.1-COL1-DOR1` روی Commit `56597133e6d85372b1d7c8e1b294
 (`36359396205`) هشت Job را پاس کرد. Exact Next `COL1-MS02` است؛
 MS03–MS06 و UX2/Production بازند. Defaults Collaboration خاموش‌اند.
 
+MS02 با Reply/Mention، Reaction/Pin، Search، read cursor/unread و notification
+متصل روی source `005e25dad7925ea4d7d3f28a0b3b0b94a7af506d` / tree
+`14d4844e2bbf869d97aefaae152d4dd73e65596c` در Run 283
+(`36360228559`) هر هشت Job را پاس کرد. Migration count اکنون ۵۸ است.
+Exact Next `COL1-MS03`؛ MS04–MS06 و UX2/Production بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1212,3 +1218,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.76.0` | ثبت Safe Checkpoint `S07-MS42` و Evidence سبز Run 272 برای Worker و دو سند Tenant F10؛ MS43 OutputAccess/Qualification باز است |
 | `1.77.0` | ثبت Connected Safe Checkpoint `S07-MS43` و Evidence سبز Run 275 برای F10 End-to-End؛ گام بعد COL1 طبق ترتیب Roadmap، UX2/Production باز |
 | `1.78.0` | DoR مستقل COL1 و MS01 هستهٔ Room/Message با Evidence سبز Runهای 280/281؛ MS02–MS06 و UX2/Production باز |
+| `1.79.0` | MS02 تعامل و read state متصل با Evidence سبز Run 283؛ MS03–MS06 و UX2/Production باز |
