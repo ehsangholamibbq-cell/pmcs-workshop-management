@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.2`
+- نسخه Candidate: `1.0.0-rc.3`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -119,6 +119,12 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 - Executive Intelligence workspace؛ Agent هرگز به Chat box ساده تقلیل داده نمی‌شود.
 
 هر Component باید Default، Hover، Focus-visible، Pressed، Disabled، Loading، Error و Offline state مرتبط خود را تعریف کند.
+
+در UX2-MS40، `PmcsFileInput` برای مدیریت ظاهر Login به‌عنوان نخستین مصرف
+مشترک FileInput افزوده شد: Input بومی همچنان فایل و محدودیت `accept` را
+نگه می‌دارد، در حالی که انتخاب/نام فایل/حذف انتخاب و Focus در UI فارسی
+نمایش داده می‌شود. Captureهای 18/44 و Run 402 شواهد همین سطح‌اند؛ مهاجرت
+سایر ورودی‌های فایل و Qualification سراسری Component هنوز باز است.
 
 ## ۷. Login Experience Contract
 

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete Candidate تا CI مستندات MS39؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS40 Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -219,3 +219,19 @@ Source `57d33dc05900f1a0a7994817b7cb84dabe34377e` / tree
 Qualification بعدی رفته‌اند. جدول Gate تاریخی بخش ۵ وضعیت فعلی نیست؛
 `VX-G1` پس از Full CI مستندات MS39 قابل پذیرش است. `VX-G3/G4/G5`، فونت
 فارسی تازه و Qualification چاپ بازند.
+
+## ۱۴. پیوست UX2-MS40 — FileInput فارسی مدیریت ظاهر Login
+
+MS39 documentation در Run 401 هشت Job را پاس کرد و `VX-G1 Audit Complete`
+پذیرفته شد. Source `9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8` / tree
+`87cf2e83b4eacb40cb0ce79d7844cf4dbb0d4700` ورودی بومی انگلیسی
+قاب 18 را با Component قابل استفادهٔ مجدد جایگزین می‌کند. Label فارسی،
+نام فایل انتخابی، حذف انتخاب و نشانگر Focus دارد؛ Input اصلی همچنان File
+بومی و محدود به نوع‌های مجاز است. هیچ نمونهٔ فایل در این سناریو Upload
+نمی‌شود و قرارداد Quarantine/Release/Publish تغییر نمی‌کند.
+
+Run 402 هر هشت Job سبز شد. Artifact `10993615536` شامل ۴۴ PNG، PDF و
+index است؛ SHA/ابعاد و Source/Run تطبیق شدند. قاب 18 «فایلی انتخاب نشده»
+و قاب 44 نام `نمونه.png` و «حذف انتخاب» را نشان می‌دهد؛ E2E فوکوس و پاک‌شدن
+انتخاب را نیز Assert کرد. CI مستندات شرط اعتبار Checkpoint MS40 است.
+`VX-G3/G4/G5` و Gapهای چاپ/Loading/ناوبری موبایل و فونت تازه بازند.

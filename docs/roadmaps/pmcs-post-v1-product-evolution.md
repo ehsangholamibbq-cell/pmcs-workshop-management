@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.122.0`
+- نسخه سند: `1.123.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1310,6 +1310,17 @@ Gapهای اولویت‌دار را ثبت کرد؛ CI مستندات شرط پ
 `UX2-MS40` FileInput فارسی/دسترس‌پذیر در مدیریت ظاهر Login است؛ `VX-G3/G4/G5`
 و INT1/QA1 باز می‌مانند.
 
+UX2-MS39 documentation `f78a413038f650d215c131984823a03f90814ace` در Run 401
+هر هشت Job را پاس کرد؛ `PMCS-V1.1-UX2-MS39-C1` Safe و `VX-G1 Audit Complete`
+با inventory ۱۱ Route/۳۰ State و Gap ledger پذیرفته شد. UX2-MS40 Source
+`9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8` / tree
+`87cf2e83b4eacb40cb0ce79d7844cf4dbb0d4700` FileInput فارسی را در
+مدیریت ظاهر Login به UI متصل و حالت انتخاب فایل را با Capture 44 ثبت کرد.
+Run 402 هر هشت Job سبز و Artifact `10993615536` با ۴۴ PNG/PDF و index معتبر
+است؛ قاب‌های 18/44 بازبینی شدند. CI مستندات شرط پذیرش MS40 است. Exact next
+`UX2-MS41` affordance پیمایش Navigation موبایل در Shell مشترک است؛
+`VX-G3/G4/G5`، انتخاب فونت و Qualification چاپ بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1672,3 +1683,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.120.0` | UX2-MS36 documentation Run 394 هشت Job سبز و Safe؛ UX2-MS37 Candidate خطای callback هویت در baseline چهل‌ودوتایی، Run 395 Setup assertion شکست و correction Run 396 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS38 Print و Gateهای Visual باز |
 | `1.121.0` | UX2-MS37 documentation Run 397 هشت Job سبز و Safe؛ UX2-MS38 Candidate چاپ مرورگر با ۴۳ PNG و PDF A4 بیست‌ودوصفحه‌ای، Run 398 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS39 و Gateهای Visual باز |
 | `1.122.0` | UX2-MS38 documentation Run 399 هشت Job سبز و Safe؛ UX2-MS39 اصلاح کنتراست کارت حساب Wizard و جمع‌بندی ممیزی ۱۱ Route/۳۰ State/۴۳ تصویر، Run 400 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار VX-G1، MS40 FileInput و Gateهای G3/G4/G5 باز |
+| `1.123.0` | UX2-MS39 documentation Run 401 هشت Job سبز و VX-G1 ممیزی پذیرفته؛ UX2-MS40 FileInput فارسی با Capture 44، Run 402 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS41 Navigation موبایل و Gateهای G3/G4/G5 باز |

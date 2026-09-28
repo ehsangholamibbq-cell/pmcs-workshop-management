@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS39`؛ MS38 Runهای 398/399 موفق و Safe، source MS39 Run 400 موفق، CI مستندات شرط اعتبار
+- مرحله: `UX2-MS40`؛ MS39 Runهای 400/401 موفق و Safe، source MS40 Run 402 موفق، CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -24,7 +24,7 @@ Routeها کنترل می‌کند؛ اضافه‌شدن صفحهٔ جدید ب�
 | `/projects/[projectId]/reports` | Reporting Center | خاموش پیش‌فرض، ممنوع، catalog مجاز | 23، 35–36 |
 | `/profile` | پروفایل شخصی | اطلاعات عضو | 16 |
 | `/admin/users` | مدیریت کاربران | فهرست/دعوت/عضویت | 17 |
-| `/admin/login-experience` | مدیریت ظاهر ورود | نسخه و گزینه‌های ظاهر | 18 |
+| `/admin/login-experience` | مدیریت ظاهر ورود | نسخه و گزینه‌های ظاهر، انتخاب فایل محلی با نام فارسی و حذف انتخاب | 18، 44 |
 | `/project-bootstraps` | تکثیر پروژه | انتخاب پروژهٔ مبدأ، پیش‌نمایش با تعارض و مانع اجرا | 19، 41 |
 
 Capture 32 صفحهٔ 404 را پوشش می‌دهد. Capture 39 انتهای Sidebar دسکتاپ را پس از
@@ -45,6 +45,9 @@ Credential در صفحهٔ PMCS وارد نمی‌شود و Setup پس از Capt
 Capture 43 صفحهٔ مرکز فرمان را با `media=print` در viewport دسکتاپ ثبت می‌کند و
 PDF A4 همان مرورگر را در فایل `43-project-print-preview.pdf` همراه دارد. این
 فایل نمونهٔ ممیزی وضعیت فعلی است، نه Print System یا خروجی رسمی Reporting.
+Capture 44 انتخاب فایل نمونه در مدیریت ظاهر Login را بدون Upload ثبت می‌کند؛
+نام فایل در UI دیده می‌شود و E2E پس از Capture فوکوس و حذف انتخاب را کنترل
+می‌کند. سیاست امن Upload/Release و Publish تغییر نمی‌کند.
 
 ## دستور بازتولید و Evidence
 
@@ -55,7 +58,7 @@ Light و reduced motion اجرا می‌شود. تصاویر Command Center در
 تصویر را پس از Assertion state،
 آماده‌شدن فونت، کنترل URL و RTL می‌گیرد؛ انیمیشن و caret غیرفعال‌اند.
 
-پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۳ PNG
+پس از `ui-e2e`، فرمان `node tools/qa/visual-baseline.mjs verify` دقیقاً ۴۴ PNG
 اعلام‌شده را از نظر حضور، عدم فایل اضافی، ساختار PNG و اندازهٔ viewport کنترل
 می‌کند و تنها PDF اعلام‌شده را از نظر حضور، header/footer و SHA-256 می‌سنجد.
 `index.json` برای هر تصویر SHA-256، اندازه، Route، state و viewport و
@@ -97,5 +100,12 @@ Source/Run معتبر دارد. قاب 19 کنتراست کارت حساب Wizar
 ۳۰ State و Gapهای باقی‌مانده در `pmcs-v1.1-vx-g1-audit-review.md` است.
 پذیرش `VX-G1` فقط پس از CI مستندات MS39 انجام می‌شود؛ `VX-G3/G4/G5`
 برای سیستم طراحی، مهاجرت و Qualification بازند.
+
+Run 401 مستندات MS39 هشت Job سبز شد و `VX-G1` به‌عنوان Gate ممیزی پذیرفته
+شد. Source MS40 در Run 402 هر هشت Job سبز دارد؛ Artifact `10993615536`
+با digest `sha256:22d894acbc312fc26251f5aafb3aaff4c7bc8a548a6291e78adb4a94afbe429d`
+شامل ۴۴ PNG، PDF و index است. Hash/ابعاد و Source/Run همهٔ فایل‌ها تطبیق
+شدند؛ قاب 18 حالت بدون فایل و قاب 44 نام فایل انتخابی را فارسی و خوانا
+نشان می‌دهند. `VX-G3/G4/G5` و Qualification فونت/چاپ بازند.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.

@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.99.0`
+- نسخه: `1.100.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS38 Safe Checkpoint, MS39 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS39 Safe Checkpoint, MS40 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate واجد Evidence | `57d33dc05900f1a0a7994817b7cb84dabe34377e`؛ tree `ea1bc9ca4259ea461c4ac2853df1a1401ec71b9a`؛ Run 400 هشت Job سبز، کنتراست Wizard در تصویر 19 بازبینی‌شده |
-| Current evidence-bearing source checkpoint | `57d33dc05900f1a0a7994817b7cb84dabe34377e`؛ Run 400 موفق، Artifact ۴۳ تصویر و PDF با index؛ اعتبار MS39 به CI مستندات وابسته است |
-| Source lineage | UX2-MS39 ادامهٔ مستقیم MS38 documentation `5efed8b2260ac169109efcf982dc06fa5319aed2` و source `57d33dc05900f1a0a7994817b7cb84dabe34377e` است؛ بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS38-C1`؛ ممیزی چاپ مرورگر، Runهای 398/399 هشت Job سبز؛ MS39 Candidate |
+| آخرین Source Candidate واجد Evidence | `9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8`؛ tree `87cf2e83b4eacb40cb0ce79d7844cf4dbb0d4700`؛ Run 402 هشت Job سبز، FileInput فارسی و تصویر 44 بازبینی‌شده |
+| Current evidence-bearing source checkpoint | `9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8`؛ Run 402 موفق، Artifact ۴۴ تصویر و PDF با index؛ اعتبار MS40 به CI مستندات وابسته است |
+| Source lineage | UX2-MS40 ادامهٔ مستقیم MS39 documentation `f78a413038f650d215c131984823a03f90814ace` و source `9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8` است؛ بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS39-C1`؛ کنتراست Wizard و VX-G1 Audit Complete، Runهای 400/401 هشت Job سبز؛ MS40 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS38-C1`؛ ممیزی چاپ مرورگر، Runهای 398/399 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS37-C1`؛ خطای callback Login، Runهای 396/397 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS36-C1`؛ Preview مسدود تکثیر، Runهای 393/394 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS35-C1`؛ تعارض Revision پیام گروه پروژه، Runهای 388/389 سبز |
@@ -66,9 +67,9 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.122.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.123.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
-| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.3.0` |
+| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.4.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
@@ -79,7 +80,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.121.0` | Superseded؛ `v1.122.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.122.0` | Superseded؛ `v1.123.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS33` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -149,6 +150,14 @@ Source `57d33dc05900f1a0a7994817b7cb84dabe34377e` در Run 400 هر هشت Job
 ۴۳ PNG، PDF همراه و index معتبر دارد؛ قاب 19 پس از اصلاح کنتراست خواناست.
 ممیزی `VX-G1` پوشش ۱۱ Route/۳۰ State و Gapهای اولویت‌دار را ثبت کرد؛ پذیرش
 Gate به CI مستندات MS39 وابسته است. `VX-G3/G4/G5` بازند.
+
+CI مستندات MS39 در Run 401 هر هشت Job را پاس کرد و `VX-G1 Audit Complete`
+پذیرفته شد. UX2-MS40 Source `9ea2a44f1574a6045ce47cecf51fbcf3d6c7e4e8`
+در Run 402 هر هشت Job را پاس کرد. Artifact `10993615536` با digest
+`sha256:22d894acbc312fc26251f5aafb3aaff4c7bc8a548a6291e78adb4a94afbe429d`
+۴۴ PNG، PDF چاپ مرورگر و index معتبر دارد. قاب 18 حالت بدون فایل و قاب 44
+نام فایل و حذف انتخاب را فارسی نشان می‌دهند. CI مستندات شرط پذیرش MS40 است؛
+`VX-G3/G4/G5` و فونت/چاپ Qualified نشده‌اند.
 
 ## Completed & Verified Work
 
@@ -865,8 +874,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
   `330/330` تست C#، `54/54` تست قراردادی Node، `139/139` تست Web و پنج browser scenario.
 - Source Candidate MS06: `b8f21492a4f44c7c412e5b7eda0b164e7f256758`؛ tree
   `e94b6ba3753e67b42ea0ec99e998761fdad0bcc3`.
-- آخرین CI بررسی‌شده برای Source: Run 400 (`36472272814`) — هر هشت Job موفق؛
-  Artifact بصری ۴۳ تصویر، PDF چاپ مرورگر و index/SHA-256 معتبر دارد. MS38 documentation Run 399 سبز است؛ MS39 documentation هنوز CI مستقل می‌خواهد.
+- آخرین CI بررسی‌شده برای Source: Run 402 (`36474439036`) — هر هشت Job موفق؛
+  Artifact بصری ۴۴ تصویر، PDF چاپ مرورگر و index/SHA-256 معتبر دارد. MS39 documentation Run 401 سبز است؛ MS40 documentation هنوز CI مستقل می‌خواهد.
 - Qualification artifact Run 222 برابر `10927131413` با digest
   `sha256:06ecf278af9f42d78aa96e788b3e6b2d00476199c21e4b3f84ec91541bcd3842` است؛ Integration artifact
   `10927275947` با digest `sha256:e3c4021e7c96e79bdc4b929581bbcd8d007fbdac7322f5f89d2a202056eb476b`
@@ -883,7 +892,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام دقیق بعدی پس از CI و پذیرش MS39، `V1.1-UX2-MS40` است؛ FileInput فارسی و دسترس‌پذیر در مدیریت ظاهر Login با حفظ مسیر امن Asset.**
+**گام دقیق بعدی پس از CI و پذیرش MS40، `V1.1-UX2-MS41` است؛ روشن‌کردن affordance پیمایش Navigation موبایل در Shell فعال با حفظ keyboard و نبود overflow کل صفحه.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

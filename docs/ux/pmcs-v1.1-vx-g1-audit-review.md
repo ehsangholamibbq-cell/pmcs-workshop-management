@@ -1,7 +1,7 @@
 # PMCS V1.1 — VX-G1 Active UI Audit Review
 
 - شناسه: `PMCS-UX-VX-G1-REVIEW-001`
-- مرحله: `UX2-MS39`؛ Candidate تا Full CI مستندات.
+- مرحله: `UX2-MS39`؛ `VX-G1 Audit Complete` پس از Run 401 با هشت Job سبز.
 - مرجع اجرا: `src/web/e2e/visual-baseline.json` و `docs/ux/pmcs-v1.1-route-state-baseline.md`
 - محدوده: Web فعال V1.1 در Fixture مجزای QA، Chromium، فارسی/RTL و زمان تهران.
 
@@ -46,5 +46,6 @@ manifest کنترل کرد؛ قاب 19 متن خوانا دارد و قاب 41 �
 
 `VX-G1` فقط ممیزی و ثبت شواهد و Gapها را می‌بندد؛ وجود Gap باعث نمی‌شود
 رابط یا چاپ Qualified اعلام شود. `VX-G2` برای جهت «مدیریت ممتاز» مصوب است.
-پذیرش `VX-G1` منوط به CI کامل مستندات MS39 است؛ Source Run 400 و تصاویر
-اصلاحی بررسی شدند. `VX-G3/G4/G5` و INT1/QA1 باز می‌مانند.
+Source Run 400 و تصاویر اصلاحی بررسی شدند؛ CI مستندات Run 401 نیز هر هشت
+Job را پاس کرد و `VX-G1` پذیرفته شد. Capture 44 در MS40 به baseline افزوده
+شد. `VX-G3/G4/G5` و INT1/QA1 باز می‌مانند.
