@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.85.0`
+- نسخه سند: `1.86.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -948,6 +948,15 @@ Reduced Motion و ناوبری موبایل به UI وصل‌اند؛ Run 308 ش
 Exact Next `UX2-MS03` رابط خواندنی Chat محدود به پروژه است؛ Gateهای
 Design System، مهاجرت کامل، Reporting UI و Qualification همچنان بازند.
 
+UX2-MS03 روی source `282fc1726b332e4d060d4aae0c028017c00345ab` / tree
+`90351f1e7fb1691cb63366924ea648acfac4a2ec` در Run 313
+(`36372486466`) هر هشت Job را پاس کرد. Route خواندنی Chat فقط در Context
+پروژه، با Flag خاموش، مرز 403، tombstone و چیدمان فشردهٔ موبایل در مرورگر
+واقعی تأیید شد. Run 311 شکست Audit عنوان لاتین را با اصلاح جلوبرنده در Run
+312 رفع کرد؛ Run 313 اصلاح چیدمان موبایل را تثبیت کرد. Exact Next
+`UX2-MS04` ارسال، دریافت زنده و بازیابی صف آفلاین در UI است؛ Reporting و
+Gateهای مهاجرت و Qualification بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1273,3 +1282,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.83.0` | MS06 Qualification متصل و پایان ساخت COL1 با Run 304 و Restore ۶۳ Migration؛ UX2/INT1/QA1 و Production باز |
 | `1.84.0` | UX2-MS01 نشان رسمی در Shell/Login با Run 306 و هشت Job سبز؛ MS02 و Gateهای Design System/مهاجرت/Visual Qualification باز |
 | `1.85.0` | UX2-MS02 Token/Focus/Reduced Motion/Mobile با Run 309 و هشت Job سبز؛ MS03 و Gateهای UX2 باز |
+| `1.86.0` | UX2-MS03 رابط خواندنی Chat گروه پروژه و موبایل با Run 313 و هشت Job سبز؛ MS04 ارسال/Live/Offline و Reporting/Gateهای UX2 باز |
