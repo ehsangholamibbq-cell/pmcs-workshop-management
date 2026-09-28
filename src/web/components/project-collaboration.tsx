@@ -21,6 +21,7 @@ import {
   searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
   editOwnProjectMessage, CollaborationRevisionConflict,
   deleteOwnProjectMessage, CollaborationLegalHoldError,
+  redactProjectMessage, setProjectMessageLegalHold,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
@@ -59,6 +60,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   } | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState("");
+  const [moderating, setModerating] = useState<{
+    readonly base: ProjectConversationMessage; readonly action: "redact" | "hold";
+    readonly enabled: boolean; readonly reason: string; readonly key: string;
+    readonly conflict: boolean;
+  } | null>(null);
+  const [moderationBusy, setModerationBusy] = useState(false);
+  const [moderationStatus, setModerationStatus] = useState("");
 
   const closeRestrictedConversation = useCallback((status: number) => {
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
@@ -71,12 +79,16 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setEditStatus("");
     setDeleting(null);
     setDeleteStatus("");
+    setModerating(null);
+    setModerationStatus("");
   }, []);
 
   useEffect(() => {
     let active = true;
     void loadProjectConversation("/api/pmcs", projectId).then((result) => {
       if (!active) return;
+      setSearchResults(null);
+      setSearchStatus("");
       if (result.kind !== "ready") {
         setDraft("");
         setReplyTo(null);
@@ -85,6 +97,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setEditStatus("");
         setDeleting(null);
         setDeleteStatus("");
+        setModerating(null);
+        setModerationStatus("");
       }
       setView(result);
       setFailure("");
@@ -259,6 +273,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       } : current);
       setDeleting(null);
       setDeleteStatus("پیام از نمایش گروه برداشته شد؛ سوابق و نگهداری سازمانی حفظ می‌شوند.");
+      setReplyTo((current) => current?.id === result.id ? null : current);
+      setSearchResults(null);
       setRefresh((value) => value + 1);
     } catch (failure) {
       if (failure instanceof CollaborationAccessError) closeRestrictedConversation(failure.status);
@@ -272,6 +288,39 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setRefresh((value) => value + 1);
       } else setDeleteStatus(failure instanceof Error ? failure.message : "حذف پیام کامل نشد.");
     } finally { setDeleteBusy(false); }
+  }
+
+  async function submitModeration(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (view?.kind !== "ready" || !view.canModerate || !moderating ||
+        moderating.conflict || moderationBusy) return;
+    setModerationBusy(true);
+    setModerationStatus("");
+    try {
+      const result = moderating.action === "redact"
+        ? await redactProjectMessage("/api/pmcs", projectId, moderating.base,
+          moderating.reason, moderating.key)
+        : await setProjectMessageLegalHold("/api/pmcs", projectId, moderating.base,
+          moderating.enabled, moderating.reason, moderating.key);
+      setView((current) => current?.kind === "ready" ? {
+        ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
+      } : current);
+      setModerating(null);
+      setModerationStatus(moderating.action === "redact" ? "پیام با دلیل ثبت‌شده پنهان شد؛ سوابق حفظ می‌شوند."
+        : moderating.enabled ? "نگهداری قانونی پیام ثبت شد." : "نگهداری قانونی پیام برداشته شد.");
+      if (moderating.action === "redact") {
+        setReplyTo((current) => current?.id === result.id ? null : current);
+        setSearchResults(null);
+      }
+      setRefresh((value) => value + 1);
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) closeRestrictedConversation(error.status);
+      else if (error instanceof CollaborationRevisionConflict) {
+        setModerating((current) => current ? { ...current, conflict: true } : null);
+        setModerationStatus("نسخهٔ پیام تغییر کرده است؛ پیام تازه را بخوانید و تعدیل را دوباره تأیید کنید.");
+        setRefresh((value) => value + 1);
+      } else setModerationStatus(error instanceof Error ? error.message : "تعدیل پیام کامل نشد.");
+    } finally { setModerationBusy(false); }
   }
 
   return (
@@ -325,6 +374,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             {pinStatus && <p role="status">{pinStatus}</p>}
             {editStatus && <p role={editing?.conflict ? "alert" : "status"}>{editStatus}</p>}
             {deleteStatus && <p role={deleting?.conflict ? "alert" : "status"}>{deleteStatus}</p>}
+            {moderationStatus && <p role={moderating?.conflict ? "alert" : "status"}>{moderationStatus}</p>}
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
@@ -388,6 +438,39 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                           }}>انصراف از حذف</button>
                         </div>
                       </form>}
+                    {moderating?.base.id === message.id &&
+                      <form className="collaboration-edit" onSubmit={(event) => void submitModeration(event)}>
+                        <label htmlFor={`moderation-${message.id}`}>
+                          {moderating.action === "redact" ? "دلیل پنهان‌سازی پیام" :
+                            moderating.enabled ? "دلیل اعمال نگهداری قانونی" : "دلیل برداشتن نگهداری قانونی"}
+                        </label>
+                        <textarea id={`moderation-${message.id}`} rows={2} maxLength={500}
+                          value={moderating.reason} onChange={(event) => setModerating((current) => current
+                            ? { ...current, reason: event.target.value } : null)} />
+                        <p>دلیل در سابقهٔ محدود تعدیل ثبت می‌شود؛ متن و ردپاهای ممیزی حفظ می‌شوند.</p>
+                        {moderating.conflict && <p>نسخهٔ فعلی: {message.deletedAt || message.redactedAt
+                          ? "پیام دیگر قابل نمایش نیست." : message.body}</p>}
+                        <div className="collaboration-message-actions">
+                          {moderating.conflict && message.revision > moderating.base.revision &&
+                            (moderating.action === "redact" ? !message.deletedAt && !message.redactedAt :
+                              message.legalHold !== moderating.enabled) &&
+                            <button className="secondary-button" type="button" onClick={() => {
+                              setModerating({ ...moderating, base: message, key: crypto.randomUUID(), conflict: false });
+                              setModerationStatus("");
+                            }}>تعدیل بر پایهٔ نسخهٔ تازه</button>}
+                          <button type="submit" disabled={moderationBusy || moderating.conflict ||
+                            !moderating.reason.trim() || (moderating.action === "redact" &&
+                              Boolean(message.deletedAt || message.redactedAt)) ||
+                            (moderating.action === "hold" && message.legalHold === moderating.enabled)}>
+                            {moderationBusy ? "در حال ثبت…" : moderating.action === "redact"
+                              ? "تأیید پنهان‌سازی" : moderating.enabled
+                                ? "تأیید نگهداری قانونی" : "تأیید برداشتن نگهداری"}
+                          </button>
+                          <button className="secondary-button" type="button" onClick={() => {
+                            setModerating(null); setModerationStatus("");
+                          }}>انصراف از تعدیل</button>
+                        </div>
+                      </form>}
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
@@ -416,7 +499,22 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         onClick={() => void togglePin(message)}>
                         {pinningMessageId === message.id ? "در حال ثبت…" : message.pinnedAt ? "برداشتن سنجاق" : "سنجاق پیام"}
                       </button>}
+                      {view.canModerate && message.revision > 0 &&
+                        <button className="secondary-button" type="button" disabled={moderationBusy}
+                          onClick={() => { setModerating({ base: message, action: "redact", enabled: false,
+                            reason: "", key: crypto.randomUUID(), conflict: false }); setModerationStatus(""); }}>
+                          پنهان‌سازی با دلیل
+                        </button>}
                     </div>}
+                    {view.canModerate && message.revision > 0 &&
+                      <div className="collaboration-message-actions">
+                        <button className="secondary-button" type="button" disabled={moderationBusy}
+                          onClick={() => { setModerating({ base: message, action: "hold",
+                            enabled: !message.legalHold, reason: "", key: crypto.randomUUID(),
+                            conflict: false }); setModerationStatus(""); }}>
+                          {message.legalHold ? "برداشتن نگهداری قانونی" : "اعمال نگهداری قانونی"}
+                        </button>
+                      </div>}
                   </li>
                 ))}
               </ol>

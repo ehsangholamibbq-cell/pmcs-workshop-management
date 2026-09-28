@@ -565,3 +565,86 @@ test("own-message display deletion respects Legal Hold, revision and revoked acc
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام بعدی")).toHaveCount(0);
 });
+
+test("moderator records a reason for redaction and Legal Hold with revision recovery", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canModerate = false;
+  let revoked = false;
+  let revision = 1;
+  let legalHold = false;
+  let redactedAt: string | null = null;
+  let body = "پیام نیازمند بررسی";
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, legalHold, redactedAt, deletedAt: null, pinnedAt: null,
+        createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/redact`,
+    (route) => {
+      expect(route.request().method()).toBe("POST");
+      const data = route.request().postDataJSON() as { baseRevision: number; reason: string };
+      expect(data.baseRevision).toBe(revision);
+      expect(data.reason).toBe("دلیل مستند تعدیل");
+      if (revision === 1) {
+        revision = 2;
+        body = "پیام همزمان تغییر کرد";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 2 }) });
+      }
+      revision = 3;
+      redactedAt = "2026-09-28T00:05:00Z";
+      body = "پیام توسط ناظر پنهان شده است";
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1, body, revision,
+        legalHold, redactedAt, deletedAt: null, pinnedAt: null, createdAt: "2026-09-28T00:00:00Z",
+      }) });
+    });
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/legal-hold`,
+    (route) => {
+      expect(route.request().method()).toBe("PUT");
+      const data = route.request().postDataJSON() as {
+        baseRevision: number; enabled: boolean; reason: string;
+      };
+      expect(data.baseRevision).toBe(revision);
+      expect(data.reason).toBe("نگهداری بررسی");
+      if (revoked) return route.fulfill({ status: 403 });
+      legalHold = data.enabled;
+      revision++;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1, body, revision,
+        legalHold, redactedAt, deletedAt: null, pinnedAt: null, createdAt: "2026-09-28T00:00:00Z",
+      }) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "پنهان‌سازی با دلیل" })).toHaveCount(0);
+  canModerate = true;
+  await page.reload();
+  await page.getByRole("button", { name: "پنهان‌سازی با دلیل" }).click();
+  await page.getByLabel("دلیل پنهان‌سازی پیام").fill("دلیل مستند تعدیل");
+  await page.getByRole("button", { name: "تأیید پنهان‌سازی" }).click();
+  await expect(page.getByText("نسخهٔ فعلی: پیام همزمان تغییر کرد")).toBeVisible();
+  await page.getByRole("button", { name: "تعدیل بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("button", { name: "تأیید پنهان‌سازی" }).click();
+  await expect(page.getByText("پیام با دلیل ثبت‌شده پنهان شد", { exact: false })).toBeVisible();
+  await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
+  await page.getByRole("button", { name: "اعمال نگهداری قانونی" }).click();
+  await page.getByLabel("دلیل اعمال نگهداری قانونی").fill("نگهداری بررسی");
+  await page.getByRole("button", { name: "تأیید نگهداری قانونی" }).click();
+  await expect(page.getByText("تحت نگهداری قانونی")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "برداشتن نگهداری قانونی" })).toBeVisible();
+  await page.getByRole("button", { name: "برداشتن نگهداری قانونی" }).click();
+  await page.getByLabel("دلیل برداشتن نگهداری قانونی").fill("نگهداری بررسی");
+  revoked = true;
+  await page.getByRole("button", { name: "تأیید برداشتن نگهداری" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام نیازمند بررسی")).toHaveCount(0);
+});

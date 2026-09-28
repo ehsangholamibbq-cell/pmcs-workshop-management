@@ -122,6 +122,65 @@ export async function deleteOwnProjectMessage(apiBaseUrl: string, projectId: str
   return result;
 }
 
+function moderationReason(reason: string): string {
+  const normalized = reason.replace(/\r\n/gu, "\n").trim();
+  if (!normalized || normalized.length > 500 ||
+      /[\x00-\x08\x0b-\x1f\x7f]/u.test(normalized)) {
+    throw new Error("دلیل تعدیل باید بین ۱ تا ۵۰۰ نویسهٔ معتبر باشد.");
+  }
+  return normalized;
+}
+
+async function mutateModeratedMessage(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, action: "redact" | "legal-hold", reason: string,
+  idempotencyKey: string, enabled?: boolean): Promise<ProjectConversationMessage> {
+  const normalized = moderationReason(reason);
+  if (!Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(idempotencyKey) ||
+      (action === "redact" ? Boolean(message.deletedAt || message.redactedAt) :
+        typeof enabled !== "boolean" || message.legalHold === enabled)) {
+    throw new Error("مشخصات تعدیل پیام معتبر نیست.");
+  }
+  const response = await fetch(`${messageUrl(apiBaseUrl, projectId, message.id)}/${action}`, {
+    method: action === "redact" ? "POST" : "PUT", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ baseRevision: message.revision, reason: normalized,
+      ...(action === "legal-hold" ? { enabled } : {}) }),
+  });
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as { currentRevision?: number } | null;
+    const current = conflict?.currentRevision;
+    throw new CollaborationRevisionConflict(Number.isSafeInteger(current) && current! > 0 ? current! : null);
+  }
+  await checked(response);
+  const result = await response.json() as ProjectConversationMessage;
+  if (result?.id?.toLowerCase() !== message.id.toLowerCase() ||
+      result.projectId?.toLowerCase() !== projectId.toLowerCase() ||
+      result.authorUserId?.toLowerCase() !== message.authorUserId.toLowerCase() ||
+      result.sequence !== message.sequence || result.createdAt !== message.createdAt ||
+      !Number.isSafeInteger(result.revision) || result.revision <= message.revision ||
+      (action === "redact" ?
+        typeof result.redactedAt !== "string" || !Number.isFinite(Date.parse(result.redactedAt)) ||
+        Boolean(result.deletedAt) || result.pinnedAt !== null :
+        result.legalHold !== enabled || result.redactedAt !== message.redactedAt ||
+        result.deletedAt !== message.deletedAt || result.body !== message.body ||
+        result.pinnedAt !== message.pinnedAt)) {
+    throw new Error("تأیید تعدیل پیام معتبر نیست.");
+  }
+  return result;
+}
+
+export function redactProjectMessage(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, reason: string, idempotencyKey: string) {
+  return mutateModeratedMessage(apiBaseUrl, projectId, message, "redact", reason, idempotencyKey);
+}
+
+export function setProjectMessageLegalHold(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, enabled: boolean, reason: string, idempotencyKey: string) {
+  return mutateModeratedMessage(apiBaseUrl, projectId, message, "legal-hold", reason, idempotencyKey, enabled);
+}
+
 export async function setProjectMessagePin(apiBaseUrl: string, projectId: string,
   messageId: string, pinned: boolean): Promise<string | null> {
   const response = await checked(await fetch(`${messageUrl(apiBaseUrl, projectId, messageId)}/pin`,
