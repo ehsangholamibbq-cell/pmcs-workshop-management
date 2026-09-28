@@ -237,3 +237,53 @@ test("project reactions persist across reload, allow read-only viewing and clear
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("پیام برای واکنش")).toHaveCount(0);
 });
+
+test("only a project moderator can pin and unpin, while readers see the pinned state", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canModerate = true;
+  let pinnedAt: string | null = null;
+  let revoked = false;
+  const methods: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام سنجاق پروژه", pinnedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/pin`,
+    (route) => {
+      methods.push(route.request().method());
+      if (revoked) return route.fulfill({ status: 403 });
+      pinnedAt = route.request().method() === "PUT" ? "2026-09-28T00:05:00Z" : null;
+      return route.fulfill({ status: 200, contentType: "application/json",
+        body: JSON.stringify({ id: messageId, projectId, pinnedAt }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "سنجاق پیام" }).click();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("سنجاق‌شده")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toBeVisible();
+  await page.getByRole("button", { name: "برداشتن سنجاق" }).click();
+  await expect(page.getByRole("button", { name: "سنجاق پیام" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByText("سنجاق‌شده")).toHaveCount(0);
+  expect(methods).toEqual(["PUT", "DELETE"]);
+
+  pinnedAt = "2026-09-28T00:05:00Z";
+  canModerate = false;
+  await page.reload();
+  await expect(page.getByText("سنجاق‌شده")).toBeVisible();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toHaveCount(0);
+  canModerate = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "برداشتن سنجاق" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام سنجاق پروژه")).toHaveCount(0);
+});

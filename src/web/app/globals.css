@@ -1473,7 +1473,8 @@ textarea {
 .collaboration-search-results ul { margin: 0.75rem 0 0; padding-inline-start: 1.4rem; }
 .collaboration-search-results li { white-space: pre-wrap; overflow-wrap: anywhere; }
 .collaboration-reply-preview span { overflow-wrap: anywhere; }
-.collaboration-message > button { margin-top: 0.5rem; }
+.collaboration-message-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+.collaboration-pin[aria-pressed="true"] { border-color: var(--brand-green-700); }
 .reporting-workspace { max-width: 88rem; width: 100%; }
 .reporting-state, .reporting-card {
   padding: clamp(1.25rem, 2.5vw, 2rem);

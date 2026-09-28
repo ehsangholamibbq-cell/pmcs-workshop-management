@@ -17,6 +17,15 @@ internal static partial class Program
         var controller = Actor("project-controller");
         var assertions = new List<VerificationAssertion>();
 
+        var moderatorRoom = await SendAsync(client, key, controller, HttpMethod.Get, path);
+        var readerRoom = await SendAsync(client, key, observer, HttpMethod.Get, path);
+        Record(assertions, "collaboration.interaction.room-moderation-capability",
+            moderatorRoom.StatusCode == HttpStatusCode.OK &&
+            readerRoom.StatusCode == HttpStatusCode.OK &&
+            moderatorRoom.Payload.GetProperty("canModerate").GetBoolean() &&
+            !readerRoom.Payload.GetProperty("canModerate").GetBoolean(),
+            $"moderator={(int)moderatorRoom.StatusCode};reader={(int)readerRoom.StatusCode}");
+
         var prior = await SendAsync(client, key, supervisor, HttpMethod.Get, $"{path}/messages");
         var original = prior.Payload.GetProperty("messages").EnumerateArray().First(item =>
             HasGuid(item, "clientMessageId", Guid.Parse("ca110000-0000-4000-8000-000000000001")));
@@ -114,11 +123,16 @@ internal static partial class Program
             $"{path}/messages/{originalId}/pin");
         var pin = await SendAsync(client, key, controller, HttpMethod.Put,
             $"{path}/messages/{originalId}/pin");
+        var pinnedMessages = await SendAsync(client, key, observer, HttpMethod.Get, $"{path}/messages");
+        var pinnedForReader = pinnedMessages.Payload.GetProperty("messages").EnumerateArray()
+            .Single(item => HasGuid(item, "id", originalId));
         var unpin = await SendAsync(client, key, controller, HttpMethod.Delete,
             $"{path}/messages/{originalId}/pin");
         Record(assertions, "collaboration.interaction.moderated-pin",
             supervisorPin.StatusCode == HttpStatusCode.Forbidden &&
             pin.StatusCode == HttpStatusCode.OK && unpin.StatusCode == HttpStatusCode.OK &&
+            pinnedMessages.StatusCode == HttpStatusCode.OK &&
+            pinnedForReader.GetProperty("pinnedAt").ValueKind == JsonValueKind.String &&
             pin.Payload.GetProperty("pinnedAt").ValueKind == JsonValueKind.String &&
             unpin.Payload.GetProperty("pinnedAt").ValueKind == JsonValueKind.Null,
             $"supervisor={(int)supervisorPin.StatusCode};moderator={(int)pin.StatusCode}");

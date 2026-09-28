@@ -61,7 +61,11 @@ internal static partial class CollaborationEndpoints
             .Where(room => room.TenantId == actor.TenantId && room.ProjectId == projectId)
             .Select(room => (long?)room.LastSequence)
             .SingleOrDefaultAsync(cancellationToken) ?? 0;
-        return Results.Ok(new ProjectRoomResponse(projectId, projectId, last));
+        if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        var canModerate = await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+            projectId, "collaboration.moderate", cancellationToken);
+        return Results.Ok(new ProjectRoomResponse(projectId, projectId, last, canModerate));
     }
 
     private static async Task<IResult> ListMessagesAsync(
@@ -231,7 +235,8 @@ internal static partial class CollaborationEndpoints
 
 internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? Body,
     Guid? ReplyToMessageId = null, Guid[]? MentionedUserIds = null);
-internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence);
+internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence,
+    bool CanModerate);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,

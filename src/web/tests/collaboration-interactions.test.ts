@@ -3,11 +3,34 @@ import test from "node:test";
 import { CollaborationAccessError } from "../lib/collaboration-events.ts";
 import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
-  searchProjectConversation, setProjectMessageReaction,
+  searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
 } from "../lib/collaboration-interactions.ts";
 
 const projectId = "10000000-0000-4000-8000-000000000001";
 const messageId = "10000000-0000-4000-8000-000000000011";
+
+test("pin and unpin require a scoped server confirmation and fail closed on revocation", async () => {
+  const previous = globalThis.fetch;
+  const calls: Array<{ url: string; method?: string }> = [];
+  try {
+    globalThis.fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method });
+      return Response.json({ id: messageId, projectId,
+        pinnedAt: init?.method === "PUT" ? "2026-09-28T00:00:00Z" : null });
+    };
+    assert.equal(await setProjectMessagePin("/api/pmcs", projectId, messageId, true),
+      "2026-09-28T00:00:00Z");
+    assert.equal(await setProjectMessagePin("/api/pmcs", projectId, messageId, false), null);
+    assert.deepEqual(calls.map(({ method }) => method), ["PUT", "DELETE"]);
+    assert.equal(calls[0].url, `/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/pin`);
+    globalThis.fetch = async () => Response.json({ id: messageId,
+      projectId: "20000000-0000-4000-8000-000000000002", pinnedAt: null });
+    await assert.rejects(setProjectMessagePin("/api/pmcs", projectId, messageId, false), /تأیید سنجاق/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(setProjectMessagePin("/api/pmcs", projectId, messageId, true),
+      (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
+  } finally { globalThis.fetch = previous; }
+});
 
 test("reaction summary verifies message scope and restores the four supported choices", async () => {
   const previous = globalThis.fetch;

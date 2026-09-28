@@ -14,7 +14,7 @@ export interface ProjectConversationMessage {
 
 export type ProjectConversationView =
   | { readonly kind: "ready"; readonly messages: readonly ProjectConversationMessage[];
-      readonly lastSequence: number }
+      readonly lastSequence: number; readonly canModerate: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -28,10 +28,11 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   if (room.status === 404) return { kind: "unavailable" };
   if (room.status === 403) return { kind: "forbidden" };
   if (!room.ok) throw new Error("دریافت گفت‌وگوی پروژه انجام نشد.");
-  const roomValue = await room.json() as { projectId?: string; lastSequence?: number };
+  const roomValue = await room.json() as { projectId?: string; lastSequence?: number; canModerate?: boolean };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
-      typeof lastSequence !== "number" || !Number.isSafeInteger(lastSequence) || lastSequence < 0) {
+      typeof lastSequence !== "number" || !Number.isSafeInteger(lastSequence) || lastSequence < 0 ||
+      (roomValue.canModerate !== undefined && typeof roomValue.canModerate !== "boolean")) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -55,5 +56,5 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
       (messages.length > 0 && nextSequence < messages[messages.length - 1].sequence)) {
     throw new Error("فهرست پیام‌های پروژه معتبر نیست.");
   }
-  return { kind: "ready", messages, lastSequence };
+  return { kind: "ready", messages, lastSequence, canModerate: roomValue.canModerate === true };
 }

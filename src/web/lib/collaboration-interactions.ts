@@ -28,11 +28,30 @@ export interface ProjectMessageReactionsView {
   readonly reactions: readonly ProjectMessageReaction[];
 }
 
-function messageReactionsUrl(apiBaseUrl: string, projectId: string, messageId: string): string {
+function messageUrl(apiBaseUrl: string, projectId: string, messageId: string): string {
   if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(messageId)) {
     throw new Error("شناسه پیام معتبر نیست.");
   }
-  return `${roomUrl(apiBaseUrl, projectId)}/messages/${encodeURIComponent(messageId)}/reactions`;
+  return `${roomUrl(apiBaseUrl, projectId)}/messages/${encodeURIComponent(messageId)}`;
+}
+
+function messageReactionsUrl(apiBaseUrl: string, projectId: string, messageId: string): string {
+  return `${messageUrl(apiBaseUrl, projectId, messageId)}/reactions`;
+}
+
+export async function setProjectMessagePin(apiBaseUrl: string, projectId: string,
+  messageId: string, pinned: boolean): Promise<string | null> {
+  const response = await checked(await fetch(`${messageUrl(apiBaseUrl, projectId, messageId)}/pin`,
+    { method: pinned ? "PUT" : "DELETE", cache: "no-store" }));
+  const result = await response.json() as ProjectConversationMessage;
+  if (result?.id?.toLowerCase() !== messageId.toLowerCase() ||
+      result.projectId?.toLowerCase() !== projectId.toLowerCase() ||
+      result.deletedAt || result.redactedAt ||
+      (pinned ? typeof result.pinnedAt !== "string" || !Number.isFinite(Date.parse(result.pinnedAt))
+        : result.pinnedAt !== null)) {
+    throw new Error("تأیید سنجاق پیام معتبر نیست.");
+  }
+  return result.pinnedAt;
 }
 
 export async function loadProjectMessageReactions(apiBaseUrl: string, projectId: string,

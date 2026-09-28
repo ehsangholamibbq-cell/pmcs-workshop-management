@@ -10,7 +10,7 @@ import {
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
   loadProjectConversationUnread, loadProjectMessageReactions, markProjectConversationRead,
-  searchProjectConversation, setProjectMessageReaction,
+  searchProjectConversation, setProjectMessagePin, setProjectMessageReaction,
   type ProjectConversationUnread, type ProjectMessageReactionsView, type ProjectReactionEmoji,
 } from "@/lib/collaboration-interactions";
 import {
@@ -36,6 +36,8 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [searchResults, setSearchResults] = useState<readonly ProjectConversationMessage[] | null>(null);
   const [searchStatus, setSearchStatus] = useState("");
   const [unread, setUnread] = useState<ProjectConversationUnread | null>(null);
+  const [pinningMessageId, setPinningMessageId] = useState<string | null>(null);
+  const [pinStatus, setPinStatus] = useState("");
 
   const closeRestrictedConversation = useCallback((status: number) => {
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
@@ -43,6 +45,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setReplyTo(null);
     setSearchResults(null);
     setUnread(null);
+    setPinStatus("");
   }, []);
 
   useEffect(() => {
@@ -181,6 +184,27 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     }
   }
 
+  async function togglePin(message: ProjectConversationMessage) {
+    if (view?.kind !== "ready" || !view.canModerate || pinningMessageId) return;
+    setPinningMessageId(message.id);
+    setPinStatus("");
+    const pin = !message.pinnedAt;
+    try {
+      const pinnedAt = await setProjectMessagePin("/api/pmcs", projectId, message.id, pin);
+      setView((current) => current?.kind === "ready" ? {
+        ...current,
+        messages: current.messages.map((item) => item.id === message.id ? { ...item, pinnedAt } : item),
+      } : current);
+      setPinStatus(pin ? "پیام برای اعضای پروژه سنجاق شد." : "سنجاق پیام برداشته شد.");
+      setRefresh((value) => value + 1);
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) closeRestrictedConversation(error.status);
+      else setPinStatus("تغییر سنجاق پیام انجام نشد؛ دوباره تلاش کنید.");
+    } finally {
+      setPinningMessageId(null);
+    }
+  }
+
   return (
     <main className="app-shell collaboration-shell">
       <aside className="sidebar" aria-label="ناوبری اصلی">
@@ -229,6 +253,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                   disabled={!unread || unread.unreadCount === 0}>تا اینجا خواندم</button>
               </div>
             </div>
+            {pinStatus && <p role="status">{pinStatus}</p>}
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
@@ -255,10 +280,16 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     {!message.deletedAt && !message.redactedAt &&
                       <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
-                    {!message.deletedAt && !message.redactedAt &&
+                    {!message.deletedAt && !message.redactedAt && <div className="collaboration-message-actions">
                       <button className="secondary-button" type="button" onClick={() => setReplyTo(message)}>
                         پاسخ به پیام
+                      </button>
+                      {view.canModerate && <button className="secondary-button collaboration-pin" type="button"
+                        aria-pressed={Boolean(message.pinnedAt)} disabled={pinningMessageId !== null}
+                        onClick={() => void togglePin(message)}>
+                        {pinningMessageId === message.id ? "در حال ثبت…" : message.pinnedAt ? "برداشتن سنجاق" : "سنجاق پیام"}
                       </button>}
+                    </div>}
                   </li>
                 ))}
               </ol>
