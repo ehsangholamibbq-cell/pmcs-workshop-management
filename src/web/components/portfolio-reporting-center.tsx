@@ -7,7 +7,10 @@ import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { scopedStorageKey } from "@/lib/field-database";
 import { loadPortfolioReportingCenter, type PortfolioReportDefinitionView,
+  type PortfolioReportOutputView, type PortfolioReportRunView,
   type PortfolioReportingCenterView } from "@/lib/portfolio-reporting-center";
+import { downloadPortfolioReportOutput, PortfolioReportOutputAccessError } from
+  "@/lib/portfolio-reporting-output";
 import { PortfolioReportRequestAccessError, requestPortfolioReport,
   type PortfolioReportRequest } from "@/lib/portfolio-reporting-run-request";
 
@@ -39,6 +42,8 @@ function PortfolioReportingContent() {
   const [pendingRun, setPendingRun] = useState<PortfolioReportRequest | null>(pendingRequest);
   const [busy, setBusy] = useState(false);
   const [runNotice, setRunNotice] = useState("");
+  const [downloadBusyId, setDownloadBusyId] = useState("");
+  const [downloadNotice, setDownloadNotice] = useState("");
 
   const remember = useCallback((request: PortfolioReportRequest | null) => {
     try {
@@ -93,6 +98,33 @@ function PortfolioReportingContent() {
     }
   }
 
+  async function downloadOutput(run: PortfolioReportRunView, output: PortfolioReportOutputView) {
+    if (downloadBusyId || view?.kind !== "ready") return;
+    setDownloadBusyId(output.id);
+    setDownloadNotice("");
+    try {
+      const blob = await downloadPortfolioReportOutput("/api/pmcs", run, output);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = output.fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setDownloadNotice("خروجی سبد تأیید و دریافت شد.");
+    } catch (error) {
+      if (error instanceof PortfolioReportOutputAccessError && error.status === 403) {
+        remember(null);
+        setView({ kind: "forbidden" });
+      } else {
+        setDownloadNotice(error instanceof Error ? error.message : "دریافت خروجی سبد کامل نشد.");
+      }
+    } finally {
+      setDownloadBusyId("");
+    }
+  }
+
   return <main className="app-shell reporting-shell">
     <aside className="sidebar" aria-label="ناوبری اصلی">
       <BrandMark />
@@ -127,6 +159,7 @@ function PortfolioReportingContent() {
         </section>
         : <div className="reporting-sections">
           {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
+          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>
           {pendingRun && <div className="reporting-notice reporting-pending" role="status">
             <span>یک درخواست نیمه‌تمام سبد محفوظ است؛ پس از بررسی سابقه همان درخواست را دوباره بفرستید.</span>
             <button className="secondary-button" type="button" onClick={() => remember(null)}>
@@ -169,6 +202,14 @@ function PortfolioReportingContent() {
                   "وضعیت داده هنوز مشخص نیست"}</p>
                 <small>{run.outputs.length ? `${run.outputs.length.toLocaleString("fa-IR")} خروجی ثبت‌شده` :
                   "خروجی ثبت نشده است"}</small>
+                {run.status === "Succeeded" && run.outputs.length > 0 && <div className="reporting-request">
+                  {run.outputs.map((output) => <button className="secondary-button" type="button"
+                    key={output.id} disabled={Boolean(downloadBusyId)}
+                    onClick={() => void downloadOutput(run, output)}>
+                    {downloadBusyId === output.id ? "در حال دریافت…" :
+                      `دریافت خروجی ${output.format === "Pdf" ? "PDF" : "Excel"}`}
+                  </button>)}
+                </div>}
               </li>)}</ol> : <p className="reporting-state">هنوز درخواستی برای سبد ثبت نشده است.</p>}
           </section>
         </div>}

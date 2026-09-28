@@ -15,7 +15,17 @@ export interface PortfolioReportRunView {
   readonly pipelineStage: string;
   readonly dataStatus: string | null;
   readonly createdAt: string;
-  readonly outputs: readonly { readonly id: string; readonly format: string }[];
+  readonly outputs: readonly PortfolioReportOutputView[];
+}
+
+export interface PortfolioReportOutputView {
+  readonly id: string;
+  readonly format: string;
+  readonly fileName: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+  readonly sha256: string;
+  readonly verificationCode: string;
 }
 
 export type PortfolioReportingCenterView =
@@ -25,6 +35,23 @@ export type PortfolioReportingCenterView =
   | { readonly kind: "forbidden" };
 
 const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu;
+const outputTypes: Readonly<Record<string, { readonly mime: string; readonly extension: string }>> = {
+  Pdf: { mime: "application/pdf", extension: ".pdf" },
+  Xlsx: { mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", extension: ".xlsx" },
+};
+
+export function validPortfolioOutput(output: PortfolioReportOutputView): boolean {
+  if (!output || !uuid.test(output.id ?? "")) return false;
+  const type = outputTypes[output.format];
+  return Boolean(type && output.contentType === type.mime &&
+    typeof output.fileName === "string" && output.fileName.length <= 180 &&
+    !output.fileName.includes("/") && !output.fileName.includes("\\") &&
+    !/[\x00-\x1f]/u.test(output.fileName) &&
+    output.fileName.toLowerCase().endsWith(type.extension) &&
+    Number.isSafeInteger(output.sizeBytes) && output.sizeBytes > 0 &&
+    output.sizeBytes <= 128 * 1024 * 1024 &&
+    /^[0-9a-f]{64}$/iu.test(output.sha256 ?? ""));
+}
 
 /** Tenant-scoped catalog and history; the server filters each run by its pinned project cohort. */
 export async function loadPortfolioReportingCenter(apiBaseUrl: string): Promise<PortfolioReportingCenterView> {
@@ -54,8 +81,7 @@ export async function loadPortfolioReportingCenter(apiBaseUrl: string): Promise<
     typeof item.status !== "string" || typeof item.pipelineStage !== "string" ||
     typeof item.createdAt !== "string" || !Number.isFinite(Date.parse(item.createdAt)) ||
     !Array.isArray(item.outputs) || item.outputs.some((output) =>
-      !output || !uuid.test(output.id ?? "") ||
-      (output.format !== "Pdf" && output.format !== "Xlsx")))) {
+      !validPortfolioOutput(output)))) {
     throw new Error("سابقهٔ گزارش‌های سبد با محدودهٔ سازمان سازگار نیست.");
   }
   return { kind: "ready", definitions, runs };

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
 
 const path = "/portfolio/reports";
 const catalog = "**/api/pmcs/api/v1/portfolio/reports/catalog";
@@ -88,4 +89,32 @@ test("portfolio request preserves one identity and payload after retry and reloa
   expect(attempts[0].body).toEqual({ clientGeneratedId: attempts[0].id,
     definitionCode: definition.code, templateVersion: definition.templateVersion,
     asOfUtc: null, formats: ["Xlsx"], parameters: {} });
+});
+
+test("Portfolio Reporting Center verifies output bytes and closes on revocation", async ({ page }) => {
+  const outputId = "10000000-0000-4000-8000-000000000088";
+  const body = "%PDF-1.7\nPMCS portfolio verified\n";
+  const fileName = "PMCS-portfolio.pdf";
+  const output = { id: outputId, format: "Pdf", fileName, contentType: "application/pdf",
+    sizeBytes: new TextEncoder().encode(body).byteLength,
+    sha256: createHash("sha256").update(body).digest("hex"), verificationCode: "verified" };
+  let denied = false;
+  await page.route(catalog, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([definition]) }));
+  await page.route(runs, (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify([{ ...run, outputs: [output] }]) }));
+  await page.route(`**/api/pmcs/api/v1/portfolio/reports/outputs/${outputId}/content`,
+    (route) => route.fulfill(denied ? { status: 403 } :
+      { status: 200, contentType: "application/pdf", body }));
+  await page.goto(path);
+  const button = page.getByRole("button", { name: "دریافت خروجی PDF" });
+  const downloadPromise = page.waitForEvent("download");
+  await button.click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe(fileName);
+  await expect(page.getByText("خروجی سبد تأیید و دریافت شد.")).toBeVisible();
+  denied = true;
+  await button.click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گزارش‌های سبد ندارید" })).toBeVisible();
+  await expect(button).toHaveCount(0);
 });
