@@ -94,6 +94,7 @@ function PortfolioDashboardContent() {
         <BrandMark />
         <nav>
           <Link className="nav-item active" href="/portfolio">سبد پروژه‌ها</Link>
+          <Link className="nav-item" href="/portfolio/reports">گزارش‌های سبد</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
           <a className="nav-item" href="#exceptions">اقدامات کلیدی</a>
           <a className="nav-item" href="#exposure">نمای مالی</a>
