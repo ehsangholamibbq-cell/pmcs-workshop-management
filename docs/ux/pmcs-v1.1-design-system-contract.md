@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.4`
+- نسخه Candidate: `1.0.0-rc.5`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -119,6 +119,12 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 - Executive Intelligence workspace؛ Agent هرگز به Chat box ساده تقلیل داده نمی‌شود.
 
 هر Component باید Default، Hover، Focus-visible، Pressed، Disabled، Loading، Error و Offline state مرتبط خود را تعریف کند.
+
+در UX2-MS42، Portfolio هنگام دریافت اولیهٔ داده، Skeleton خنثای Card/Panel
+با `aria-hidden` نشان می‌دهد و پیام زندهٔ Loading را حفظ می‌کند. Placeholder
+عدد یا وضعیت ساختگی ندارد؛ در خطا حذف می‌شود تا پیام واقعی و دکمهٔ تلاش
+دوباره دیده شوند. این نمونه، قرارداد Loading سایر Componentها را Qualified
+نمی‌کند.
 
 در UX2-MS40، `PmcsFileInput` برای مدیریت ظاهر Login به‌عنوان نخستین مصرف
 مشترک FileInput افزوده شد: Input بومی همچنان فایل و محدودیت `accept` را

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS40 Safe، MS41 Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS41 Safe، MS42 Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -249,3 +249,16 @@ MS40 documentation در Run 403 هر هشت Job را پاس کرد و Safe شد.
 20/21/22/23 بازبینی شدند. Full CI مستندات شرط پذیرش Candidate است.
 Navigation جایگزین Responsive، Loading،
 فونت تازه و چاپ هنوز در `VX-G3/G4/G5` بازند.
+
+## ۱۶. پیوست UX2-MS42 — Loading صادق Portfolio
+
+MS41 documentation در Run 405 هر هشت Job را پاس کرد و Safe شد. Source MS42
+`41b5eeb06dedab3e9d7e4b2f7ee52ffeba8e44af` / tree
+`010814c9f03923dad2189e238b549dcfedd84dfe` در انتظار اولیهٔ Portfolio،
+پنج کارت و یک Panel Placeholder خنثی را به‌جای فضای خالی قاب 26 نشان
+می‌دهد. آن‌ها از فناوری کمکی پنهان‌اند؛ پیام زندهٔ Loading و تمایز خطا/دادهٔ
+رسمی باقی است. E2E حضور Placeholder پیش از پاسخ و حذف آن پس از خطا را
+کنترل می‌کند. Run 406 هشت Job سبز و Artifact `10995736502` با ۴۴ PNG/PDF،
+SHA/ابعاد و Source/Run معتبر دارد؛ قاب‌های 26/27 بازبینی شدند. Full CI
+مستندات شرط پذیرش Candidate است. Print System، فونت تازه و مهاجرت سایر
+Loadingها بازند.

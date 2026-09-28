@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS41`؛ MS40 Runهای 402/403 موفق و Safe، source MS41 Run 404 و CI مستندات شرط اعتبار
+- مرحله: `UX2-MS42`؛ MS41 Runهای 404/405 موفق و Safe، source MS42 Run 406 و CI مستندات شرط اعتبار
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
@@ -52,6 +52,10 @@ Capture 44 انتخاب فایل نمونه در مدیریت ظاهر Login ر�
 فارسی پیمایش لمسی و کلید تب در شش Shell فعال نشان می‌دهند. آزمون مرورگر
 فوکوس پیوند دورتر و نبود overflow کل سند در عرض ۳۲۰ پیکسل را نیز حفظ می‌کند.
 تعداد Captureها ۴۴ و Routeها ۱۱ باقی می‌ماند.
+در MS42، قاب 26 پیش از پاسخ سرویس، کارت‌ها و Panelهای Placeholder خنثی
+Portfolio را ثبت می‌کند؛ متن Loading واقعی باقی است و هیچ عدد ساختگی در
+Skeleton نیست. پس از خطا، E2E حذف Placeholder را پیش از قاب 27 کنترل
+می‌کند. تعداد مسیرها و Captureها تغییر نمی‌کند.
 
 ## دستور بازتولید و Evidence
 
@@ -119,3 +123,10 @@ Run 404 هر هشت Job را پاس کرد؛ Artifact `10993184623` با digest
 مستندات وابسته می‌ماند؛ `VX-G3/G4/G5` بازند.
 تأیید طرح و فونت فارسی تازه، مهاجرت تمام Componentها، آزمون visual diff، کنتراست،
 keyboard/screen-reader، چاپ و Performance در Gateهای مستقل UX2 باقی می‌مانند.
+
+Run 405 مستندات MS41 هشت Job سبز شد و MS41 Safe است. Source MS42 در Run 406
+هر هشت Job را پاس کرد؛ Artifact `10995736502` با digest
+`sha256:a6cfa48ae684a52278c92bbf41124d67b893f99c628bb7b44009ec0e464a97b7`
+شامل ۴۴ PNG، PDF و index معتبر از نظر Source/Run، SHA و ابعاد است. قاب 26
+Skeleton خنثی را پیش از پاسخ و قاب 27 پیام خطای واقعی را بدون Placeholder
+نشان می‌دهد. CI مستندات شرط پذیرش MS42 و `VX-G3/G4/G5` بازند.

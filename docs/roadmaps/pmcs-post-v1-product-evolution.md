@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.124.0`
+- نسخه سند: `1.125.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1332,6 +1332,18 @@ UX2-MS41 `d76a8645d9e784b71c2a167aa04d315f871762d7` / tree
 بازبینی شدند. CI مستندات شرط پذیرش MS41 است. Exact next `UX2-MS42` Skeleton صادق برای
 Loading Portfolio است؛ `VX-G3/G4/G5`، فونت تازه و Qualification چاپ بازند.
 
+UX2-MS41 documentation `f02abcd28debc68fb63826c2850926d4e98db59b` در
+Run 405 هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS41-C1` Safe شد. Source
+UX2-MS42 `41b5eeb06dedab3e9d7e4b2f7ee52ffeba8e44af` / tree
+`010814c9f03923dad2189e238b549dcfedd84dfe` فضای Loading اولیهٔ
+Portfolio را با Placeholderهای خنثای KPI و بخش محتوا پر می‌کند. آن‌ها
+`aria-hidden` هستند و هیچ عدد، Fact یا وضعیت پروژه نمی‌سازند؛ متن زندهٔ
+Loading دست‌نخورده است. E2E قاب 26 را می‌گیرد و در خرابی سرویس، حذف
+Placeholder و پیام خطای واقعی را کنترل می‌کند. Run 406 هشت Job سبز و
+Artifact `10995736502` با ۴۴ PNG/PDF و index معتبر دارد؛ قاب‌های 26/27
+بازبینی شدند. CI مستندات شرط پذیرش MS42 است. Exact next `UX2-MS43` قرارداد Print System
+و نمونهٔ چاپ محدود مرکز فرمان است؛ `VX-G3/G4/G5`، فونت و Qualification بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1696,3 +1708,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.122.0` | UX2-MS38 documentation Run 399 هشت Job سبز و Safe؛ UX2-MS39 اصلاح کنتراست کارت حساب Wizard و جمع‌بندی ممیزی ۱۱ Route/۳۰ State/۴۳ تصویر، Run 400 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار VX-G1، MS40 FileInput و Gateهای G3/G4/G5 باز |
 | `1.123.0` | UX2-MS39 documentation Run 401 هشت Job سبز و VX-G1 ممیزی پذیرفته؛ UX2-MS40 FileInput فارسی با Capture 44، Run 402 هشت Job سبز/Artifact بازبینی‌شده، CI مستندات شرط اعتبار، MS41 Navigation موبایل و Gateهای G3/G4/G5 باز |
 | `1.124.0` | UX2-MS40 documentation Run 403 هشت Job سبز و Safe؛ UX2-MS41 Navigation موبایل در شش Shell و آزمون keyboard/۳۲۰ پیکسل، Run 404 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS42 Loading صادق و Gateهای G3/G4/G5 باز |
+| `1.125.0` | UX2-MS41 documentation Run 405 هشت Job سبز و Safe؛ UX2-MS42 Skeleton خنثای Loading سبد بدون Fact ساختگی، Source Run 406 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS43 Print System و Gateهای G3/G4/G5 باز |
