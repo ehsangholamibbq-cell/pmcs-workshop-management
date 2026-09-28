@@ -839,6 +839,21 @@
   text-decoration: none;
 }
 
+.project-bootstrap-account .session-badge {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.project-bootstrap-account .session-badge strong { color: var(--ink); }
+.project-bootstrap-account .session-badge span,
+.project-bootstrap-account .session-badge small { color: var(--muted); }
+.project-bootstrap-account .session-badge button {
+  color: var(--teal);
+  border-color: rgba(23, 107, 98, 0.25);
+}
+
 .bootstrap-steps {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

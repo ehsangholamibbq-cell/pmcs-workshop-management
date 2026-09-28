@@ -89,6 +89,18 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await page.goto("/project-bootstraps");
   await expect(page.getByRole("heading", { name: "ساخت از روی پروژهٔ موجود" })).toBeVisible();
   await expect(page.getByRole("option", { name: /پروژه نمونه ساختمان اداری–تجاری/u })).toBeAttached();
+  const accountContrast = await page.locator(".project-bootstrap-account .session-badge").evaluate((card) =>
+    [...card.querySelectorAll("strong, span, small, button")].map((element) => {
+      const channels = getComputedStyle(element).color.match(/\d+/gu)?.slice(0, 3).map(Number) ?? [];
+      const linear = channels.map((value) => {
+        const channel = value / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+      return 1.05 / (luminance + 0.05);
+    }));
+  expect(accountContrast.length).toBeGreaterThanOrEqual(3);
+  for (const ratio of accountContrast) expect(ratio).toBeGreaterThanOrEqual(4.5);
   await captureVisualBaseline(page, "19-project-bootstrap");
 
   await page.goto("/missing-visual-baseline-route");
