@@ -23,7 +23,9 @@ internal static partial class Program
             moderatorRoom.StatusCode == HttpStatusCode.OK &&
             readerRoom.StatusCode == HttpStatusCode.OK &&
             moderatorRoom.Payload.GetProperty("canModerate").GetBoolean() &&
+            moderatorRoom.Payload.GetProperty("canConvert").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canModerate").GetBoolean() &&
+            !readerRoom.Payload.GetProperty("canConvert").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canUpload").GetBoolean() &&
             !readerRoom.Payload.GetProperty("canEditOwn").GetBoolean(),
             $"moderator={(int)moderatorRoom.StatusCode};reader={(int)readerRoom.StatusCode}");

@@ -17,7 +17,7 @@ export interface ProjectConversationMessage {
 export type ProjectConversationView =
   | { readonly kind: "ready"; readonly messages: readonly ProjectConversationMessage[];
       readonly lastSequence: number; readonly canModerate: boolean;
-      readonly canUpload: boolean; readonly canEditOwn: boolean }
+      readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -34,13 +34,15 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   const roomValue = await room.json() as {
     projectId?: string; lastSequence?: number; canModerate?: boolean;
     canUpload?: boolean; canEditOwn?: boolean;
+    canConvert?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
       typeof lastSequence !== "number" || !Number.isSafeInteger(lastSequence) || lastSequence < 0 ||
       (roomValue.canModerate !== undefined && typeof roomValue.canModerate !== "boolean") ||
       (roomValue.canUpload !== undefined && typeof roomValue.canUpload !== "boolean") ||
-      (roomValue.canEditOwn !== undefined && typeof roomValue.canEditOwn !== "boolean")) {
+      (roomValue.canEditOwn !== undefined && typeof roomValue.canEditOwn !== "boolean") ||
+      (roomValue.canConvert !== undefined && typeof roomValue.canConvert !== "boolean")) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -71,5 +73,5 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     ...message, revision: message.revision ?? 0, legalHold: message.legalHold === true,
   })), lastSequence,
   canModerate: roomValue.canModerate === true, canUpload: roomValue.canUpload === true,
-  canEditOwn: roomValue.canEditOwn === true };
+  canEditOwn: roomValue.canEditOwn === true, canConvert: roomValue.canConvert === true };
 }

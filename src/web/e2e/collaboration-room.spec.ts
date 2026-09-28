@@ -697,3 +697,42 @@ test("private message history opens only for author or moderator and clears on r
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
   await expect(page.getByText("متن فعلی")).toHaveCount(0);
 });
+
+test("formal conversion lineage stays behind the room grant and closes on revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canConvert = false;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام تبدیل‌شده", revision: 2, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => revoked ? route.fulfill({ status: 403 }) : route.fulfill({
+      status: 200, contentType: "application/json", body: JSON.stringify([{
+        id: "10000000-0000-4000-8000-000000000021", messageId, messageRevision: 2,
+        destinationType: "Action", destinationId: "10000000-0000-4000-8000-000000000031",
+        destinationReference: "ACT-001", documents: [],
+        confirmedBy: userId, confirmedAt: "2026-09-28T00:01:00Z",
+      }]),
+    }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "تبدیل‌های رسمی پیام" })).toHaveCount(0);
+  canConvert = true;
+  await page.reload();
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByText("اقدام: ACT-001")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("اقدام: ACT-001")).toHaveCount(0);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام تبدیل‌شده")).toHaveCount(0);
+});

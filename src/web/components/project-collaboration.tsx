@@ -9,6 +9,9 @@ import {
 } from "@/lib/collaboration-room";
 import { CollaborationAccessError, watchCollaborationEvents } from "@/lib/collaboration-events";
 import {
+  loadProjectMessageConversions, type ProjectMessageConversionLineage,
+} from "@/lib/collaboration-conversions";
+import {
   attachProjectChatDocument, downloadProjectMessageAttachment, loadProjectMessageAttachments,
   loadProjectChatUploadState, type ProjectChatUploadState, type ProjectMessageAttachment,
 } from "@/lib/collaboration-attachments";
@@ -593,6 +596,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                             </li>)}</ol>}
                         </>}
                       </section>}
+                    {view.canConvert && <ProjectMessageConversions key={`${message.id}-${refresh}`} projectId={projectId}
+                      messageId={message.id} refreshToken={refresh}
+                      onAccessLoss={closeRestrictedConversation} />}
                   </li>
                 ))}
               </ol>
@@ -617,6 +623,52 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       </section>
     </main>
   );
+}
+
+const conversionLabels: Record<ProjectMessageConversionLineage["destinationType"], string> = {
+  Action: "اقدام", Issue: "مسئله", RFI: "درخواست اطلاعات", DailyFact: "واقعیت روزانه",
+  Evidence: "مدرک", TechnicalDocument: "سند فنی",
+};
+
+function ProjectMessageConversions({ projectId, messageId, refreshToken, onAccessLoss }: {
+  readonly projectId: string; readonly messageId: string; readonly refreshToken: number;
+  readonly onAccessLoss: (status: number) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [entries, setEntries] = useState<readonly ProjectMessageConversionLineage[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const controller = new AbortController();
+    void loadProjectMessageConversions("/api/pmcs", projectId, messageId, controller.signal)
+      .then((result) => { if (!controller.signal.aborted) { setEntries(result); setError(""); } })
+      .catch((failure: unknown) => {
+        if (controller.signal.aborted) return;
+        setEntries(null);
+        if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
+        else setError(failure instanceof Error ? failure.message : "دریافت تبار تبدیل کامل نشد.");
+      });
+    return () => controller.abort();
+  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+
+  return <section className="collaboration-edit" aria-label="تبار تبدیل‌های رسمی پیام">
+    <button className="secondary-button" type="button" aria-expanded={expanded}
+      onClick={() => { setExpanded((value) => !value); setEntries(null); setError(""); }}>
+      {expanded ? "بستن تبدیل‌های رسمی" : "تبدیل‌های رسمی پیام"}
+    </button>
+    {expanded && <div>
+      {error && <p role="alert">{error}</p>}
+      {!error && entries === null && <p role="status">در حال دریافت تبار تبدیل…</p>}
+      {entries?.length === 0 && <p>هنوز رکورد رسمی از این پیام ساخته نشده است.</p>}
+      {entries && entries.length > 0 && <ol>{entries.map((item) => <li key={item.id}>
+        <strong>{conversionLabels[item.destinationType]}: {item.destinationReference}</strong>
+        <span> · نسخهٔ پیام {item.messageRevision.toLocaleString("fa-IR")} · </span>
+        <time dateTime={item.confirmedAt}>{formatPersianDateTime(item.confirmedAt)}</time>
+        <p>{item.documents.length.toLocaleString("fa-IR")} سند پیوسته در تبار رسمی</p>
+      </li>)}</ol>}
+    </div>}
+  </section>;
 }
 
 function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessLoss }: {
