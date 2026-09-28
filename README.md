@@ -4,16 +4,16 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS10-C1`, source
-`de22569ca12659fc96e3e3065d938a11dc5e3def`, Full CI Run 328 (8/8).
+Current safe checkpoint: `PMCS-V1.1-UX2-MS11-C1`, source
+`37cefe7bd76f2a1f4fa87fab03ecf07dfc05a69b`, Full CI Run 331 (8/8).
 COL1 connected build is closed with 63 migrations. The official brand mark,
 shared tokens, focus, mobile navigation and scoped project Chat are in UI.
 The project Reporting Center reads authorized catalog/history, requests all
 project report families and verifies gated output bytes. The separate Portfolio
-Reporting Center now reads its Tenant-scoped catalog/history. Portfolio request
-and download, remaining Chat/UX2 migration, INT1/QA1 and their separate gates
-follow. Rollout flags remain off; PR #2 remains Draft. See the canonical
-reference and active roadmap.
+Reporting Center reads Tenant-scoped catalog/history and requests F10 with
+durable idempotency. Portfolio output download, remaining Chat/UX2 migration,
+INT1/QA1 and their separate gates follow. Rollout flags remain off; PR #2
+remains Draft. See the canonical reference and active roadmap.
 
 `PMCS V1 — Qualified | Final | Baseline Locked` after Full Regression Run 69. The locked source baseline is `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`.
 
