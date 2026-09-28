@@ -739,6 +739,15 @@ test("formal conversion lineage stays behind the room grant and closes on revoca
 
 test("confirmed Action conversion rebases on revision conflict and never duplicates after reload", async ({ page }) => {
   const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `site-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
   let canConvertAction = false;
   let revision = 2;
   let body = "پیام نیازمند اقدام";
@@ -756,6 +765,8 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
       nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
         body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
     }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
     (route) => {
       if (revoked) return route.fulfill({ status: 403 });
@@ -770,7 +781,7 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
       expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
       expect(request.destinationType).toBe("Action");
       expect(request.confirmed).toBe(true);
-      expect(request.documentIds).toEqual([]);
+      expect(request.documentIds).toEqual([documentId]);
       expect(request.details.assigneeUserId).toBe(userId);
       expect(request.details.title).toBe("اقدام تأییدشده");
       expect(request.details.priority).toBe("High");
@@ -783,7 +794,9 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
       }
       action = { id: "10000000-0000-4000-8000-000000000021", messageId,
         messageRevision: revision, destinationType: "Action", destinationId: request.destinationId,
-        destinationReference: "ACT-001", documents: [], confirmedBy: userId,
+        destinationReference: "ACT-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
         confirmedAt: "2026-09-28T00:01:00Z" };
       return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(action) });
     });
@@ -795,12 +808,14 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
   await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
   await page.getByLabel("عنوان اقدام").fill("اقدام تأییدشده");
   await page.getByRole("combobox", { name: /^اولویت/u }).selectOption("High");
-  await page.getByRole("checkbox").check();
+  await page.getByRole("checkbox", { name: /فایل site-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل site-2\.pdf/u })).not.toBeChecked();
+  await page.getByRole("checkbox", { name: /ایجاد رکورد رسمی/u }).check();
   await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
   await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
   await expect(page.getByText("نسخهٔ فعلی پیام: پیام همزمان تغییر کرد")).toBeVisible();
   await page.getByRole("button", { name: "تبدیل بر پایهٔ نسخهٔ تازه" }).click();
-  await page.getByRole("checkbox").check();
+  await page.getByRole("checkbox", { name: /ایجاد رکورد رسمی/u }).check();
   await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
   await expect(page.getByText("اقدام رسمی با ارجاع ACT-001 ثبت شد", { exact: false })).toBeVisible();
   await page.reload();

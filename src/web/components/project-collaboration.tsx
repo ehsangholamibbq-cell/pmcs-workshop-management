@@ -674,6 +674,8 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
     "uncertain" | "conflict" | "done" | "exists">("closed");
   const [base, setBase] = useState(message);
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
+  const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
   const [details, setDetails] = useState<ProjectActionConversionDetails>({
     assigneeUserId: actorUserId, dueDate: futureProjectDate(3), priority: "Medium",
     title: message.body.slice(0, 240), description: "",
@@ -686,12 +688,17 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
     setPhase("checking");
     setStatus("");
     try {
-      const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
+      const [entries, attached] = await Promise.all([
+        loadProjectMessageConversions("/api/pmcs", projectId, message.id),
+        loadProjectMessageAttachments("/api/pmcs", projectId, message.id),
+      ]);
       if (entries.some((item) => item.destinationType === "Action")) {
         setPhase("exists");
         setStatus("برای این پیام اقدام رسمی قبلاً ثبت شده است؛ تبار تبدیل را ببینید.");
       } else {
         setBase(message);
+        setFiles(attached);
+        setSelectedIds([]);
         setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
         setConfirmed(false);
         setPhase("editing");
@@ -716,6 +723,39 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
     }
   }
 
+  async function rebase() {
+    if (phase !== "conflict" || message.revision <= base.revision ||
+        message.deletedAt || message.redactedAt) return;
+    setPhase("checking"); setStatus("");
+    try {
+      const [lineage, attached] = await Promise.all([
+        loadProjectMessageConversions("/api/pmcs", projectId, message.id),
+        loadProjectMessageAttachments("/api/pmcs", projectId, message.id),
+      ]);
+      if (lineage.some((item) => item.destinationType === "Action")) {
+        setPhase("exists"); setStatus("برای این پیام اقدام رسمی قبلاً ثبت شده است؛ تبار تبدیل را ببینید.");
+        return;
+      }
+      const retained = files.filter((file) => selectedIds.includes(file.documentId) &&
+        attached.some((current) => current.documentId.toLowerCase() === file.documentId.toLowerCase() &&
+          current.sha256.toLowerCase() === file.sha256.toLowerCase() &&
+          current.versionNumber === file.versionNumber &&
+          current.originalFileName === file.originalFileName &&
+          current.contentType === file.contentType && current.sizeBytes === file.sizeBytes));
+      setFiles(attached);
+      setSelectedIds(retained.map((file) => file.documentId));
+      setBase(message);
+      setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+      setConfirmed(false);
+      setStatus(retained.length < selectedIds.length
+        ? "برخی فایل‌های انتخابی دیگر در فهرست آزادشده نیستند؛ انتخاب را دوباره بررسی کنید." : "");
+      setPhase("editing");
+    } catch (error) {
+      if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else { setPhase("conflict"); setStatus("بازخوانی فایل‌ها و تبار کامل نشد؛ دوباره تلاش کنید."); }
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
@@ -724,7 +764,8 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
     setStatus("در حال ثبت اقدام رسمی…");
     try {
       const result = await convertProjectMessageToAction("/api/pmcs", projectId, base,
-        actorUserId, details, identity.destinationId, identity.key);
+        actorUserId, details, identity.destinationId, identity.key,
+        files.filter((item) => selectedIds.includes(item.documentId)));
       setPhase("done");
       setStatus(`اقدام رسمی با ارجاع ${result.destinationReference} ثبت شد؛ تبار پیام را تازه‌سازی کنید.`);
       onChanged();
@@ -756,11 +797,8 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
     {phase === "conflict" && <div>
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => {
-          setBase(message);
-          setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
-          setConfirmed(false); setStatus(""); setPhase("editing");
-        }}>تبدیل بر پایهٔ نسخهٔ تازه</button>}
+        <button className="secondary-button" type="button" onClick={() => void rebase()}>
+          تبدیل بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
       <form onSubmit={(event) => void submit(event)}>
@@ -780,6 +818,21 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
         <label>مهلت شمسی<PersianDateInput value={details.dueDate} disabled={phase !== "editing"}
           onChange={(date) => setDetails((current) => ({ ...current, dueDate: date }))}
           required ariaLabel="مهلت شمسی اقدام رسمی" /></label>
+        <fieldset disabled={phase !== "editing"}>
+          <legend>فایل‌های آزادشدهٔ همین پیام برای تبار اقدام، اختیاری (حداکثر ۱۰ فایل)</legend>
+          {files.length === 0 && <p>این پیام فایل آزادشده‌ای ندارد.</p>}
+          {files.map((file) => <label key={file.documentId}>
+            <input type="checkbox" checked={selectedIds.includes(file.documentId)}
+              disabled={!selectedIds.includes(file.documentId) && selectedIds.length >= 10}
+              onChange={(event) => {
+                setSelectedIds((current) => event.target.checked
+                  ? [...current, file.documentId] : current.filter((id) => id !== file.documentId));
+                setConfirmed(false);
+              }} />
+            فایل {file.originalFileName} · نسخهٔ {file.versionNumber}
+          </label>)}
+        </fieldset>
+        {selectedIds.length > 0 && <p>هش و نسخهٔ {selectedIds.length.toLocaleString("fa-IR")} فایل انتخاب‌شده در تبار اقدام ثبت می‌شود.</p>}
         <p>مسئول این برش: خود شما. انتخاب مسئول دیگر در مرحلهٔ جدا بررسی می‌شود.</p>
         <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
           onChange={(event) => setConfirmed(event.target.checked)} />

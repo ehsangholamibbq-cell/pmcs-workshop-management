@@ -41,6 +41,29 @@ function validLineage(item: ProjectMessageConversionLineage, messageId: string):
       Number.isSafeInteger(document.sizeBytes) && document.sizeBytes >= 1));
 }
 
+function validSelectedAttachments(messageId: string, attachments: readonly ProjectMessageAttachment[]): boolean {
+  return Array.isArray(attachments) && attachments.length <= 10 &&
+    new Set(attachments.map((item) => item?.documentId?.toLowerCase())).size === attachments.length &&
+    attachments.every((item) => item && item.messageId?.toLowerCase() === messageId.toLowerCase() &&
+      guid(item.documentId) && /^[0-9a-f]{64}$/iu.test(item.sha256) &&
+      Number.isSafeInteger(item.versionNumber) && item.versionNumber > 0 &&
+      Number.isSafeInteger(item.sizeBytes) && item.sizeBytes > 0 && item.sizeBytes <= 25 * 1024 * 1024 &&
+      typeof item.originalFileName === "string" && item.originalFileName.length > 0 &&
+      typeof item.contentType === "string" && item.contentType.length > 0 &&
+      typeof item.releasedAt === "string" && Number.isFinite(Date.parse(item.releasedAt)));
+}
+
+function matchingLineageDocuments(documents: ProjectMessageConversionLineage["documents"],
+  selected: readonly ProjectMessageAttachment[]): boolean {
+  return documents.length === selected.length && selected.every((attachment) => {
+    const document = documents.find((item) => item.id.toLowerCase() === attachment.documentId.toLowerCase());
+    return document && document.sha256.toLowerCase() === attachment.sha256.toLowerCase() &&
+      document.versionNumber === attachment.versionNumber &&
+      document.fileName === attachment.originalFileName &&
+      document.contentType === attachment.contentType && document.sizeBytes === attachment.sizeBytes;
+  });
+}
+
 /** Authorized, bounded lineage read; no official record is created here. */
 export async function loadProjectMessageConversions(apiBaseUrl: string, projectId: string,
   messageId: string, signal?: AbortSignal): Promise<readonly ProjectMessageConversionLineage[]> {
@@ -78,7 +101,8 @@ export interface ProjectActionConversionDetails {
 /** Creates one confirmed Action through the owner command; no Chat-to-truth shortcut. */
 export async function convertProjectMessageToAction(apiBaseUrl: string, projectId: string,
   message: ProjectConversationMessage, actorUserId: string, details: ProjectActionConversionDetails,
-  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  destinationId: string, idempotencyKey: string,
+  selectedAttachments: readonly ProjectMessageAttachment[] = []): Promise<ProjectMessageConversionLineage> {
   const title = details.title.trim();
   const description = details.description.trim();
   if (!guid(projectId) || !guid(message.id) || !guid(actorUserId) ||
@@ -92,6 +116,7 @@ export async function convertProjectMessageToAction(apiBaseUrl: string, projectI
       new Date(`${details.dueDate}T00:00:00Z`).toISOString().slice(0, 10) !== details.dueDate ||
       !["Low", "Medium", "High", "Critical"].includes(details.priority) ||
       !title || title.length > 240 || description.length > 2000 ||
+      !validSelectedAttachments(message.id, selectedAttachments) ||
       /[\x00-\x08\x0b-\x1f\x7f]/u.test(title + description)) {
     throw new Error("مشخصات تبدیل به اقدام معتبر نیست.");
   }
@@ -102,7 +127,8 @@ export async function convertProjectMessageToAction(apiBaseUrl: string, projectI
     headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
     body: JSON.stringify({ destinationId, destinationType: "Action", baseRevision: message.revision,
       confirmed: true, details: { assigneeUserId: actorUserId, dueDate: details.dueDate,
-        priority: details.priority, title, description: description || null }, documentIds: [] }),
+        priority: details.priority, title, description: description || null },
+      documentIds: selectedAttachments.map((item) => item.documentId) }),
   });
   if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
   if (response.status === 409) {
@@ -126,7 +152,7 @@ export async function convertProjectMessageToAction(apiBaseUrl: string, projectI
       result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
       result.messageRevision !== message.revision ||
       result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
-      result.documents.length !== 0) {
+      !matchingLineageDocuments(result.documents, selectedAttachments)) {
     throw new Error("تأیید تبدیل رسمی معتبر نیست.");
   }
   return result;

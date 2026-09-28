@@ -275,6 +275,42 @@ test("confirmed Action conversion keeps destination and retry identity, scope an
   } finally { globalThis.fetch = previous; }
 });
 
+test("Action conversion selects only released message files and verifies exact lineage metadata", async () => {
+  const previous = globalThis.fetch;
+  const actor = item.confirmedBy;
+  const destinationId = item.destinationId;
+  const key = "10000000-0000-4000-8000-000000000061";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مدرک اقدام" } as ProjectConversationMessage;
+  const details = { assigneeUserId: actor, dueDate: "2099-01-01", priority: "High" as const,
+    title: "پیگیری مدرک", description: "" };
+  const attachment = { messageId, documentId: item.documents[0].id,
+    originalFileName: item.documents[0].fileName, contentType: item.documents[0].contentType,
+    sizeBytes: item.documents[0].sizeBytes, sha256: item.documents[0].sha256,
+    versionNumber: item.documents[0].versionNumber, releasedAt: "2026-09-28T00:00:00Z",
+  } as ProjectMessageAttachment;
+  try {
+    let payload: { documentIds: string[] } | undefined;
+    globalThis.fetch = async (_input, init) => {
+      payload = JSON.parse(String(init?.body)) as { documentIds: string[] };
+      return Response.json(item, { status: 201 });
+    };
+    const result = await convertProjectMessageToAction("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]);
+    assert.deepEqual(payload?.documentIds, [attachment.documentId]);
+    assert.deepEqual(result.documents, item.documents);
+    globalThis.fetch = async () => Response.json({ ...item,
+      documents: [{ ...item.documents[0], sha256: "b".repeat(64) }] }, { status: 201 });
+    await assert.rejects(convertProjectMessageToAction("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment]), /تأیید تبدیل/u);
+    globalThis.fetch = async () => { throw new Error("Invalid attachment reached server"); };
+    await assert.rejects(convertProjectMessageToAction("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [attachment, attachment]), /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToAction("/api/pmcs", projectId, message,
+      actor, details, destinationId, key, [{ ...attachment, messageId: projectId }]), /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
 test("confirmed Issue conversion keeps general-project classification, actor and stable retry identity", async () => {
   const previous = globalThis.fetch;
   const actor = "10000000-0000-4000-8000-000000000041";
