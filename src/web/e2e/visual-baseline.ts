@@ -8,6 +8,7 @@ interface Capture {
   readonly route: string;
   readonly viewport: "desktop" | "tablet" | "mobile";
   readonly scroll?: "top";
+  readonly media?: "print";
 }
 
 const manifestPath = fileURLToPath(new URL("./visual-baseline.json", import.meta.url));
@@ -25,7 +26,7 @@ export async function captureVisualBaseline(page: Page, id: string): Promise<voi
     "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")}$`, "iu");
   expect(actualPath, `Visual baseline route ${id}`).toMatch(routePattern);
   await page.setViewportSize(manifest.viewports[entry.viewport]);
-  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+  await page.emulateMedia({ media: entry.media ?? "screen", reducedMotion: "reduce", colorScheme: "light" });
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.evaluate(() => document.fonts.ready);

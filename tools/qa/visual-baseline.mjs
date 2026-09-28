@@ -45,6 +45,10 @@ export async function validateInventory(manifest, projectRoot = root) {
     `Unregistered route: ${capture.route}`);
     assert.ok(manifest.viewports[capture.viewport], `Unknown viewport: ${capture.viewport}`);
     assert.ok(capture.scroll === undefined || capture.scroll === "top", `Invalid scroll policy: ${capture.id}`);
+    assert.ok(capture.media === undefined || capture.media === "print", `Invalid media: ${capture.id}`);
+    assert.ok(capture.pdfFile === undefined ||
+      (capture.media === "print" && capture.pdfFile === `${capture.id}.pdf`),
+    `Invalid print companion: ${capture.id}`);
     const source = path.join(projectRoot, "src/web/e2e", capture.source);
     const text = await readFile(source, "utf8");
     assert.ok(text.includes(`"${capture.id}"`), `Capture ${capture.id} is absent from ${capture.source}`);
@@ -62,22 +66,35 @@ export async function validateInventory(manifest, projectRoot = root) {
 
 export async function verifyCaptures(manifest, directory) {
   const expected = new Set(manifest.captures.map((capture) => `${capture.id}.png`));
-  const actual = (await readdir(directory)).filter((file) => file.endsWith(".png"));
+  const files = await readdir(directory);
+  const actual = files.filter((file) => file.endsWith(".png"));
   assert.deepEqual(actual.sort(), [...expected].sort(), "Missing or undeclared screenshot files");
+  const expectedPdfs = manifest.captures.flatMap((capture) => capture.pdfFile ? [capture.pdfFile] : []);
+  assert.deepEqual(files.filter((file) => file.endsWith(".pdf")).sort(), expectedPdfs.sort(),
+    "Missing or undeclared print PDF files");
   const captures = [];
   for (const entry of manifest.captures) {
     const bytes = await readFile(path.join(directory, `${entry.id}.png`));
     const dimensions = pngSize(bytes);
     assert.deepEqual(dimensions, manifest.viewports[entry.viewport], `Wrong viewport: ${entry.id}`);
+    const pdf = entry.pdfFile ? await verifyPrintCompanion(path.join(directory, entry.pdfFile), entry.pdfFile) : null;
     captures.push({
       ...entry,
       file: `${entry.id}.png`,
       ...dimensions,
       bytes: bytes.length,
       sha256: createHash("sha256").update(bytes).digest("hex"),
+      ...(pdf ? { pdf } : {}),
     });
   }
   return captures;
+}
+
+async function verifyPrintCompanion(filePath, file) {
+  const bytes = await readFile(filePath);
+  assert.ok(bytes.length > 1000 && bytes.subarray(0, 5).toString("ascii") === "%PDF-" &&
+    bytes.subarray(-1024).toString("ascii").includes("%%EOF"), `Invalid print PDF: ${file}`);
+  return { file, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
 }
 
 async function discoverPages(directory, prefix = "") {
