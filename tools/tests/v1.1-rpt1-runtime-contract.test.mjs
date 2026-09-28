@@ -1665,15 +1665,15 @@ test("RPT1-F05 certified renderer is versioned deterministic and connected throu
   );
   assert.match(
     renderingTests,
-    /25293911fd4eec21e9b2e2f62de9239d6f5d5bed8b4842a32c8d1483fc987d09/u,
+    /b31ae2857c9281b2d60cf56657d73914460f78f21694df46522ab528c0a80b43/u,
   );
   assert.match(
     renderingTests,
-    /44afd18ca0babb473b69911bf83d775dec57519c34c0237e471bebc9bdd439b7/u,
+    /b39624ae34fed7ecb2f1737f93d6df6016f8dd645fa276eeaf4c89c488e773d7/u,
   );
   assert.match(
     renderingTests,
-    /f8eb576d5e0cdfd267d80013d2fce3c8cb9f45ad18b54d0a37632a3b10358cbb/u,
+    /6bc35a12aa56c6dbc5b13c7fdf3afef6cf500f5ce9dcb4cb7f3a7052ae53ce12/u,
   );
 
   assert.match(module, /IProjectFinancialPositionReportRenderer, ProjectFinancialPositionReportPdfRenderer/u);
