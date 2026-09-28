@@ -3748,6 +3748,7 @@ output {
 
 @media (max-width: 620px) {
   .workspace {
+    min-width: 0;
     padding: 1.2rem 0.75rem 4rem;
   }
 

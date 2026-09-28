@@ -68,17 +68,33 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   ]) {
     await page.setViewportSize(viewport);
     if (viewport.width === 320) {
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth
-        ? [...document.querySelectorAll(".app-shell, .workspace, .workspace *")]
+      const overflow = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        if (document.documentElement.scrollWidth <= width) return null;
+        const elements = [...document.querySelectorAll("body *")]
           .filter((element) => {
             const box = element.getBoundingClientRect();
-            return box.left < -2 || box.right > window.innerWidth + 2;
+            if (box.left >= -0.1 && box.right <= width + 0.1) return false;
+            for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+              if (/^(auto|scroll|hidden|clip)$/u.test(getComputedStyle(parent).overflowX)) return false;
+            }
+            return true;
           })
-          .slice(0, 12)
-          .map((element) => ({ tag: element.tagName, className: element.className,
-            width: Math.round(element.getBoundingClientRect().width) }))
-        : []);
-      if (overflow.length > 0) console.log("Narrow viewport overflow", overflow);
+          .slice(0, 24)
+          .map((element) => {
+            const box = element.getBoundingClientRect();
+            return { tag: element.tagName, className: String(element.className),
+              left: Math.round(box.left * 10) / 10, right: Math.round(box.right * 10) / 10 };
+          });
+        const focused = document.activeElement;
+        const focusBox = focused?.getBoundingClientRect();
+        return { width, scrollWidth: document.documentElement.scrollWidth,
+          bodyScrollWidth: document.body.scrollWidth, elements,
+          focus: focused ? { tag: focused.tagName, className: String(focused.className),
+            left: focusBox?.left, right: focusBox?.right,
+            outline: getComputedStyle(focused).outline } : null };
+      });
+      if (overflow) console.log("Narrow viewport overflow", JSON.stringify(overflow));
     }
     await expect.poll(() => page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
