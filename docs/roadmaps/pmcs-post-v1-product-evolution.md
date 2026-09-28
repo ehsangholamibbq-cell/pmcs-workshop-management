@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.116.0`
+- نسخه سند: `1.117.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1225,6 +1225,26 @@ Qualification Report هفت suite را `passed` ثبت کرد؛ `VX-G1` و Gate�
 مهاجرت/Qualification بازند. Exact next `UX2-MS34` رفع محدود Sidebar دسکتاپ و
 ناوبری responsive بر پایهٔ Evidence است.
 
+UX2-MS34 source Candidate `5692956280215096f6d4cc7f148053ba050b73e5` / tree
+`a86249db00b2b04f9c50ce5e6b1cc9cef929c5e4` در Run 382 به‌علت assertion
+نادرست focus-visible رد شد. correction `ab753ad921cc110275babd705cd597fef2116f6e`
+/ tree `d284a585fc1e38b6e68f5965b0d569bd955efb17` با Tab واقعی در Run 383
+overflow عرض ۳۲۰ را آشکار کرد. correction `5000954c5e8c180f272c1f951f1c56d19cd8b8c3`
+/ tree `501b9540ba66cfa3458c2897def1934d97d31bba` track Grid باریک را
+محدود کرد اما Run 384 هنوز ۲px overflow داشت. correction
+`b16ed8e8a44d53b7b3989c61fd7fbaa7d6ce9b79` / tree
+`7ebd00cdf57719c3836f0380d94bec9d66825511` حداقل عرض Workspace را صفر و
+تشخیص دقیق overflow را افزود؛ Run 385 برچسب `.section-note` با متن غیرقابل‌شکست
+را عامل ۲px overflow یافت. correction `0dab8c390a01da1b03f6e79da368b086353d9e98`
+/ tree `bcebb8704c3bbf60b6fa0ca869793dce5836737a` این برچسب را در عرض باریک
+می‌شکند و Run 386 هر هشت Job را پاس کرد. Artifact ۳۹ تصویر با SHA-256 و
+قاب‌های 04/39/21 بازبینی شد؛ CI مستندات شرط اعتبار Checkpoint است. در Sidebar
+دسکتاپ، نشان ثابت و اسکرول مستقل جای فشردگی را می‌گیرد و آخرین لینک با focus
+و outline در دسترس است؛ viewport ۳۲۰ پیکسل و تصویر ۳۹ انتهای ناوبری به
+baseline افزوده شده‌اند. Gateهای `VX-G1/G3/G4/G5` بازند؛ بعد از Full CI و
+بازبینی Artifact، MS35 به state تعارض ویرایش Chat گروه پروژه می‌پردازد؛ Preview
+تکثیر و Login failure در Micro-Stepهای مستقل بعدی‌اند. INT1/QA1 طبق ترتیب بعد از UX2 هستند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1581,3 +1601,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.114.0` | UX2-MS31 انتخاب صریح پیوست Released برای شواهد Draft RFI با Run 375 هشت Job سبز؛ MS32 قرارداد فونت و Gateهای UX2 باز |
 | `1.115.0` | UX2-MS32 قرارداد نسخه‌دار فونت UI/Offline/PDF/XLSX/Print با Run 377 هشت Job سبز؛ MS33 ممیزی بصری و Gateهای UX2 باز |
 | `1.116.0` | UX2-MS33 inventory یازده Route و baseline سی‌وهشت screenshot با index/SHA-256 در Runهای 379/380؛ اصلاح قاب‌بندی Command Center، MS34 و Gateهای Visual باز |
+| `1.117.0` | UX2-MS34 Candidate نشان ثابت، Sidebar مستقل و keyboard reachability در ۳۹ screenshot؛ Run 386 هشت Job سبز و Artifact بازبینی‌شده، CI مستندات شرط اعتبار؛ MS35 و Gateهای Visual باز |
