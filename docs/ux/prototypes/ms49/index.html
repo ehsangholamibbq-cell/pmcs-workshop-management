@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — ناوبری، بازخورد و گفت‌وگوی تأیید</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; line-height: 1.65; --navy: #0c2036; --green: #11643b; --focus: #187a49; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, select, input { font: inherit; }
+    button { cursor: pointer; }
+    :is(a, button, select, input):focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .skip { position: absolute; right: 1rem; top: -5rem; z-index: 10; background: white; padding: .45rem .7rem; }
+    .skip:focus { top: .5rem; }
+    header { color: white; background: var(--navy); padding: .7rem max(1rem, calc((100vw - 1240px)/2)); }
+    .header-inner { display: flex; align-items: center; gap: .9rem; }
+    .brand { width: 110px; height: 68px; object-fit: contain; background: #fbf8f1; border-radius: 10px; padding: .25rem; flex: none; }
+    h1 { margin: 0; font-size: 1.25rem; line-height: 1.35; }
+    header p { margin: .1rem 0 0; color: #d7e1e2; font-size: .82rem; }
+    .page { max-width: 1240px; margin: auto; padding: 1.1rem 1rem 3rem; }
+    .disclaimer { border: 1px solid #b48b49; border-radius: 10px; padding: .65rem .8rem; background: #fff8e8; color: #51390e; font-size: .83rem; }
+    .shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
+    .nav-panel, .card { border: 1px solid #e1d9cd; border-radius: 14px; background: white; }
+    .nav-panel { align-self: start; padding: .7rem; }
+    .nav-panel strong { display: block; padding: .35rem .6rem; color: var(--navy); }
+    .nav-links { display: grid; gap: .25rem; }
+    .nav-links a { display: block; color: #243b49; text-decoration: none; padding: .5rem .65rem; border-radius: 8px; min-height: 44px; }
+    .nav-links a:hover { background: #e8f2eb; }
+    .nav-links a[aria-current="page"] { background: #15334d; color: white; font-weight: 700; }
+    .nav-toggle { display: none; border: 1px solid #a7bab9; border-radius: 8px; background: white; color: var(--navy); min-height: 44px; padding: .4rem .7rem; font-weight: 700; }
+    .content { min-width: 0; display: grid; gap: 1rem; }
+    .card { padding: 1rem; min-width: 0; }
+    .card h2 { margin: 0 0 .25rem; font-size: 1.15rem; color: var(--navy); }
+    .card p { margin: .25rem 0 .85rem; color: var(--muted); }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; border: 1px solid #86969c; border-radius: 8px; background: white; color: #17242e; padding: .4rem .7rem; max-width: 100%; }
+    .state { display: grid; gap: .3rem; margin-top: .9rem; padding: .75rem; border: 1px solid #b8c9ce; border-right: 4px solid #235c99; border-radius: 9px; background: #f1f6f8; }
+    .state[data-tone="warning"] { background: #fff8e8; border-color: #d8bb80; border-right-color: #76500f; }
+    .state[data-tone="error"] { background: #fff1ef; border-color: #d8a5a0; border-right-color: #a12d27; }
+    .state[data-tone="success"] { background: #f2f9f3; border-color: #a8c9b8; border-right-color: var(--green); }
+    .state strong { color: var(--navy); }
+    .state p { margin: 0; color: #40535a; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-top: 1rem; }
+    .action { min-height: 44px; border-radius: 8px; padding: .45rem .9rem; border: 1px solid var(--green); background: var(--green); color: white; font-weight: 700; }
+    .action:hover:not(:disabled) { background: #0b4f2e; }
+    .action:disabled { cursor: not-allowed; color: #40535a; border-color: #a8b4b5; background: #e4e9e6; }
+    .action.secondary { color: var(--green); background: white; }
+    .reason { color: var(--muted); font-size: .82rem; }
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
+    .fact { padding: .65rem; background: #f6f8f7; border-radius: 8px; }
+    .fact span { display: block; color: var(--muted); font-size: .76rem; }
+    .fact strong { display: block; color: var(--navy); overflow-wrap: anywhere; }
+    dialog { font: inherit; width: min(530px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow-y: auto; border: 1px solid #a9bbc2; border-radius: 14px; padding: 1rem; color: #17242e; box-shadow: 0 18px 60px #0c20364d; }
+    dialog::backdrop { background: #0c2036ad; }
+    dialog h2 { color: var(--navy); margin: 0 0 .4rem; font-size: 1.18rem; }
+    dialog p { margin: .2rem 0 .8rem; color: #40535a; }
+    .version { border: 1px solid #cad7dd; border-radius: 8px; background: #f1f6f8; padding: .65rem; margin: .8rem 0; }
+    .version strong { display: block; }
+    .confirm { display: flex; align-items: flex-start; gap: .45rem; margin: .9rem 0; }
+    .confirm input { width: 21px; height: 21px; flex: none; }
+    .foot { color: var(--muted); font-size: .78rem; margin: .4rem 0; }
+    @media (max-width: 700px) {
+      .header-inner { gap: .6rem; }
+      .brand { width: 72px; height: 52px; }
+      h1 { font-size: 1rem; }
+      .shell { grid-template-columns: 1fr; }
+      .nav-panel { padding: .55rem; }
+      .nav-panel strong { display: none; }
+      .nav-toggle { display: inline-block; }
+      .nav-links { display: none; margin-top: .5rem; }
+      .nav-links[data-open="true"] { display: grid; }
+      .facts { grid-template-columns: 1fr; }
+      .card { padding: .8rem; }
+      .controls { display: grid; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { .nav-panel, .actions, .controls, dialog, .skip { display: none !important; } header { color: var(--navy); background: white; } header p { color: var(--muted); } .shell { display: block; } .card { break-inside: avoid; } }
+  </style>
+</head>
+<body data-state="default">
+  <a class="skip" href="#main">رفتن به محتوای نمونه</a>
+  <header><div class="header-inner">
+    <img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین">
+    <div><h1>ناوبری، بازخورد و تأیید</h1><p>PMCS · UX2-MS49 · نمونهٔ مستقل و بدون اتصال عملیاتی</p></div>
+  </div></header>
+  <div class="page">
+    <div class="disclaimer"><strong>نمونهٔ طراحی:</strong> داده‌ها و نسخه‌ها فرضی‌اند؛ هیچ درخواست شبکه، ثبت، یا تصمیم رسمی انجام نمی‌شود.</div>
+    <div class="shell">
+      <nav class="nav-panel" aria-label="بخش‌های نمونه">
+        <button class="nav-toggle" type="button" id="nav-toggle" aria-controls="nav-links" aria-expanded="false">باز کردن فهرست بخش‌ها</button>
+        <strong>بخش‌های نمونه</strong>
+        <div class="nav-links" id="nav-links" data-open="false">
+          <a href="#main" aria-current="page">وضعیت و بازخورد</a>
+          <a href="#facts">منبع و نسخه</a>
+          <a href="#review">تأیید نمایشی</a>
+        </div>
+      </nav>
+      <main class="content" id="main">
+        <section class="card" aria-labelledby="state-title">
+          <h2 id="state-title">وضعیت داده</h2>
+          <p>نبود داده، بارگذاری، خطا، دسترسی و اتصال، معناهای جدا دارند.</p>
+          <div class="controls"><label for="state">حالت نمایشی</label>
+            <select id="state"><option value="default">بدون دادهٔ رسمی</option><option value="loading">در حال بارگذاری</option><option value="error">خطای منبع</option><option value="permission">بدون مجوز</option><option value="offline">آفلاین</option><option value="conflict">تعارض نسخه</option><option value="success">بازبینی نمایشی موفق</option></select>
+          </div>
+          <div class="state" id="feedback" data-tone="warning" role="status" aria-live="polite">
+            <strong id="feedback-title"></strong><p id="feedback-text"></p>
+          </div>
+          <div class="actions" id="review"><button class="action" id="open-dialog" type="button" aria-describedby="action-reason">بررسی نسخه و تأیید نمایشی</button><span class="reason" id="action-reason"></span></div>
+        </section>
+        <section class="card" id="facts" aria-labelledby="facts-title">
+          <h2 id="facts-title">مرز Fact و Draft</h2>
+          <p>مقدار یا سلامت ساختگی جای خالی اطلاعات رسمی را پر نمی‌کند.</p>
+          <div class="facts"><div class="fact"><span>Snapshot رسمی</span><strong>موجود نیست</strong></div><div class="fact"><span>پیش‌نویس محلی</span><strong>نسخهٔ نمایشی ۳</strong></div><div class="fact"><span>نسخهٔ فعلی منبع</span><strong>نسخهٔ نمایشی ۴</strong></div></div>
+        </section>
+        <p class="foot">فونت وزیرمتن از قرارداد نسخهٔ ۲٫۰؛ این صفحه Prototype است و Gateهای `VX-G3/G4/G5` را به‌تنهایی نمی‌بندد.</p>
+      </main>
+    </div>
+  </div>
+  <dialog id="review-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <h2 id="dialog-title">بازبینی نسخهٔ نمایشی</h2>
+    <p id="dialog-description">قبل از تأیید، نسخهٔ فعلی منبع و تعارض را بخوانید. این تأیید چیزی را ذخیره نمی‌کند.</p>
+    <div class="version"><strong>نسخهٔ فعلی منبع: ۴</strong><span>پیش‌نویس محلی: ۳ — محتوای فرضی برای مرور.</span></div>
+    <label class="confirm" for="confirm"><input id="confirm" type="checkbox"><span>نسخهٔ فعلی و پیام تعارض را خوانده‌ام.</span></label>
+    <div class="actions"><button class="action" id="confirm-action" type="button" disabled>تأیید نمایشی</button><button class="action secondary" id="close-dialog" type="button">بستن و بازگشت</button></div>
+    <p class="reason" id="dialog-result" role="status" aria-live="polite">تا بررسی صریح نسخه، اقدام غیرفعال است.</p>
+  </dialog>
+  <script>
+    const states = {
+      default: ["دادهٔ رسمی موجود نیست", "جای خالی اطلاعات رسمی را صفر یا وضعیت سبز تفسیر نکنید.", "warning", "برای دیدن الگوی تأیید، گفت‌وگوی نمایشی را باز کنید."],
+      loading: ["در حال بارگذاری", "هنوز پاسخی نرسیده است؛ عدد یا نتیجهٔ ساختگی نمایش داده نمی‌شود.", "info", "تا دریافت پاسخ، اقدام قفل است."],
+      error: ["منبع پاسخ نداد", "خطا با متن روشن ثبت شده؛ تلاش دوباره فقط در محیط عملیاتی و با مجوز انجام می‌شود.", "error", "نمونهٔ خطا اقدام تأیید ندارد."],
+      permission: ["دسترسی مجاز نیست", "دادهٔ محافظت‌شده نمایش داده نمی‌شود و اقدام باز نیست.", "warning", "مجوز لازم موجود نیست."],
+      offline: ["ارتباط قطع است", "نسخهٔ محلی ممکن است قدیمی باشد؛ تأیید حساس متوقف است.", "warning", "تا بازیابی اتصال، اقدام قفل است."],
+      conflict: ["تعارض نسخه", "پیش‌نویس محلی ۳ با نسخهٔ فعلی ۴ تفاوت دارد؛ ابتدا نسخهٔ فعلی را بخوانید.", "error", "بازبینی نسخه پیش از هر تأیید لازم است."],
+      success: ["بازبینی نمایشی کامل شد", "فقط تعامل نمونه انجام شد؛ داده یا وضعیت رسمی تغییر نکرد.", "success", "برای مرور دوباره، گفت‌وگو قابل باز شدن است."]
+    };
+    const state = document.getElementById("state"), feedback = document.getElementById("feedback");
+    const open = document.getElementById("open-dialog"), dialog = document.getElementById("review-dialog");
+    const close = document.getElementById("close-dialog"), confirm = document.getElementById("confirm");
+    const action = document.getElementById("confirm-action"), nav = document.getElementById("nav-links");
+    const toggle = document.getElementById("nav-toggle");
+    function render() {
+      const [title, description, tone, reason] = states[state.value];
+      document.body.dataset.state = state.value;
+      document.getElementById("feedback-title").textContent = title;
+      document.getElementById("feedback-text").textContent = description;
+      document.getElementById("action-reason").textContent = reason;
+      feedback.dataset.tone = tone;
+      feedback.setAttribute("role", state.value === "error" || state.value === "conflict" ? "alert" : "status");
+      open.disabled = ["loading", "error", "permission", "offline"].includes(state.value);
+      open.setAttribute("aria-busy", state.value === "loading" ? "true" : "false");
+    }
+    state.addEventListener("change", render);
+    open.addEventListener("click", () => { confirm.checked = false; action.disabled = true; document.getElementById("dialog-result").textContent = "تا بررسی صریح نسخه، اقدام غیرفعال است."; dialog.showModal(); close.focus(); });
+    confirm.addEventListener("change", () => { action.disabled = !confirm.checked; });
+    action.addEventListener("click", () => { document.getElementById("dialog-result").textContent = "تأیید نمایشی انجام شد؛ هیچ درخواستی صادر نشد."; action.disabled = true; });
+    close.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", () => open.focus());
+    toggle.addEventListener("click", () => { const expanded = toggle.getAttribute("aria-expanded") !== "true"; toggle.setAttribute("aria-expanded", String(expanded)); toggle.textContent = expanded ? "بستن فهرست بخش‌ها" : "باز کردن فهرست بخش‌ها"; nav.dataset.open = String(expanded); });
+    nav.addEventListener("click", (event) => { if (event.target.closest("a") && toggle.getAttribute("aria-expanded") === "true") toggle.click(); });
+    render();
+  </script>
+</body>
+</html>
