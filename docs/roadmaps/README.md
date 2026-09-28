@@ -6,7 +6,7 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.86.0` | V1.1، V1.2 و V2.x |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.87.0` | V1.1، V1.2 و V2.x |
 | Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` | هفت Stage Agent مدیریتی |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
@@ -20,7 +20,7 @@
 | Locked Product Baseline | `PMCS V1` |
 | Source baseline commit | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | Active planning line | `PMCS V1.1` |
-| V1.1 state | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | COL1 Connected | UX2 MS03 Project Chat Read` |
+| V1.1 state | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | COL1 Connected | UX2 MS04 Project Chat Send/Live/Offline` |
 | V1.1 branch | `v1.1-development` |
 | V1.1 repository start commit | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | V1.1 product code started | بله |
@@ -93,4 +93,5 @@
 | V1.1 COL1 MS05 | source `d9e327a3e04fb9d2ca22a403b6e84d612abfbaf3` / tree `5ab89f36cc93f832bbc752f3ce0c8416e18b1689` / Run 301 eight jobs green / MS06 next |
 | V1.1 COL1 MS06 | source `856089b4070ef4c8720aa01a4289139a9a0e4adc` / tree `f98685e0dc45acdff075420d9d0a92408e3a7593` / Run 304 eight jobs green / UX2 next |
 | V1.1 UX2 MS03 | source `282fc1726b332e4d060d4aae0c028017c00345ab` / tree `90351f1e7fb1691cb63366924ea648acfac4a2ec` / Run 313 eight jobs green / MS04 next |
+| V1.1 UX2 MS04 | source `c09fd37ecd674fe888ca52c6e369d504d19d4802` / tree `b0fd1056967d91e052c16c6157e1d8aa0f34e6ed` / Run 315 eight jobs green / MS05 next |
 | Active stage | `V1.1-UX2 — Product UI Implementation and Migration` |

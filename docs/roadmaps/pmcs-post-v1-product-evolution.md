@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.86.0`
+- نسخه سند: `1.87.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -957,6 +957,13 @@ UX2-MS03 روی source `282fc1726b332e4d060d4aae0c028017c00345ab` / tree
 `UX2-MS04` ارسال، دریافت زنده و بازیابی صف آفلاین در UI است؛ Reporting و
 Gateهای مهاجرت و Qualification بازند.
 
+UX2-MS04 روی source `c09fd37ecd674fe888ca52c6e369d504d19d4802` / tree
+`b0fd1056967d91e052c16c6157e1d8aa0f34e6ed` در Run 315
+(`36373439021`) هر هشت Job را پاس کرد. ارسال گروهی با Client ID و کلید
+Idempotency پایدار، بازیابی صف IndexedDB پس از اتصال، رویداد زنده و حذف
+پیام‌های قبلی پس از 403 در مرورگر واقعی تأیید شد. Exact Next `UX2-MS05`
+تعامل‌های محدود به پروژه و سپس Reporting اختصاصی است؛ Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1283,3 +1290,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.84.0` | UX2-MS01 نشان رسمی در Shell/Login با Run 306 و هشت Job سبز؛ MS02 و Gateهای Design System/مهاجرت/Visual Qualification باز |
 | `1.85.0` | UX2-MS02 Token/Focus/Reduced Motion/Mobile با Run 309 و هشت Job سبز؛ MS03 و Gateهای UX2 باز |
 | `1.86.0` | UX2-MS03 رابط خواندنی Chat گروه پروژه و موبایل با Run 313 و هشت Job سبز؛ MS04 ارسال/Live/Offline و Reporting/Gateهای UX2 باز |
+| `1.87.0` | UX2-MS04 ارسال/Live/بازیابی صف آفلاین Chat با Run 315 و هشت Job سبز؛ MS05 تعامل‌ها و Reporting/Gateهای UX2 باز |

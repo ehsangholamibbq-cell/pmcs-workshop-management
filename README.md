@@ -4,11 +4,11 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS03-C1`, source
-`282fc1726b332e4d060d4aae0c028017c00345ab`, Full CI Run 313 (8/8).
+Current safe checkpoint: `PMCS-V1.1-UX2-MS04-C1`, source
+`c09fd37ecd674fe888ca52c6e369d504d19d4802`, Full CI Run 315 (8/8).
 The official brand mark, shared tokens, focus, mobile navigation and scoped
-read-only project Chat are in UI; COL1 connected build remains closed with 63
-migrations. UX2-MS04 send/live/offline is next, then dedicated Reporting UI,
+project Chat with send/live/offline recovery are in UI; COL1 connected build
+remains closed with 63 migrations. UX2-MS05 Chat interactions is next, then dedicated Reporting UI,
 remaining UX2 migration, INT1/QA1 and their separate gates. Rollout
 flags remain off; PR #2 remains Draft. See the canonical reference and active roadmap.
 
