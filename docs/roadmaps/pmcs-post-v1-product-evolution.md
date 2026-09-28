@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.103.0`
+- نسخه سند: `1.104.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1096,6 +1096,13 @@ Legal Hold را تنها با دلیل، Revision، Idempotency و تأیید پ
 الزامی می‌کند. جست‌وجوی مانده و پاسخ به پیام پنهان‌شده پاک می‌شوند. Exact
 next `UX2-MS21` تاریخچهٔ محدود Revision/تعدیل است؛ تبدیل و Gateهای UX2 بازند.
 
+UX2-MS21 روی source `04ecceea75bdf7964949b13b15279614bcf647d6` / tree
+`bbad3b5bebf4e132a59f0afe3d9c93bde86eecdf` در Run 354
+(`36404623940`) هر هشت Job را پاس کرد. تاریخچه از مسیر مستقل و محدود
+برای نویسنده/ناظر خوانده می‌شود؛ عضو عادی کنترل ندارد، متن و دلیل در Timeline
+عمومی نیستند و 403 دادهٔ خصوصی و نما را پاک می‌کند. Exact next `UX2-MS22`
+اعلام مجوز تبدیل و lineage خواندنی است؛ فرم‌های شش مقصد و Gateهای UX2 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1439,3 +1446,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.101.0` | UX2-MS18 ویرایش پیام خود با Revision/Conflict و Run 348 هشت Job سبز؛ MS19 حذف نمایشی و Gateهای UX2 باز |
 | `1.102.0` | UX2-MS19 حذف نمایشی پیام خود با Revision/Legal Hold و Run 350 هشت Job سبز؛ MS20 تعدیل و Gateهای UX2 باز |
 | `1.103.0` | UX2-MS20 Redaction و Legal Hold با دلیل/Revision و Run 352 هشت Job سبز؛ MS21 تاریخچه و Gateهای UX2 باز |
+| `1.104.0` | UX2-MS21 تاریخچهٔ خصوصی Revision/تعدیل با Run 354 هشت Job سبز؛ MS22 مجوز تبدیل و lineage خواندنی باز |
