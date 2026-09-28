@@ -19,7 +19,8 @@ export type ProjectConversationView =
       readonly lastSequence: number; readonly canModerate: boolean;
       readonly canUpload: boolean; readonly canEditOwn: boolean; readonly canConvert: boolean;
       readonly canConvertAction: boolean; readonly canConvertIssue: boolean;
-      readonly canConvertRfi: boolean; readonly canConvertDailyFact: boolean }
+      readonly canConvertRfi: boolean; readonly canConvertDailyFact: boolean;
+      readonly canConvertEvidence: boolean }
   | { readonly kind: "unavailable" }
   | { readonly kind: "forbidden" };
 
@@ -41,6 +42,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
     canConvertIssue?: boolean;
     canConvertRfi?: boolean;
     canConvertDailyFact?: boolean;
+    canConvertEvidence?: boolean;
   };
   const lastSequence = roomValue.lastSequence;
   if (roomValue.projectId?.toLowerCase() !== projectId.toLowerCase() ||
@@ -53,10 +55,12 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
       (roomValue.canConvertIssue !== undefined && typeof roomValue.canConvertIssue !== "boolean") ||
       (roomValue.canConvertRfi !== undefined && typeof roomValue.canConvertRfi !== "boolean") ||
       (roomValue.canConvertDailyFact !== undefined && typeof roomValue.canConvertDailyFact !== "boolean") ||
+      (roomValue.canConvertEvidence !== undefined && typeof roomValue.canConvertEvidence !== "boolean") ||
       (roomValue.canConvertAction === true && roomValue.canConvert !== true) ||
       (roomValue.canConvertIssue === true && roomValue.canConvert !== true) ||
       (roomValue.canConvertRfi === true && roomValue.canConvert !== true) ||
-      (roomValue.canConvertDailyFact === true && roomValue.canConvert !== true)) {
+      (roomValue.canConvertDailyFact === true && roomValue.canConvert !== true) ||
+      (roomValue.canConvertEvidence === true && roomValue.canConvert !== true)) {
     throw new Error("محدوده گفت‌وگوی پروژه معتبر نیست.");
   }
 
@@ -91,5 +95,6 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   canConvertAction: roomValue.canConvertAction === true,
   canConvertIssue: roomValue.canConvertIssue === true,
   canConvertRfi: roomValue.canConvertRfi === true,
-  canConvertDailyFact: roomValue.canConvertDailyFact === true };
+  canConvertDailyFact: roomValue.canConvertDailyFact === true,
+  canConvertEvidence: roomValue.canConvertEvidence === true };
 }

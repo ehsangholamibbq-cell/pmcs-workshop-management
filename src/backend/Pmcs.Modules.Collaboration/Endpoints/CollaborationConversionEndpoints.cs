@@ -94,6 +94,16 @@ internal static partial class CollaborationEndpoints
             new ProjectMessageDocumentReference(item.Id, item.Sha256,
                 item.VersionNumber, item.OriginalFileName,
                 item.ContentType, item.SizeBytes)).ToArray();
+        if (request.DestinationType == "Evidence" && references.Length == 1)
+        {
+            var priorEvidence = await db.Conversions.AsNoTracking().Where(item =>
+                item.TenantId == actor.TenantId && item.ProjectId == projectId &&
+                item.MessageId == messageId && item.DestinationType == "Evidence")
+                .Select(item => item.DocumentReferencesJson).ToArrayAsync(cancellationToken);
+            if (priorEvidence.Any(json => (JsonSerializer.Deserialize<ProjectMessageDocumentReference[]>(json) ?? [])
+                    .Any(document => document.Id == references[0].Id)))
+                return Results.Conflict(new { code = "collaboration.conversion.evidence.source.already_created" });
+        }
         if (!await membership.IsActiveAsync(actor.TenantId, projectId, actor.UserId, cancellationToken) ||
             !await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
                 projectId, "collaboration.convert", cancellationToken))

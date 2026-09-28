@@ -2,6 +2,7 @@ import { CollaborationAccessError } from "./collaboration-events.ts";
 import { CollaborationRevisionConflict } from "./collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "./collaboration-room.ts";
 import type { DailyFactKind, DailyImpactLevel } from "./field-facts.ts";
+import type { ProjectMessageAttachment } from "./collaboration-attachments.ts";
 
 export interface ProjectMessageConversionLineage {
   readonly id: string;
@@ -388,6 +389,79 @@ export async function convertProjectMessageToDailyFact(apiBaseUrl: string, proje
       result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
       result.documents.length !== 0) {
     throw new Error("تأیید تبدیل واقعیت روزانهٔ رسمی معتبر نیست.");
+  }
+  return result;
+}
+
+export class CollaborationEvidenceSourceAlreadyExists extends Error {
+  constructor() { super("از این فایل پیام قبلاً Evidence رسمی ساخته شده است؛ تبار را تازه‌سازی کنید."); }
+}
+
+export class CollaborationEvidenceValidationError extends Error {
+  constructor() { super("فایل Released یا مقصد گزارش/واقعیت پذیرفته نشد."); }
+}
+
+const evidenceMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic",
+  "image/heif", "application/pdf"]);
+
+/** Converts exactly one attached Released file to official Evidence with preserved hash lineage. */
+export async function convertProjectMessageToEvidence(apiBaseUrl: string, projectId: string,
+  message: ProjectConversationMessage, actorUserId: string, attachment: ProjectMessageAttachment,
+  dailyReportId: string, dailyFactId: string | null,
+  destinationId: string, idempotencyKey: string): Promise<ProjectMessageConversionLineage> {
+  if (!guid(projectId) || !guid(message.id) || !guid(actorUserId) ||
+      !guid(destinationId) || !guid(idempotencyKey) || !guid(dailyReportId) ||
+      (dailyFactId !== null && !guid(dailyFactId)) ||
+      message.projectId.toLowerCase() !== projectId.toLowerCase() ||
+      !Number.isSafeInteger(message.revision) || message.revision < 1 ||
+      message.deletedAt || message.redactedAt ||
+      attachment.messageId?.toLowerCase() !== message.id.toLowerCase() ||
+      !guid(attachment.documentId) ||
+      !/^[0-9a-f]{64}$/iu.test(attachment.sha256) ||
+      !Number.isSafeInteger(attachment.versionNumber) || attachment.versionNumber < 1 ||
+      !Number.isSafeInteger(attachment.sizeBytes) || attachment.sizeBytes < 1 ||
+      attachment.sizeBytes > 25 * 1024 * 1024 ||
+      !evidenceMimeTypes.has(attachment.contentType) ||
+      typeof attachment.releasedAt !== "string" ||
+      !Number.isFinite(Date.parse(attachment.releasedAt))) {
+    throw new Error("مشخصات تبدیل فایل به Evidence معتبر نیست.");
+  }
+  const url = `${apiBaseUrl.replace(/\/$/u, "")}/api/v1/projects/${encodeURIComponent(projectId)}` +
+    `/collaboration/messages/${encodeURIComponent(message.id)}/conversions`;
+  const response = await fetch(url, {
+    method: "POST", cache: "no-store",
+    headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ destinationId, destinationType: "Evidence", baseRevision: message.revision,
+      confirmed: true, details: { dailyReportId, dailyFactId }, documentIds: [attachment.documentId] }),
+  });
+  if ([401, 403, 404].includes(response.status)) throw new CollaborationAccessError(response.status);
+  if (response.status === 409) {
+    const conflict = await response.json().catch(() => null) as { code?: string; currentRevision?: number } | null;
+    if (conflict?.code === "collaboration.message.revision.conflict") {
+      const revision = conflict.currentRevision;
+      throw new CollaborationRevisionConflict(Number.isSafeInteger(revision) && revision! > 0 ? revision! : null);
+    }
+    if (conflict?.code === "collaboration.conversion.evidence.source.already_created" ||
+        conflict?.code === "collaboration.conversion.destination_id.reused")
+      throw new CollaborationEvidenceSourceAlreadyExists();
+    throw new Error("تعارض در تبدیل رسمی؛ تبار پیام را بازخوانی کنید.");
+  }
+  if (response.status === 422) throw new CollaborationEvidenceValidationError();
+  if (![200, 201].includes(response.status)) throw new Error("ثبت Evidence رسمی کامل نشد.");
+  const result = await response.json() as ProjectMessageConversionLineage;
+  const document = result?.documents?.[0];
+  if (!validLineage(result, message.id) || result.destinationType !== "Evidence" ||
+      result.destinationId.toLowerCase() !== destinationId.toLowerCase() ||
+      result.messageRevision !== message.revision ||
+      result.confirmedBy.toLowerCase() !== actorUserId.toLowerCase() ||
+      result.documents.length !== 1 ||
+      document?.id.toLowerCase() !== attachment.documentId.toLowerCase() ||
+      document?.sha256.toLowerCase() !== attachment.sha256.toLowerCase() ||
+      document?.versionNumber !== attachment.versionNumber ||
+      document?.fileName !== attachment.originalFileName ||
+      document?.contentType !== attachment.contentType ||
+      document?.sizeBytes !== attachment.sizeBytes) {
+    throw new Error("تأیید Evidence و تبار فایل معتبر نیست.");
   }
   return result;
 }

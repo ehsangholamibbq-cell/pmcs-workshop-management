@@ -1078,3 +1078,93 @@ test("Daily Fact conversion selects a scoped Draft and active location, rebases 
   await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
   await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
 });
+
+test("Evidence conversion binds one Released file hash to a report fact and rejects reuse after reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const factId = "10000000-0000-4000-8000-000000000072";
+  let canConvertEvidence = false;
+  let revision = 2;
+  let body = "مدرک اولیهٔ کارگاه";
+  let revoked = false;
+  let evidence: Record<string, unknown> | null = null;
+  let posts = 0;
+  const file = { messageId, documentId, originalFileName: "site.pdf", contentType: "application/pdf",
+    sizeBytes: 100, sha256: "a".repeat(64), versionNumber: 1, classification: "Internal",
+    retentionPolicy: "Standard", legalHold: false, releasedAt: "2026-09-28T00:01:00Z",
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${documentId}/content` };
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertEvidence }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([file]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: reportId, projectId, reportDate: "2099-01-03", locationName: "کارگاه", status: "Draft", revision: 2 },
+    ]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports/${reportId}`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      id: reportId, projectId, reportDate: "2099-01-03", status: "Draft", revision: 2,
+      facts: [{ id: factId, description: "مشاهدهٔ بتن‌ریزی" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(evidence ? [evidence] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number; confirmed: boolean;
+        documentIds: string[]; details: { dailyReportId: string; dailyFactId: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Evidence");
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details).toEqual({ dailyReportId: reportId, dailyFactId: factId });
+      expect(request.baseRevision).toBe(revision);
+      expect(request.confirmed).toBe(true);
+      if (posts === 1) {
+        revision = 3; body = "نسخهٔ تازهٔ مدرک";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      evidence = { id: "10000000-0000-4000-8000-000000000025", messageId,
+        messageRevision: revision, destinationType: "Evidence", destinationId: request.destinationId,
+        destinationReference: "EVD-001", documents: [{ id: documentId, sha256: file.sha256,
+          versionNumber: 1, fileName: "site.pdf", contentType: "application/pdf", sizeBytes: 100 }],
+        confirmedBy: userId, confirmedAt: "2026-09-28T00:02:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(evidence) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" })).toHaveCount(0);
+  canConvertEvidence = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" }).click();
+  const form = page.getByRole("region", { name: "تبدیل فایل پیام به مدرک رسمی" });
+  await expect(form.getByText(`هش منبع:`, { exact: false })).toBeVisible();
+  await form.getByLabel("واقعیت روزانه، اختیاری").selectOption(factId);
+  await form.getByRole("checkbox", { name: /تبدیل همین فایل به مدرک رسمی/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت مدرک رسمی" }).click();
+  await expect(form.getByText("نسخهٔ پیام تغییر کرده است؛ فایل و نسخهٔ تازه", { exact: false })).toBeVisible();
+  await form.getByRole("button", { name: "تبدیل مدرک بر پایهٔ نسخهٔ تازه" }).click();
+  await form.getByRole("checkbox", { name: /تبدیل همین فایل به مدرک رسمی/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت مدرک رسمی" }).click();
+  await expect(form.getByText("مدرک رسمی با ارجاع EVD-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" }).click();
+  await expect(page.getByText("برای تبدیل، یک فایل آزادشده تبدیل‌نشده", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});

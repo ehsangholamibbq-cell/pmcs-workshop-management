@@ -6,6 +6,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { ProjectRfiConversion } from "@/components/project-rfi-conversion";
 import { ProjectDailyFactConversion } from "@/components/project-daily-fact-conversion";
+import { ProjectEvidenceConversion } from "@/components/project-evidence-conversion";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import {
   loadProjectConversation, type ProjectConversationMessage, type ProjectConversationView,
@@ -620,6 +621,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         onChanged={() => setRefresh((value) => value + 1)} />}
                     {view.canConvertDailyFact && !message.deletedAt && !message.redactedAt &&
                       <ProjectDailyFactConversion projectId={projectId} message={message}
+                        tenantId={session.tenantId} actorUserId={session.userId}
+                        onAccessLoss={closeRestrictedConversation}
+                        onChanged={() => setRefresh((value) => value + 1)} />}
+                    {view.canConvertEvidence && !message.deletedAt && !message.redactedAt &&
+                      <ProjectEvidenceConversion projectId={projectId} message={message}
                         tenantId={session.tenantId} actorUserId={session.userId}
                         onAccessLoss={closeRestrictedConversation}
                         onChanged={() => setRefresh((value) => value + 1)} />}

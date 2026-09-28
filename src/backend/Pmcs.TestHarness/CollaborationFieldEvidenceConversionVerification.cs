@@ -25,8 +25,10 @@ internal static partial class Program
         Record(assertions, "collaboration.field.fact-effective-capability",
             supervisorRoom.StatusCode == HttpStatusCode.OK &&
             supervisorRoom.Payload.GetProperty("canConvertDailyFact").GetBoolean() &&
+            supervisorRoom.Payload.GetProperty("canConvertEvidence").GetBoolean() &&
             observerRoom.StatusCode == HttpStatusCode.OK &&
-            !observerRoom.Payload.GetProperty("canConvertDailyFact").GetBoolean(),
+            !observerRoom.Payload.GetProperty("canConvertDailyFact").GetBoolean() &&
+            !observerRoom.Payload.GetProperty("canConvertEvidence").GetBoolean(),
             $"supervisor={(int)supervisorRoom.StatusCode};observer={(int)observerRoom.StatusCode}");
         var message = await SendAsync(client, key, supervisor, HttpMethod.Post,
             $"{path}/messages", new
@@ -122,6 +124,14 @@ internal static partial class Program
                 baseRevision = 1, confirmed = true, documentIds = new[] { documentId },
                 details = new { dailyReportId = reportId, dailyFactId = factId }
             }, "qa-col1-field-evidence");
+        var evidenceDuplicate = await SendAsync(client, key, supervisor, HttpMethod.Post,
+            $"{path}/messages/{messageId}/conversions", new
+            {
+                destinationId = Guid.Parse("ca110000-0000-4000-8000-000000000407"),
+                destinationType = "Evidence", baseRevision = 1, confirmed = true,
+                documentIds = new[] { documentId },
+                details = new { dailyReportId = reportId, dailyFactId = factId }
+            }, "qa-col1-field-evidence-duplicate");
         var official = await SendAsync(client, key, observer, HttpMethod.Get,
             $"/api/v1/projects/{projectId}/evidence/{evidenceId}");
         var before = await DownloadFileAsync(client, key, observer,
@@ -137,6 +147,9 @@ internal static partial class Program
             $"{path}/messages/{messageId}/conversions");
         Record(assertions, "collaboration.field.official-evidence-lineage-and-tombstone",
             evidence.StatusCode == HttpStatusCode.Created &&
+            evidenceDuplicate.StatusCode == HttpStatusCode.Conflict &&
+            evidenceDuplicate.Payload.GetProperty("code").GetString() ==
+                "collaboration.conversion.evidence.source.already_created" &&
             official.StatusCode == HttpStatusCode.OK &&
             HasGuid(official.Payload, "sourceMessageId", messageId) &&
             HasGuid(official.Payload, "sourceDocumentId", documentId) &&
@@ -147,7 +160,7 @@ internal static partial class Program
             after.StatusCode == HttpStatusCode.OK && after.Bytes.SequenceEqual(bytes) && after.NoStore &&
             chatAfter.StatusCode == HttpStatusCode.NotFound &&
             lineage.StatusCode == HttpStatusCode.OK && lineage.Payload.GetArrayLength() == 2,
-            $"evidence={(int)evidence.StatusCode};official={(int)official.StatusCode};before={(int)before.StatusCode};delete={(int)deleted.StatusCode};after={(int)after.StatusCode};lineage={(int)lineage.StatusCode}");
+            $"evidence={(int)evidence.StatusCode};duplicate={(int)evidenceDuplicate.StatusCode};official={(int)official.StatusCode};before={(int)before.StatusCode};delete={(int)deleted.StatusCode};after={(int)after.StatusCode};lineage={(int)lineage.StatusCode}");
         return Report(assertions);
 
         static int Report(List<VerificationAssertion> assertions)

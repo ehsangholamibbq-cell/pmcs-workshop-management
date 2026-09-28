@@ -82,9 +82,14 @@ internal static partial class CollaborationEndpoints
             actor.UserId, projectId, "technical.rfis.create", cancellationToken);
         var canConvertDailyFact = canConvert && await permissions.HasProjectPermissionAsync(actor.TenantId,
             actor.UserId, projectId, "field.daily-reports.capture", cancellationToken);
+        var canConvertEvidence = canConvert &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "evidence.upload", cancellationToken) &&
+            await permissions.HasProjectPermissionAsync(actor.TenantId, actor.UserId,
+                projectId, "documents.read", cancellationToken);
         return Results.Ok(new ProjectRoomResponse(projectId, projectId, last,
             canModerate, canUpload, canEditOwn, canConvert, canConvertAction, canConvertIssue,
-            canConvertRfi, canConvertDailyFact));
+            canConvertRfi, canConvertDailyFact, canConvertEvidence));
     }
 
     private static async Task<IResult> ListMessagesAsync(
@@ -256,7 +261,8 @@ internal sealed record SendProjectMessageRequest(Guid ClientMessageId, string? B
     Guid? ReplyToMessageId = null, Guid[]? MentionedUserIds = null);
 internal sealed record ProjectRoomResponse(Guid Id, Guid ProjectId, long LastSequence,
     bool CanModerate, bool CanUpload, bool CanEditOwn, bool CanConvert,
-    bool CanConvertAction, bool CanConvertIssue, bool CanConvertRfi, bool CanConvertDailyFact);
+    bool CanConvertAction, bool CanConvertIssue, bool CanConvertRfi, bool CanConvertDailyFact,
+    bool CanConvertEvidence);
 internal sealed record ProjectMessageResponse(Guid Id, Guid ProjectId, long Sequence,
     Guid AuthorUserId, Guid ClientMessageId, string Body, DateTimeOffset CreatedAt,
     Guid? ReplyToMessageId, IReadOnlyList<Guid> MentionedUserIds,

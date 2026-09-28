@@ -5,10 +5,13 @@ import { CollaborationActionValidationError, CollaborationIssueAlreadyExists,
   CollaborationIssueValidationError, CollaborationRfiAlreadyExists, CollaborationRfiValidationError,
   CollaborationDailyFactAlreadyExists, CollaborationDailyFactTargetConflict,
   CollaborationDailyFactValidationError, convertProjectMessageToDailyFact,
+  CollaborationEvidenceSourceAlreadyExists, CollaborationEvidenceValidationError,
+  convertProjectMessageToEvidence,
   convertProjectMessageToAction, convertProjectMessageToIssue, convertProjectMessageToRfi,
   loadProjectMessageConversions } from "../lib/collaboration-conversions.ts";
 import { CollaborationRevisionConflict } from "../lib/collaboration-interactions.ts";
 import type { ProjectConversationMessage } from "../lib/collaboration-room.ts";
+import type { ProjectMessageAttachment } from "../lib/collaboration-attachments.ts";
 
 const projectId = "10000000-0000-4000-8000-000000000001";
 const messageId = "10000000-0000-4000-8000-000000000011";
@@ -104,6 +107,64 @@ test("confirmed Daily Fact appends to one Draft report revision with stable iden
       actor, { ...details, kind: "Labor", resourceCount: 0 }, destinationId, key), /مشخصات تبدیل/u);
     await assert.rejects(convertProjectMessageToDailyFact("/api/pmcs", projectId,
       { ...message, projectId: reportId }, actor, details, destinationId, key), /مشخصات تبدیل/u);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("confirmed Evidence preserves one Released chat document hash and checks the owner response", async () => {
+  const previous = globalThis.fetch;
+  const actor = "10000000-0000-4000-8000-000000000041";
+  const destinationId = "10000000-0000-4000-8000-000000000035";
+  const key = "10000000-0000-4000-8000-000000000065";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const factId = "10000000-0000-4000-8000-000000000072";
+  const message = { id: messageId, projectId, revision: 2, deletedAt: null, redactedAt: null,
+    body: "مدرک کارگاه" } as ProjectConversationMessage;
+  const attachment = { messageId, documentId: item.documents[0].id,
+    originalFileName: item.documents[0].fileName, contentType: "application/pdf",
+    sizeBytes: 100, sha256: "a".repeat(64), versionNumber: 1,
+    releasedAt: "2026-09-28T00:01:00Z" } as ProjectMessageAttachment;
+  const response = { ...item, destinationType: "Evidence", destinationId,
+    destinationReference: "EVD-001", confirmedBy: actor };
+  try {
+    let payload: unknown;
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), new RegExp(`${messageId}/conversions$`, "u"));
+      assert.equal(init?.method, "POST");
+      assert.equal(new Headers(init?.headers).get("Idempotency-Key"), key);
+      payload = JSON.parse(String(init?.body)) as unknown;
+      return Response.json(response, { status: 201 });
+    };
+    assert.equal((await convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, factId, destinationId, key)).destinationType, "Evidence");
+    assert.deepEqual(payload, { destinationId, destinationType: "Evidence", baseRevision: 2,
+      confirmed: true, details: { dailyReportId: reportId, dailyFactId: factId },
+      documentIds: [attachment.documentId] });
+    globalThis.fetch = async () => Response.json({ code: "collaboration.message.revision.conflict",
+      currentRevision: 3 }, { status: 409 });
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, null, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationRevisionConflict && error.currentRevision === 3);
+    globalThis.fetch = async () => Response.json({ code: "collaboration.conversion.evidence.source.already_created" },
+      { status: 409 });
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, factId, destinationId, key), CollaborationEvidenceSourceAlreadyExists);
+    globalThis.fetch = async () => new Response(null, { status: 422 });
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, factId, destinationId, key), CollaborationEvidenceValidationError);
+    globalThis.fetch = async () => Response.json({ ...response,
+      documents: [{ ...item.documents[0], sha256: "b".repeat(64) }] }, { status: 201 });
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, factId, destinationId, key), /تبار فایل/u);
+    globalThis.fetch = async () => new Response(null, { status: 403 });
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, attachment, reportId, factId, destinationId, key), (error: unknown) =>
+        error instanceof CollaborationAccessError && error.status === 403);
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, { ...attachment, contentType: "text/plain" }, reportId, factId, destinationId, key),
+    /مشخصات تبدیل/u);
+    await assert.rejects(convertProjectMessageToEvidence("/api/pmcs", projectId, message,
+      actor, { ...attachment, messageId: reportId }, reportId, factId, destinationId, key),
+    /مشخصات تبدیل/u);
   } finally { globalThis.fetch = previous; }
 });
 
