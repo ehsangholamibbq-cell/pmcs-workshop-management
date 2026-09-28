@@ -63,7 +63,9 @@ test("project bootstrap preview shows conflicts and blocks execution before conf
   await page.getByLabel("شرح کوتاه").fill("مقصد مستقل آزمایشی برای سنجش پیش‌نمایش");
   await page.locator(".bootstrap-form-grid .checkbox-row input").check();
   await page.getByRole("button", { name: "مرحله بعد" }).click();
+  await expect(page.getByRole("heading", { name: "چه چیزهایی بررسی و منتقل شوند؟" })).toBeVisible();
   await page.getByRole("button", { name: "مرحله بعد" }).click();
+  await expect(page.getByRole("heading", { name: "اعضای انتخاب‌شده و نقش مقصد" })).toBeVisible();
   await page.getByRole("button", { name: "ایجاد مقصد پیش‌نویس و نمایش پیش‌نمایش" }).click();
 
   await expect(page.getByRole("heading", { name: "پیش‌نمایش انتقال" })).toBeVisible();
