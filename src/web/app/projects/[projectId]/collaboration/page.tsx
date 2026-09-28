@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProjectCollaboration } from "@/components/project-collaboration";
+import "./collaboration-layout.css";
 
 export const metadata = { title: "گفت‌وگوی پروژه | سامانه مدیریت پروژه" };
 

@@ -60,6 +60,8 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
 
   await page.goto(`${projectPath}/collaboration`);
   await expect(page.getByRole("heading", { name: "گفت‌وگو در این پروژه در دسترس نیست" })).toBeVisible();
+  await expect.poll(() => page.locator(".collaboration-shell .sidebar").evaluate((element) =>
+    element.getBoundingClientRect().height)).toBeLessThan(120);
   await capture(page, "22-project-chat-default-off.png");
 
   // The preceding full project visit loads many independent API panels. Allow the
