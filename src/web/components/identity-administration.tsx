@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   changeTenantRole,
@@ -106,6 +107,7 @@ function IdentityAdministrationContent() {
         </nav>
         <SessionBadge />
       </aside>
+      <MobileNavigationHint />
 
       <section className="workspace identity-workspace">
         <header className="topbar">

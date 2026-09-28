@@ -16,6 +16,7 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await expect(page.getByRole("link", { name: "ورود به مرکز فرمان پروژه" })).toBeVisible();
   await captureVisualBaseline(page, "03-portfolio");
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
   await captureVisualBaseline(page, "20-mobile-portfolio");
   await page.setViewportSize({ width: 1440, height: 900 });
 
@@ -49,18 +50,21 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await captureVisualBaseline(page, "28-tablet-project");
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
   await captureVisualBaseline(page, "21-mobile-project");
 
   await page.goto(`${projectPath}/collaboration`);
   await expect(page.getByRole("heading", { name: "گفت‌وگو در این پروژه در دسترس نیست" })).toBeVisible();
   await expect.poll(() => page.locator(".collaboration-shell .sidebar").evaluate((element) =>
     element.getBoundingClientRect().height)).toBeLessThan(120);
+  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
   await captureVisualBaseline(page, "22-project-chat-default-off");
 
   await page.goto(`${projectPath}/reports`);
   await expect(page.getByRole("heading", { name: "گزارش‌گیری در این پروژه در دسترس نیست" })).toBeVisible();
   await expect.poll(() => page.locator(".reporting-shell .sidebar").evaluate((element) =>
     element.getBoundingClientRect().height)).toBeLessThan(120);
+  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
   await captureVisualBaseline(page, "23-project-reporting-default-off");
 
   await page.goto("/portfolio/reports");

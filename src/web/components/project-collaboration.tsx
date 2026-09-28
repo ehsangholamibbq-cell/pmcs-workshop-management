@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { ProjectRfiConversion } from "@/components/project-rfi-conversion";
 import { ProjectDailyFactConversion } from "@/components/project-daily-fact-conversion";
@@ -391,6 +392,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         </nav>
         <SessionBadge />
       </aside>
+      <MobileNavigationHint />
       <section className="workspace collaboration-workspace" aria-labelledby="conversation-title">
         <header className="topbar">
           <div>

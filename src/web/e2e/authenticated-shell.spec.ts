@@ -104,6 +104,8 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   }
 
   const mobileSidebar = page.locator(".sidebar");
+  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
+  await expect(page.locator(".mobile-nav-hint")).toContainText("نوار بالا را به چپ بکشید");
   await expect.poll(() => mobileSidebar.evaluate((element) =>
     element.scrollWidth > element.clientWidth)).toBe(true);
   const profileNavigation = mobileSidebar.getByRole("link", { name: "پروفایل من" });

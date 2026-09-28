@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ProjectFeatureState, ProjectOperationalStatus } from "@/lib/command-center";
 import { currencyLabel, formatAmountFa, toUserMessage } from "@/lib/localization";
@@ -108,6 +109,7 @@ function PortfolioDashboardContent() {
         </div>
         <SessionBadge />
       </aside>
+      <MobileNavigationHint />
 
       <section className="workspace portfolio-workspace">
         <header className="topbar portfolio-topbar">

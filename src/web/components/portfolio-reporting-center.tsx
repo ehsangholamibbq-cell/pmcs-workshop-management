@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { scopedStorageKey } from "@/lib/field-database";
@@ -135,6 +136,7 @@ function PortfolioReportingContent() {
       </nav>
       <SessionBadge />
     </aside>
+    <MobileNavigationHint />
     <section className="workspace reporting-workspace" aria-labelledby="portfolio-reporting-title">
       <header className="topbar">
         <div><p className="eyebrow">گزارش معتبر در محدودهٔ سازمان</p>

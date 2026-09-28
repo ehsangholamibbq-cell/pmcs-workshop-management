@@ -1382,6 +1382,10 @@ textarea {
   scrollbar-color: var(--brand-silver-400) var(--brand-navy-900);
 }
 
+.mobile-nav-hint {
+  display: none;
+}
+
 .brand-mark {
   width: 3.25rem;
   height: 3.25rem;
@@ -3762,6 +3766,18 @@ output {
 }
 
 @media (max-width: 620px) {
+  .mobile-nav-hint {
+    display: block;
+    margin: 0;
+    padding: 0.45rem 1rem;
+    color: var(--brand-navy-800);
+    background: var(--surface-subtle);
+    border-bottom: 1px solid var(--border-default);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
   .workspace {
     min-width: 0;
     padding: 1.2rem 0.75rem 4rem;

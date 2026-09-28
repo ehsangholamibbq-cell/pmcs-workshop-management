@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { listDailyReports, type DailyReportSummary } from "@/lib/daily-reports";
@@ -174,6 +175,7 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
       </nav>
       <SessionBadge />
     </aside>
+    <MobileNavigationHint />
     <section className="workspace reporting-workspace" aria-labelledby="reporting-title">
       <header className="topbar">
         <div><p className="eyebrow">خروجی‌های معتبر در محدودهٔ همین پروژه</p>

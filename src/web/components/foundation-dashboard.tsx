@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
+import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
 import {
   getCommandCenter,
   recalculateProjectState,
@@ -292,6 +293,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         </div>
         <SessionBadge />
       </aside>
+      <MobileNavigationHint />
 
       <section className="workspace">
         <header className="topbar">
