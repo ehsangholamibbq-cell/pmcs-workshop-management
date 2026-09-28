@@ -75,6 +75,9 @@ internal sealed class ProjectChatTechnicalConversionDestination(
                 $"pmcs:chat-document:{command.MessageId:N}:{source.Id:N}:v{source.VersionNumber}",
                 source.Sha256, null, command.ActorUserId, command.At);
             db.Documents.Add(document);
+            // The domain carries the document ID without an EF navigation;
+            // persist the parent first so PostgreSQL can enforce the revision FK.
+            await db.SaveChangesAsync(cancellationToken);
             db.DocumentRevisions.Add(revision);
             result = new ProjectMessageConversionResult(document.Id,
                 "TechnicalDocument", document.Number);
