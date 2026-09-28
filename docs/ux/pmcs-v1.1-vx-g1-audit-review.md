@@ -57,3 +57,8 @@ MS41 documentation Run 405 نیز هشت Job سبز شد و Safe است. MS42 So
 MS42 documentation Run 407 سبز و Safe شد. MS43 correction Run 409 با
 PDF A4 یک‌صفحه‌ای و Artifact ۴۴تایی معتبر، Gap چاپ مرورگر را در نمونهٔ
 مرکز فرمان کاهش داد؛ CI مستندات شرط پذیرش MS43 و Print Golden کلی باز است.
+
+MS43 documentation Run 410 هشت Job سبز و Safe شد. MS44 یک بستهٔ Prototype
+مستقل برای مقایسهٔ قلم و مرور حالت‌های نماینده ایجاد کرد؛ این بسته به ۴۴
+Capture مسیرهای فعال یا وضعیت `VX-G1` دست نمی‌زند. اصلاح خوانایی نشان و
+شواهد Tablet در correction MS44 است؛ `VX-G3/G4/G5` بازند.

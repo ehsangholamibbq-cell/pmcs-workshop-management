@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.126.0`
+- نسخه سند: `1.127.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1362,6 +1362,22 @@ Job سبز و PDF یک‌صفحه‌ای A4 داشت؛ بازبینی محتوا
 شدند. CI مستندات شرط پذیرش MS43 است. Exact next `UX2-MS44` بستهٔ Prototype/Review
 برای `VX-G3` و مقایسهٔ فونت Web/Print است؛ `VX-G3/G4/G5` بازند.
 
+UX2-MS43 documentation `6e94fcd861a01e7ac2ab4633942f1d57d3c68d57`
+در Run 410 هر هشت Job را پاس کرد و `PMCS-V1.1-UX2-MS43-C1` Safe شد.
+MS44 Prototype مستقل را با ۱۰ سناریو × ۷ حالت، سه قلم و خروجی مقایسه‌ای
+Desktop/Tablet/Mobile/A4 به `docs/ux/prototypes/ms44/` افزود. فایل‌های
+WOFF2 دو قلم با منشأ، مجوز OFL و SHA ثابت فقط در Review هستند؛ انتخاب قلم
+و manifest تولیدی باز مانده‌اند. Source initial
+`c58bf12830ab1bd36c5197cd5309860d8ac4c30d` / tree
+`ab824ee527b3e156b3beea51f746a8b9da4b0fe1` در Run 411 هشت Job
+سبز و Artifact معتبر داشت، ولی بازبینی تصویر لوگوی کم‌خوانا را یافت.
+Correction `efba632036098ca3e5dabab81ba5770c3561929e` / tree
+`6e6de8594fda086a8b8ce0a6c12bcccac02b38f0` سطح روشن نشان، نماد رسمی
+Mobile و شواهد Tablet را افزود. Run 412 (`36485197274`) هشت Job سبز و
+Artifact `10998892196` با ۱۱ فایل و PDFهای A4 یک‌صفحه‌ای معتبر و بازبینی‌شده
+دارد؛ CI مستندات شرط پذیرش MS44 است. Exact next `UX2-MS45` تمرین PDF/XLSX دو قلم و تکمیل Stateهای
+Component برای `VX-G3` است؛ `VX-G3/G4/G5` همچنان بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1728,3 +1744,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.124.0` | UX2-MS40 documentation Run 403 هشت Job سبز و Safe؛ UX2-MS41 Navigation موبایل در شش Shell و آزمون keyboard/۳۲۰ پیکسل، Run 404 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS42 Loading صادق و Gateهای G3/G4/G5 باز |
 | `1.125.0` | UX2-MS41 documentation Run 405 هشت Job سبز و Safe؛ UX2-MS42 Skeleton خنثای Loading سبد بدون Fact ساختگی، Source Run 406 هشت Job سبز و Artifact ۴۴تایی بازبینی‌شده؛ CI مستندات شرط اعتبار، MS43 Print System و Gateهای G3/G4/G5 باز |
 | `1.126.0` | UX2-MS42 documentation Run 407 هشت Job سبز و Safe؛ UX2-MS43 برگهٔ چاپ محدود/قرارداد Print System، Run 408 متن NoSnapshot را آشکار و correction Run 409 هشت Job سبز/PDF یک‌صفحه‌ای بازبینی‌شده؛ CI مستندات شرط اعتبار، MS44 Prototype/Font review و Gateهای G3/G4/G5 باز |
+| `1.127.0` | UX2-MS43 documentation Run 410 هشت Job سبز و Safe؛ UX2-MS44 Prototype مستقل با ۱۰ سناریو × ۷ حالت و مقایسهٔ دو قلم OFL، initial Run 411 و correction خوانایی نشان/Tablet در Run 412 هر دو هشت Job سبز؛ Artifact ۱۱فایلی/PDF A4 بازبینی‌شده، CI مستندات شرط اعتبار، G3/G4/G5 و انتخاب فونت باز |

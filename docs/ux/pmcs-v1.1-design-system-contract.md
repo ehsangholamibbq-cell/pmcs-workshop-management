@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.6`
+- نسخه Candidate: `1.0.0-rc.7`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -136,6 +136,12 @@ Reporting جدا می‌کند. برگهٔ نمونه فقط Snapshot مجاز �
 نگه می‌دارد، در حالی که انتخاب/نام فایل/حذف انتخاب و Focus در UI فارسی
 نمایش داده می‌شود. Captureهای 18/44 و Run 402 شواهد همین سطح‌اند؛ مهاجرت
 سایر ورودی‌های فایل و Qualification سراسری Component هنوز باز است.
+
+در UX2-MS44، `PMCS-UX-PROTOTYPE-REVIEW-001` یک نمونهٔ مستقل برای بازبینی
+۱۰ سناریو و ۷ State مرتبط، Desktop/Tablet/Mobile، و قلم Web/Print می‌دهد.
+دو قلم خودمیزبان فقط در Prototype قرار دارند؛ این مشاهده انتخاب نهایی،
+مهاجرت Routeهای فعال یا تأیید بصری مالک نیست. شرط `VX-G3` تکمیل Contract
+همهٔ Stateهای لازم، نقد Prototype و تصمیم قلم است؛ `VX-G4/G5` جدا می‌مانند.
 
 ## ۷. Login Experience Contract
 

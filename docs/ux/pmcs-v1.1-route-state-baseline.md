@@ -1,7 +1,7 @@
 # PMCS V1.1 — Active Route and State Screenshot Baseline
 
 - شناسه: `PMCS-UX-VX-G1-BASELINE-001`
-- مرحله: `UX2-MS43`؛ MS42 Runهای 406/407 موفق و Safe، source MS43 Run 408/PDF و correction Run 409 و CI مستندات شرط اعتبار
+- مرحله: `UX2-MS44`؛ MS43 Runهای 409/410 موفق و Safe؛ Prototype مستقل MS44 افزوده شد، baseline فعال ۴۴ تصویر همان inventory است
 - مرجع اجرایی ماشین‌خوان: `src/web/e2e/visual-baseline.json`
 - محدوده: Source فعال Web، tenant و پروژهٔ QA مجزا، Chromium، فارسی/RTL، `Asia/Tehran`
 - Runtime business rule، Feature Flag و Migration: بدون تغییر
