@@ -30,6 +30,7 @@ test("MS44 independent review prototype covers scenarios, states, font files, mo
   await page.goto(pathToFileURL(prototype).href);
   await expect(page.getByRole("heading", { name: "PMCS · بازبینی UX2-MS44" })).toBeVisible();
   expect(await page.locator(".side img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  expect(await page.locator(".side img").evaluate((image: HTMLImageElement) => getComputedStyle(image).backgroundColor)).toBe("rgb(251, 248, 241)");
   for (const scenario of scenarios) {
     await page.locator("#scenario").selectOption(scenario);
     for (const state of states) {
@@ -48,12 +49,20 @@ test("MS44 independent review prototype covers scenarios, states, font files, mo
     expect(await page.evaluate((value) => document.fonts.check(`400 16px "${value}"`), family)).toBe(true);
     await record(`${name}-command-desktop.png`, await page.screenshot({ fullPage: true, animations: "disabled" }));
     await record(`${name}-command-print.pdf`, await page.pdf({ format: "A4", preferCSSPageSize: true, printBackground: true }));
+    await page.setViewportSize({ width: 768, height: 1024 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await record(`${name}-command-tablet.png`, await page.screenshot({ fullPage: true, animations: "disabled" }));
     await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(() => page.locator(".side img").evaluate((image: HTMLImageElement) =>
+      image.currentSrc.endsWith("bbq-official-symbol.png") && image.naturalWidth > 0)).toBe(true);
     await record(`${name}-command-mobile.png`, await page.screenshot({ fullPage: true, animations: "disabled" }));
     await page.setViewportSize({ width: 1440, height: 900 });
   }
   await page.locator("#font").selectOption("baseline");
   await record("baseline-command-desktop.png", await page.screenshot({ fullPage: true, animations: "disabled" }));
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await record("baseline-command-tablet.png", await page.screenshot({ fullPage: true, animations: "disabled" }));
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator("#scenario").selectOption("portfolio");
   await page.locator("#state").selectOption("error");
   await record("baseline-portfolio-error.png", await page.screenshot({ fullPage: true, animations: "disabled" }));
