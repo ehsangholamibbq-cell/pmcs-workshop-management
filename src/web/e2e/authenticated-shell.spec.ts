@@ -32,6 +32,22 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect(page.getByRole("heading", { name: "مرکز فرمان پروژه" })).toBeVisible();
   await expect(page.getByText("پروژه نمونه ساختمان اداری–تجاری")).toBeVisible();
 
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const sidebar = page.locator(".sidebar");
+  const mark = sidebar.locator(".brand-mark");
+  await expect(mark).toBeVisible();
+  await expect.poll(() => mark.evaluate((element) => element.getBoundingClientRect().height))
+    .toBeGreaterThan(48);
+  await expect.poll(() => sidebar.evaluate((element) => element.scrollHeight > element.clientHeight))
+    .toBe(true);
+  const lastNavigation = sidebar.getByRole("link", { name: "ظاهر صفحه ورود" });
+  await lastNavigation.focus();
+  await expect(lastNavigation).toBeInViewport();
+  await expect(lastNavigation).toHaveCSS("outline-style", "solid");
+  await expect.poll(() => sidebar.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await captureVisualBaseline(page, "39-desktop-navigation-end");
+  await sidebar.evaluate((element) => { element.scrollTop = 0; });
+
   const calendarTrigger = page.getByRole("button", { name: "باز کردن تقویم شمسی" }).first();
   await calendarTrigger.click();
   const calendar = page.getByRole("dialog", { name: "انتخاب تاریخ شمسی" });
@@ -46,6 +62,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
     { width: 1440, height: 900 },
     { width: 820, height: 1180 },
     { width: 390, height: 844 },
+    { width: 320, height: 720 },
   ]) {
     await page.setViewportSize(viewport);
     await expect.poll(() => page.evaluate(() => ({
@@ -64,6 +81,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await page.keyboard.press("Shift+Tab");
   await expect(profileNavigation).toHaveCSS("outline-style", "solid");
   await expect(profileNavigation).toHaveCSS("white-space", "nowrap");
+  await expect(profileNavigation).toBeInViewport();
 });
 
 test("loading and failure states stay explicit and localized", async ({ page }) => {
