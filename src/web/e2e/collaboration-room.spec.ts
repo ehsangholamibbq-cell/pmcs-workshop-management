@@ -794,7 +794,7 @@ test("confirmed Action conversion rebases on revision conflict and never duplica
   await page.reload();
   await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
   await page.getByLabel("عنوان اقدام").fill("اقدام تأییدشده");
-  await page.getByLabel("اولویت").selectOption("High");
+  await page.getByRole("combobox", { name: /^اولویت/u }).selectOption("High");
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
   await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
