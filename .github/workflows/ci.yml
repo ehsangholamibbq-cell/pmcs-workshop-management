@@ -37,14 +37,14 @@ jobs:
           dotnet-version: 10.0.x
       - run: node tools/qa/regression-runner.mjs run backend
         env:
-          PMCS_PDF_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F02_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F03_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F04_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F05_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F06_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_F07_RENDER_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
-          PMCS_MS48_FONT_QUALIFICATION_OUTPUT: artifacts/qa/ms48-font-golden
+          PMCS_PDF_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F02_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F03_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F04_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F05_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F06_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F07_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_MS48_FONT_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
       - name: Render isolated MS45 PDF and XLSX font review
         env:
           PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
