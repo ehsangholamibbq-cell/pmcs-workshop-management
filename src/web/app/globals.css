@@ -1379,6 +1379,38 @@ textarea {
   object-fit: contain;
 }
 
+.collaboration-workspace { max-width: 88rem; width: 100%; }
+.collaboration-room { margin-top: 1.5rem; }
+.collaboration-boundary {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border-inline-start: 3px solid var(--brand-green-700);
+  border-radius: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--status-info-surface);
+}
+.collaboration-state {
+  margin-top: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--surface-card);
+}
+.collaboration-state h2 { margin-top: 0; }
+.collaboration-state p { color: var(--text-secondary); }
+.collaboration-messages { display: grid; gap: 0.75rem; padding: 0; list-style: none; }
+.collaboration-message {
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--border-default);
+  border-radius: 1rem;
+  background: var(--surface-card);
+  overflow-wrap: anywhere;
+}
+.collaboration-message-meta { display: flex; justify-content: space-between; gap: 1rem; color: var(--text-secondary); }
+.collaboration-message-meta strong { color: var(--text-primary); }
+.collaboration-message p { white-space: pre-wrap; line-height: 1.8; }
+.collaboration-message small { margin-inline-end: 0.75rem; color: var(--state-draft); }
+
 .sidebar nav {
   display: grid;
   gap: 0.45rem;

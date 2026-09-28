@@ -58,6 +58,10 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await page.locator("#pulse").evaluate((element) => element.scrollIntoView({ block: "start" }));
   await capture(page, "21-mobile-project.png");
 
+  await page.goto(`${projectPath}/collaboration`);
+  await expect(page.getByRole("heading", { name: "گفت‌وگو در این پروژه در دسترس نیست" })).toBeVisible();
+  await capture(page, "22-project-chat-default-off.png");
+
   // The preceding full project visit loads many independent API panels. Allow the
   // isolated fixture's short API rate window to clear before opening admin pages.
   await page.goto("about:blank");
