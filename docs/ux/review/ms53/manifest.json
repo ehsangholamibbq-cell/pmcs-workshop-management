@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "PMCS-V1.1-UX2-MS53-VX-G3",
+  "priorReview": {
+    "path": "../ms50/images.json",
+    "sha256": "8bbcf08c6806703c9fd6b15bdafbb512a50e778907921143e9b830e220b9ae44",
+    "imageCount": 10
+  },
+  "sources": [
+    {
+      "key": "overlays",
+      "sourceCommit": "215853f91c2bb9f4b2462ac4facc54520e65a1be",
+      "runId": "36502563962",
+      "artifactId": "11005944021",
+      "archiveDigest": "sha256:545b372316562aa3783c2882598232b0b1bd0c49bc78f875a2c26adce60c5e2d"
+    },
+    {
+      "key": "composition",
+      "sourceCommit": "07e1b5d8cc9eac6dc1da30df9ce0eddd8fd56338",
+      "runId": "36503973384",
+      "artifactId": "11007206344",
+      "archiveDigest": "sha256:0634f5457f46e2734a4a8885da960ce9745b9e6b3cb4797d708ba4fbdb972752"
+    }
+  ],
+  "files": [
+    {
+      "file": "images/overlay-default-mobile.png",
+      "source": "overlays",
+      "sourceFile": "default-mobile.png",
+      "sha256": "600b59d814889d80e83fd41a4bfc5508753f9484752ef6ae56d5e4ba7dfee51c",
+      "bytes": 83214,
+      "width": 390,
+      "height": 1208
+    },
+    {
+      "file": "images/overlay-drawer-mobile.png",
+      "source": "overlays",
+      "sourceFile": "drawer-mobile.png",
+      "sha256": "5934ed03bfded462c47eec489d81d7503e175fafe231fdb5ecf46876df92e086",
+      "bytes": 49096,
+      "width": 390,
+      "height": 1208
+    },
+    {
+      "file": "images/composition-default-desktop.png",
+      "source": "composition",
+      "sourceFile": "default-desktop.png",
+      "sha256": "b0b0dc3469fac5d01742f5979bd9fbf3c70ea2bb45297664ab5a4eb5ca7b08dc",
+      "bytes": 144948,
+      "width": 1440,
+      "height": 1116
+    },
+    {
+      "file": "images/composition-permission-mobile.png",
+      "source": "composition",
+      "sourceFile": "permission-mobile.png",
+      "sha256": "0249d5688d8d0a00a6f43d5d4bd2a6cdd9e279a05616cdb23d4e38c39edc31f6",
+      "bytes": 118370,
+      "width": 390,
+      "height": 1640
+    },
+    {
+      "file": "composition-a4.pdf",
+      "source": "composition",
+      "sourceFile": "composition-a4.pdf",
+      "sha256": "3de00cd5984b7f6bec5e979bbbf8db7e4282f3af7e3d46c7cdb060a51e18ee68",
+      "bytes": 320524,
+      "pages": 1,
+      "format": "A4"
+    }
+  ]
+}
