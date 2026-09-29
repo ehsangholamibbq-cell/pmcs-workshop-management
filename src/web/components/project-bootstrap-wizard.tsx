@@ -339,7 +339,7 @@ export function ProjectBootstrapWizard() {
               <PanelHeading eyebrow="مبدأ و مقصد" title="هویت مستقل پروژه جدید" detail="کد، نام، تاریخ‌ها و مقادیر یکتا همیشه برای مقصد تازه وارد می‌شوند." />
               <div className="bootstrap-form-grid">
                 <label>پروژه مبدأ<select required disabled={projects === null || isBusy} value={sourceReady ? sourceProjectId : ""} onChange={(event) => setSourceProjectId(event.target.value)}>
-                  <option value="">{projects === null ? "در حال دریافت پروژه‌ها…" : projectsFailed ? "فهرست پروژه‌ها در دسترس نیست" : "انتخاب پروژه"}</option>
+                  <option value="">{projectsFailed ? "فهرست پروژه‌ها در دسترس نیست" : projects === null ? "در حال دریافت پروژه‌ها…" : "انتخاب پروژه"}</option>
                   {projects?.map((project) => <option key={project.id} value={project.id}>{project.code} — {project.name}</option>)}
                 </select></label>
                 <label>نام پروژه مقصد<input required maxLength={200} value={target.name} onChange={(event) => setTarget((current) => ({ ...current, name: event.target.value }))} /></label>
