@@ -300,6 +300,12 @@ jobs:
           name: pmcs-ms55-profile-privacy
           path: src/web/artifacts/ms55-profile-privacy/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms56-duplication-wizard
+          path: src/web/artifacts/ms56-duplication-wizard/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
