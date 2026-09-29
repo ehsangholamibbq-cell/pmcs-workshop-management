@@ -61,7 +61,7 @@ test("progress ledger hides an old item on refresh, failed read and access loss"
   let releaseFailure: () => void = () => {};
   const failureGate = new Promise<void>(resolve => { releaseFailure = resolve; });
   for (const [endpoint, body] of [["measurement-items", [item]], ["progress", ledger]] as const) {
-    await page.route(`**/api/pmcs/api/v1/projects/${projectId}/${endpoint}`, async route => {
+    await page.route(`**/api/pmcs/api/v1/projects/${projectId}/planning/${endpoint}`, async route => {
       if (responseStatus === 503) await failureGate;
       return route.fulfill(responseStatus === 200
         ? { status: 200, contentType: "application/json", body: JSON.stringify(body) }

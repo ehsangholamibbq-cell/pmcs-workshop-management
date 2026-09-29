@@ -118,6 +118,7 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
       onChanged?.();
     } catch (error) {
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
         setItems([]);
         setLedger(null);
         onItemsChanged([]);
@@ -144,6 +145,7 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
       onChanged?.();
     } catch (error) {
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
         setItems([]);
         setLedger(null);
         onItemsChanged([]);
