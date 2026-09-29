@@ -286,7 +286,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const untriagedAttentionItems = attentionItems.filter((item) => item.disposition === "NeedsTriage");
 
   if (commandReadState === "loading" || commandReadState === "error" || commandReadState === "forbidden") {
-    return <main className="app-shell project-print-shell">
+    return <main className="app-shell project-print-shell" data-command-read-state={commandReadState}>
       <section className="workspace" data-command-read-state={commandReadState}>
         <header className="topbar"><h1>مرکز فرمان پروژه</h1></header>
         <section className="collaboration-state" role={commandReadState === "loading" ? "status" : "alert"}>
@@ -295,7 +295,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <p>{commandMessage}</p>
           {commandReadState === "error" && isOnline &&
             <button type="button" onClick={() => setRefreshToken((current) => current + 1)}>تلاش دوباره</button>}
-          <Link href="/">فهرست پروژه‌ها</Link>
+          <Link className="primary-link" href="/">فهرست پروژه‌ها</Link>
         </section>
       </section>
     </main>;
