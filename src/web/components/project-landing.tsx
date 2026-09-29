@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import { PersianDateInput } from "@/components/persian-date-input";
@@ -70,15 +70,22 @@ function ProjectLandingContent() {
   const [draft, setDraft] = useState<CreateProjectInput>(initialProject);
   const [message, setMessage] = useState("در حال دریافت پروژه‌های مجاز…");
   const [isLoading, setIsLoading] = useState(true);
+  const [readState, setReadState] = useState<"loading" | "current" | "error">("loading");
+  const readSequence = useRef(0);
   const [isCreating, setIsCreating] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectModel | null>(null);
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const requestId = ++readSequence.current;
     setIsLoading(true);
+    setReadState("loading");
+    setProjects([]);
+    setReadiness({});
+    setMessage("در حال دریافت پروژه‌های مجاز…");
     try {
       const loaded = await listProjects(apiBaseUrl, identity);
-      setProjects(loaded);
+      if (requestId !== readSequence.current) return;
       const readinessEntries = await Promise.all(loaded
         .filter((project) => project.status === "Draft")
         .map(async (project) => {
@@ -88,14 +95,21 @@ function ProjectLandingContent() {
             return null;
           }
         }));
+      if (requestId !== readSequence.current) return;
+      setProjects(loaded);
       setReadiness(Object.fromEntries(readinessEntries.filter((entry): entry is readonly [string, ProjectReadinessModel] => entry !== null)));
+      setReadState("current");
       setMessage(loaded.length > 0
         ? `${loaded.length.toLocaleString("fa-IR")} پروژه در محدوده دسترسی شما قرار دارد.`
         : "هنوز پروژه‌ای در محدوده دسترسی شما وجود ندارد.");
     } catch (error) {
+      if (requestId !== readSequence.current) return;
+      setProjects([]);
+      setReadiness({});
+      setReadState("error");
       setMessage(toUserMessage(error, "فهرست پروژه‌ها دریافت نشد."));
     } finally {
-      setIsLoading(false);
+      if (requestId === readSequence.current) setIsLoading(false);
     }
   }, [identity]);
 
@@ -108,6 +122,7 @@ function ProjectLandingContent() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (readState !== "current" || isCreating) return;
     setIsCreating(true);
     setMessage(editingProject ? "در حال ذخیرهٔ نسخه جدید تنظیمات…" : "در حال ایجاد پیش‌نویس پروژه…");
     try {
@@ -139,6 +154,7 @@ function ProjectLandingContent() {
   }
 
   async function activate(project: ProjectModel) {
+    if (readState !== "current" || activatingId !== null) return;
     if (!readiness[project.id]?.isReady) {
       setMessage("پروژه هنوز آماده فعال‌سازی نیست؛ موارد مسدودکنندهٔ چک‌لیست را تکمیل کنید.");
       return;
@@ -157,7 +173,7 @@ function ProjectLandingContent() {
   }
 
   return (
-    <main className="project-landing">
+    <main className="project-landing" data-project-read-state={readState}>
       <header className="project-landing-header">
         <div>
           <span className="auth-state-mark">پ</span>
@@ -177,14 +193,21 @@ function ProjectLandingContent() {
         <div className="section-title">
           <div>
             <h2 id="project-list-title">فهرست پروژه‌ها</h2>
-            <p className="muted" aria-live="polite">{message}</p>
+            <p className="muted" role={readState === "error" ? "alert" : "status"}>{message}</p>
           </div>
           <button type="button" className="secondary-button" disabled={isLoading} onClick={() => void load()}>
             {isLoading ? "در حال دریافت…" : "تازه‌سازی"}
           </button>
         </div>
 
-        {!isLoading && projects.length === 0 && (
+        {readState === "error" && (
+          <div className="empty-project-state" role="alert">
+            <h3>فهرست پروژه‌ها در دسترس نیست</h3>
+            <p>دادهٔ قبلی تا دریافت پاسخ تازه نمایش داده نمی‌شود. برای تلاش دوباره از تازه‌سازی استفاده کنید.</p>
+          </div>
+        )}
+
+        {readState === "current" && projects.length === 0 && (
           <div className="empty-project-state">
             <h3>پروژه‌ای برای نمایش وجود ندارد</h3>
             <p>مدیر سامانه باید پروژه ایجاد کند یا عضویت شما را به یک پروژهٔ فعال بیفزاید.</p>
@@ -192,7 +215,7 @@ function ProjectLandingContent() {
         )}
 
         <div className="project-card-grid">
-          {projects.map((project) => (
+          {readState === "current" && projects.map((project) => (
             <article className="project-card" key={project.id}>
               <div className="project-card-heading">
                 <div>
@@ -262,6 +285,7 @@ function ProjectLandingContent() {
             <p className="muted">{editingProject ? "فرم از نسخه ذخیره‌شده بازیابی شده است؛ ذخیره، نسخه تنظیمات و آمادگی را به‌روزرسانی می‌کند." : "پروژه ابتدا در وضعیت پیش‌نویس ساخته می‌شود تا تنظیمات پایه قبل از ورود عملیات کنترل شود."}</p>
           </div>
           <form className="project-create-form" onSubmit={submit}>
+            {readState !== "current" && <p role="status">ساخت یا ویرایش پروژه پس از دریافت فهرست مجاز امکان‌پذیر است.</p>}
             <label>
               نام پروژه
               <input required readOnly={Boolean(editingProject)} maxLength={200} value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
@@ -361,7 +385,7 @@ function ProjectLandingContent() {
               سیاست ثبت آفلاین، همگام‌سازی و رسیدگی به تعارض را می‌پذیرم.
             </label>
             <div className="project-create-actions">
-              <button type="submit" disabled={isCreating}>{isCreating ? "در حال ذخیره…" : editingProject ? "ذخیره نسخه تنظیمات" : "ایجاد پیش‌نویس پروژه"}</button>
+              <button type="submit" disabled={isCreating || readState !== "current"}>{isCreating ? "در حال ذخیره…" : editingProject ? "ذخیره نسخه تنظیمات" : "ایجاد پیش‌نویس پروژه"}</button>
               {editingProject && <button className="secondary-button" type="button" disabled={isCreating} onClick={() => { setEditingProject(null); setDraft(initialProject); }}>انصراف</button>}
             </div>
           </form>

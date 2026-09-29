@@ -426,6 +426,12 @@ jobs:
           name: pmcs-ms77-project-access-truth
           path: src/web/artifacts/ms77-project-access-truth/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms78-project-list-truth
+          path: src/web/artifacts/ms78-project-list-truth/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
