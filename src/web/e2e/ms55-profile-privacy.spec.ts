@@ -72,11 +72,12 @@ test("MS55 profile image states preserve privacy and crop preview semantics", as
     await expect(page.locator("body")).toHaveAttribute("data-state", "success");
     await expect(photo).toHaveCSS("--crop-x", "10px");
     await expect(crop).toBeFocused();
-    await capture(`profile-${width}-success.png`, width, height);
+    await capture(`profile-${width}-success-crop.png`, width, height);
     await remove.click();
     await expect(photo).toBeHidden();
   }
   expect(requests).toEqual([]);
+  expect(new Set(files.map(file => file.name)).size).toBe(files.length);
   writeFileSync(resolve(output, "index.json"), JSON.stringify({
     contractVersion: 1, source: process.env.PMCS_SOURCE_HEAD_SHA ?? null,
     prototype: "UX2-MS55", prototypeSha256: digest(readFileSync(prototype)), files,
