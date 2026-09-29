@@ -229,12 +229,12 @@ export function MemberProfileEditor() {
               <strong>تصویر پروفایل</strong>
               <small>فقط تصویر امن، حداکثر ۵ مگابایت؛ فایل از اسکن و قرنطینه عبور می‌کند.</small>
             </div>
-            <label className="file-button" aria-disabled={isBusy}>
+            <label className="file-button" aria-disabled={!profile || isBusy}>
               انتخاب تصویر
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                disabled={isBusy}
+                disabled={!profile || isBusy}
                 onChange={(event) => void selectAvatar(event)}
               />
             </label>
