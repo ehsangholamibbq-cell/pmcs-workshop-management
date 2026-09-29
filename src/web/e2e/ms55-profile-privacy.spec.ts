@@ -27,6 +27,7 @@ test("MS55 profile image states preserve privacy and crop preview semantics", as
     expect(await page.evaluate(() => document.fonts.check("16px Vazirmatn"))).toBe(true);
     expect(await page.locator(".brand").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.locator("body").innerText()).not.toMatch(/\b(?:Prototype|Revision|Permission)\b/u);
     const state = page.locator("#state"), photo = page.locator("#photo"), initials = page.locator("#initials");
     const crop = page.getByRole("button", { name: "بازبینی قاب تصویر نمونه" });
     const remove = page.getByRole("button", { name: "نمایش حالت بدون تصویر" });
