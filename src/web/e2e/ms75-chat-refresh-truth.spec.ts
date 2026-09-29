@@ -82,7 +82,7 @@ test("project Chat clears stale room and search data during refresh, failure and
   await capture("chat-320-refreshing.png", 320, 720);
   releaseRefresh();
   await expect(page.getByRole("heading", { name: "دریافت گفت‌وگو کامل نشد" })).toBeVisible();
-  await expect(page.getByRole("alert")).not.toContainText("Sensitive upstream error");
+  await expect(page.locator(".collaboration-state[role='alert']")).not.toContainText("Sensitive upstream error");
   await expect(page.locator(".collaboration-message")).toHaveCount(0);
   await capture("chat-320-read-error.png", 320, 720);
 
