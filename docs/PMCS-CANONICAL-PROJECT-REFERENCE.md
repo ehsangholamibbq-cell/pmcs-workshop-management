@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.111.0`
+- نسخه: `1.112.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS50 Safe Checkpoint, MS51 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS51 Safe Checkpoint, MS52 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate | MS51 `215853f91c2bb9f4b2462ac4facc54520e65a1be`؛ tree `5029652e405aefeeadac1c797ab9b1fd1c1a6fc4`؛ Run 433 هشت Job سبز، Overlay/ردیف موبایل با Artifact `11005944021` و ۱۲ قاب معتبر؛ CI مستندات شرط اعتبار |
-| Current evidence-bearing source checkpoint | `14de8ab80f19c3c168993c043b2093df0f30dd4c`؛ MS50 documentation Run 432 هشت Job سبز، Source Run 431 و بستهٔ مرور معتبر |
-| Source lineage | UX2-MS51 ادامهٔ مستقیم MS50 documentation `14de8ab80f19c3c168993c043b2093df0f30dd4c` است؛ فقط Commit و fast-forward، بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS50-C1`؛ بستهٔ بازبینی VX-G3، Runهای 431/432 هشت Job سبز؛ MS51 Candidate |
+| آخرین Source Candidate | MS52 `07e1b5d8cc9eac6dc1da30df9ce0eddd8fd56338`؛ tree `d16dbd15a1b1043cd61e9e7a71f2118b557be5c2`؛ Run 435 هشت Job سبز، Login/Shell/Chart با Artifact `11007206344` و ۹ PNG/PDF A4 معتبر؛ CI مستندات شرط اعتبار |
+| Current evidence-bearing source checkpoint | `f9fb5329a976a12306339883cb84006ca2bdf361`؛ MS51 documentation Run 434 هشت Job سبز، Source Run 433 و Artifact ۱۲قابی معتبر |
+| Source lineage | UX2-MS52 ادامهٔ مستقیم MS51 documentation `f9fb5329a976a12306339883cb84006ca2bdf361` است؛ فقط Commit و fast-forward، بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS51-C1`؛ Overlay/ردیف موبایل، Runهای 433/434 هشت Job سبز؛ MS52 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS50-C1`؛ بستهٔ بازبینی VX-G3، Runهای 431/432 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS49-C1`؛ Navigation/Feedback/Dialog، Runهای 429/430 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS48-C1`؛ وزیرمتن نسخهٔ 2.0.0، Runهای 425/426 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS47-C1`؛ نمونهٔ Foundation، Runهای 419/420 هشت Job سبز |
@@ -290,7 +291,13 @@ Job سبز و Artifact `11004643711` با ۱۱ PNG/Source/Hash/ابعاد معت
 `5029652e405aefeeadac1c797ab9b1fd1c1a6fc4` یک Prototype
 مستقل Popover/Drawer/Toast و fallback ردیف موبایل با هشت وضعیت داده
 می‌سازد؛ Run 433 هشت Job سبز و Artifact `11005944021` با ۱۲ قاب
-Hash-indexed معتبر/بازبینی‌شده دارد، CI مستندات شرط Checkpoint است.
+Hash-indexed معتبر/بازبینی‌شده دارد؛ Run 434 مستندات هشت Job سبز و
+`PMCS-V1.1-UX2-MS51-C1` Safe شد. MS52 Source
+`07e1b5d8cc9eac6dc1da30df9ce0eddd8fd56338` / tree
+`d16dbd15a1b1043cd61e9e7a71f2118b557be5c2` نمونهٔ Login/Shell/
+Chart با جدول جایگزین، حالت‌های بدون داده و Print A4 است. Run 435 هشت
+Job سبز و Artifact `11007206344` با ۹ PNG/PDF تک‌صفحه‌ای A4 معتبر/
+بازبینی‌شده دارد، CI مستندات شرط Checkpoint است.
 `VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
@@ -1028,7 +1035,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS51`، مستندسازی نمونهٔ Overlay/ردیف موبایل است. سپس `UX2-MS52` Login/Shell/Chart و مرزهای Responsive/Keyboard آن‌ها را در نمونهٔ محدود تکمیل می‌کند تا بستهٔ کامل برای بازبینی مالک `VX-G3` آماده شود.**
+**گام جاری `V1.1-UX2-MS52`، مستندسازی نمونهٔ Login/Shell/Chart است. سپس `UX2-MS53` بستهٔ مرور منبع‌دار `VX-G3` را با نمونه‌های جدید و معیار تصمیم مالک کامل می‌کند؛ مهاجرت فعال فقط پس از Gate انجام می‌شود.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

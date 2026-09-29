@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.5.0` در `UX2-MS51`
+- نسخهٔ Candidate: `0.6.0` در `UX2-MS52`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -90,6 +90,14 @@ Toast و fallback ردیف موبایل را در هشت وضعیت داده م�
 دارند؛ Toast متن زنده و دکمهٔ بستن دارد. E2E Run 433 و ۱۲ قاب با
 Source/Hash/ابعاد معتبر و بازبینی‌شده‌اند. این نمونه فقط `P` است؛
 خانه‌های UI فعال و Qualification مسیرها در `VX-G4/G5` باقی می‌مانند.
+
+MS52 در `docs/ux/prototypes/ms52/` نمونهٔ Login، Shell و Chart را
+با جدول جایگزین همان شش مقدار فرضی می‌افزاید. در Loading/NoData/
+Error/NoPermission/Offline، نمودار و جدول هر دو پنهان‌اند؛ Skeleton
+خنثی و پیام متنی به‌جای نتیجهٔ نامعتبر می‌آیند. Navigation موبایل
+Disclosure با Escape/بازگشت Focus دارد؛ Run 435 و ۹ PNG/PDF A4
+تک‌صفحه‌ای با Source/Hash/ابعاد معتبر/بازبینی‌شده‌اند. این هم فقط
+`P` است، نه تبدیل خودکار خانه‌های مصرف‌کنندگان فعال به `D`.
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛

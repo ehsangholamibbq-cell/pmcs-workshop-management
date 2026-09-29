@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.12`
+- نسخه Candidate: `1.0.0-rc.13`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -172,6 +172,12 @@ Qualification `VX-G5` با انتشار بسته به‌تنهایی بسته ن
 و ردیف موبایل را با وضعیت‌های داده و رفتار Focus/Keyboard نمونه می‌کند.
 Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مصرف‌کنندگان
 فعال و نمونهٔ تفصیلی Login/Shell/Chart هنوز شرط Gate بعدی‌اند.
+
+در UX2-MS52، نمونهٔ مستقل Login/Shell/Chart با نشان/فونت رسمی،
+نمودار دارای عنوان/توصیف و جدول جایگزین، حالت‌های بدون داده، Navigation
+موبایل و Print A4 یک‌صفحه‌ای ساخته شد. Run 435/Artifact `11007206344`
+شواهد همین Prototype هستند؛ بستهٔ مرور مالک و تصمیم `VX-G3`، سپس
+مهاجرت همهٔ مصرف‌کنندگان فعال و Qualification مستقل باقی‌اند.
 
 ## ۷. Login Experience Contract
 

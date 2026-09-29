@@ -1,7 +1,7 @@
 # PMCS V1.1 — بستهٔ بازبینی Prototype و قلم، UX2-MS44
 
 - شناسه: `PMCS-UX-PROTOTYPE-REVIEW-001`
-- نسخهٔ Candidate: `0.4.0`
+- نسخهٔ Candidate: `0.5.0`
 - وضعیت: نمونه‌های مستقل برای بازبینی؛ وزیرمتن MS48 پذیرفته، `VX-G3/G4/G5` باز
 - ورودی: مسیر مصوب «مدیریت ممتاز»، نشان شفاف رسمی، Design System `1.0.0-rc.10`، قرارداد فونت `PMCS-UX-TYPOGRAPHY-001 v1.5.0`
 
@@ -102,3 +102,13 @@ Source/Hash/ابعاد معتبر دارد؛ Default/Loading/Error/Popover/Drawe
 در موبایل و Desktop بازبینی شدند. Drawer در Screenshot Full-page
 از viewport بلندتر است و Backdrop فقط viewport فعلی را می‌پوشاند؛
 نمای واقعی ۳۹۰×۸۴۴ خواناست. نمونه، مهاجرت مصرف‌کنندهٔ فعال نیست.
+
+MS52 در `docs/ux/prototypes/ms52/` ترکیب Login، Shell و Chart را با
+نشان رسمی، وزیرمتن `2.0.0` و دادهٔ صریحاً فرضی افزود. Chart دارای
+عنوان/توصیف SVG و جدول همان شش مقدار است؛ در Loading/NoData/Error/
+Permission/Offline هر دو با هم پنهان می‌شوند. E2E Navigation موبایل،
+Focus/Escape، عرض ۳۲۰px، فونت/نشان و نبود درخواست بیرونی را می‌سنجد.
+Run 435 هشت Job سبز و Artifact `11007206344` با ۹ PNG و PDF A4
+تک‌صفحه‌ای/متن فارسی قابل استخراج، Source/Hash/حجم معتبر دارد.
+قاب‌های Desktop/Mobile، Loading/Permission، Navigation و چاپ مرور
+شدند؛ Print صرفاً نمونه است، Golden خروجی رسمی نیست.
