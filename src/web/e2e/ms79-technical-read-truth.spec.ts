@@ -12,7 +12,7 @@ test("technical office hides prior documents and commands after a failed or forb
   test.setTimeout(180_000);
   mkdirSync(output, { recursive: true });
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
-  async function capture(name: string, width: number, height: number) {
+  async function capture(name: string, width: number, height: number, expectedState: "current" | "cached" | "forbidden") {
     await page.evaluate(() => document.fonts.ready);
     await page.locator("#technical-office").evaluate((element) => {
       window.scrollTo({
@@ -24,8 +24,15 @@ test("technical office hides prior documents and commands after a failed or forb
       .evaluate((element) => element.getBoundingClientRect().top);
     await expect.poll(titleTop).toBeGreaterThanOrEqual(120);
     expect(await titleTop()).toBeLessThan(250);
+    await expect.poll(async () => {
+      const before = await page.locator("#technical-office").getAttribute("data-read-state");
+      await page.waitForTimeout(400);
+      const after = await page.locator("#technical-office").getAttribute("data-read-state");
+      return before === expectedState && after === expectedState;
+    }, { timeout: 10_000 }).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
+    expect(await page.locator("#technical-office").getAttribute("data-read-state")).toBe(expectedState);
     expect(bytes.readUInt32BE(16)).toBe(width);
     expect(bytes.readUInt32BE(20)).toBe(height);
     writeFileSync(resolve(output, name), bytes);
@@ -44,7 +51,7 @@ test("technical office hides prior documents and commands after a failed or forb
   const office = page.locator("#technical-office");
   await expect(office).toHaveAttribute("data-read-state", "current");
   await expect(office.locator(".technical-editor").first()).toBeVisible();
-  await capture("technical-390-current.png", 390, 844);
+  await capture("technical-390-current.png", 390, 844, "current");
 
   responseStatus = 503;
   await page.reload();
@@ -54,7 +61,7 @@ test("technical office hides prior documents and commands after a failed or forb
   await expect(office.locator(".technical-editor")).toHaveCount(0);
   await expect(office.locator(".technical-summary-grid")).toHaveCount(0);
   await page.setViewportSize({ width: 320, height: 720 });
-  await capture("technical-320-cached-error.png", 320, 720);
+  await capture("technical-320-cached-error.png", 320, 720, "cached");
 
   responseStatus = 403;
   await page.reload();
@@ -64,13 +71,13 @@ test("technical office hides prior documents and commands after a failed or forb
   await expect(office.locator(".technical-editor")).toHaveCount(0);
   const keys = await page.evaluate(() => Object.keys(localStorage).filter(key => key.includes("pmcs-technical-office:")));
   expect(keys).toEqual([]);
-  await capture("technical-320-access-revoked.png", 320, 720);
+  await capture("technical-320-access-revoked.png", 320, 720, "forbidden");
 
   responseStatus = 200;
   await page.reload();
   await expect(office).toHaveAttribute("data-read-state", "current");
   await expect(office.locator(".technical-editor").first()).toBeVisible();
-  await capture("technical-320-access-restored.png", 320, 720);
+  await capture("technical-320-access-restored.png", 320, 720, "current");
 
   writeFileSync(resolve(output, "index.json"), JSON.stringify({
     contractVersion: 1, source: process.env.PMCS_SOURCE_HEAD_SHA ?? null,
