@@ -1,8 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+// Login redirects authenticated sessions; token/focus probes need the stable guest surface.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test("active semantic tokens and reduced motion resolve in the browser", async ({ page }) => {
   await page.goto("/login");
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
+  const signIn = page.getByRole("button", { name: "ورود امن", exact: true });
+  await expect(signIn).toBeEnabled();
+  await expect(page).toHaveURL(/\/login$/u);
   const tokens = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
     return ["--surface-canvas", "--surface-card", "--text-primary", "--text-secondary",
@@ -21,6 +27,7 @@ test("active semantic tokens and reduced motion resolve in the browser", async (
   const probe = page.locator("#ms61-focus-probe");
   await probe.focus();
   await page.keyboard.press("Tab");
+  await expect(signIn).toBeFocused();
   await page.keyboard.press("Shift+Tab");
   await expect(probe).toBeFocused();
   expect(await probe.evaluate(element => getComputedStyle(element).outlineWidth)).toBe("3px");
