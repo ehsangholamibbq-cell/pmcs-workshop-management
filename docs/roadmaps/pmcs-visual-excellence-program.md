@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.32.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ Navigation شش Shell و Feedback پروفایل/مدیریت هویت در `VX-G4`، مهاجرت کامل/Qualification باز
+- نسخه سند: `1.33.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ Navigation شش Shell و Feedback/پیش‌نمایش هویت در `VX-G4`، مهاجرت کامل/Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -180,7 +180,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66 و Feedback/Form Loading پروفایل/مدیریت هویت در MS67–68؛ سایر مصرف‌کنندگان باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68 و پیش‌نمایش مجوز MS69؛ سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
@@ -222,3 +222,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.30.0` | MS65 docs Run 475 هشت Job سبز و Safe؛ MS66 چهار Shell دیگر را به Navigation موبایل مشترک منتقل کرد؛ Source Run 476 هشت Job سبز و Artifact `11036398624` با ۱۶ قاب/Index معتبر و مرورشده. CI مستقل مستندات شرط Checkpoint؛ زیرکار Navigation شش Shell تکمیل، G4 کامل و G5 باز |
 | `1.31.0` | MS66 docs Run 477 هشت Job سبز و Safe؛ MS67 Feedback پروفایل را با Status/Error/Success و Form Loading فعال متصل کرد؛ Runs 478–480 هر هشت Job سبز، Artifact نهایی `11038772992` پنج قاب/Index معتبر و مرورشده؛ CI مستقل مستندات شرط Checkpoint، سایر مصرف‌کنندگان G4 و G5 باز |
 | `1.32.0` | MS67 docs Run 481 پس از timeout بیرونی در بازاجرا هشت Job سبز و Safe؛ MS68 Feedback/Loading مدیریت هویت و حفظ فرم/هویت Retry دعوت را متصل کرد؛ Source Run 484 هشت Job سبز و Artifact `11040584680` با شش قاب/Index معتبر و مرورشده. CI مستقل مستندات شرط Checkpoint؛ پیش‌نمایش مجوز و سایر مصرف‌کنندگان G4 و Qualification G5 باز |
+| `1.33.0` | MS68 docs Run 485 هشت Job سبز و Safe؛ MS69 پیش‌نمایش مجوز را هنگام تغییر نقش/پروژه از نتیجهٔ کهنه پاک و Selectهای آن را هنگام محاسبه قفل کرد؛ Source Run 489 هشت Job سبز/Artifact `11044303294` چهار قاب معتبر و بازبینی‌شده، CI مستقل مستندات شرط Checkpoint؛ سایر مصرف‌کنندگان G4 و G5 باز |

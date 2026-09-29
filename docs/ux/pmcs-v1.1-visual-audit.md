@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل/هویت در MS64–68، G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback/پیش‌نمایش هویت در MS64–69، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -410,3 +410,10 @@ Component در G4 و Qualification سراسری G5 بازند.
 فرمان قبلی را نگه می‌دارد. Run 484 هشت Job سبز و Artifact
 `11040584680` شش قاب/Index معتبر و مرورشده دارد. پیش‌نمایش مجوز،
 دیگر مصرف‌کنندگان G4 و Qualification مستقل G5 بازند.
+
+## پیوست UX2-MS69 — پیش‌نمایش مجوز مؤثر
+
+در مدیریت کاربران، نتیجهٔ نقش قبلی با تغییر انتخاب دیگر باقی نمی‌ماند؛
+درخواست تازه، Selectهای وابسته را قفل و نتیجهٔ کهنه را پنهان می‌کند.
+Run 489 هشت Job سبز و Artifact `11044303294` چهار قاب معتبر و
+بازبینی‌شده دارد. سایر مصرف‌کنندگان G4 و Qualification مستقل G5 بازند.
