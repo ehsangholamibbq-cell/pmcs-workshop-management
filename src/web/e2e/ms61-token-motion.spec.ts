@@ -9,7 +9,7 @@ test("active semantic tokens and reduced motion resolve in the browser", async (
       "--status-info", "--status-success", "--status-warning", "--status-danger",
       "--focus-color"].map(name => root.getPropertyValue(name).trim());
   });
-  expect(tokens).toEqual(["#fbf8f1", "#ffffff", "#17242e", "#5c6971",
+  expect(tokens.map(value => value === "#fff" ? "#ffffff" : value)).toEqual(["#fbf8f1", "#ffffff", "#17242e", "#5c6971",
     "#235c99", "#17684c", "#996017", "#aa3740", "#11643b"]);
 
   await page.evaluate(() => {
