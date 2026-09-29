@@ -259,7 +259,7 @@ export function TechnicalOfficePanel(props: TechnicalOfficePanelProps) {
       <div className="section-title">
         <div><p className="eyebrow">دفتر فنی و کنترل اسناد</p><h2>گردش رسمی مدارک و پاسخ‌ها</h2></div>
       </div>
-      <div className="collaboration-state" role={readState === "loading" || !isOnline ? "status" : "alert"}>
+      <div className={`collaboration-state ${readState}`} role={readState === "loading" || !isOnline ? "status" : "alert"}>
         <p>{message}</p>
         {isOnline && readState !== "loading" &&
           <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دفتر فنی</button>}

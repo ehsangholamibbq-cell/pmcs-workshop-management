@@ -4754,6 +4754,17 @@ output {
   gap: 1rem;
 }
 
+.technical-office .collaboration-state.cached {
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+
+.technical-office .collaboration-state.unavailable,
+.technical-office .collaboration-state.forbidden {
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
+
 .technical-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

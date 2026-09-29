@@ -49,6 +49,7 @@ test("technical office hides prior documents and commands after a failed or forb
   responseStatus = 503;
   await page.reload();
   await expect(office).toHaveAttribute("data-read-state", "cached");
+  await expect(office.locator(".collaboration-state.cached")).toHaveCSS("border-top-color", "rgb(153, 96, 23)");
   await expect(office.getByRole("alert")).not.toContainText("Sensitive technical detail");
   await expect(office.locator(".technical-editor")).toHaveCount(0);
   await expect(office.locator(".technical-summary-grid")).toHaveCount(0);
@@ -58,6 +59,7 @@ test("technical office hides prior documents and commands after a failed or forb
   responseStatus = 403;
   await page.reload();
   await expect(office).toHaveAttribute("data-read-state", "forbidden");
+  await expect(office.locator(".collaboration-state.forbidden")).toHaveCSS("border-top-color", "rgb(170, 55, 64)");
   await expect(office.getByRole("alert")).toContainText("دادهٔ ذخیره‌شده نمایش داده نمی‌شود");
   await expect(office.locator(".technical-editor")).toHaveCount(0);
   const keys = await page.evaluate(() => Object.keys(localStorage).filter(key => key.includes("pmcs-technical-office:")));
