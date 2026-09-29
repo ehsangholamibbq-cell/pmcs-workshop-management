@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.19.0` در `UX2-MS65`
+- نسخهٔ Candidate: `0.20.0` در `UX2-MS66`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -20,7 +20,7 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D | Error و Retry D | Offline/NoPermission در Routeهای منتخب D | قاب‌های 25–27، 30–31، 33/35؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
 | Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
-| Shell/Navigation و Print | D | Keyboard انتهای Sidebar D؛ Portfolio/Project mobile Escape/Focus D | Navigation موبایل Portfolio/Project D؛ چهار Shell دیگر G | پیام وضعیت مستقل S | Print بدون Action/Navigation D | MS64/65 دو Route فعال و دوازده قاب مجزا با E2E؛ سایر Routeها و Qualification باز |
+| Shell/Navigation و Print | D | Keyboard Sidebar و شش Shell موبایل Escape/Focus D | Navigation موبایل شش Shell D؛ Routeهای بدون Sidebar مستقل | پیام وضعیت مستقل S | Print بدون Action/Navigation D | MS64–66 شش Shell، ۲۸ قاب مجزا/Index و E2E؛ سایر Componentها، Routeها و Qualification باز |
 | Chat، Reporting، Agent | D/S | Action Focus S | Flags خاموش D | تعارض Chat D؛ Preview گزارش محدود S | Permission/Offline نمونه‌های D/S | قاب‌های 22–24، 33–40 و Prototype MS44؛ مهاجرت و Visual Qualification باز |
 
 ## قرارداد حداقلی هر State
@@ -220,3 +220,11 @@ Artifact نهایی `11035335891` شش قاب سه عرض، راهنمای پی�
 Source/Hash/ابعاد معتبر و مرور بصری دارد. `D` فقط به دو Navigation فعال
 Portfolio و Project Command Center اشاره می‌کند؛ چهار Shell باقی‌مانده،
 Stateهای دیگر و Qualification در G4/G5 بازند.
+
+## پیوست UX2-MS66 — Navigation شش Shell
+
+چهار Shell مدیریت هویت، گزارش سبد، گفت‌وگوی پروژه و گزارش پروژه در
+Run 476 به Disclosure مشترک منتقل شدند. Artifact `11036398624` شانزده
+قاب ۳۹۰/۳۲۰ باز/بسته، Source/Hash/ابعاد معتبر و مرور بصری دارد.
+Navigation شش Shell در محدودهٔ این زیرکار `D` است؛ Routeهای بدون
+Sidebar، پیام/فرم/جدول/دیالوگ و Qualification مستقل G4/G5 بازند.

@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.148.0`
+- نسخه سند: `1.149.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1862,3 +1862,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.146.0` | UX2-MS62 بعد از Source Run 466/Artifact ۸ PNG و ۴ PDF، در Run 467 آزمون Focus Login نشست واردشده را به ارث برد و شکست خورد؛ اصلاح محدود Run 468 هشت Job سبز، MS62 Safe. مالک پس از ارائهٔ بستهٔ چاپ پُرداده و موبایل معیار چهارم را نیز در سطح نمونه پذیرفت. MS63 فهرست خانواده‌های قرارداد و نمونه را برای VX-G3 ممیزی می‌کند؛ CI مستقل این تصمیم شرط پذیرش است، G4/G5 باز |
 | `1.147.0` | UX2-MS63 Run 469 هشت Job سبز و `VX-G3` فقط در مرز Contract/Prototype پذیرفته شد. MS64 موج نخست `VX-G4`، ناوبری موبایل Portfolio را با لینک‌های مجاز مشترک، Focus/Escape و سه عرض متصل کرد؛ Source Run 470 هشت Job سبز، شش PNG/Index Artifact `11032562526` معتبر و بازبینی‌شده. CI مستقل مستندات شرط Checkpoint؛ پنج Shell دیگر، G4 کامل، G5 و INT1/QA1 باز |
 | `1.148.0` | UX2-MS64 docs Run 471 pin نسخهٔ قدیمی آزمون را آشکار کرد و correction Run 472 هشت Job سبز/MS64 Safe شد. MS65 مرکز فرمان پروژه را با Navigation مشترک موبایل و حفظ Permission/State truth مهاجرت داد؛ Run 473 هشت Job سبز اما مرور بصری راهنمای پیمایش منوی بلند را خواست؛ correction Run 474 هشت Job سبز/Artifact `11035335891` با شش قاب/Index معتبر و بازبینی‌شده. CI مستقل مستندات شرط Checkpoint؛ چهار Shell دیگر، G4/G5 و INT1/QA1 باز |
+| `1.149.0` | UX2-MS65 docs Run 475 هشت Job سبز و Safe؛ MS66 چهار Shell مدیریت هویت، گزارش سبد، گفت‌وگوی پروژه و گزارش پروژه را به Navigation مشترک موبایل منتقل کرد. Source Run 476 هشت Job سبز/Artifact `11036398624` با ۱۶ قاب دو عرض و Index معتبر/بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint. زیرکار Navigation شش Shell تکمیل، اما مصرف‌کنندگان و Routeهای دیگر G4، سپس G5 و INT1/QA1 باز |

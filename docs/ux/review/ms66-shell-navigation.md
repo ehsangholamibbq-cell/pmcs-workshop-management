@@ -13,3 +13,9 @@ Collaboration و Reporting/OutputAccess/Worker همچنان در defaults خام
 مجوز، Business Rule، داده، و خروجی رسمی تغییر نمی‌کنند. پس از Full CI
 باید Artifact دریافت و تصاویر بازبینی شوند؛ این پوشش به‌تنهایی Gate
 کامل `VX-G4` یا Qualification `VX-G5` نیست.
+
+Source `b95155307e7e3c58a30f3d82f57672d667b35a7b` در Run 476 هر
+هشت Job سبز داشت. Artifact `11036398624` با ZIP SHA-256
+`ebd8ffb62f53b3df91cfa169cd8df692f107408e2fa6868080a79729e29bed3f`
+شانزده PNG/Index را با Source/Hash/ابعاد معتبر و مرور بصری ثبت کرد.
+Checkpoint `PMCS-V1.1-UX2-MS66-C1` پس از CI مستقل مستندات Safe می‌شود.

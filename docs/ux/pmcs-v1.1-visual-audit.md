@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 دو موج Portfolio/Project در MS64/65، G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 زیرکار Navigation شش Shell در MS64–66، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -385,3 +385,11 @@ Focus/Escape/Overflow در ۸۲۰/۳۹۰/۳۲۰px مهاجرت کرد. Run 473 �
 بود، ولی مرور تصویر راهنمای پیمایش فهرست بلند را لازم کرد؛ اصلاح Run 474
 هشت Job سبز و Artifact `11035335891` شش قاب/Index معتبر و مرورشده دارد.
 چهار Shell دیگر، مهاجرت کامل G4 و Qualification مستقل G5 بازند.
+
+## پیوست UX2-MS66 — موج سوم VX-G4
+
+چهار Shell باقی‌مانده ناوبری مشترک موبایل را با مجموعهٔ پیوند مجاز و
+حالت جاری محفوظ گرفتند. Run 476 هشت Job سبز؛ Artifact `11036398624`
+شانزده تصویر/Index معتبر و بازبینی‌شده دارد. در حالت Flags خاموش، متن
+عدم دسترسی Chat/Reporting محفوظ است. Navigation شش Shell یک زیرکار
+مهاجرت است؛ مصرف‌کنندگان دیگر G4 و Qualification مستقل G5 بازند.
