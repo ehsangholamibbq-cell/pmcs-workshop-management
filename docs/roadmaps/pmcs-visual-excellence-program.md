@@ -1,7 +1,7 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.13.0`
+- نسخه سند: `1.14.0`
 - وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G1 Audit Complete` با Run 401؛ Design System و Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -203,3 +203,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.11.0` | Run 417 مستندات MS46 را با هشت Job سبز پذیرفت؛ MS47 نمونهٔ تعاملی ۹ State بنیادین و شواهد سه اندازه/۳۲۰px را افزود. Source Run 419 هشت Job سبز/Artifact ۱۱قابی معتبر؛ CI مستندات شرط اعتبار، MS48 font swap مستند، G3/G4/G5 باز |
 | `1.12.0` | Run 420 مستندات MS47 را با هشت Job سبز پذیرفت؛ MS48 وزیرمتن را از manifest نسخهٔ 2.0.0 در Web/Offline/PDF/XLSX/Print با Golden رسمی و حفظ F05 دوصفحه‌ای متصل کرد. Source Run 425 هشت Job سبز، CI مستندات شرط پذیرش؛ State Contract، مهاجرت کامل و G3/G4/G5 باز |
 | `1.13.0` | Run 426 مستندات MS48 را با هشت Job سبز پذیرفت؛ MS49 Prototype Navigation موبایل، پیام‌های هفت وضعیت و Dialog نسخه را با Browser E2E و ۱۱ قاب سه اندازه Candidate کرد. Source Run 429 هشت Job سبز، CI مستندات شرط پذیرش؛ مهاجرت مصرف‌کنندگان فعال و G3/G4/G5 باز |
+| `1.14.0` | Run 430 مستندات MS49 را با هشت Job سبز پذیرفت؛ MS50 ده تصویر دست‌نخورده از UI فعال و Prototypeها را با شناسهٔ Artifact/Commit/Hash در بستهٔ مرور VX-G3 کنار هم قرار داد؛ Source Run 431 هشت Job سبز و Artifact `11005871839` با سه قاب معتبر/بازبینی‌شده، CI مستندات شرط Checkpoint، نظر مالک و شکاف‌های Component همچنان شرط G3، مهاجرت و G5 جدا |

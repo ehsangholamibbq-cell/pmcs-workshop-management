@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.3.0` در `UX2-MS49`
+- نسخهٔ Candidate: `0.4.0` در `UX2-MS50`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -75,6 +75,12 @@ semantics/Keyboard، ۱۱ قاب Desktop/Tablet/Mobile و عرض ۳۲۰px را
 مصرف‌کنندگان فعال در `VX-G4` هنوز انجام نشده است.
 
 ## خروجی بعدی برای `VX-G3`
+
+MS50 مقایسهٔ منبع‌دار `docs/ux/review/ms50/` را برای مرور مشترک
+UI فعال و Prototypeها آماده می‌کند. ده تصویر از Artifactهای معتبر
+CI بدون تغییر همراه SHA/ابعاد نگه داشته شده‌اند. این مقایسه هنوز
+خانه‌های `G` یا `S` را به `D` تبدیل نمی‌کند؛ برای تکمیل قرارداد باید
+رفتارهای باقیمانده به‌صورت محدود پیاده‌سازی و در Browser سنجیده شوند.
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛

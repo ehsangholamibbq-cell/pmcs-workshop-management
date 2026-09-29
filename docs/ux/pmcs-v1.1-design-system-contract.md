@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.10`
+- نسخه Candidate: `1.0.0-rc.11`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -59,7 +59,8 @@ Semantic tokens باید مستقل از Brand تعریف شوند:
 
 ## ۳. Typography و اعداد
 
-- فونت فارسی Candidate: `Vazirmatn Variable` به‌صورت Self-hosted؛ انتخاب فونت نهایی هنوز باز است؛
+- فونت فارسی انتخاب‌شده برای V1.1: `Vazirmatn Variable` خودمیزبان از manifest
+  نسخهٔ `2.0.0`؛ Qualification بصری همهٔ مصرف‌کنندگان در `VX-G5` باز است؛
 - Fallback: `Tahoma, Segoe UI, sans-serif`؛
 - وزن‌های Production: 400، 500، 600 و 700؛
 - الزام مالک محصول در ۲۰۲۶-۰۹-۲۸: تغییر آیندهٔ فونت فارسی باید در تمام بخش‌های فعال
@@ -160,6 +161,12 @@ PDF/XLSX/Print با Golden رسمی و Runهای 425/426 متصل شد. UX2-MS49
 نمونهٔ مستقل Navigation موبایل، وضعیت‌های داده/Permission/Offline
 و Dialog تأیید نسخه را برای بازبینی `VX-G3` می‌افزاید؛ اجرای آن
 در تمام Shellها یا Dialogهای فعال و Qualification `VX-G4/G5` هنوز باز است.
+
+در UX2-MS50، بستهٔ `docs/ux/review/ms50/` قاب‌های واقعی فعال را کنار
+نمونه‌های MS44/47/49 قرار می‌دهد. `images.json` Commit، Artifact و Hash
+ده تصویر دست‌نخورده را ثبت می‌کند. این Evidence برای بازبینی مالک است؛
+خانه‌های `G` ماتریس Component، تأیید `VX-G3`، مهاجرت `VX-G4` و
+Qualification `VX-G5` با انتشار بسته به‌تنهایی بسته نمی‌شوند.
 
 ## ۷. Login Experience Contract
 

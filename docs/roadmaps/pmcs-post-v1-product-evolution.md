@@ -1,9 +1,9 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.132.0`
+- نسخه سند: `1.133.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
-- تاریخ ثبت: ۱۴۰۵/۰۷/۰۶ (۲۰۲۶-۰۹-۲۸)
+- تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -1422,8 +1422,13 @@ MS48 Safe شد. MS49 Source Candidate `7336fcae49505f0edfb78842316ba2bcf96b3094`
 / tree `c66bb5b5832ff596c8d19be569397dc412610df4` نمونهٔ مستقل
 Navigation موبایل، Feedback داده/Permission/Offline و Dialog تأیید
 نسخه را با E2E/قاب‌های سه اندازه می‌سازد؛ Run 429 هشت Job سبز و
-Artifact ۱۱قابی بازبینی‌شده دارد، CI مستندات شرط پذیرش است. Exact next `UX2-MS50` تکمیل شکاف‌های Component و بستهٔ
-بازبینی `VX-G3` است؛
+Artifact ۱۱قابی بازبینی‌شده دارد؛ Run 430 مستندات هر هشت Job سبز و
+MS49 Safe شد. MS50 Source `2c2d2848dc5a174982daff2331d3f4093aee8ab5`
+بستهٔ مرور ده قاب دست‌نخورده از UI فعال و Prototypeهای MS44/47/49 را
+با SHA/Artifact/Commit و لینک نمونه‌ها می‌سازد؛ Run 431 هشت Job سبز و
+Artifact `11005871839` با سه قاب معتبر/بازبینی‌شده دارد، CI مستندات شرط
+Checkpoint است. Exact next `UX2-MS51` تکمیل محدود شکاف‌های باقیماندهٔ
+Component/State برای بازبینی مالک `VX-G3` است؛
 `VX-G3/G4/G5` هنوز بازند.
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1798,3 +1803,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.130.0` | UX2-MS46 documentation Run 417 هشت Job سبز و Safe؛ UX2-MS47 نمونهٔ تعاملی ۹ State بنیادین با E2E/Desktop/Tablet/Mobile، Source Run 419 هشت Job سبز و Artifact ۱۱قابی بازبینی‌شده، CI مستندات شرط اعتبار؛ MS48 انتخاب مستند/نسخه‌دار وزیرمتن، G3/G4/G5 باز |
 | `1.131.0` | UX2-MS47 documentation Run 420 هشت Job سبز و Safe؛ UX2-MS48 وزیرمتن نسخهٔ 2.0.0 را در Web/Offline/PDF/XLSX/Print با Golden رسمی، F05 دوصفحه‌ای، مرور قاب‌های UI/چاپ و Regression متصل کرد؛ Source Run 425 هشت Job سبز، CI مستندات شرط پذیرش، MS49 State Contract و G3/G4/G5 باز |
 | `1.132.0` | UX2-MS48 documentation Run 426 هشت Job سبز و Safe؛ UX2-MS49 Prototype مستقل Navigation موبایل، Feedback هفت وضعیت و Dialog تأیید نسخه با E2E و Artifact ۱۱قابی سه اندازه را Candidate کرد؛ Source Run 429 هشت Job سبز، CI مستندات شرط اعتبار، MS50 شکاف‌های Component و G3/G4/G5 باز |
+| `1.133.0` | UX2-MS49 documentation Run 430 هشت Job سبز و Safe؛ UX2-MS50 بستهٔ بازبینی بصری ده قاب از چهار Artifact معتبر را با منشأ/Hash و لینک Prototypeها Candidate کرد؛ Source Run 431 هشت Job سبز/Artifact `11005871839` معتبر و بازبینی‌شده، CI مستندات شرط اعتبار، MS51 Component gaps و G3/G4/G5 باز |

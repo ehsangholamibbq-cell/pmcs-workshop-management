@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS48 Safe، MS49 State Prototype Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS49 Safe، MS50 Review Pack Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -316,3 +316,12 @@ Safe است. MS49 نمونهٔ مستقل Navigation موبایل، Feedback و 
 ۱۱قابی معتبر/بازبینی‌شده دارد، CI مستندات شرط Checkpoint آن است.
 این نمونه Navigation مصرف‌کنندگان فعال را
 مهاجرت نمی‌دهد و `VX-G3/G4/G5` بازند.
+
+MS49 documentation در Run 430 هر هشت Job را پاس کرد و Safe شد.
+MS50 بستهٔ `docs/ux/review/ms50/` ده تصویر بدون ویرایش از UI فعال
+و نمونه‌های MS44/47/49 را کنار هم قرار می‌دهد؛ Source Commit، Artifact
+ID/digest و Hash/ابعاد در `images.json` است. آزمون مرورگر صفحهٔ دسکتاپ/
+موبایل و بارگذاری همهٔ قاب‌ها/پیوندها را می‌سنجد. Source Run 431
+هشت Job سبز و Artifact `11005871839` با سه قاب معتبر/بازبینی‌شده دارد؛
+CI مستندات شرط Checkpoint است؛ تأیید مالک برای `VX-G3` و شکاف‌های Component
+هنوز باقی است. `VX-G4/G5` جدا می‌مانند.

@@ -1,7 +1,7 @@
 # PMCS V1.1 — بستهٔ بازبینی Prototype و قلم، UX2-MS44
 
 - شناسه: `PMCS-UX-PROTOTYPE-REVIEW-001`
-- نسخهٔ Candidate: `0.2.0`
+- نسخهٔ Candidate: `0.3.0`
 - وضعیت: نمونه‌های مستقل برای بازبینی؛ وزیرمتن MS48 پذیرفته، `VX-G3/G4/G5` باز
 - ورودی: مسیر مصوب «مدیریت ممتاز»، نشان شفاف رسمی، Design System `1.0.0-rc.10`، قرارداد فونت `PMCS-UX-TYPOGRAPHY-001 v1.5.0`
 
@@ -85,3 +85,10 @@ Desktop/Tablet/Mobile و آزمون Focus/Escape/قفل اقدام در Source R
 با هشت Job سبز و Artifact `11004643711` معتبر/بازبینی‌شده‌اند؛
 نمونه به‌تنهایی مجوز مهاجرت Routeهای فعال
 یا بستن `VX-G3` نیست.
+
+MS50 بستهٔ منبع‌دار `docs/ux/review/ms50/index.html` را برای مرور
+ده تصویر دست‌نخوردهٔ UI فعال و Prototypeهای MS44/47/49 افزود.
+`images.json` Commit، Artifact ID/digest و Hash/حجم/ابعاد را به هر قاب
+وصل می‌کند. سه نمونهٔ تعاملی از همان صفحه باز می‌شوند. نظر مالک روی
+این بسته جداگانه ثبت می‌شود؛ حضور تصاویر جای تکمیل Component Contract
+و تأیید `VX-G3` نیست.
