@@ -62,9 +62,12 @@ export function ProjectBootstrapWizard() {
     [session.tenantId, session.userId],
   );
   const storageKey = `pmcs-project-bootstrap-draft:${session.tenantId}:${session.userId}`;
-  const [projects, setProjects] = useState<readonly ProjectModel[]>([]);
-  const [users, setUsers] = useState<readonly UserDirectoryModel[]>([]);
+  const [projects, setProjects] = useState<readonly ProjectModel[] | null>(null);
+  const [users, setUsers] = useState<readonly UserDirectoryModel[] | null>(null);
   const [roles, setRoles] = useState<readonly string[]>([]);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [projectsFailed, setProjectsFailed] = useState(false);
+  const [membersFailed, setMembersFailed] = useState(false);
   const [sourceProjectId, setSourceProjectId] = useState("");
   const [target, setTarget] = useState<ProjectBootstrapTargetInput>(initialTarget);
   const [categories, setCategories] = useState<readonly ProjectBootstrapCategory[]>(defaultCategories);
@@ -77,6 +80,7 @@ export function ProjectBootstrapWizard() {
   const [isBusy, setIsBusy] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [message, setMessage] = useState("در حال دریافت پروژه‌ها و اعضای مجاز…");
+  const [messageKind, setMessageKind] = useState<"status" | "error">("status");
 
   useEffect(() => {
     const update = () => setIsOnline(window.navigator.onLine);
@@ -124,28 +128,48 @@ export function ProjectBootstrapWizard() {
       .then(([projectResult, identityResult]) => {
         if (!active) return;
         if (projectResult.status === "fulfilled") {
+          setProjectsFailed(false);
           setProjects(projectResult.value);
           setSourceProjectId((current) => current || projectResult.value.find((item) => item.status === "Active")?.id || projectResult.value[0]?.id || "");
         }
         if (identityResult.status === "fulfilled") {
+          setMembersFailed(false);
           setUsers(identityResult.value.users);
           setRoles(identityResult.value.projectRoles);
         }
         if (projectResult.status === "rejected") {
+          setProjectsFailed(true);
+          setMessageKind("error");
           setMessage(toUserMessage(projectResult.reason, "فهرست پروژه‌ها دریافت نشد."));
         } else if (identityResult.status === "rejected") {
-          setMessage("پروژه‌ها دریافت شدند؛ فهرست اعضا در دسترس نیست و می‌توانید بدون انتقال عضو ادامه دهید.");
+          setMembersFailed(true);
+          setMessageKind("error");
+          setMessage("فهرست اعضا در دسترس نیست؛ دریافت را دوباره امتحان کنید یا دستهٔ اعضای پروژه را از اقلام مجاز بردارید.");
         } else {
+          setMessageKind("status");
           setMessage("مبدأ، هویت مستقل مقصد و اقلام مجاز را انتخاب کنید.");
         }
       });
     return () => { active = false; };
-  }, [identity]);
+  }, [identity, loadAttempt]);
 
-  const memberCandidates = useMemo(() => users.flatMap((user) => {
+  function retryDirectory() {
+    setProjects(null);
+    setUsers(null);
+    setRoles([]);
+    setProjectsFailed(false);
+    setMembersFailed(false);
+    setMessageKind("status");
+    setMessage("در حال دریافت دوباره پروژه‌ها و اعضای مجاز…");
+    setLoadAttempt((current) => current + 1);
+  }
+
+  const memberCandidates = useMemo(() => (users ?? []).flatMap((user) => {
     const membership = user.memberships.find((item) => item.projectId === sourceProjectId);
     return membership ? [{ user, membership }] : [];
   }), [sourceProjectId, users]);
+  const sourceReady = Boolean(projects?.some((project) => project.id === sourceProjectId));
+  const membersReady = !categories.includes("Members") || users !== null;
 
   useEffect(() => {
     if (!sourceProjectId || preview) return;
@@ -162,11 +186,18 @@ export function ProjectBootstrapWizard() {
 
   async function createPreview(event: FormEvent) {
     event.preventDefault();
+    if (isBusy || !sourceReady || !membersReady || categories.length === 0) {
+      setMessageKind("error");
+      setMessage("برای ساخت مقصد، پروژهٔ مبدأ و دادهٔ اعضای انتخاب‌شده باید معتبر و در دسترس باشند.");
+      return;
+    }
     if (!isOnline) {
+      setMessageKind("error");
       setMessage("انتخاب‌ها محلی حفظ شده‌اند؛ ساخت مقصد و پیش‌نمایش تازه به اتصال نیاز دارد.");
       return;
     }
     setIsBusy(true);
+    setMessageKind("status");
     setMessage("در حال ایجاد مقصد پیش‌نویس و محاسبه ارزیابی آزمایشی نسخه‌دار…");
     try {
       const created = await createProjectBootstrap(apiBaseUrl, identity, {
@@ -179,9 +210,11 @@ export function ProjectBootstrapWizard() {
       setPreview(created);
       setStep("preview");
       setConfirmed(false);
+      setMessageKind("status");
       setMessage("پیش‌نمایش قطعی آماده است؛ موارد افزودنی، ردشده، متعارض و مسدود را پیش از تأیید بررسی کنید.");
       window.localStorage.removeItem(storageKey);
     } catch (error) {
+      setMessageKind("error");
       setMessage(toUserMessage(error, "ساخت مقصد یا محاسبه پیش‌نمایش انجام نشد."));
     } finally {
       setIsBusy(false);
@@ -191,6 +224,7 @@ export function ProjectBootstrapWizard() {
   async function refreshPreview() {
     if (!preview || !isOnline) return;
     setIsBusy(true);
+    setMessageKind("status");
     setMessage("در حال ارزیابی دوباره تصویر وضعیت مبدأ و مقصد…");
     try {
       const refreshed = await refreshProjectBootstrapPreview(
@@ -198,8 +232,10 @@ export function ProjectBootstrapWizard() {
       );
       setPreview(refreshed);
       setConfirmed(false);
+      setMessageKind("status");
       setMessage("پیش‌نمایش و چکیده تازه شدند؛ تأیید انسانی دوباره لازم است.");
     } catch (error) {
+      setMessageKind("error");
       setMessage(toUserMessage(error, "تازه‌سازی پیش‌نمایش انجام نشد."));
     } finally {
       setIsBusy(false);
@@ -209,13 +245,16 @@ export function ProjectBootstrapWizard() {
   async function execute() {
     if (!preview || !confirmed || !isOnline) return;
     setIsBusy(true);
+    setMessageKind("status");
     setMessage("در حال اجرای مشارکت‌کننده‌های مجاز و اعتبارسنجی نتیجه…");
     try {
       const completed = await executeProjectBootstrap(apiBaseUrl, identity, preview);
       setResult(completed);
       setStep("result");
+      setMessageKind("status");
       setMessage("راه‌اندازی کامل شد؛ پروژه مقصد عمداً در وضعیت پیش‌نویس باقی مانده است.");
     } catch (error) {
+      setMessageKind("error");
       setMessage(toUserMessage(error, "اجرا متوقف شد؛ پیش‌نمایش تازه بگیرید و تعارض را بررسی کنید."));
     } finally {
       setIsBusy(false);
@@ -225,12 +264,15 @@ export function ProjectBootstrapWizard() {
   async function activate() {
     if (!result || !isOnline) return;
     setIsBusy(true);
+    setMessageKind("status");
     setMessage("در حال اجرای دروازه مستقل آمادگی و فعال‌سازی…");
     try {
       const activated = await activateProjectBootstrap(apiBaseUrl, identity, result);
       setResult(activated);
+      setMessageKind("status");
       setMessage("پروژه مقصد پس از عبور از دروازه آمادگی فعال شد.");
     } catch (error) {
+      setMessageKind("error");
       setMessage(toUserMessage(error, "پروژه هنوز آماده فعال‌سازی نیست؛ تنظیمات یا عضویت‌های لازم را تکمیل کنید."));
     } finally {
       setIsBusy(false);
@@ -281,9 +323,14 @@ export function ProjectBootstrapWizard() {
         ))}
       </nav>
 
-      <p className={`bootstrap-message ${isOnline ? "" : "offline"}`} aria-live="polite">
+      <p className={`bootstrap-message ${messageKind === "error" ? "error" : ""} ${isOnline ? "" : "offline"}`}
+        role={messageKind === "error" ? "alert" : "status"}>
         {!isOnline && <strong>آفلاین — </strong>}{message}
       </p>
+      {(projectsFailed || membersFailed) && !isBusy &&
+        <button className="secondary-button bootstrap-retry" type="button" onClick={retryDirectory}>
+          تلاش دوباره برای دریافت داده‌ها
+        </button>}
 
       {!preview && (
         <form className="bootstrap-workspace" onSubmit={createPreview}>
@@ -291,9 +338,9 @@ export function ProjectBootstrapWizard() {
             <section className="bootstrap-panel">
               <PanelHeading eyebrow="مبدأ و مقصد" title="هویت مستقل پروژه جدید" detail="کد، نام، تاریخ‌ها و مقادیر یکتا همیشه برای مقصد تازه وارد می‌شوند." />
               <div className="bootstrap-form-grid">
-                <label>پروژه مبدأ<select required value={sourceProjectId} onChange={(event) => setSourceProjectId(event.target.value)}>
-                  <option value="">انتخاب پروژه</option>
-                  {projects.map((project) => <option key={project.id} value={project.id}>{project.code} — {project.name}</option>)}
+                <label>پروژه مبدأ<select required disabled={projects === null || isBusy} value={sourceReady ? sourceProjectId : ""} onChange={(event) => setSourceProjectId(event.target.value)}>
+                  <option value="">{projects === null ? "در حال دریافت پروژه‌ها…" : projectsFailed ? "فهرست پروژه‌ها در دسترس نیست" : "انتخاب پروژه"}</option>
+                  {projects?.map((project) => <option key={project.id} value={project.id}>{project.code} — {project.name}</option>)}
                 </select></label>
                 <label>نام پروژه مقصد<input required maxLength={200} value={target.name} onChange={(event) => setTarget((current) => ({ ...current, name: event.target.value }))} /></label>
                 <label>کد مستقل مقصد<input required minLength={2} maxLength={32} dir="ltr" value={target.code} onChange={(event) => setTarget((current) => ({ ...current, code: event.target.value }))} /></label>
@@ -338,7 +385,8 @@ export function ProjectBootstrapWizard() {
               <PanelHeading eyebrow="ارجاع هویت" title="اعضای انتخاب‌شده و نقش مقصد" detail="حساب کاربر کپی نمی‌شود؛ فقط عضویت جدید به همان حساب موجود ساخته می‌شود." />
               {!categories.includes("Members") ? <p className="bootstrap-note">دسته «اعضای پروژه» انتخاب نشده است؛ هیچ دسترسی‌ای منتقل نمی‌شود.</p> : (
                 <div className="bootstrap-member-list">
-                  {memberCandidates.length === 0 && <p className="bootstrap-note">عضوی در پروژه مبدأ یافت نشد.</p>}
+                  {users === null ? <p className="bootstrap-note">{membersFailed ? "فهرست اعضا در دسترس نیست؛ پیش‌نمایش با دستهٔ اعضا مجاز نیست." : "در حال دریافت اعضای مجاز…"}</p>
+                    : memberCandidates.length === 0 && <p className="bootstrap-note">عضوی در پروژه مبدأ یافت نشد.</p>}
                   {memberCandidates.map(({ user, membership }) => {
                     const selected = members[user.id];
                     return <article key={user.id} className={selected ? "selected" : ""}>
@@ -361,7 +409,7 @@ export function ProjectBootstrapWizard() {
           <div className="bootstrap-actions">
             {step !== "identity" && <button type="button" className="secondary-button" onClick={() => setStep(previousStep(step))}>مرحله قبل</button>}
             {step !== "members" ? <button type="button" onClick={() => setStep(nextStep(step))}>مرحله بعد</button> : (
-              <button type="submit" disabled={isBusy || !isOnline || !sourceProjectId || categories.length === 0}>{isBusy ? "در حال محاسبه…" : "ایجاد مقصد پیش‌نویس و نمایش پیش‌نمایش"}</button>
+              <button type="submit" disabled={isBusy || !isOnline || !sourceReady || !membersReady || categories.length === 0}>{isBusy ? "در حال محاسبه…" : "ایجاد مقصد پیش‌نویس و نمایش پیش‌نمایش"}</button>
             )}
           </div>
         </form>

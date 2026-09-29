@@ -911,6 +911,14 @@
   background: var(--soft-amber);
 }
 
+.bootstrap-message.error {
+  border-color: var(--status-danger);
+  color: var(--text-primary);
+  background: var(--status-danger-surface);
+}
+
+.bootstrap-retry { margin-top: 0.7rem; }
+
 .bootstrap-workspace,
 .bootstrap-panel {
   margin-top: 1rem;

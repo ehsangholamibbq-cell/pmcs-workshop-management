@@ -384,6 +384,12 @@ jobs:
           name: pmcs-ms70-login-admin-feedback
           path: src/web/artifacts/ms70-login-admin-feedback/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms71-bootstrap-source-truth
+          path: src/web/artifacts/ms71-bootstrap-source-truth/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
