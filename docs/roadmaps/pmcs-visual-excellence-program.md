@@ -1,7 +1,7 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.17.0`
+- نسخه سند: `1.18.0`
 - وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G1 Audit Complete` با Run 401؛ Design System و Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -207,3 +207,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.15.0` | Run 432 مستندات MS50 را با هشت Job سبز پذیرفت؛ MS51 Popover/Drawer/Toast و ردیف موبایل را در هشت وضعیت با Focus/Keyboard و Artifact ۱۲قابی نمونه کرد؛ Source Run 433 هشت Job سبز/Artifact `11005944021` معتبر، CI مستندات شرط Checkpoint، Login/Shell/Chart و نظر مالک برای G3، مهاجرت و G5 جدا |
 | `1.16.0` | Run 434 مستندات MS51 را با هشت Job سبز پذیرفت؛ MS52 Login/Shell/Chart را با جدول جایگزین، حالت‌های بدون داده، Navigation موبایل و Print A4 نمونه کرد؛ Source Run 435 هشت Job سبز/Artifact `11007206344` با ۹ PNG/PDF یک‌صفحه‌ای معتبر، CI مستندات شرط Checkpoint، بستهٔ مرور مالک G3 و G4/G5 باز |
 | `1.17.0` | Run 436 مستندات MS52 را با هشت Job سبز پذیرفت؛ MS53 شواهد فعال و Prototype را در بستهٔ مرور مالک با Manifest منشأ و چهار معیار تصمیم گرد آورد؛ Source Run 437 هشت Job سبز و Artifact `11017486934` با سه قاب معتبر/بازبینی‌شده، CI مستندات شرط Checkpoint؛ تصمیم مالک و شکاف‌های Component شرط بستن G3، مهاجرت G4 و Qualification G5 جدا |
+| `1.18.0` | Run 438 مستندات MS53 را با هشت Job سبز پذیرفت؛ مالک جهت بصری را با دو پیگیری مشخص قبول کرد، نه پذیرش Gate G3؛ MS54 نمونهٔ موبایل/متن فارسی را مستقل اصلاح کرد، Source Run 439 هشت Job سبز، Artifact `11018211937` با دو قاب معتبر؛ CI مستندات شرط Checkpoint، Contract/State G3 و G4/G5 باز |

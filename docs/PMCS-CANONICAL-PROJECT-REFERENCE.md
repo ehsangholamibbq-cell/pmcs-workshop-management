@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.113.0`
+- نسخه: `1.114.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS52 Safe Checkpoint, MS53 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS53 Safe Checkpoint, MS54 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate | MS53 `1a31d2f9c9a368657d67e975952d5b8cce0292e7`؛ tree `f10bc8509d751236f1cbfa8d9667272d63ddb730`؛ Run 437 هشت Job سبز، بستهٔ تصمیم منبع‌دار `VX-G3` با Artifact `11017486934` و سه قاب معتبر؛ CI مستندات شرط اعتبار |
-| Current evidence-bearing source checkpoint | `643a05887df84c6f55e2171b295d15c39defd2b0`؛ MS52 documentation Run 436 هشت Job سبز، Source Run 435 و Artifact ۹ تصویر/PDF معتبر |
-| Source lineage | UX2-MS53 ادامهٔ مستقیم MS52 documentation `643a05887df84c6f55e2171b295d15c39defd2b0` است؛ فقط Commit و fast-forward، بدون reset/force push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS52-C1`؛ Login/Shell/Chart، Runهای 435/436 هشت Job سبز؛ MS53 Candidate |
+| آخرین Source Candidate | MS54 `7d70d55833437685a8e8c2e744548ad0790313a2`؛ tree `a9c20b2eb437ae1b5f05859a5190fa6854a263a6`؛ Run 439 هشت Job سبز، تصمیم مالک و اصلاح موبایل/متن با Artifact `11018211937`؛ CI مستندات شرط اعتبار |
+| Current evidence-bearing source checkpoint | `cb074cd1cb3aa096fb73633f66d4039614dde060`؛ MS53 documentation Run 438 هشت Job سبز، Source Run 437 و Artifact سه‌قابی معتبر |
+| Source lineage | UX2-MS54 ادامهٔ مستقیم MS53 documentation `cb074cd1cb3aa096fb73633f66d4039614dde060` است؛ فقط Commit و fast-forward، بدون reset/force push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS53-C1`؛ بستهٔ مرور مالک، Runهای 437/438 هشت Job سبز؛ MS54 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS52-C1`؛ Login/Shell/Chart، Runهای 435/436 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS51-C1`؛ Overlay/ردیف موبایل، Runهای 433/434 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS50-C1`؛ بستهٔ بازبینی VX-G3، Runهای 431/432 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS49-C1`؛ Navigation/Feedback/Dialog، Runهای 429/430 هشت Job سبز |
@@ -304,6 +305,13 @@ Job سبز و Artifact `11007206344` با ۹ PNG/PDF تک‌صفحه‌ای A4 �
 MS51/MS52، Manifest منشأ و چهار معیار تصمیم آماده کرد. تأیید صریح
 مالک و شکاف‌های Component برای `VX-G3` همچنان بازند؛ مهاجرت
 `VX-G4` پیش از آن شروع نمی‌شود.
+Run 437 و Artifact سه‌قابی معتبر، Run 438 مستندات هشت Job سبز و
+`PMCS-V1.1-UX2-MS53-C1` Safe شد. مالک جهت بصری را با دو پیگیری
+تراکم موبایل و متن فارسی پذیرفت. MS54 این تصمیم را با دامنهٔ محدود
+ثبت و نمونهٔ مستقل MS52 را در دو عرض ۳۹۰/۳۲۰px به‌ترتیب ۱۱۲/۱۱۱px
+کوتاه‌تر کرد. Run 439 هشت Job سبز و Artifact `11018211937` دو تصویر
+Hash-indexed معتبر/بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است.
+این رأی، قبول کامل چهار معیار یا `VX-G3` نیست.
 `VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
@@ -1041,7 +1049,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS53`، اعتبارسنجی Artifact و مستندات بستهٔ مرور `VX-G3` است. پس از Checkpoint، تصمیم صریح مالک و رفع شکاف‌های شرط Gate لازم است؛ سپس مهاجرت فعال `VX-G4` آغاز می‌شود.**
+**گام جاری `V1.1-UX2-MS54`، مستندسازی تصمیم محدود مالک و بهبود Prototype موبایل است. پس از Checkpoint، قرارداد Component و نمونهٔ Stateهای باقی‌مانده برای `VX-G3` تکمیل می‌شوند؛ مهاجرت فعال `VX-G4` فقط پس از پذیرش Gate آغاز می‌شود.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

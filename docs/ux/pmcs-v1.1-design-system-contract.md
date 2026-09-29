@@ -1,9 +1,9 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.13`
+- نسخه Candidate: `1.0.0-rc.14`
 - مسیر بصری: `مدیریت ممتاز`
-- وضعیت: `Awaiting Owner Visual Review`
+- وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
 - تأیید مالک محصول در ۲۰۲۶-۰۹-۲۸: نشان کامل و برش شفاف نماد از
   `assets/brand/official-mark.pdf` برای مبنای فعلی PMCS تأیید شدند؛ منشأ و Hash در
@@ -185,6 +185,14 @@ Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مص
 صفحه باز می‌شوند. این مرور قرارداد Component مصرف‌کنندگان فعال را
 خودکار کامل نمی‌کند؛ تصمیم صریح مالک و رفع شکاف‌های `S/G` شرط
 `VX-G3` است.
+
+در ۲۰۲۶-۰۹-۲۹ مالک جهت بصری را مناسب دانست و با ارزیابی محدود
+تراکم موبایل و متن فنی انگلیسی موافقت کرد؛ تصمیم دقیق در
+`docs/ux/review/ms54-owner-decision.md` است. این پاسخ تأیید جداگانهٔ
+تمام معیارهای مرور یا پذیرش `VX-G3` نیست. UX2-MS54 نمونهٔ مستقل
+`docs/ux/prototypes/ms54/` را با متن فارسی و چیدمان کوتاه‌تر موبایل
+می‌آزماید؛ Run 439/Artifact `11018211937` شواهد این پیگیری محدودند.
+مصرف‌کنندگان فعال، State Contract کامل و Qualification جدا می‌مانند.
 
 ## ۷. Login Experience Contract
 

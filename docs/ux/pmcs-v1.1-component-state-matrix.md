@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.7.0` در `UX2-MS53`
+- نسخهٔ Candidate: `0.8.0` در `UX2-MS54`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -104,6 +104,14 @@ MS53 در `docs/ux/review/ms53/` شواهد فعال/Prototype را با Manifes
 به اصلاح یا شاهد مشخص برای خانه‌های `S/G` وصل شود؛ هیچ خانه‌ای با
 وجود بستهٔ مرور به‌تنهایی به `D` ارتقا نمی‌یابد. تکمیل State contract
 و تأیید صریح مالک پیش‌شرط `VX-G3` باقی می‌مانند.
+
+مالک جهت بصری را با پیگیری تراکم موبایل و متن فارسی پذیرفت. MS54
+نسخهٔ مستقل MS52 را در دو عرض ۳۹۰/۳۲۰px به‌ترتیب ۱۱۲/۱۱۱px
+کوتاه‌تر و متن قابل‌نمایش را فارسی کرد؛ Run 439 و Artifact
+`11018211937` دو تصویر با Source/Hash/ابعاد معتبر دارند. State truth،
+Navigation/Focus و جدول جایگزین در E2E حفظ شدند. این اصلاح، وضعیت
+خانه‌های فعال `S/G` جدول بالا را تغییر نمی‌دهد؛ قبل از پذیرش `VX-G3`
+باید قرارداد و Prototypeهای لازم با شواهد صریح بررسی شوند.
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛

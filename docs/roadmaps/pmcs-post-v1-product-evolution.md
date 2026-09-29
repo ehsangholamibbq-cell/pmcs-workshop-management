@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.136.0`
+- نسخه سند: `1.137.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1457,6 +1457,14 @@ MS52 documentation Run 436 هشت Job سبز و Safe شد. MS53 در
 تکمیل شکاف‌های شرط Gate وابسته می‌ماند. پس از آن مهاجرت مرحله‌ای
 `VX-G4`، Qualification `VX-G5` و سپس INT1/QA1 انجام می‌شوند.
 
+MS53 documentation Run 438 هشت Job سبز و Safe شد. مالک جهت بصری را
+با دو پیگیری مشخص پذیرفت، نه تمام چهار معیار یا Gate `VX-G3` را.
+MS54 در Prototype مستقل، متن قابل‌نمایش را فارسی و ارتفاع موبایل را
+در عرض ۳۹۰/۳۲۰px به‌ترتیب ۱۱۲/۱۱۱px کمتر کرد. Run 439 هشت Job سبز
+و Artifact `11018211937` با دو قاب معتبر/بازبینی‌شده دارد. CI
+مستندات شرط Checkpoint است. بعدی: ledger بسته‌شدن Contract/State
+برای `VX-G3` و برش‌های رفع شکاف؛ مهاجرت `VX-G4` پس از پذیرش Gate.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1833,3 +1841,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.134.0` | UX2-MS50 documentation Run 432 هشت Job سبز و Safe؛ UX2-MS51 Prototype Popover/Drawer/Toast و ردیف موبایل در هشت وضعیت با Browser E2E/۱۲ قاب را Candidate کرد؛ Source Run 433 هشت Job سبز و Artifact `11005944021` معتبر/بازبینی‌شده، CI مستندات شرط اعتبار، MS52 Login/Shell/Chart و G3/G4/G5 باز |
 | `1.135.0` | UX2-MS51 documentation Run 434 هشت Job سبز و Safe؛ UX2-MS52 نمونهٔ Login/Shell/Chart با جدول جایگزین، حالت‌های بدون داده و PDF A4 را Candidate کرد؛ Source Run 435 هشت Job سبز، Artifact `11007206344` با ۹ PNG/PDF تک‌صفحه‌ای معتبر/بازبینی‌شده، CI مستندات شرط اعتبار، MS53 بستهٔ مرور مالک و G3/G4/G5 باز |
 | `1.136.0` | UX2-MS52 documentation Run 436 هشت Job سبز و Safe؛ UX2-MS53 بستهٔ مرور منبع‌دار VX-G3 را با شواهد MS50/51/52 و چهار معیار تصمیم Candidate کرد؛ Source Run 437 هشت Job سبز، Artifact `11017486934` با سه قاب معتبر/بازبینی‌شده، CI مستندات شرط Checkpoint؛ پذیرش مالک و شکاف‌های Component شرط G3، سپس G4/G5 و INT1/QA1 باز |
+| `1.137.0` | UX2-MS53 documentation Run 438 هشت Job سبز و Safe؛ مالک جهت بصری را با پیگیری تراکم موبایل و فارسی‌سازی متن پذیرفت؛ UX2-MS54 Prototype مستقل را در ۳۹۰/۳۲۰px به‌ترتیب ۱۱۲/۱۱۱px کوتاه‌تر کرد، Source Run 439 هشت Job سبز و Artifact `11018211937` با دو قاب معتبر؛ CI مستندات شرط Checkpoint، G3 Contract/State و G4/G5 باز |
