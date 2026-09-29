@@ -288,6 +288,12 @@ jobs:
           name: pmcs-ms53-vx-g3-owner-review
           path: src/web/artifacts/ms53-vx-g3-owner-review/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms54-owner-followups
+          path: src/web/artifacts/ms54-owner-followups/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
