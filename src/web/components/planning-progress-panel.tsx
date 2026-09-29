@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createMeasurementItem,
   deactivateMeasurementItem,
@@ -9,7 +9,7 @@ import {
   type MeasurementItemModel,
   type ProgressLedgerModel,
 } from "@/lib/planning";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate } from "@/lib/persian-date";
 import { PlanningBasisControl } from "@/components/planning-basis-control";
 
@@ -43,6 +43,8 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
   const [target, setTarget] = useState("");
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("در حال دریافت دفتر پیشرفت…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const [busy, setBusy] = useState(false);
   const identity = useMemo(
     () => ({ tenantId, userId }),
@@ -50,22 +52,35 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
   );
 
   const load = useCallback(async () => {
+    const requestId = ++readSequence.current;
+    setItems([]);
+    setLedger(null);
+    onItemsChanged([]);
     if (!isOnline) {
+      setReadState("offline");
       setMessage("دفتر پیشرفت رسمی هنگام اتصال به سرور به‌روز می‌شود؛ ثبت واقعیت آفلاین همچنان فعال است.");
       return;
     }
 
+    setReadState("loading");
+    setMessage("در حال دریافت دفتر پیشرفت…");
     try {
       const [nextItems, nextLedger] = await Promise.all([
         listMeasurementItems(apiBaseUrl, identity, projectId),
         getProgressLedger(apiBaseUrl, identity, projectId),
       ]);
+      if (requestId !== readSequence.current) return;
       setItems(nextItems);
       setLedger(nextLedger);
       onItemsChanged(nextItems.filter((item) => item.status === "Active"));
+      setReadState("current");
       setMessage(progressMessage(nextLedger));
     } catch (error) {
-      setMessage(toUserMessage(error, "دفتر پیشرفت دریافت نشد یا دسترسی این کاربر محدود است."));
+      if (requestId !== readSequence.current) return;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به دفتر پیشرفت این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "دفتر پیشرفت دریافت نشد."));
     }
   }, [apiBaseUrl, identity, isOnline, onItemsChanged, projectId]);
 
@@ -76,6 +91,7 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
 
   async function createItem(event: FormEvent) {
     event.preventDefault();
+    if (!isOnline || readState !== "current" || busy) return;
     const targetQuantity = target.trim() ? Number(target) : null;
     if (!code.trim() || !title.trim() || !unit.trim() ||
         (targetQuantity !== null && (!Number.isFinite(targetQuantity) || targetQuantity <= 0))) {
@@ -101,6 +117,12 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
       await load();
       onChanged?.();
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setItems([]);
+        setLedger(null);
+        onItemsChanged([]);
+        setReadState("forbidden");
+      }
       setMessage(toUserMessage(error, "ثبت قلم اندازه‌گیری ناموفق بود."));
     } finally {
       setBusy(false);
@@ -108,6 +130,7 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
   }
 
   async function deactivate(itemId: string) {
+    if (!isOnline || readState !== "current" || busy) return;
     const item = items.find((candidate) => candidate.id === itemId);
     if (!item) {
       setMessage("قلم اندازه‌گیری در فهرست فعلی پیدا نشد؛ صفحه را تازه کنید.");
@@ -120,14 +143,29 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
       await load();
       onChanged?.();
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setItems([]);
+        setLedger(null);
+        onItemsChanged([]);
+        setReadState("forbidden");
+      }
       setMessage(toUserMessage(error, "غیرفعال‌کردن قلم اندازه‌گیری ناموفق بود."));
     } finally {
       setBusy(false);
     }
   }
 
+  if (readState !== "current") return (
+    <section className="section-block planning-progress" id="progress" data-testid="planning-progress" data-read-state={readState}>
+      <div className="section-title"><div><p className="eyebrow">برنامه‌ریزی و پیشرفت</p><h2>دفتر مستقل اندازه‌گیری پیشرفت</h2></div></div>
+      <p className="calculation-note" role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دفتر پیشرفت</button>}
+    </section>
+  );
+
   return (
-    <section className="section-block planning-progress" id="progress">
+    <section className="section-block planning-progress" id="progress" data-testid="planning-progress" data-read-state={readState}>
       <div className="section-title">
         <div>
           <p className="eyebrow">برنامه‌ریزی و پیشرفت</p>
@@ -169,7 +207,7 @@ export function PlanningProgressPanel(props: PlanningProgressPanelProps) {
         <label><span>واحد</span><input value={unit} onChange={(event) => setUnit(event.target.value)} placeholder="مترمکعب" /></label>
         <label><span>مقدار هدف اختیاری</span><input inputMode="decimal" value={target} onChange={(event) => setTarget(event.target.value)} placeholder="اختیاری" /></label>
         <label className="wide"><span>یادداشت اختیاری</span><input value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
-        <button type="submit" disabled={busy || !isOnline}>افزودن قلم</button>
+        <button type="submit" disabled={busy || !isOnline || readState !== "current"}>افزودن قلم</button>
       </form>
 
       {ledger && ledger.items.length > 0 ? (
