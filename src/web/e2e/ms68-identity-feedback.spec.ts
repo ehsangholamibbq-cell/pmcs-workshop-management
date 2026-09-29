@@ -40,7 +40,7 @@ test("identity directory and invitation retain truthful loading, failure and suc
   await capture("identity-390-loading.png", 390, 844);
   releaseLoad();
   await expect(feedback).toHaveAttribute("role", "alert");
-  await expect(feedback).toContainText("سرویس موردنیاز هنوز آماده نیست");
+  await expect(feedback).toContainText("در حال حاضر مشکلی در سرور رخ داده است");
   await expect(feedback).not.toContainText("Sensitive upstream error");
   await expect(page.getByRole("heading", { name: "افزودن کاربر" })).toHaveCount(0);
   await capture("identity-390-load-error.png", 390, 844);
