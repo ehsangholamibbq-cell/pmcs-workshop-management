@@ -5,9 +5,10 @@ import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type Reac
 interface SidebarNavigationProps {
   readonly children: ReactNode;
   readonly label: string;
+  readonly scrollHint?: string;
 }
 
-export function SidebarNavigation({ children, label }: SidebarNavigationProps) {
+export function SidebarNavigation({ children, label, scrollHint }: SidebarNavigationProps) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const toggle = useRef<HTMLButtonElement>(null);
@@ -30,7 +31,10 @@ export function SidebarNavigation({ children, label }: SidebarNavigationProps) {
         onClick={() => setOpen(current => !current)}>
         {open ? "بستن فهرست بخش‌ها" : "باز کردن فهرست بخش‌ها"}
       </button>
-      <nav id={id} aria-label={label} hidden={!open} onClick={closeOnLink}>{children}</nav>
+      <nav id={id} aria-label={label} hidden={!open} onClick={closeOnLink}>
+        {scrollHint && <p className="sidebar-scroll-hint">{scrollHint}</p>}
+        {children}
+      </nav>
     </div>
   </>;
 }

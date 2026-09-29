@@ -267,7 +267,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
     <main className="app-shell project-print-shell">
       <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
-        <SidebarNavigation label="بخش‌های مرکز فرمان پروژه">
+        <SidebarNavigation label="بخش‌های مرکز فرمان پروژه"
+          scrollHint="برای بخش‌های بیشتر، این فهرست را پیمایش کنید.">
           <Link className="nav-item" href="/">پروژه‌ها</Link>
           {(session.tenantRole === "TenantAdministrator" || session.tenantRole === "PortfolioViewer") && (
             <a className="nav-item" href="/portfolio">نمای سبد مدیریتی</a>

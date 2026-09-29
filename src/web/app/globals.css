@@ -3886,6 +3886,14 @@ output {
     display: none;
   }
 
+  .disclosure-sidebar .sidebar-mobile-navigation .sidebar-scroll-hint {
+    margin: 0;
+    padding: 0.25rem 0.6rem;
+    color: #dbe6e7;
+    font-size: 0.83rem;
+    line-height: 1.6;
+  }
+
   .disclosure-sidebar .sidebar-mobile-navigation .nav-item {
     display: block;
     white-space: normal;

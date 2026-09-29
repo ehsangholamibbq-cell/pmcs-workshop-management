@@ -49,6 +49,7 @@ test("project Command Center discloses the same permitted links without mobile o
     await page.keyboard.press("Enter");
     await expect(sidebar.getByRole("button", { name: "بستن فهرست بخش‌ها" })).toHaveAttribute("aria-expanded", "true");
     await expect(mobile).toBeVisible();
+    await expect(mobile.getByText("برای بخش‌های بیشتر، این فهرست را پیمایش کنید.")).toBeVisible();
     expect(await mobile.getByRole("link").allTextContents()).toEqual(permitted);
     await page.keyboard.press("Tab");
     await expect(mobile.getByRole("link", { name: "پروژه‌ها", exact: true })).toBeFocused();
