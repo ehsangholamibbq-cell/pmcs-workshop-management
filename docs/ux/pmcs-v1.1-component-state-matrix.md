@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.4.0` در `UX2-MS50`
+- نسخهٔ Candidate: `0.5.0` در `UX2-MS51`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -81,6 +81,15 @@ UI فعال و Prototypeها آماده می‌کند. ده تصویر از Arti
 CI بدون تغییر همراه SHA/ابعاد نگه داشته شده‌اند. این مقایسه هنوز
 خانه‌های `G` یا `S` را به `D` تبدیل نمی‌کند؛ برای تکمیل قرارداد باید
 رفتارهای باقیمانده به‌صورت محدود پیاده‌سازی و در Browser سنجیده شوند.
+
+MS51 در `docs/ux/prototypes/ms51/` نمونهٔ مستقل Popover، Drawer،
+Toast و fallback ردیف موبایل را در هشت وضعیت داده می‌افزاید. ردیف‌ها
+در Loading/NoData/Error/NoPermission/Offline/Conflict پنهان‌اند؛ Skeleton
+خنثی `aria-hidden` است و Action در وضعیت‌های فاقد پاسخ/مجوز/اتصال یا
+دارای تعارض قفل می‌شود. Popover و Drawer Focus و Escape/بازگشت Focus
+دارند؛ Toast متن زنده و دکمهٔ بستن دارد. E2E Run 433 و ۱۲ قاب با
+Source/Hash/ابعاد معتبر و بازبینی‌شده‌اند. این نمونه فقط `P` است؛
+خانه‌های UI فعال و Qualification مسیرها در `VX-G4/G5` باقی می‌مانند.
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛

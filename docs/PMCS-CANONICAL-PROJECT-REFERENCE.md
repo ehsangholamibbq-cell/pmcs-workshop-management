@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.110.0`
+- نسخه: `1.111.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS49 Safe Checkpoint, MS50 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS50 Safe Checkpoint, MS51 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate | MS50 `2c2d2848dc5a174982daff2331d3f4093aee8ab5`؛ tree `7ec5bf5b2c080635f83c7ee5d838c06dffa40204`؛ Run 431 هشت Job سبز، بستهٔ مرور VX-G3 با ده تصویر منبع‌دار و Artifact `11005871839` معتبر؛ CI مستندات شرط اعتبار |
-| Current evidence-bearing source checkpoint | `a64f0180e01cef58b7a22a177980278576f5a0e2`؛ MS49 documentation Run 430 هشت Job سبز، Source Run 429 و Artifact ۱۱قابی معتبر |
-| Source lineage | UX2-MS50 ادامهٔ مستقیم MS49 documentation `a64f0180e01cef58b7a22a177980278576f5a0e2` است؛ فقط Commit و fast-forward، بدون reset |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS49-C1`؛ Navigation/Feedback/Dialog، Runهای 429/430 هشت Job سبز؛ MS50 Candidate |
+| آخرین Source Candidate | MS51 `215853f91c2bb9f4b2462ac4facc54520e65a1be`؛ tree `5029652e405aefeeadac1c797ab9b1fd1c1a6fc4`؛ Run 433 هشت Job سبز، Overlay/ردیف موبایل با Artifact `11005944021` و ۱۲ قاب معتبر؛ CI مستندات شرط اعتبار |
+| Current evidence-bearing source checkpoint | `14de8ab80f19c3c168993c043b2093df0f30dd4c`؛ MS50 documentation Run 432 هشت Job سبز، Source Run 431 و بستهٔ مرور معتبر |
+| Source lineage | UX2-MS51 ادامهٔ مستقیم MS50 documentation `14de8ab80f19c3c168993c043b2093df0f30dd4c` است؛ فقط Commit و fast-forward، بدون reset |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS50-C1`؛ بستهٔ بازبینی VX-G3، Runهای 431/432 هشت Job سبز؛ MS51 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS49-C1`؛ Navigation/Feedback/Dialog، Runهای 429/430 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS48-C1`؛ وزیرمتن نسخهٔ 2.0.0، Runهای 425/426 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS47-C1`؛ نمونهٔ Foundation، Runهای 419/420 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS46-C1`؛ ماتریس State و Hover غیرفعال، Runهای 416/417 هشت Job سبز |
@@ -283,7 +284,13 @@ Job سبز و Artifact `11004643711` با ۱۱ PNG/Source/Hash/ابعاد معت
 از Artifactهای Runs 412/419/425/429 را با Manifest Hash و لینک نمونه‌ها
 برای بازبینی مالک یکجا قرار می‌دهد؛ Run 431 هشت Job سبز و Artifact
 `11005871839` با digest ZIP و سه قاب Desktop/Mobile/۳۲۰px معتبر و
-بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است.
+بازبینی‌شده دارد؛ Run 432 مستندات هم هشت Job سبز و
+`PMCS-V1.1-UX2-MS50-C1` Safe شد. MS51 Source
+`215853f91c2bb9f4b2462ac4facc54520e65a1be` / tree
+`5029652e405aefeeadac1c797ab9b1fd1c1a6fc4` یک Prototype
+مستقل Popover/Drawer/Toast و fallback ردیف موبایل با هشت وضعیت داده
+می‌سازد؛ Run 433 هشت Job سبز و Artifact `11005944021` با ۱۲ قاب
+Hash-indexed معتبر/بازبینی‌شده دارد، CI مستندات شرط Checkpoint است.
 `VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
@@ -1021,7 +1028,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS50`، اعتبارسنجی بستهٔ بازبینی بصری منبع‌دار است. سپس `UX2-MS51` شکاف‌های باقیماندهٔ Component/State را در نمونه و آزمون محدود تکمیل می‌کند تا نتیجهٔ مالک برای `VX-G3` روی Evidence کامل ثبت شود.**
+**گام جاری `V1.1-UX2-MS51`، مستندسازی نمونهٔ Overlay/ردیف موبایل است. سپس `UX2-MS52` Login/Shell/Chart و مرزهای Responsive/Keyboard آن‌ها را در نمونهٔ محدود تکمیل می‌کند تا بستهٔ کامل برای بازبینی مالک `VX-G3` آماده شود.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

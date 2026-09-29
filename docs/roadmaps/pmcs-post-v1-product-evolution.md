@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.133.0`
+- نسخه سند: `1.134.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1431,6 +1431,15 @@ Checkpoint است. Exact next `UX2-MS51` تکمیل محدود شکاف‌های
 Component/State برای بازبینی مالک `VX-G3` است؛
 `VX-G3/G4/G5` هنوز بازند.
 
+MS50 documentation Run 432 هشت Job سبز و Safe شد. MS51 Source
+`215853f91c2bb9f4b2462ac4facc54520e65a1be` Prototype مستقل
+Popover/Drawer/Toast و ردیف‌های موبایل را در هشت وضعیت داده با
+Keyboard/Focus و E2E سه اندازه افزود. Run 433 هشت Job سبز و Artifact
+`11005944021` با ۱۲ قاب معتبر/بازبینی‌شده دارد؛ CI مستندات شرط
+Checkpoint است. Exact next `UX2-MS52` تکمیل محدود نمونهٔ
+Login/Shell/Chart و شواهد Responsive/Keyboard برای مرور مالک
+`VX-G3` است؛ `VX-G4/G5` و INT1/QA1 بازند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1804,3 +1813,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.131.0` | UX2-MS47 documentation Run 420 هشت Job سبز و Safe؛ UX2-MS48 وزیرمتن نسخهٔ 2.0.0 را در Web/Offline/PDF/XLSX/Print با Golden رسمی، F05 دوصفحه‌ای، مرور قاب‌های UI/چاپ و Regression متصل کرد؛ Source Run 425 هشت Job سبز، CI مستندات شرط پذیرش، MS49 State Contract و G3/G4/G5 باز |
 | `1.132.0` | UX2-MS48 documentation Run 426 هشت Job سبز و Safe؛ UX2-MS49 Prototype مستقل Navigation موبایل، Feedback هفت وضعیت و Dialog تأیید نسخه با E2E و Artifact ۱۱قابی سه اندازه را Candidate کرد؛ Source Run 429 هشت Job سبز، CI مستندات شرط اعتبار، MS50 شکاف‌های Component و G3/G4/G5 باز |
 | `1.133.0` | UX2-MS49 documentation Run 430 هشت Job سبز و Safe؛ UX2-MS50 بستهٔ بازبینی بصری ده قاب از چهار Artifact معتبر را با منشأ/Hash و لینک Prototypeها Candidate کرد؛ Source Run 431 هشت Job سبز/Artifact `11005871839` معتبر و بازبینی‌شده، CI مستندات شرط اعتبار، MS51 Component gaps و G3/G4/G5 باز |
+| `1.134.0` | UX2-MS50 documentation Run 432 هشت Job سبز و Safe؛ UX2-MS51 Prototype Popover/Drawer/Toast و ردیف موبایل در هشت وضعیت با Browser E2E/۱۲ قاب را Candidate کرد؛ Source Run 433 هشت Job سبز و Artifact `11005944021` معتبر/بازبینی‌شده، CI مستندات شرط اعتبار، MS52 Login/Shell/Chart و G3/G4/G5 باز |

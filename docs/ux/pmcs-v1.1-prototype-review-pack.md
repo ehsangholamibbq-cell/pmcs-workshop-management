@@ -1,7 +1,7 @@
 # PMCS V1.1 — بستهٔ بازبینی Prototype و قلم، UX2-MS44
 
 - شناسه: `PMCS-UX-PROTOTYPE-REVIEW-001`
-- نسخهٔ Candidate: `0.3.0`
+- نسخهٔ Candidate: `0.4.0`
 - وضعیت: نمونه‌های مستقل برای بازبینی؛ وزیرمتن MS48 پذیرفته، `VX-G3/G4/G5` باز
 - ورودی: مسیر مصوب «مدیریت ممتاز»، نشان شفاف رسمی، Design System `1.0.0-rc.10`، قرارداد فونت `PMCS-UX-TYPOGRAPHY-001 v1.5.0`
 
@@ -92,3 +92,13 @@ MS50 بستهٔ منبع‌دار `docs/ux/review/ms50/index.html` را برای
 وصل می‌کند. سه نمونهٔ تعاملی از همان صفحه باز می‌شوند. نظر مالک روی
 این بسته جداگانه ثبت می‌شود؛ حضور تصاویر جای تکمیل Component Contract
 و تأیید `VX-G3` نیست.
+
+MS51 در `docs/ux/prototypes/ms51/` Popover/Drawer/Toast، هشت وضعیت
+داده و fallback جدول به Cardهای Label/Value موبایل را با نشان/وزیرمتن
+نسخهٔ `2.0.0` نمونه می‌کند. Browser E2E قفل Action، نبود Fact ساختگی
+در Loading/Permission، Focus/Escape/بازگشت Focus و عرض ۳۲۰px را
+می‌سنجد. Run 433 هشت Job سبز و Artifact `11005944021` با ۱۲ PNG،
+Source/Hash/ابعاد معتبر دارد؛ Default/Loading/Error/Popover/Drawer
+در موبایل و Desktop بازبینی شدند. Drawer در Screenshot Full-page
+از viewport بلندتر است و Backdrop فقط viewport فعلی را می‌پوشاند؛
+نمای واقعی ۳۹۰×۸۴۴ خواناست. نمونه، مهاجرت مصرف‌کنندهٔ فعال نیست.

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.11`
+- نسخه Candidate: `1.0.0-rc.12`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Awaiting Owner Visual Review`
 - Runtime change: ندارد
@@ -167,6 +167,11 @@ PDF/XLSX/Print با Golden رسمی و Runهای 425/426 متصل شد. UX2-MS49
 ده تصویر دست‌نخورده را ثبت می‌کند. این Evidence برای بازبینی مالک است؛
 خانه‌های `G` ماتریس Component، تأیید `VX-G3`، مهاجرت `VX-G4` و
 Qualification `VX-G5` با انتشار بسته به‌تنهایی بسته نمی‌شوند.
+
+در UX2-MS51، `docs/ux/prototypes/ms51/` لایه‌های Popover/Drawer/Toast
+و ردیف موبایل را با وضعیت‌های داده و رفتار Focus/Keyboard نمونه می‌کند.
+Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مصرف‌کنندگان
+فعال و نمونهٔ تفصیلی Login/Shell/Chart هنوز شرط Gate بعدی‌اند.
 
 ## ۷. Login Experience Contract
 

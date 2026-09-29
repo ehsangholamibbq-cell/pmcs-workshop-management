@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS49 Safe، MS50 Review Pack Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS50 Safe، MS51 Overlay Prototype Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -325,3 +325,11 @@ ID/digest و Hash/ابعاد در `images.json` است. آزمون مرورگر 
 هشت Job سبز و Artifact `11005871839` با سه قاب معتبر/بازبینی‌شده دارد؛
 CI مستندات شرط Checkpoint است؛ تأیید مالک برای `VX-G3` و شکاف‌های Component
 هنوز باقی است. `VX-G4/G5` جدا می‌مانند.
+
+MS50 documentation Run 432 هشت Job سبز و Safe شد. MS51 نمونهٔ مستقل
+Popover/Drawer/Toast و ردیف موبایل را در هشت وضعیت داده با Focus/
+Keyboard و قفل Action سنجید. Source Run 433 هشت Job سبز و Artifact
+`11005944021` با ۱۲ قاب Source/Hash/ابعاد معتبر دارد؛ قاب‌های
+Default، Loading، Error، Popover و Drawer بازبینی شدند. CI مستندات
+شرط Checkpoint است؛ نمونهٔ Login/Shell/Chart و تصمیم مالک برای
+`VX-G3`، سپس مهاجرت `VX-G4` و Qualification `VX-G5` بازند.
