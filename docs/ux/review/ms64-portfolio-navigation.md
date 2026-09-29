@@ -14,3 +14,10 @@ Rule، Feature Flag، Chat و Reporting تغییر نمی‌کنند. E2E عرض
 سه عرض و index شامل Source/Hash/ابعاد باید از CI دریافت و بصری مرور
 شوند. این یک مهاجرت محدود `VX-G4` است؛ Gate مهاجرت کامل و `VX-G5`
 تا پوشش سایر صفحه‌ها و آزمون Qualification باز می‌مانند.
+
+Source `ff71e5ca1c39a83dbe7f443145b31c00a44f938c` در Run 470 هر
+هشت Job سبز داشت. Artifact `11032562526` شش PNG/Index را با SHA-256
+آرشیو `67ad0f000904966b92091577e4e472365cc8973109acfc22d21688e66e82acf9`
+ثبت کرد؛ Source/Hash/ابعاد فایل‌ها با index تطبیق یافت و قاب‌ها مرور
+شدند. Checkpoint مستقل `PMCS-V1.1-UX2-MS64-C1` پس از CI مستندات معتبر
+می‌شود.

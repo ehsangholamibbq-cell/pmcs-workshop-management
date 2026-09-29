@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.17.0` در `UX2-MS63`
+- نسخهٔ Candidate: `0.18.0` در `UX2-MS64`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -20,7 +20,7 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D | Error و Retry D | Offline/NoPermission در Routeهای منتخب D | قاب‌های 25–27، 30–31، 33/35؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
 | Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
-| Shell/Navigation و Print | D | Keyboard انتهای Sidebar D | Navigation جایگزین موبایل G | پیام وضعیت مستقل S | Print بدون Action/Navigation D | قاب‌های 39، 20–23، 43؛ Prototype MS49 Disclosure موبایل دارد، اما UI فعال هنوز مهاجرت نکرده است |
+| Shell/Navigation و Print | D | Keyboard انتهای Sidebar D؛ Portfolio mobile Escape/Focus D | Navigation موبایل Portfolio D؛ سایر Shellها G | پیام وضعیت مستقل S | Print بدون Action/Navigation D | قاب‌های 39، 20–23، 43؛ MS64 شش قاب و E2E برای Portfolio، سایر Routeها و Qualification باز |
 | Chat، Reporting، Agent | D/S | Action Focus S | Flags خاموش D | تعارض Chat D؛ Preview گزارش محدود S | Permission/Offline نمونه‌های D/S | قاب‌های 22–24، 33–40 و Prototype MS44؛ مهاجرت و Visual Qualification باز |
 
 ## قرارداد حداقلی هر State
@@ -203,3 +203,12 @@ MS48/61 قلم و Token، Focus و Reduced Motion را با شواهد مرور�
 را پس از CI مستقل MS63 می‌پذیرد؛ هیچ خانهٔ `S/G` با این تصمیم به `D`
 تبدیل نمی‌شود. اتصال کامل همهٔ مسیرهای فعال به Componentهای مشترک در
 `VX-G4`، سپس آزمون رفتاری/بصری/چاپ/دسترس‌پذیری در `VX-G5` انجام می‌شود.
+
+## پیوست UX2-MS64 — نخستین مصرف‌کنندهٔ فعال
+
+فهرست موبایل `/portfolio` با مجموعهٔ پیوندهای مشترک، حالت باز/بسته،
+`aria-current`، Enter/Tab/Escape و بازگشت Focus در Run 470 و شش قاب
+سه عرض سنجیده شد. این `D` فقط برای Navigation همان Route است؛ پنج Shell
+دیگر در این مرحله تغییر نکرده‌اند و ستون‌های دیگر جدول با شاهد MS64
+به‌طور خودکار تکمیل نمی‌شوند. Artifact `11032562526` و Checkpoint
+`PMCS-V1.1-UX2-MS64-C1` منشأ این تغییر هستند.
