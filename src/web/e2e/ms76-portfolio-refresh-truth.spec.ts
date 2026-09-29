@@ -58,6 +58,7 @@ test("portfolio refresh hides an old aggregate until a new authorized response",
   releaseRefresh();
   await expect(workspace).toHaveAttribute("data-read-state", "error");
   await expect(page.locator(".portfolio-kpis")).toHaveCount(0);
+  await expect(workspace.getByRole("alert")).toHaveClass(/portfolio-system-message error/u);
   await expect(workspace.getByRole("alert")).not.toContainText("Sensitive upstream error");
   await capture("portfolio-320-read-error.png", 320, 720);
 

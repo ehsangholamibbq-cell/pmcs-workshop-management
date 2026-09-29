@@ -3286,6 +3286,12 @@ output {
   background: var(--soft-amber);
 }
 
+.portfolio-system-message.error {
+  border-inline-start-color: var(--status-danger);
+  color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
+
 .identity-feedback.success {
   border-inline-start-color: var(--status-success);
   background: var(--status-success-surface);

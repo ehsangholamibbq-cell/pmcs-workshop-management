@@ -148,7 +148,7 @@ function PortfolioDashboardContent() {
           </div>
         </header>
 
-        <p className={`portfolio-system-message ${!isOnline ? "warning" : ""}`}
+        <p className={`portfolio-system-message ${effectiveReadState === "error" ? "error" : !isOnline ? "warning" : ""}`}
           role={effectiveReadState === "error" ? "alert" : "status"}>
           {isOnline ? message : "مرکز فرمان سبد پروژه‌ها برای تجمیع امن داده‌ها به اتصال سرور نیاز دارد."}
         </p>
