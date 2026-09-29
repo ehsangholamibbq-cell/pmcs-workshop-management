@@ -43,8 +43,17 @@ function PortfolioReportingContent() {
   const [pendingRun, setPendingRun] = useState<PortfolioReportRequest | null>(pendingRequest);
   const [busy, setBusy] = useState(false);
   const [runNotice, setRunNotice] = useState("");
+  const [runNoticeKind, setRunNoticeKind] = useState<"status" | "error">("status");
   const [downloadBusyId, setDownloadBusyId] = useState("");
   const [downloadNotice, setDownloadNotice] = useState("");
+  const [downloadNoticeKind, setDownloadNoticeKind] = useState<"status" | "error">("status");
+
+  function refreshCenter(clearNotices = false) {
+    setView(null);
+    setFailure("");
+    if (clearNotices) { setRunNotice(""); setDownloadNotice(""); }
+    setRefresh((value) => value + 1);
+  }
 
   const remember = useCallback((request: PortfolioReportRequest | null) => {
     try {
@@ -82,16 +91,18 @@ function PortfolioReportingContent() {
     remember(request);
     setBusy(true);
     setRunNotice("");
+    setRunNoticeKind("status");
     try {
       await requestPortfolioReport("/api/pmcs", request);
       remember(null);
       setRunNotice("درخواست گزارش سبد پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.");
-      setRefresh((value) => value + 1);
+      refreshCenter();
     } catch (error) {
       if (error instanceof PortfolioReportRequestAccessError) {
         remember(null);
         setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
       } else {
+        setRunNoticeKind("error");
         setRunNotice(error instanceof Error ? error.message : "درخواست گزارش سبد کامل نشد.");
       }
     } finally {
@@ -103,6 +114,7 @@ function PortfolioReportingContent() {
     if (downloadBusyId || view?.kind !== "ready") return;
     setDownloadBusyId(output.id);
     setDownloadNotice("");
+    setDownloadNoticeKind("status");
     try {
       const blob = await downloadPortfolioReportOutput("/api/pmcs", run, output);
       const url = URL.createObjectURL(blob);
@@ -119,6 +131,7 @@ function PortfolioReportingContent() {
         remember(null);
         setView({ kind: "forbidden" });
       } else {
+        setDownloadNoticeKind("error");
         setDownloadNotice(error instanceof Error ? error.message : "دریافت خروجی سبد کامل نشد.");
       }
     } finally {
@@ -143,12 +156,12 @@ function PortfolioReportingContent() {
           <h1 id="portfolio-reporting-title">مرکز گزارش‌های سبد پروژه‌ها</h1>
           <p className="muted">فقط مجموعهٔ پروژه‌های مجاز و سنجش‌پذیر در گزارش سبد حضور دارند.</p>
         </div>
-        <button className="secondary-button" type="button" onClick={() => setRefresh((value) => value + 1)}>
+        <button className="secondary-button" type="button" onClick={() => refreshCenter(true)}>
           تازه‌سازی
         </button>
       </header>
       {failure ? <section className="reporting-state" role="alert"><h2>دریافت گزارش‌ها کامل نشد</h2>
-        <p>{failure}</p><button type="button" onClick={() => setRefresh((value) => value + 1)}>تلاش دوباره</button>
+        <p>{failure}</p><button type="button" onClick={() => refreshCenter(true)}>تلاش دوباره</button>
       </section>
         : !view ? <p className="reporting-state" role="status">در حال دریافت مرکز گزارش‌های سبد…</p>
         : view.kind === "unavailable" ? <section className="reporting-state" role="status">
@@ -160,8 +173,8 @@ function PortfolioReportingContent() {
           <p>مجوز سازمانی گزارش و دسترسی به سبد را با مدیر بررسی کنید.</p>
         </section>
         : <div className="reporting-sections">
-          {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
-          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>}
+          {runNotice && <p role={runNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${runNoticeKind}`}>{runNotice}</p>}
+          {downloadNotice && <p role={downloadNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${downloadNoticeKind}`}>{downloadNotice}</p>}
           {pendingRun && <div className="reporting-notice reporting-pending" role="status">
             <span>یک درخواست نیمه‌تمام سبد محفوظ است؛ پس از بررسی سابقه همان درخواست را دوباره بفرستید.</span>
             <button className="secondary-button" type="button" onClick={() => remember(null)}>

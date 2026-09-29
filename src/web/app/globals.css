@@ -1683,6 +1683,7 @@ textarea {
 .reporting-request { display: grid; gap: 0.6rem; margin-top: 1rem; }
 .reporting-request button { justify-self: start; }
 .reporting-notice { padding: 0.9rem 1rem; border-radius: 0.8rem; background: var(--status-info-surface); }
+.reporting-notice.error { border: 1px solid var(--status-danger); background: var(--status-danger-surface); }
 .reporting-pending { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
 .reporting-input-hint { border-top: 1px solid var(--border-default); padding-top: 0.75rem; }
 .reporting-checkbox { display: flex; align-items: center; gap: 0.5rem; }

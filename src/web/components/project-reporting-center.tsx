@@ -46,8 +46,10 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   const [pendingRun, setPendingRun] = useState<ProjectReportRequest | null>(() => pendingRequest(projectId));
   const [busyCode, setBusyCode] = useState("");
   const [runNotice, setRunNotice] = useState("");
+  const [runNoticeKind, setRunNoticeKind] = useState<"status" | "error">("status");
   const [downloadBusyId, setDownloadBusyId] = useState("");
   const [downloadNotice, setDownloadNotice] = useState("");
+  const [downloadNoticeKind, setDownloadNoticeKind] = useState<"status" | "error">("status");
   const [dailyReports, setDailyReports] = useState<readonly DailyReportSummary[]>([]);
   const [dailyError, setDailyError] = useState("");
   const [dailyReportId, setDailyReportId] = useState("");
@@ -57,6 +59,13 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   const hasDailyDefinition = view?.kind === "ready" &&
     view.definitions.some((item) => item.code === "daily-report-certified");
   const validPeriodStart = isValidProjectPeriodStart(periodKind, periodStartLocalDate);
+
+  function refreshCenter(clearNotices = false) {
+    setView(null);
+    setFailure("");
+    if (clearNotices) { setRunNotice(""); setDownloadNotice(""); }
+    setRefresh((value) => value + 1);
+  }
 
   const remember = useCallback((request: ProjectReportRequest | null) => {
     try {
@@ -120,16 +129,18 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
     remember(request);
     setBusyCode(definition.code);
     setRunNotice("");
+    setRunNoticeKind("status");
     try {
       await requestProjectReport("/api/pmcs", request);
       remember(null);
       setRunNotice("درخواست گزارش پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.");
-      setRefresh((value) => value + 1);
+      refreshCenter();
     } catch (error) {
       if (error instanceof ReportRequestAccessError) {
         setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
         remember(null);
       } else {
+        setRunNoticeKind("error");
         setRunNotice(error instanceof Error ? error.message : "درخواست گزارش کامل نشد؛ دوباره تلاش کنید.");
       }
     } finally {
@@ -141,6 +152,7 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
     if (downloadBusyId || view?.kind !== "ready") return;
     setDownloadBusyId(output.id);
     setDownloadNotice("");
+    setDownloadNoticeKind("status");
     try {
       const blob = await downloadProjectReportOutput("/api/pmcs", projectId, run, output);
       const url = URL.createObjectURL(blob);
@@ -157,6 +169,7 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
         remember(null);
         setView({ kind: "forbidden" });
       } else {
+        setDownloadNoticeKind("error");
         setDownloadNotice(error instanceof Error ? error.message : "دریافت خروجی کامل نشد.");
       }
     } finally {
@@ -182,12 +195,12 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
           <h1 id="reporting-title">مرکز گزارش‌های پروژه</h1>
           <p className="muted">هر گزارش از داده و مجوز همان پروژه ساخته می‌شود؛ نبود داده به‌صورت مستقل نمایش داده می‌شود.</p>
         </div>
-        <button className="secondary-button" type="button" onClick={() => setRefresh((value) => value + 1)}>
+        <button className="secondary-button" type="button" onClick={() => refreshCenter(true)}>
           تازه‌سازی
         </button>
       </header>
       {failure ? <section className="reporting-state" role="alert"><h2>دریافت گزارش‌ها کامل نشد</h2>
-        <p>{failure}</p><button type="button" onClick={() => setRefresh((value) => value + 1)}>تلاش دوباره</button></section>
+        <p>{failure}</p><button type="button" onClick={() => refreshCenter(true)}>تلاش دوباره</button></section>
         : !view ? <p className="reporting-state" role="status">در حال دریافت مرکز گزارش‌ها…</p>
         : view.kind === "unavailable" ? <section className="reporting-state" role="status">
           <h2>گزارش‌گیری در این پروژه در دسترس نیست</h2>
@@ -197,8 +210,8 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
           <h2>دسترسی به گزارش‌ها ندارید</h2><p>مجوز پروژه و منبع گزارش را با مدیر بررسی کنید.</p>
         </section>
         : <div className="reporting-sections">
-          {runNotice && <p role="status" className="reporting-notice">{runNotice}</p>}
-          {downloadNotice && <p role="status" className="reporting-notice">{downloadNotice}</p>}
+          {runNotice && <p role={runNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${runNoticeKind}`}>{runNotice}</p>}
+          {downloadNotice && <p role={downloadNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${downloadNoticeKind}`}>{downloadNotice}</p>}
           {pendingRun && <div className="reporting-notice reporting-pending" role="status">
             <span>یک درخواست نیمه‌تمام محفوظ است. پس از بررسی سابقه، همان درخواست را دوباره بفرستید.</span>
             <button className="secondary-button" type="button" onClick={() => remember(null)}>
