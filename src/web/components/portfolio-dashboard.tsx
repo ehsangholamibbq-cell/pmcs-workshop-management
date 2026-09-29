@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ProjectFeatureState, ProjectOperationalStatus } from "@/lib/command-center";
 import { currencyLabel, formatAmountFa, toUserMessage } from "@/lib/localization";
@@ -91,10 +91,10 @@ function PortfolioDashboardContent() {
 
   return (
     <main className="app-shell portfolio-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
+      <aside className="sidebar portfolio-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
-        <nav>
-          <Link className="nav-item active" href="/portfolio">سبد پروژه‌ها</Link>
+        <SidebarNavigation label="بخش‌های سبد پروژه‌ها">
+          <Link className="nav-item active" href="/portfolio" aria-current="page">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/portfolio/reports">گزارش‌های سبد</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
           <a className="nav-item" href="#exceptions">اقدامات کلیدی</a>
@@ -102,14 +102,13 @@ function PortfolioDashboardContent() {
           <Link className="nav-item" href="/profile">پروفایل من</Link>
           {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</Link>}
           {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>}
-        </nav>
+        </SidebarNavigation>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />
           {isOnline ? "متصل به سرور" : "بدون اتصال"}
         </div>
         <SessionBadge />
       </aside>
-      <MobileNavigationHint />
 
       <section className="workspace portfolio-workspace">
         <header className="topbar portfolio-topbar">

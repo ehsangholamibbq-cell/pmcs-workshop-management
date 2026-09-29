@@ -1386,6 +1386,10 @@ textarea {
   display: none;
 }
 
+.sidebar-mobile-navigation {
+  display: none;
+}
+
 .project-print-sheet {
   display: none;
 }
@@ -3832,6 +3836,59 @@ output {
     scrollbar-width: thin;
     scrollbar-color: #9ba4a8 var(--brand-navy-900);
     scroll-padding-inline: 1rem;
+  }
+
+  .portfolio-sidebar {
+    position: relative;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .portfolio-sidebar .sidebar-desktop-navigation {
+    display: none;
+  }
+
+  .portfolio-sidebar .sidebar-mobile-navigation {
+    display: block;
+    position: relative;
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .sidebar-mobile-navigation > button {
+    min-height: 2.75rem;
+    padding: 0.55rem 0.9rem;
+    color: white;
+    background: var(--brand-navy-800);
+    border: 1px solid var(--brand-silver-400);
+    border-radius: 0.8rem;
+    cursor: pointer;
+  }
+
+  .portfolio-sidebar .sidebar-mobile-navigation nav {
+    position: absolute;
+    z-index: 12;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    display: grid;
+    gap: 0.25rem;
+    width: min(21rem, calc(100vw - 2rem));
+    max-height: min(70vh, 34rem);
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: var(--brand-navy-900);
+    border: 1px solid var(--brand-silver-400);
+    border-radius: 0.8rem;
+    box-shadow: 0 12px 28px rgba(7, 21, 37, 0.22);
+  }
+
+  .portfolio-sidebar .sidebar-mobile-navigation nav[hidden] {
+    display: none;
+  }
+
+  .portfolio-sidebar .sidebar-mobile-navigation .nav-item {
+    display: block;
+    white-space: normal;
   }
 
   .sidebar nav {

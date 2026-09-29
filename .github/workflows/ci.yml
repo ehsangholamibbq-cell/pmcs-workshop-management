@@ -342,6 +342,12 @@ jobs:
           name: pmcs-ms62-dense-print
           path: src/web/artifacts/ms62-dense-print/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms64-portfolio-navigation
+          path: src/web/artifacts/ms64-portfolio-navigation/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
