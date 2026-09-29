@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.155.0`
+- نسخه سند: `1.158.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1871,3 +1871,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.155.0` | UX2-MS71 docs Run 495 هشت Job سبز و Safe؛ MS72 Wizard را حین Preview با Fieldset و Navigation قفل کرد، فرمان‌های Preview/Execute/Activate را در Busy منع و نقش/وضعیت عضو را با برچسب فارسی مشترک نشان داد. Run 496 هفت Job سبز، Assertion نادرست Fieldset را یافت؛ correction Run 497 هشت Job سبز/Artifact `11050303281` با سه قاب و Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ باقی G4، G5 و INT1/QA1 بازند |
 | `1.156.0` | UX2-MS72 docs Run 498 هشت Job سبز و Safe؛ MS73 دو مرکز گزارش را با خطای فرمان متمایز، Retry پایدار و Refresh بدون دادهٔ کهنه مهاجرت داد. Source Run 499 هشت Job سبز و Artifact `11052607582` چهار PNG/Index معتبر و مرورشده دارد؛ CI مستقل مستندات شرط Checkpoint، ممیزی مصرف‌کنندگان فعال G4، سپس G5 و INT1/QA1 بازند |
 | `1.157.0` | UX2-MS73 docs Run 500 هشت Job سبز و Safe؛ MS74 کارتابل/اعلان‌ها را با حقیقت Loading/Current/Cached/Unavailable/Forbidden و منع فرمان روی دادهٔ قدیمی متصل کرد. Run 501 سبز بود ولی تصویر موبایل هم‌پوشانی داشت؛ Source نهایی Run 502 هشت Job سبز و Artifact `11054696874` سه PNG/Index معتبر و مرورشده دارد؛ CI مستقل مستندات شرط Checkpoint، ممیزی باقیماندهٔ G4، سپس G5 و INT1/QA1 بازند |
+| `1.158.0` | UX2-MS74 docs Run 503 و MS75 docs Run 507 هرکدام هشت Job سبز و Safe؛ Chat گروه پروژه خواندن/جست‌وجوی صادق دارد. MS76 تجمیع سبد را در Refresh/Error پنهان و خطای دریافت را با Token خطر نشان می‌دهد. Run 508 در آزمون کارتابل قدیمی شکست خورد؛ Source Run 509 و docs اولیه Run 510 سبز شدند، اما مرور تصویر اصلاح رنگ را لازم کرد. Source نهایی Run 511 هشت Job سبز و Artifact `11058654451` چهار PNG/Index معتبر و مرورشده دارد؛ CI مستقل C2 شرط Checkpoint، ممیزی مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |

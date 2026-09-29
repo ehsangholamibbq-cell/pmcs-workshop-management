@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.36.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ Navigation شش Shell و Feedback پروفایل/هویت/ظاهر ورود و داده/فرمان Wizard در `VX-G4`، مهاجرت کامل/Qualification باز
+- نسخه سند: `1.39.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS76 در `VX-G4`، مهاجرت کامل/Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -228,3 +228,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.36.0` | MS71 docs Run 495 هشت Job سبز و Safe؛ MS72 قفل فرم/مراحل Wizard هنگام Preview و برچسب فارسی مشترک نقش/وضعیت عضو را متصل کرد؛ Run 496 Assertion نادرست Fieldset را یافت، correction Run 497 هشت Job سبز/Artifact `11050303281` با سه قاب و Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ سایر مصرف‌کنندگان G4 و G5 باز |
 | `1.37.0` | MS72 docs Run 498 هشت Job سبز و Safe؛ MS73 بازخورد درخواست/دانلود و حقیقت Refresh مرکز گزارش پروژه/سبد را متصل کرد؛ Source Run 499 هشت Job سبز، Artifact `11052607582` با چهار PNG/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 باز |
 | `1.38.0` | MS73 docs Run 500 هشت Job سبز و Safe؛ MS74 حقیقت دریافت/فرمان کارتابل و اعلان‌ها را با تفکیک Loading/Current/Cached/Unavailable/Forbidden متصل کرد؛ Run 501 سبز ولی تصویر موبایل هم‌پوشانی داشت، اصلاح نهایی Run 502 هشت Job سبز/Artifact `11054696874` با سه PNG/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 باز |
+| `1.39.0` | MS74 docs Run 503 و MS75 docs Run 507 هرکدام هشت Job سبز و Safe؛ خواندن و جست‌وجوی Chat گروه پروژه در MS75 متصل شد. MS76 تجمیع قدیمی سبد را در Refresh/Error پنهان کرد؛ Run 509 و ثبت اولیهٔ Run 510 سبز بودند، اما بازبینی رنگ خطا اصلاح Source را لازم کرد. Source نهایی Run 511 هشت Job سبز/Artifact `11058654451` چهار PNG/Index معتبر و بازبینی‌شده دارد؛ CI مستقل این اصلاح مستندات شرط C2 و سپس سایر مصرف‌کنندگان G4 و G5 بازند |
