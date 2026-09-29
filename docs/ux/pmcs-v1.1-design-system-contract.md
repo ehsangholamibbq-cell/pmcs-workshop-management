@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.17`
+- نسخه Candidate: `1.0.0-rc.18`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -214,6 +214,12 @@ Wizard فعال و Qualification در G4/G5 جدا می‌مانند.
 بدون پیوست را برای فایل پیام گروه پروژه نمایش می‌دهد. مرور منشأ صرفاً
 محلی است و اتصال، دریافت یا تبدیل مدرک را اجرا نمی‌کند. Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده Evidence نمونه هستند؛ کنترل واقعی بایت/هش/نسخه،
 Permission و Qualification مصرف‌کنندگان در G4/G5 جدا می‌مانند.
+
+در UX2-MS58 نمونهٔ مستقل `docs/ux/prototypes/ms58/` وضعیت‌های
+درخواست/پردازش/آمادگی/رد/انقضا/مجوز/آفلاین/خطا را از برگهٔ مرورگر
+جدا می‌کند. برگهٔ چاپ برچسب غیررسمی، منبع و تازگی دارد و Fact غایب را
+تخمین نمی‌زند. چاپ A4/A3 عمودی و افقی در Prototype آزموده می‌شود؛
+Golden و دانلود رسمی و Qualification مصرف‌کنندگان در G4/G5 جداست.
 
 ## ۷. Login Experience Contract
 
