@@ -330,6 +330,12 @@ jobs:
           name: pmcs-ms60-form-filter-states
           path: src/web/artifacts/ms60-form-filter-states/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms61-owner-review
+          path: src/web/artifacts/ms61-owner-review/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest

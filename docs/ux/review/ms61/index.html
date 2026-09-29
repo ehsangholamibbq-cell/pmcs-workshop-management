@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — بستهٔ تصمیم VX-G3</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.65 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --muted: #5c6971; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    a { color: #125638; text-underline-offset: .2em; }
+    a:focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1120px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 84px; height: 58px; flex: none; object-fit: contain; border-radius: 9px; padding: .2rem; background: #fbf8f1; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { max-width: 1120px; margin: auto; padding: 1rem 1rem 3rem; }
+    .notice { border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; padding: .7rem .9rem; }
+    h2 { color: var(--navy); font-size: 1.17rem; margin: 0 0 .4rem; }
+    h3 { color: var(--navy); font-size: 1rem; margin: 0 0 .3rem; }
+    p { margin: .3rem 0 .7rem; }
+    .intro { margin: 1rem 0; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+    .card { min-width: 0; border: 1px solid #e9dfcf; border-radius: 12px; background: white; padding: 1rem; }
+    .card p, .foot { color: var(--muted); font-size: .86rem; }
+    .tag { display: inline-block; border-radius: 99px; background: #e4f2e9; color: #145f45; padding: .12rem .55rem; font-size: .76rem; font-weight: 700; }
+    ul { margin: .4rem 0; padding-right: 1.3rem; }
+    li { margin: .25rem 0; }
+    .evidence { margin: .5rem 0 1rem; }
+    .criteria { margin-top: 1rem; }
+    .criterion { border-right: 4px solid #17684c; }
+    .criterion:nth-child(2) { border-color: #235c99; }
+    .criterion:nth-child(3) { border-color: #795b32; }
+    .criterion:nth-child(4) { border-color: #5e518a; }
+    .decision { background: #f1f6f8; border-radius: 8px; padding: .55rem .7rem; color: #17242e; font-size: .85rem; }
+    .foot { margin-top: 1rem; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 360px) { .brand { width: 65px; height: 50px; } h1 { font-size: 1.04rem; } .card { padding: .8rem; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @media print { .skip { display: none; } .grid { display: block; } .card { break-inside: avoid; margin-bottom: .7rem; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">رفتن به بستهٔ تصمیم</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>بستهٔ تصمیم طراحی</h1><p>PMCS · UX2-MS61 · دروازهٔ VX-G3</p></div></div></header>
+  <main id="main">
+    <p class="notice"><strong>وضعیت: آمادهٔ تصمیم مالک پس از تأیید شواهد و CI.</strong> پذیرش جهت کلی بصری و اصلاح متن/تراکم موبایل ثبت شده است. چهار معیار زیر هنوز پاسخ جداگانه می‌خواهند. این صفحه هیچ دادهٔ واقعی، درخواست یا اقدام عملیاتی ندارد.</p>
+    <section class="intro" aria-labelledby="scope-title"><h2 id="scope-title">دامنهٔ این تصمیم</h2><p>دروازهٔ طراحی دربارهٔ قرارداد Token و اجزا و نمونهٔ وضعیت‌های مرتبط است. مهاجرت صفحه‌های فعال در VX-G4 و بررسی کامل دسترس‌پذیری، مرورگرها، عملکرد و چاپ رسمی در VX-G5 انجام می‌شود. رابط اجرایی عامل هوشمند به نسخهٔ بعد تعلق دارد.</p></section>
+    <section class="card evidence" aria-labelledby="evidence-title"><h2 id="evidence-title">مسیر بازبینی شواهد</h2>
+      <ul><li><a href="../ms53/index.html">مقایسهٔ تصویرهای UI فعال و نمونه‌ها</a> و <a href="../ms54-owner-decision.md">تصمیم محدود قبلی مالک</a></li>
+        <li><a href="../../prototypes/ms54/index.html">تراکم موبایل و متن فارسی</a>؛ <a href="../../prototypes/ms47/index.html">اجزای پایه</a>؛ <a href="../../prototypes/ms60/index.html">فرم شمسی و فیلتر</a></li>
+        <li><a href="../../prototypes/ms49/index.html">ناوبری و گفت‌وگوی تأیید</a>؛ <a href="../../prototypes/ms51/index.html">لایه‌ها و ردیف موبایل</a>؛ <a href="../../prototypes/ms56/index.html">تعارض تکثیر</a></li>
+        <li><a href="../../prototypes/ms55/index.html">تصویر و حریم خصوصی</a>؛ <a href="../../prototypes/ms57/index.html">پیوست و مدرک</a>؛ <a href="../../prototypes/ms59/index.html">پیشنهاد هوشمندی</a></li>
+        <li><a href="../../prototypes/ms58/index.html">خروجی و چاپ نمونه</a>؛ <a href="../../pmcs-v1.1-component-state-matrix.md">ماتریس وضعیت</a>؛ <a href="../../pmcs-v1.1-vx-g3-closure-ledger.md">فهرست شکاف‌ها</a></li></ul>
+      <p>Artifactهای منبع‌دار و Run هر نمونه در Checkpointهای MS53 تا MS60 ثبت‌اند؛ تصویرهای نمونه دادهٔ ساختگی دارند. برگهٔ چاپ مرورگر، خروجی رسمی گزارش نیست.</p>
+    </section>
+    <section class="criteria" aria-labelledby="criteria-title"><h2 id="criteria-title">چهار معیار تصمیم مالک</h2><div class="grid">
+      <article class="card criterion" id="identity"><span class="tag">۱ · هویت و خوانایی</span><h3>برند، قلم و موبایل</h3><p>آیا نشان رسمی، مسیر «مدیریت ممتاز»، وزیرمتن ۲٫۰٫۰، متن فارسی و تراکم اصلاح‌شده در RTL و موبایل پذیرفتنی‌اند؟ کنتراست Token ثانویه روی سطح کم‌رنگ اصلاح و با آزمون نسبت سنجیده شده است.</p><p class="decision">پاسخ: تأیید / اصلاح با مثال دقیق / شاهد بیشتر</p></article>
+      <article class="card criterion" id="truth"><span class="tag">۲ · حقیقت وضعیت</span><h3>داده، مجوز و عدم قطعیت</h3><p>آیا بدون داده، دریافت، خطا، آفلاین، منع مجوز، تعارض، تاریخ نامعتبر و پیشنهاد آزمایشی، واقعیت یا امکان اقدامِ ساختگی نشان نمی‌دهند؟ نمودار و جدول جایگزین باید هم‌ارز باشند.</p><p class="decision">پاسخ: تأیید / اصلاح با مثال دقیق / شاهد بیشتر</p></article>
+      <article class="card criterion" id="interaction"><span class="tag">۳ · تعامل</span><h3>تمرکز، صفحه‌کلید و قفل اقدام</h3><p>آیا ناوبری موبایل، پنجرهٔ تأیید، لایه‌ها، فیلتر و Wizard از نظر تمرکز، بازگشت، مانع نسخه/مجوز و دلیل غیرفعال‌بودن روشن‌اند؟</p><p class="decision">پاسخ: تأیید / اصلاح با مثال دقیق / شاهد بیشتر</p></article>
+      <article class="card criterion" id="print"><span class="tag">۴ · چاپ و تراکم</span><h3>تمایز نمونه از خروجی رسمی</h3><p>آیا برگه‌های A4/A3 نمونه در چهار جهت، جدول و صفحه‌های پرتراکم خوانا هستند و منبع/تازگی/غیررسمی‌بودن را روشن می‌کنند؟ Golden و صفحه‌بندی گزارش واقعی در VX-G5 جداست.</p><p class="decision">پاسخ: تأیید / اصلاح با مثال دقیق / شاهد بیشتر</p></article>
+    </div></section>
+    <p class="foot">برای هر معیار یکی از سه پاسخ بالا و در صورت اصلاح یا شاهد بیشتر، مورد و اولویت را مشخص کنید. تا تصمیم صریح و ثبت آن، VX-G3 باز و PR #2 به main در حالت Draft می‌ماند. Collaboration و Reporting/OutputAccess/Worker پیش‌فرض خاموش، مجوز PDF پیکربندی‌نشده، و Chat فقط گروه پروژه است.</p>
+  </main>
+</body>
+</html>
