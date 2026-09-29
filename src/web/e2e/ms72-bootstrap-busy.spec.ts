@@ -52,7 +52,8 @@ test("bootstrap form and step controls stay locked during a pending preview comm
   await expect(submit).toBeEnabled();
   await submit.click();
   await expect(form).toHaveAttribute("aria-busy", "true");
-  await expect(form.locator("fieldset")).toBeDisabled();
+  await expect(form.locator("fieldset")).toHaveAttribute("disabled", "");
+  await expect(form.locator(".bootstrap-member-list input[type=checkbox]").first()).toBeDisabled();
   await expect(page.getByRole("navigation", { name: "مراحل ساخت پروژه" }).getByRole("button", { name: /مبدأ و مقصد/u })).toBeDisabled();
   await expect(page.locator(".bootstrap-message")).toHaveAttribute("role", "status");
   await capture("bootstrap-390-busy.png", 390, 844, ".bootstrap-actions");
@@ -62,7 +63,7 @@ test("bootstrap form and step controls stay locked during a pending preview comm
   await capture("bootstrap-320-busy.png", 320, 720, ".bootstrap-actions");
   releasePreview();
   await expect(form).toHaveAttribute("aria-busy", "false");
-  await expect(form.locator("fieldset")).toBeEnabled();
+  await expect(form.locator("fieldset")).not.toHaveAttribute("disabled");
   await expect(page.locator(".bootstrap-message")).toHaveAttribute("role", "alert");
   await expect(page.locator(".bootstrap-message")).not.toContainText("Sensitive upstream error");
   await page.getByRole("navigation", { name: "مراحل ساخت پروژه" }).getByRole("button", { name: /مبدأ و مقصد/u }).click();
