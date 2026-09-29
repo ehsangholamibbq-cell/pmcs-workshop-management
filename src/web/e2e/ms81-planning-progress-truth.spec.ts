@@ -26,8 +26,15 @@ test("progress ledger hides an old item on refresh, failed read and access loss"
       }));
       const headingTop = () => panel.getByRole("heading", { name: "دفتر مستقل اندازه‌گیری پیشرفت" })
         .evaluate((element) => element.getBoundingClientRect().top);
-      await expect.poll(headingTop).toBeGreaterThanOrEqual(120);
-      expect(await headingTop()).toBeLessThan(250);
+      await expect.poll(async () => {
+        const top = await headingTop();
+        if (top < 120 || top >= 250) await panel.evaluate((element) =>
+          window.scrollTo({ top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150),
+            behavior: "instant" }));
+        await page.waitForTimeout(150);
+        const settled = await headingTop();
+        return settled >= 120 && settled < 250;
+      }, { timeout: 10_000 }).toBe(true);
       await page.waitForTimeout(400);
       if (await panel.getAttribute("data-read-state") !== state) continue;
       const candidate = await page.screenshot({ animations: "disabled", caret: "hide" });

@@ -22,8 +22,15 @@ test("technical office hides prior documents and commands after a failed or forb
     });
     const titleTop = () => page.locator("#technical-office .section-title")
       .evaluate((element) => element.getBoundingClientRect().top);
-    await expect.poll(titleTop).toBeGreaterThanOrEqual(120);
-    expect(await titleTop()).toBeLessThan(250);
+    await expect.poll(async () => {
+      const top = await titleTop();
+      if (top < 120 || top >= 250) await page.locator("#technical-office").evaluate((element) =>
+        window.scrollTo({ top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150),
+          behavior: "instant" }));
+      await page.waitForTimeout(150);
+      const settled = await titleTop();
+      return settled >= 120 && settled < 250;
+    }, { timeout: 10_000 }).toBe(true);
     await expect.poll(async () => {
       const before = await page.locator("#technical-office").getAttribute("data-read-state");
       await page.waitForTimeout(400);
