@@ -180,7 +180,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70 و حقیقت داده/فرمان Wizard در MS71–72؛ سایر مصرف‌کنندگان باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72 و بازخورد گزارش در MS73؛ سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
@@ -226,3 +226,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.34.0` | MS69 docs Run 490 هشت Job سبز و Safe؛ MS70 تاریخچه/فرم مدیریت ظاهر ورود را با بارگذاری، خطا، Retry و قفل ذخیرهٔ قابل تشخیص متصل کرد؛ Source Run 491 هشت Job سبز/Artifact `11046207203` چهار قاب معتبر و بازبینی‌شده، CI مستقل مستندات شرط Checkpoint؛ سایر مصرف‌کنندگان G4 و G5 باز |
 | `1.35.0` | MS70 docs Run 492 هشت Job سبز و Safe؛ MS71 دریافت پروژه/اعضای Wizard را از حالت خالی واقعی جدا و Preview را تا دریافت دادهٔ انتخاب‌شده قفل کرد؛ Run 493 متن Loading نادرست پس از خطا را یافت، correction Run 494 هشت Job سبز/Artifact `11049002783` چهار قاب معتبر و بازبینی‌شده؛ فارسی‌سازی کد نقش/وضعیت عضو و CI مستقل مستندات شرط Checkpoint، سایر مصرف‌کنندگان G4 و G5 باز |
 | `1.36.0` | MS71 docs Run 495 هشت Job سبز و Safe؛ MS72 قفل فرم/مراحل Wizard هنگام Preview و برچسب فارسی مشترک نقش/وضعیت عضو را متصل کرد؛ Run 496 Assertion نادرست Fieldset را یافت، correction Run 497 هشت Job سبز/Artifact `11050303281` با سه قاب و Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ سایر مصرف‌کنندگان G4 و G5 باز |
+| `1.37.0` | MS72 docs Run 498 هشت Job سبز و Safe؛ MS73 بازخورد درخواست/دانلود و حقیقت Refresh مرکز گزارش پروژه/سبد را متصل کرد؛ Source Run 499 هشت Job سبز، Artifact `11052607582` با چهار PNG/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 باز |
