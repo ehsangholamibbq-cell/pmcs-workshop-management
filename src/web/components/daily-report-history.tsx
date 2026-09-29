@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addDailyReportFact,
   getDailyReport,
@@ -19,7 +19,7 @@ import {
   FactValidationError,
   type DailyFactDraft,
 } from "@/lib/field-facts";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate } from "@/lib/persian-date";
 import type { MeasurementItemModel } from "@/lib/planning";
 import type { ProjectLocationModel } from "@/lib/projects";
@@ -45,6 +45,8 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
   const [draft, setDraft] = useState<DailyFactDraft>(emptyFactDraft);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("در حال دریافت تاریخچه نسخه‌ها…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const actorIdentity = useMemo(
     () => ({ tenantId: props.tenantId, userId: props.userId }),
     [props.tenantId, props.userId],
@@ -57,20 +59,39 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
   const selectedId = selected?.id ?? null;
 
   const load = useCallback(async () => {
+    const requestId = ++readSequence.current;
     if (!props.isOnline) {
+      setReports([]);
+      setReadState("offline");
       setMessage("تاریخچه رسمی و ایجاد نسخه اصلاحی هنگام اتصال به سرور در دسترس است.");
       return;
     }
+    setReadState("loading");
+    setReports([]);
+    setMessage("در حال دریافت تاریخچه نسخه‌ها…");
     try {
       const result = await listDailyReports(props.apiBaseUrl, actorIdentity, props.projectId);
-      setReports(result);
-      setMessage(result.length === 0 ? "گزارش رسمی ثبت نشده است." : "نسخه‌ها بدون حذف سابقه نمایش داده می‌شوند.");
-      if (selectedId) {
+      if (requestId !== readSequence.current) return;
+      if (selectedId && result.some((item) => item.id === selectedId)) {
         const current = await getDailyReport(props.apiBaseUrl, actorIdentity, props.projectId, selectedId);
+        if (requestId !== readSequence.current) return;
         if (current) selectEditor(current);
-      }
+        else setSelected(null);
+      } else if (selectedId) setSelected(null);
+      setReports(result);
+      setReadState("current");
+      setMessage(result.length === 0 ? "گزارش رسمی ثبت نشده است." : "نسخه‌ها بدون حذف سابقه نمایش داده می‌شوند.");
     } catch (error) {
-      setMessage(toUserMessage(error, "تاریخچه گزارش‌ها دریافت نشد."));
+      if (requestId !== readSequence.current) return;
+      setReports([]);
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setSelected(null);
+        setReadState("forbidden");
+        setMessage("دسترسی به تاریخچه گزارش‌های این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+      } else {
+        setReadState("unavailable");
+        setMessage(toUserMessage(error, "تاریخچه گزارش‌ها دریافت نشد."));
+      }
     }
   }, [actorIdentity, props.apiBaseUrl, props.isOnline, props.projectId, selectedId]);
 
@@ -85,6 +106,11 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
       const report = await getDailyReport(props.apiBaseUrl, actorIdentity, props.projectId, reportId);
       if (report) selectEditor(report);
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setReports([]);
+        setSelected(null);
+        setReadState("forbidden");
+      }
       setMessage(toUserMessage(error, "جزئیات نسخه دریافت نشد."));
     } finally {
       setBusy(null);
@@ -92,6 +118,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
   }
 
   async function startCorrection(report: DailyReportSummary) {
+    if (readState !== "current") return;
     const reason = reasons[report.id]?.trim() ?? "";
     if (!reason) {
       setMessage("دلیل ایجاد نسخه اصلاحی الزامی است.");
@@ -113,6 +140,11 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
       await load();
       props.onChanged();
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setReports([]);
+        setSelected(null);
+        setReadState("forbidden");
+      }
       setMessage(toUserMessage(error, "نسخه اصلاحی ایجاد نشد."));
     } finally {
       setBusy(null);
@@ -121,7 +153,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
 
   async function saveDetails(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected) return;
+    if (!selected || readState !== "current") return;
     await updateSelected("details", () => reviseDailyReportDetails(
       props.apiBaseUrl,
       actorIdentity,
@@ -135,7 +167,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
 
   async function addFact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected) return;
+    if (!selected || readState !== "current") return;
     try {
       if (!draft.locationId) throw new FactValidationError("محل پروژه برای واقعیت اصلاحی الزامی است.");
       const payload = buildDailyFactPayload(draft, crypto.randomUUID(), selected.reportDate);
@@ -154,12 +186,17 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
         locationName: current.locationName,
       }));
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setReports([]);
+        setSelected(null);
+        setReadState("forbidden");
+      }
       setMessage(error instanceof FactValidationError ? error.message : toUserMessage(error, "واقعیت افزوده نشد."));
     }
   }
 
   async function removeFact(factId: string) {
-    if (!selected) return;
+    if (!selected || readState !== "current") return;
     await updateSelected(`remove:${factId}`, () => removeDailyReportFact(
       props.apiBaseUrl,
       actorIdentity,
@@ -171,7 +208,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
   }
 
   async function submitCorrection() {
-    if (!selected) return;
+    if (!selected || readState !== "current") return;
     await updateSelected("submit", () => submitDailyReport(
       props.apiBaseUrl,
       actorIdentity,
@@ -186,6 +223,7 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
     operation: () => Promise<DailyReportSummary>,
     success: string,
   ) {
+    if (readState !== "current") return;
     setBusy(key);
     try {
       const updated = await operation();
@@ -194,6 +232,11 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
       await load();
       props.onChanged();
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        setReports([]);
+        setSelected(null);
+        setReadState("forbidden");
+      }
       setMessage(toUserMessage(error, "عملیات نسخه اصلاحی انجام نشد."));
     } finally {
       setBusy(null);
@@ -201,8 +244,20 @@ export function DailyReportHistory(props: DailyReportHistoryProps) {
   }
 
   const selectedEditable = selected && (selected.status === "Draft" || selected.status === "Returned");
+  if (readState !== "current") {
+    return <section className="operational-card daily-report-history" data-testid="daily-report-history"
+      data-read-state={readState} id="daily-report-history">
+      <div className="card-heading">
+        <div><p className="eyebrow">ردیابی اصلاحات</p><h2>نسخه‌های گزارش روزانه</h2></div>
+        <span className="count-badge">—</span>
+      </div>
+      <p className="microcopy" role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {props.isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت تاریخچه</button>}
+    </section>;
+  }
   return (
-    <section className="operational-card daily-report-history" data-testid="daily-report-history" id="daily-report-history">
+    <section className="operational-card daily-report-history" data-testid="daily-report-history" data-read-state={readState} id="daily-report-history">
       <div className="card-heading">
         <div><p className="eyebrow">ردیابی اصلاحات</p><h2>نسخه‌های گزارش روزانه</h2></div>
         <span className="count-badge">{reports.length.toLocaleString("fa-IR")}</span>
