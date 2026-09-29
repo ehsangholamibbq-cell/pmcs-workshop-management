@@ -56,7 +56,9 @@ test("revoked project access clears a saved command snapshot before showing proj
   responseStatus = 200;
   await page.reload();
   await expect(main).toHaveAttribute("data-command-read-state", "current");
-  await expect(page.locator(".project-print-sheet")).toBeVisible();
+  await expect(page.locator(".hero-grid")).toBeVisible();
+  await expect(page.locator(".project-print-sheet")).toHaveCount(1);
+  await expect(page.locator(".project-print-sheet")).toBeHidden();
   await capture("project-320-access-restored.png", 320, 720);
 
   writeFileSync(resolve(output, "index.json"), JSON.stringify({
