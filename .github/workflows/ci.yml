@@ -306,6 +306,12 @@ jobs:
           name: pmcs-ms56-duplication-wizard
           path: src/web/artifacts/ms56-duplication-wizard/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms57-attachment-evidence
+          path: src/web/artifacts/ms57-attachment-evidence/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
