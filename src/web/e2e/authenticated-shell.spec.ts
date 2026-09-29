@@ -57,7 +57,7 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await expect(calendar.getByRole("gridcell")).toHaveCount(42);
   await expect(calendar.getByRole("button", { name: "امروز" })).toBeVisible();
   await captureVisualBaseline(page, "29-calendar-dialog");
-  await calendar.locator("..").getByRole("button", { name: "باز کردن تقویم شمسی" }).click();
+  await page.mouse.click(5, 5);
   await expect(calendar).toBeHidden();
 
   for (const viewport of [
