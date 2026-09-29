@@ -37,7 +37,7 @@
     caption { text-align: right; padding: 0 0 .5rem; color: var(--muted); font-size: .85rem; }
     col.number { width: 6%; } col.subject { width: 35%; } col.state { width: 15%; } col.owner { width: 12%; } col.money { width: 16%; } col.date { width: 16%; }
     th, td { padding: .6rem .45rem; text-align: right; vertical-align: top; border-bottom: 1px solid #d9dfdc; overflow-wrap: anywhere; }
-    thead th { color: #0c2036; background: #f0f4f2; font-size: .86rem; }
+    thead th { color: #0c2036; background: #f0f4f2; font-size: .86rem; overflow-wrap: normal; }
     tbody th { font-weight: 400; }
     .item-title { display: block; font-weight: 700; font-size: .93rem; }
     .description { margin: .3rem 0 0; font-size: .84rem; color: var(--muted); }
@@ -52,6 +52,9 @@
     .total { margin-top: 1rem; padding: .7rem; border: 1px solid #b9cabe; border-radius: 6px; background: #f2f7f3; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
     .total small { display: block; color: var(--muted); }
     .sheet-foot { font-size: .8rem; color: var(--muted); margin: .8rem 0 0; }
+    @media screen and (min-width: 761px) and (max-width: 1000px) {
+      col.number { width: 8%; } col.subject { width: 33%; }
+    }
     @media screen and (max-width: 760px) {
       main { padding: .75rem; } .sheet { padding: .65rem; } .masthead { padding: .7rem; gap: .6rem; }
       .brand { width: 65px; height: 50px; } h1 { font-size: 1.05rem; }
