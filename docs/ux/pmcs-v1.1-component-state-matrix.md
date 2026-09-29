@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.23.0` در `UX2-MS69`
+- نسخهٔ Candidate: `0.24.0` در `UX2-MS70`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -14,10 +14,10 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | خانواده | Default | Hover/Focus/Pressed | Disabled/Loading | Error/Success | Offline/Permission | Evidence فعلی و شکاف بعدی |
 | --- | --- | --- | --- | --- | --- | --- |
 | Action Button، Secondary و Link | D | Focus سراسری S؛ Hover محدود D؛ Pressed G | Disabled D؛ Loading متن/قفل S | نتیجه در سطح Panel S | توقف عملیات آفلاین/بدون مجوز S | MS46 قاب 45 و E2E ثبات Disabled در Hover؛ Pressed، Touch Target و مصرف‌کنندگان اختصاصی باز |
-| TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form؛ Invite Form Busy/Disabled و Preview Select قفل‌شده D | Error/Description پراکنده S؛ Success در دعوت D | Form آفلاین قاب 30؛ Permission وابسته به Route | MS68 دعوت و MS69 پیش‌نمایش مجوز؛ ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
+| TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form؛ Invite Form Busy/Disabled، Preview Select و فرم ظاهر ورود قفل‌شده D | Error/Description پراکنده S؛ Success در دعوت D | Form آفلاین قاب 30؛ Permission وابسته به Route | MS68 دعوت، MS69 پیش‌نمایش مجوز و MS70 ظاهر ورود؛ ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
 | PersianDateInput و FileInput | D | Focus سراسری و FileInput اختصاصی S | Disabled S؛ Loading FileInput S | Date `aria-invalid` S؛ انتخاب/حذف FileInput D | تابع Form/Permission والد | قاب‌های 18/44، 29/30؛ صفحه‌کلید، بازه/تقویم و مصرف‌های دیگر نیاز به ماتریس مستقل دارند |
 | StatusLabel، Badge و Fact/Draft | S | تعامل نامربوط | Loading نباید Fact بسازد D | Label همراه رنگ S | Offline/Stale/NoPermission Label S | semantic tokens در `globals.css`؛ تمایز Fact/Draft/AI و کنتراست هر مصرف باز |
-| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile و Identity Invite Form Busy/Disabled D | Error و Retry D؛ Profile و Identity Feedback Error/Success D | Offline/NoPermission در Routeهای منتخب D | MS67 Profile و MS68 Identity با قاب/E2E؛ Stateهای مشترک سایر ماژول‌ها باز |
+| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile، Identity و Login Admin Form Busy/Disabled D | Error و Retry D؛ Profile، Identity و Login Admin Feedback Error/Success D | Offline/NoPermission در Routeهای منتخب D | MS67 Profile، MS68 Identity و MS70 Login Admin با قاب/E2E؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
 | Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
 | Shell/Navigation و Print | D | Keyboard Sidebar و شش Shell موبایل Escape/Focus D | Navigation موبایل شش Shell D؛ Routeهای بدون Sidebar مستقل | پیام وضعیت مستقل S | Print بدون Action/Navigation D | MS64–66 شش Shell، ۲۸ قاب مجزا/Index و E2E؛ سایر Componentها، Routeها و Qualification باز |
@@ -255,3 +255,14 @@ Loading/Success با `status` و Error با `alert` از هم جدا هستند.
 معتبر و بازبینی بصری دارد. این `D` فقط به مصرف‌کنندهٔ پیش‌نمایش مجوز
 اشاره می‌کند؛
 سایر Form/Feedbackها و Qualification در G4/G5 بازند.
+
+## پیوست UX2-MS70 — حقیقت تاریخچه و فرم ظاهر ورود
+
+در `/admin/login-experience` دریافت تاریخچه با `aria-busy` و پیام
+`status` از فهرست خالی معتبر جداست. خطای دریافت `alert` و Retry دارد
+و رکوردی به دروغ «خالی» معرفی نمی‌شود. فرمان ساخت/انتشار، فرم را قفل
+می‌کند؛ خطای ساخت دادهٔ ورودی را نگه می‌دارد و خطای Refresh پس از فرمان
+به‌جای ادعای موفقیت فهرست نشان داده می‌شود. Run 491 هشت Job سبز و
+Artifact `11046207203` چهار قاب با Source/Hash/ابعاد معتبر و بازبینی‌شده
+دارد. این `D` محدود به مصرف‌کنندهٔ فعال ظاهر ورود است؛ G4/G5 سراسری
+بازند.
