@@ -37,6 +37,10 @@ test("MS62 keeps all dense rows and the same total through mobile pagination and
     await expect(page.locator("#grand-total")).toHaveText(money(1482000000));
     const size = width <= 390 ? 6 : 12;
     await page.locator("#page-size").selectOption(String(size));
+    const caption = await page.locator("caption").boundingBox();
+    const table = await page.locator("table").boundingBox();
+    expect(caption?.width ?? 0).toBeGreaterThan((table?.width ?? width) * 0.9);
+    expect(caption?.height ?? 1000).toBeLessThan(100);
     await expect(page.locator("#previous")).toBeDisabled();
     const seen: number[] = [];
     for (let start = 0; start < 48; start += size) {
