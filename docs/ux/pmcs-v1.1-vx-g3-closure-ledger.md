@@ -1,6 +1,6 @@
 # PMCS V1.1 — فهرست بسته‌شدن VX-G3
 
-- شناسه: `PMCS-UX-VX-G3-CLOSURE-001`، نسخهٔ Candidate `0.5.0` در UX2-MS59.
+- شناسه: `PMCS-UX-VX-G3-CLOSURE-001`، نسخهٔ Candidate `0.6.0` در UX2-MS60.
 - مرجع: `PMCS-RM-VISUAL-001`، `PMCS-DS-001`، `PMCS-UX-COMPONENT-STATES-001` و بستهٔ مرور `docs/ux/review/ms53/`.
 - وضعیت: `VX-G3 System Ready` باز؛ این فهرست به‌تنهایی پذیرش Gate نیست.
 
@@ -12,7 +12,7 @@ MS46 هم به معنی Qualification همهٔ مصرف‌کنندگان نیس�
 | خانوادهٔ قرارداد | شواهد موجود | شکاف قابل‌اقدام پیش از تصمیم G3 | مقصد |
 | --- | --- | --- | --- |
 | Token، قلم، برند و Motion | `PMCS-DS-001`؛ وزیرمتن 2.0.0 و Goldenهای Run 425/426؛ MS44/54 | ممیزی سازگاری semantic tokens، کنتراست و reduced motion در نمونه‌های قراردادی؛ معیارهای بصری باقی‌ماندهٔ مالک | G3 contract؛ آزمون همهٔ مصرف‌کنندگان در G5 |
-| Action، Field، Status، Feedback و Table | MS47 نه وضعیت، MS44 ده سناریو، MS51 ردیف موبایل؛ Browser/Artifactهای 419/433 | ثبت حالت‌های مرتبط برای هر خانواده در ماتریس، به‌ویژه فرم/تاریخ/فیلتر و بیان Success/Error؛ تطبیق نام/رفتار با قرارداد | برش‌های Foundation G3؛ مهاجرت فعال G4 |
+| Action، Field، Status، Feedback و Table | MS47 نه وضعیت، MS44 ده سناریو، MS51 ردیف موبایل؛ MS60 فرم شمسی/فیلتر ده وضعیت و پیام مرتبط، Run 455 هشت Job سبز ولی قاب ۳۲۰px متن فنی انگلیسی داشت؛ correction Run 456 هشت Job سبز/Artifact `11025098337` با ۱۶ قاب معتبر و بازبینی‌شده مشروط | ممیزی پوشش قرارداد State و Token/کنتراست در نمونه‌ها، تطبیق نام/رفتار؛ parser تقویم و مصرف‌کنندگان فعال در G4/G5 | Foundation G3 پس از CI؛ مهاجرت فعال G4 |
 | Shell، Navigation، Dialog و Overlay | MS49 و MS51 با Focus، Escape و وضعیت‌های بسته؛ MS52/54 ترکیب Login/Shell/Chart | پوشش معنایی مسیرهای نمونه و بازبینی چهار معیار MS53؛ Navigation موبایل UI فعال هنوز قرارداد جایگزین ندارد | G3 نمونه؛ شش Shell فعال در G4 |
 | Avatar، برش تصویر و حریم خصوصی | MS44 فقط fallback ایستا؛ MS55 نمونهٔ مستقل هشت وضعیت و برش محلی با Browser/Artifact | آزمون نسخه/مجوز/امنیت فایل و پیاده‌سازی نهایی در پروفایل فعال، خارج از ادعای نمونه | G3 نمونهٔ خانواده؛ مهاجرت/Qualification در G4/G5 |
 | Wizard تکثیر، انتخاب، Conflict و Confirmation | MS36 Preview مسدود UI فعال و MS44 سناریوی نمایشی؛ MS56 نمونهٔ تعاملی انتخاب/تعارض/مسدود/تأیید محلی با Run 445 و Artifact `11020397707` معتبر | آزمون Revision/Permission، ساخت و اجرای واقعی در Wizard فعال و Qualification مستقل؛ نمونه هیچ عملیاتی انجام نمی‌دهد | G3 نمونهٔ خانواده پس از CI؛ سپس G4/G5 |

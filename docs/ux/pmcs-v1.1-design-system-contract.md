@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.19`
+- نسخه Candidate: `1.0.0-rc.20`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -226,6 +226,11 @@ Golden و دانلود رسمی و Qualification مصرف‌کنندگان در 
 نشان می‌دهد. Actionهای واقعی و ساخت Draft قفل‌اند و مرور منشأ فقط
 محلی است. این نمونه، UI اجرایی Agent را در V1.1 فعال نمی‌کند؛
 Stageهای ۲ تا ۷ و رابط تولیدی طبق Roadmap به V1.2 تعلق دارند.
+
+در UX2-MS60 نمونهٔ مستقل فرم شمسی/فیلتر، Stateهای خطا، موفقیت،
+Loading، بدون نتیجه، آفلاین، مجوز و تازگی را با Label و پیام متنی
+می‌سنجد. تقویم و تبدیل مقدار رسمی در نمونه انجام نمی‌شوند. مهاجرت
+مصرف‌کنندگان فعال و Qualification در Gateهای بعدی بازند.
 
 ## ۷. Login Experience Contract
 

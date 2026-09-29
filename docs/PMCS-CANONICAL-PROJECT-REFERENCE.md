@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.119.0`
+- نسخه: `1.120.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS58 Safe Checkpoint, MS59 Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS59 Safe Checkpoint, MS60 Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source Candidate | MS59 `6058dedcd452f12cd6a41181ed467d5c8afecaf8`؛ tree `878591df00dd4acdfd77c4c333c47f12e352f866`؛ Run 453 و Artifact شرط Evidence نمونهٔ هوشمندی |
-| Current evidence-bearing source checkpoint | `44a2fecfe2c5d4090009a967e8b1bd76e49ac331`؛ MS58 documentation Run 452 هشت Job سبز، Source Run 451 و Artifact ۱۳ PNG/۵ PDF معتبر |
-| Source lineage | UX2-MS59 ادامهٔ مستقیم MS58 documentation `44a2fecfe2c5d4090009a967e8b1bd76e49ac331` است؛ فقط Commit و fast-forward، بدون reset/force push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS58-C1`؛ نمونهٔ گزارش/چاپ، Runهای 451/452 هشت Job سبز؛ MS59 Candidate |
+| آخرین Source Candidate | MS60 `f3a2301f19b039da7a2b128879cff54793a28b7d`؛ tree `7fa271f6579c3f1ee1c8e211c4f39e9f16ff29ac`؛ correction Run 456 هشت Job سبز/Artifact `11025098337` با ۱۶ قاب معتبر فرم شمسی/فیلتر |
+| Current evidence-bearing source checkpoint | `1e8895feb653bdaca1f5ae1aeaabd1fa37104a5a`؛ MS59 documentation Run 454 هشت Job سبز، Source Run 453 و Artifact ۱۵ PNG معتبر |
+| Source lineage | UX2-MS60 ادامهٔ مستقیم MS59 documentation `1e8895feb653bdaca1f5ae1aeaabd1fa37104a5a` است؛ فقط Commit و fast-forward، بدون reset/force push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS59-C1`؛ نمونهٔ هوشمندی مفهومی، Runهای 453/454 هشت Job سبز؛ MS60 Candidate |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS58-C1`؛ نمونهٔ گزارش/چاپ، Runهای 451/452 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS57-C1`؛ پیوست/مدرک، Runهای 448/449 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS56-C1`؛ Wizard تکثیر، Runهای 445/446 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS55-C1`؛ نمونهٔ پروفایل و فهرست شکاف G3، Runهای 443/444 هشت Job سبز |
@@ -86,7 +87,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.142.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.143.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.4.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -327,7 +328,7 @@ Run 445 هشت Job سبز و Artifact `11020397707` با ۱۴ قاب معتبر/
 بازبینی‌شده دارد؛ Run 446 مستندات هشت Job سبز و
 `PMCS-V1.1-UX2-MS56-C1` Safe شد. MS57 نمونهٔ مستقل وضعیت پیوست و
 مرور منشأ مدرک را آماده می‌کند؛ Source Run 448 هشت Job سبز و Artifact
-`11022376179` با ۱۵ قاب معتبر/بازبینی‌شده دارد؛ Run 449 مستندات هشت Job سبز و Checkpoint MS57 Safe شد. MS58 وضعیت‌های خروجی و برگه‌های چاپ A4/A3 را به‌صورت نمونهٔ مستقل آماده کرد؛ Run 450 هشت Job سبز/Artifact معتبر اما متن فنی انگلیسی داشت؛ correction Run 451 هشت Job سبز/Artifact `11023680355` با ۱۳ PNG/۵ PDF معتبر/بازبینی‌شده دارد؛ Run 452 مستندات هشت Job سبز و Checkpoint MS58 Safe شد. MS59 نمونهٔ مفهومی هوشمندی با منشأ، تازگی، عدم قطعیت، مجوز و تصمیم انسانی را آماده کرد؛ Run 453 هشت Job سبز/Artifact `11023743292` با ۱۵ قاب معتبر و بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است. `VX-G3/G4/G5` بازند.
+`11022376179` با ۱۵ قاب معتبر/بازبینی‌شده دارد؛ Run 449 مستندات هشت Job سبز و Checkpoint MS57 Safe شد. MS58 وضعیت‌های خروجی و برگه‌های چاپ A4/A3 را به‌صورت نمونهٔ مستقل آماده کرد؛ Run 450 هشت Job سبز/Artifact معتبر اما متن فنی انگلیسی داشت؛ correction Run 451 هشت Job سبز/Artifact `11023680355` با ۱۳ PNG/۵ PDF معتبر/بازبینی‌شده دارد؛ Run 452 مستندات هشت Job سبز و Checkpoint MS58 Safe شد. MS59 نمونهٔ مفهومی هوشمندی با منشأ، تازگی، عدم قطعیت، مجوز و تصمیم انسانی را آماده کرد؛ Run 453 هشت Job سبز/Artifact `11023743292` با ۱۵ قاب معتبر و بازبینی‌شده دارد؛ Run 454 مستندات هشت Job سبز و Checkpoint MS59 Safe شد. MS60 فرم شمسی و فیلتر را در ده وضعیت به‌صورت نمونهٔ مستقل آماده کرد؛ Run 455 هشت Job سبز ولی قاب ۳۲۰px متن فنی انگلیسی داشت؛ correction Run 456 هشت Job سبز/Artifact `11025098337` با ۱۶ قاب معتبر و بازبینی‌شده و CI مستندات شرط Checkpoint است. `VX-G3/G4/G5` بازند.
 
 ## Completed & Verified Work
 
@@ -1064,7 +1065,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری `V1.1-UX2-MS59`، نمونهٔ مفهومی هوشمندی مدیریتی با مرز تصمیم انسانی است. سپس State Contract باقی‌مانده برای `VX-G3` تکمیل می‌شوند؛ مهاجرت فعال `VX-G4` فقط پس از پذیرش Gate آغاز می‌شود.**
+**گام جاری `V1.1-UX2-MS60`، نمونهٔ فرم شمسی و فیلتر در Stateهای مرتبط است. سپس ممیزی Token/Component برای `VX-G3` تکمیل می‌شود؛ مهاجرت فعال `VX-G4` فقط پس از پذیرش Gate آغاز می‌شود.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
