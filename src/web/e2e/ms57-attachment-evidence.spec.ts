@@ -15,10 +15,13 @@ test("MS57 attachment and Evidence sample never promotes an unverified file", as
   const requests: string[] = [];
   page.on("request", request => { if (/^https?:/u.test(request.url())) requests.push(request.url()); });
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
-  async function capture(name: string, width: number, height: number) {
+  async function capture(name: string, width: number) {
     const bytes = await page.screenshot({ fullPage: true, animations: "disabled", caret: "hide" });
+    const imageWidth = bytes.readUInt32BE(16);
+    const imageHeight = bytes.readUInt32BE(20);
+    expect(imageWidth).toBe(width);
     writeFileSync(resolve(output, name), bytes);
-    files.push({ name, sha256: digest(bytes), bytes: bytes.length, width, height });
+    files.push({ name, sha256: digest(bytes), bytes: bytes.length, width: imageWidth, height: imageHeight });
   }
 
   for (const [width, height] of [[1280, 800], [390, 844], [320, 720]] as const) {
@@ -53,7 +56,7 @@ test("MS57 attachment and Evidence sample never promotes an unverified file", as
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px ${key}`).toBe(true);
       if (width === 1280 || (width === 390 && ["released", "quarantined"].includes(key)) ||
           (width === 320 && ["permission", "rejected", "queued"].includes(key))) {
-        await capture(`attachment-${width}-${key}.png`, width, height);
+        await capture(`attachment-${width}-${key}.png`, width);
       }
     }
     await state.selectOption("released");
