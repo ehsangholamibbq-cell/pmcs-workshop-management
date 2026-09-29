@@ -309,18 +309,23 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
   const [preview, setPreview] = useState<EffectivePermissionPreviewModel | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewMessage, setPreviewMessage] = useState("");
+  const [previewMessageKind, setPreviewMessageKind] = useState<"status" | "error">("status");
   const projectNames = useMemo(() => new Map(projects.map((project) => [project.id, project.name])), [projects]);
 
   async function loadPreview() {
     if (!projectId) return;
     setPreviewBusy(true);
+    setPreview(null);
     setPreviewMessage("در حال محاسبهٔ مجوز مؤثر…");
+    setPreviewMessageKind("status");
     try {
       setPreview(await getEffectivePermissionPreview(apiBaseUrl, user.id, projectId, projectRole));
       setPreviewMessage("نتیجه برای نقش انتخابی شبیه‌سازی شد؛ این نما مجوز جدیدی ایجاد یا ذخیره نمی‌کند.");
+      setPreviewMessageKind("status");
     } catch (error) {
       setPreview(null);
       setPreviewMessage(toUserMessage(error, "محاسبهٔ مجوز مؤثر انجام نشد."));
+      setPreviewMessageKind("error");
     } finally {
       setPreviewBusy(false);
     }
@@ -358,13 +363,13 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
 
       {user.status !== "Deactivated" && (
         <div className="membership-editor">
-          <label><span>پروژه</span><select value={projectId} onChange={(event) => { setProjectId(event.target.value); setPreview(null); setPreviewMessage(""); }}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-          <label><span>نقش پروژه</span><select value={projectRole} onChange={(event) => setProjectRole(event.target.value)}>{projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}</select></label>
+          <label><span>پروژه</span><select disabled={disabled || previewBusy} value={projectId} onChange={(event) => { setProjectId(event.target.value); setPreview(null); setPreviewMessage(""); }}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+          <label><span>نقش پروژه</span><select disabled={disabled || previewBusy} value={projectRole} onChange={(event) => { setProjectRole(event.target.value); setPreview(null); setPreviewMessage(""); }}>{projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}</select></label>
           <button type="button" disabled={disabled || !projectId} onClick={() => void onAction(`membership-${user.id}`, () => upsertMembership(apiBaseUrl, user.id, projectId, projectRole), "عضویت و نقش پروژه ثبت شد.")}>ثبت عضویت</button>
           <button className="secondary-button" type="button" disabled={disabled || previewBusy || !projectId} onClick={() => void loadPreview()}>{previewBusy ? "در حال محاسبه…" : "پیش‌نمایش نقش انتخابی"}</button>
         </div>
       )}
-      {previewMessage && <p className="permission-preview-message" aria-live="polite">{previewMessage}</p>}
+      {previewMessage && <p className="permission-preview-message" role={previewMessageKind === "error" ? "alert" : "status"}>{previewMessage}</p>}
       {preview && (
         <section className="permission-preview" aria-label="پیش‌نمایش دسترسی مؤثر">
           <div className="permission-preview-summary">
