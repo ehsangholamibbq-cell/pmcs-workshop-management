@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.9.0` در `UX2-MS55`
+- نسخهٔ Candidate: `0.10.0` در `UX2-MS56`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -120,7 +120,7 @@ Navigation/Focus و جدول جایگزین در E2E حفظ شدند. این ا�
 - وزیرمتن نسخهٔ `2.0.0` با Golden رسمی و Runهای 425/426 پذیرفته شده؛
   آزمون جامع بصری همهٔ مسیرهای مهاجرت‌یافته در `VX-G5` باقی است؛
 - بازبینی مالک روی بستهٔ ملموس Prototype و Stateها پیش از اعلام
-`VX-G3`، سپس مهاجرت `VX-G4` و Qualification `VX-G5`.
+  `VX-G3`، سپس مهاجرت `VX-G4` و Qualification `VX-G5`.
 
 MS55 در `docs/ux/prototypes/ms55/` نمونهٔ AvatarFallback،
 ProfilePhotoCrop و PrivacyLabel را در fallback، تصویر نمونه، Loading،
@@ -131,3 +131,11 @@ Dialog بومی برش، Escape/بازگشت Focus، قفل Action در حالت
 کنترل امنیتی/Revision، مصرف‌کنندهٔ فعال و Qualification در G4/G5 بازند.
 فهرست `docs/ux/pmcs-v1.1-vx-g3-closure-ledger.md` سایر خانواده‌های
 باز و شواهد لازم را مشخص می‌کند؛ هیچ خانهٔ `S/G` فعال خودکار `D` نمی‌شود.
+
+MS56 در `docs/ux/prototypes/ms56/` خانوادهٔ Wizard تکثیر را با انتخاب،
+سیاست تعارض، Preview و مرور محلی نمونه می‌کند. Loading/Empty/Error/
+Offline/NoPermission/Expired ردیف‌ها را پنهان و تأیید را قفل می‌کنند؛
+تعارض با سیاست توقف، یا هر قلم مسدود حتی با سیاست ردکردن تعارض، مانع است.
+تغییر انتخاب/سیاست، پیش‌نمایش قبلی را باطل می‌کند. این فقط `P` است؛
+ساخت مقصد، اجرای انتقال، Revision/Permission واقعی و وضعیت خانه‌های فعال
+در G4/G5 جدا می‌مانند.
