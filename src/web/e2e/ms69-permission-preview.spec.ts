@@ -56,9 +56,8 @@ test("permission preview never presents a prior role's result as current", async
   const editor = card.locator(".membership-editor");
   const project = editor.getByLabel("پروژه", { exact: true });
   const role = editor.getByLabel("نقش پروژه");
-  const projectValue = await project.locator("option:not([value=''])").first().getAttribute("value");
-  expect(projectValue).toBeTruthy();
-  await project.selectOption(projectValue!);
+  await expect(project).toContainText("پروژه نمونهٔ پیش‌نمایش");
+  await project.selectOption(projectId, { timeout: 10_000 });
   await editor.getByRole("button", { name: "پیش‌نمایش نقش انتخابی" }).click();
   await expect(card.getByRole("status")).toContainText("در حال محاسبهٔ مجوز مؤثر…");
   await expect(card.locator(".permission-preview")).toHaveCount(0);
