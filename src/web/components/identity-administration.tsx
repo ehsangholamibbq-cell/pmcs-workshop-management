@@ -16,13 +16,12 @@ import {
   upsertMembership,
   type IdentityDirectoryModel,
   type InvitationStatus,
-  type MembershipStatus,
   type TenantRole,
   type UserDirectoryModel,
-  type UserStatus,
   type EffectivePermissionPreviewModel,
 } from "@/lib/identity-administration";
 import { toUserMessage } from "@/lib/localization";
+import { projectRoleLabel, userStatusLabel } from "@/lib/identity-labels";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { listProjects, type ProjectModel } from "@/lib/projects";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
@@ -403,20 +402,8 @@ function tenantRoleLabel(role: TenantRole): string {
   return ({ Member: "عضو سازمان", PortfolioViewer: "مشاهده‌گر سبد پروژه‌ها", TenantAdministrator: "مدیر سازمان" })[role];
 }
 
-function projectRoleLabel(role: string): string {
-  return ({ ProjectManager: "مدیر پروژه", ProjectController: "کارشناس کنترل پروژه", SiteSupervisor: "سرپرست کارگاه", Observer: "مشاهده‌گر", TechnicalOffice: "دفتر فنی", FinanceOperator: "کارشناس مالی", FinanceManager: "مدیر مالی", ContractAdministrator: "مدیر قرارداد", ProcurementOperator: "کارشناس خرید", ProcurementManager: "مدیر خرید", QualityController: "مسئول کنترل کیفیت", HseOfficer: "مسئول ایمنی، بهداشت و محیط‌زیست" } as Record<string, string>)[role] ?? "نقش پروژه";
-}
-
 function invitationStatusLabel(status: InvitationStatus): string {
   return ({ Queued: "در صف", Processing: "در حال پردازش", RetryScheduled: "تلاش مجدد زمان‌بندی‌شده", Sent: "ارسال‌شده", Failed: "ناموفق", Revoked: "لغوشده", Expired: "منقضی‌شده" })[status];
-}
-
-function userStatusLabel(status: UserStatus): string {
-  return ({ Invited: "دعوت‌شده", Active: "فعال", Suspended: "تعلیق‌شده", Deactivated: "غیرفعال" })[status];
-}
-
-export function membershipStatusLabel(status: MembershipStatus): string {
-  return ({ Proposed: "پیشنهادی", Active: "فعال", Suspended: "تعلیق‌شده", Expired: "منقضی‌شده", Revoked: "لغوشده" })[status];
 }
 
 function formatDateTime(value: string): string {

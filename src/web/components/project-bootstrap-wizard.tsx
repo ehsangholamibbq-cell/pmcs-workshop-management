@@ -5,6 +5,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import { getIdentityDirectory, type UserDirectoryModel } from "@/lib/identity-administration";
+import { membershipStatusLabel, projectRoleLabel, userStatusLabel } from "@/lib/identity-labels";
 import { toUserMessage } from "@/lib/localization";
 import {
   activateProjectBootstrap,
@@ -222,7 +223,7 @@ export function ProjectBootstrapWizard() {
   }
 
   async function refreshPreview() {
-    if (!preview || !isOnline) return;
+    if (!preview || !isOnline || isBusy) return;
     setIsBusy(true);
     setMessageKind("status");
     setMessage("در حال ارزیابی دوباره تصویر وضعیت مبدأ و مقصد…");
@@ -243,7 +244,7 @@ export function ProjectBootstrapWizard() {
   }
 
   async function execute() {
-    if (!preview || !confirmed || !isOnline) return;
+    if (!preview || !confirmed || !isOnline || isBusy || executionBlocked) return;
     setIsBusy(true);
     setMessageKind("status");
     setMessage("در حال اجرای مشارکت‌کننده‌های مجاز و اعتبارسنجی نتیجه…");
@@ -262,7 +263,7 @@ export function ProjectBootstrapWizard() {
   }
 
   async function activate() {
-    if (!result || !isOnline) return;
+    if (!result || !isOnline || isBusy) return;
     setIsBusy(true);
     setMessageKind("status");
     setMessage("در حال اجرای دروازه مستقل آمادگی و فعال‌سازی…");
@@ -315,7 +316,7 @@ export function ProjectBootstrapWizard() {
             type="button"
             key={item}
             className={step === item ? "active" : ""}
-            disabled={item === "preview" ? !preview : item === "result" ? !result : Boolean(preview)}
+            disabled={isBusy || (item === "preview" ? !preview : item === "result" ? !result : Boolean(preview))}
             onClick={() => setStep(item)}
           >
             <span>{(index + 1).toLocaleString("fa-IR")}</span>{stepLabel(item)}
@@ -333,7 +334,8 @@ export function ProjectBootstrapWizard() {
         </button>}
 
       {!preview && (
-        <form className="bootstrap-workspace" onSubmit={createPreview}>
+        <form className="bootstrap-workspace" aria-busy={isBusy} onSubmit={createPreview}>
+          <fieldset className="bootstrap-form-lock" disabled={isBusy}>
           {step === "identity" && (
             <section className="bootstrap-panel">
               <PanelHeading eyebrow="مبدأ و مقصد" title="هویت مستقل پروژه جدید" detail="کد، نام، تاریخ‌ها و مقادیر یکتا همیشه برای مقصد تازه وارد می‌شوند." />
@@ -395,9 +397,9 @@ export function ProjectBootstrapWizard() {
                         if (event.target.checked) next[user.id] = { userId: user.id, roleCode: membership.roleCode, accessScope: "Project" };
                         else delete next[user.id];
                         return next;
-                      })} /><span><strong>{user.displayName}</strong><small>{user.status} · {membership.status}</small></span></label>
+                      })} /><span><strong>{user.displayName}</strong><small>{userStatusLabel(user.status)} · {membershipStatusLabel(membership.status)}</small></span></label>
                       <select disabled={!selected} value={selected?.roleCode ?? membership.roleCode} onChange={(event) => setMembers((current) => ({ ...current, [user.id]: { userId: user.id, roleCode: event.target.value, accessScope: "Project" } }))}>
-                        {roles.map((role) => <option value={role} key={role}>{role}</option>)}
+                        {roles.map((role) => <option value={role} key={role}>{projectRoleLabel(role)}</option>)}
                       </select>
                     </article>;
                   })}
@@ -412,6 +414,7 @@ export function ProjectBootstrapWizard() {
               <button type="submit" disabled={isBusy || !isOnline || !sourceReady || !membersReady || categories.length === 0}>{isBusy ? "در حال محاسبه…" : "ایجاد مقصد پیش‌نویس و نمایش پیش‌نمایش"}</button>
             )}
           </div>
+          </fieldset>
         </form>
       )}
 
@@ -425,7 +428,7 @@ export function ProjectBootstrapWizard() {
             </article>)}
           </div>
           <details className="bootstrap-exclusions"><summary>مواردی که همیشه مستثنا هستند</summary><ul>{preview.alwaysExcluded.map((item) => <li key={item}>{item}</li>)}</ul></details>
-          <label className="bootstrap-confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />پیش‌نمایش، موارد مستثنا و سیاست تعارض را بررسی و اجرای همین چکیده را تأیید می‌کنم.</label>
+          <label className="bootstrap-confirm"><input type="checkbox" disabled={isBusy} checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />پیش‌نمایش، موارد مستثنا و سیاست تعارض را بررسی و اجرای همین چکیده را تأیید می‌کنم.</label>
           {executionBlocked && <p className="bootstrap-blocked">پیش‌نمایش دارای مانع اجرایی است؛ سیاست تعارض را نمی‌توان پس از ساخت برنامه تغییر داد و برای اصلاح انتخاب‌ها باید برنامه تازه ساخته شود.</p>}
           <div className="bootstrap-actions">
             <button type="button" className="secondary-button" disabled={isBusy || !isOnline} onClick={() => void refreshPreview()}>محاسبه دوباره پیش‌نمایش</button>

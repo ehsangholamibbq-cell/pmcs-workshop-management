@@ -924,6 +924,8 @@
   margin-top: 1rem;
 }
 
+.bootstrap-form-lock { min-width: 0; margin: 0; padding: 0; border: 0; }
+
 .bootstrap-panel {
   padding: clamp(1.1rem, 3vw, 2rem);
   border: 1px solid var(--line);
