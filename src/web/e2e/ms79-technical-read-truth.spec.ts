@@ -13,8 +13,17 @@ test("technical office hides prior documents and commands after a failed or forb
   mkdirSync(output, { recursive: true });
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
   async function capture(name: string, width: number, height: number) {
-    await page.locator("#technical-office").scrollIntoViewIfNeeded();
     await page.evaluate(() => document.fonts.ready);
+    await page.locator("#technical-office").evaluate((element) => {
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150),
+        behavior: "instant",
+      });
+    });
+    const titleTop = () => page.locator("#technical-office .section-title")
+      .evaluate((element) => element.getBoundingClientRect().top);
+    await expect.poll(titleTop).toBeGreaterThanOrEqual(120);
+    expect(await titleTop()).toBeLessThan(250);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
     expect(bytes.readUInt32BE(16)).toBe(width);
