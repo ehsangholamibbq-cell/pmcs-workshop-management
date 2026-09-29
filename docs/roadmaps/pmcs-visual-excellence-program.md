@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.28.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype با Run 469 پذیرفته؛ `VX-G4` موج Portfolio فعال، Qualification باز
+- نسخه سند: `1.29.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype با Run 469 پذیرفته؛ `VX-G4` دو موج Portfolio/Project فعال، Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -179,8 +179,8 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | --- | --- | --- |
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
-| `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | چهار معیار مالک در سطح نمونه/قرارداد پاسخ مثبت دارند؛ ممیزی MS63 و CI مستقل شرط پذیرش Gate است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | باز |
+| `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Portfolio و Project Command Center Navigation در MS64/65، سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
@@ -218,3 +218,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.26.0` | UX2-MS61 documentation Run 462 هشت Job سبز و Safe؛ MS62 شاهد ۴۸ردیفی چاپ/تراکم را با صفحه‌بندی نمایش و چهار چاپ چندصفحه‌ای آماده کرد؛ Run 463 مشکل تاریخ ۷۶۸px را یافت، Runهای 464/465 سبز ولی مرور بصری اصلاح عنوان ستون و caption موبایل را لازم کرد؛ Source نهایی Run 466 هشت Job سبز/Artifact `11029742768` با هشت PNG/چهار PDF و ۲۴ صفحه معتبر/بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ سه معیار نخست در سطح طراحی پذیرفته، معیار چهارم تا نمایش و پاسخ مالک باز؛ G3/G4/G5 باز |
 | `1.27.0` | UX2-MS62 بعد از Source Run 466/Artifact ۸ PNG و ۴ PDF، در Run 467 آزمون Focus Login نشست واردشده را به ارث برد و شکست خورد؛ اصلاح محدود Run 468 هشت Job سبز، MS62 Safe. مالک پس از ارائهٔ بستهٔ چاپ پُرداده و موبایل معیار چهارم را نیز در سطح نمونه پذیرفت. MS63 فهرست خانواده‌های قرارداد و نمونه را برای VX-G3 ممیزی می‌کند؛ CI مستقل این تصمیم شرط پذیرش است، G4/G5 باز |
 | `1.28.0` | MS63 Run 469 هشت Job سبز و G3 در محدودهٔ Contract/Prototype پذیرفته؛ MS64 نخستین Migration فعال G4 در Portfolio با Navigation بازشوندهٔ موبایل، Run 470 هشت Job سبز/Artifact `11032562526` شش قاب/Index معتبر و مرورشده. CI مستقل مستندات شرط Checkpoint؛ سایر Shellها، G4 کامل و G5 باز |
+| `1.29.0` | MS64 docs correction Run 472 هشت Job سبز و Safe؛ MS65 Navigation مرکز فرمان پروژه را در Run 473 متصل و پس از مرور، راهنمای پیمایش فهرست بلند را در Run 474 با هشت Job سبز افزود؛ Artifact `11035335891` شش قاب/Index معتبر و مرورشده، CI مستندات شرط Checkpoint. چهار Shell دیگر، G4 کامل و G5 باز |
