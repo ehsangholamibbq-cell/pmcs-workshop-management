@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.18`
+- نسخه Candidate: `1.0.0-rc.19`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -220,6 +220,12 @@ Permission و Qualification مصرف‌کنندگان در G4/G5 جدا می‌�
 جدا می‌کند. برگهٔ چاپ برچسب غیررسمی، منبع و تازگی دارد و Fact غایب را
 تخمین نمی‌زند. چاپ A4/A3 عمودی و افقی در Prototype آزموده می‌شود؛
 Golden و دانلود رسمی و Qualification مصرف‌کنندگان در G4/G5 جداست.
+
+در UX2-MS59 نمونهٔ مفهومی `docs/ux/prototypes/ms59/` هوشمندی مدیریتی
+را با نه وضعیت، فرضیهٔ آزمایشی و منشأ/تازگی/عدم قطعیت/مجوز جداگانه
+نشان می‌دهد. Actionهای واقعی و ساخت Draft قفل‌اند و مرور منشأ فقط
+محلی است. این نمونه، UI اجرایی Agent را در V1.1 فعال نمی‌کند؛
+Stageهای ۲ تا ۷ و رابط تولیدی طبق Roadmap به V1.2 تعلق دارند.
 
 ## ۷. Login Experience Contract
 

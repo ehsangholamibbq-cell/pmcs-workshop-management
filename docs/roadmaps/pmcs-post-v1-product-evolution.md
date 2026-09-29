@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.141.0`
+- نسخه سند: `1.142.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1471,7 +1471,7 @@ MS54 در Prototype مستقل، متن قابل‌نمایش را فارسی و
 445 هشت Job سبز و Artifact `11020397707` با ۱۴ قاب معتبر دارد؛
 Run 446 مستندات هشت Job سبز و Checkpoint MS56 Safe شد. MS57 نمونهٔ
 مستقل وضعیت پیوست/مدرک را با مرز صف/قرنطینه/انتشار/رد و مجوز آماده
-کرد؛ Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده دارد؛ Run 449 مستندات هشت Job سبز و Checkpoint MS57 Safe شد. MS58 نمونهٔ مستقل وضعیت خروجی رسمی/چاپ مرورگر و اندازه‌های A4/A3 را آماده می‌کند؛ Run 450 هشت Job سبز/Artifact معتبر اما متن فنی انگلیسی داشت؛ correction Run 451 هشت Job سبز/Artifact `11023680355` با ۱۳ PNG/۵ PDF معتبر/بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است. Intelligence و Foundation پیش از تصمیم G3 باقی‌اند؛ مهاجرت
+کرد؛ Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده دارد؛ Run 449 مستندات هشت Job سبز و Checkpoint MS57 Safe شد. MS58 نمونهٔ مستقل وضعیت خروجی رسمی/چاپ مرورگر و اندازه‌های A4/A3 را آماده می‌کند؛ Run 450 هشت Job سبز/Artifact معتبر اما متن فنی انگلیسی داشت؛ correction Run 451 هشت Job سبز/Artifact `11023680355` با ۱۳ PNG/۵ PDF معتبر/بازبینی‌شده دارد؛ Run 452 مستندات هشت Job سبز و Checkpoint MS58 Safe شد. MS59 نمونهٔ مفهومی هوشمندی مدیریتی را با فرضیهٔ برچسب‌دار، منشأ، تازگی، عدم قطعیت و قفل اقدام آماده کرد؛ Run 453/Artifact و CI مستندات شرط Checkpoint است. Foundation و تصمیم مالک پیش از G3 باقی‌اند؛ مهاجرت
 `VX-G4` پس از پذیرش Gate.
 
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
@@ -1855,3 +1855,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.139.0` | UX2-MS55 documentation Run 444 هشت Job سبز و Safe؛ UX2-MS56 نمونهٔ مستقل Wizard تکثیر با انتخاب/سیاست تعارض/Preview/تأیید محلی و قفل اجرای عملیاتی را Candidate کرد؛ Source Run 445 هشت Job سبز/Artifact `11020397707` با ۱۴ قاب معتبر، CI مستندات شرط Checkpoint، G3/G4/G5 باز |
 | `1.140.0` | UX2-MS56 documentation Run 446 هشت Job سبز و Safe؛ UX2-MS57 نمونهٔ مستقل چرخهٔ پیوست و منشأ مدرک را با قفل اتصال/دریافت و مرور محلی Candidate کرد؛ Run 447 هشت Job سبز ولی index ابعاد تصویر نادرست داشت؛ Source correction Run 448 هشت Job سبز/Artifact `11022376179` با ۱۵ قاب معتبر؛ CI مستندات شرط Checkpoint، G3/G4/G5 باز |
 | `1.141.0` | UX2-MS57 documentation Run 449 هشت Job سبز و Safe؛ UX2-MS58 نمونهٔ مستقل وضعیت خروجی رسمی و برگهٔ غیررسمی چاپ مرورگر را با A4/A3 عمودی/افقی Candidate کرد؛ Run 450 هشت Job سبز اما متن فنی انگلیسی داشت؛ correction Run 451 هشت Job سبز/Artifact `11023680355` با ۱۳ PNG/۵ PDF معتبر؛ CI مستندات شرط Checkpoint، Intelligence/Foundation و G3/G4/G5 باز |
+| `1.142.0` | UX2-MS58 documentation Run 452 هشت Job سبز و Safe؛ UX2-MS59 نمونهٔ مفهومی هوشمندی مدیریتی با ۹ وضعیت، فرضیه/منشأ/تازگی/عدم قطعیت و قفل اقدام را Candidate کرد؛ Source Run 453 هشت Job سبز/Artifact `11023743292` با ۱۵ قاب معتبر و بازبینی‌شده؛ CI مستندات شرط Checkpoint، Foundation و G3/G4/G5 باز؛ UI اجرایی Agent در V1.1 خارج از دامنه |
