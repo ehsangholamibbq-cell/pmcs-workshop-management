@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.139.0`
+- نسخه سند: `1.140.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1469,7 +1469,9 @@ MS54 در Prototype مستقل، متن قابل‌نمایش را فارسی و
 هشت Job سبز و Checkpoint MS55 Safe شد. MS56 نمونهٔ مستقل انتخاب،
 سیاست تعارض، Preview و تأیید محلی Wizard را می‌افزاید؛ Source Run
 445 هشت Job سبز و Artifact `11020397707` با ۱۴ قاب معتبر دارد؛
-CI مستندات شرط Checkpoint است. Attachment/Evidence،
+Run 446 مستندات هشت Job سبز و Checkpoint MS56 Safe شد. MS57 نمونهٔ
+مستقل وضعیت پیوست/مدرک را با مرز صف/قرنطینه/انتشار/رد و مجوز آماده
+کرد؛ Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده دارد؛ CI مستندات شرط Checkpoint است.
 Reporting/Print و Intelligence پیش از تصمیم G3 باقی‌اند؛ مهاجرت
 `VX-G4` پس از پذیرش Gate.
 
@@ -1852,3 +1854,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.137.0` | UX2-MS53 documentation Run 438 هشت Job سبز و Safe؛ مالک جهت بصری را با پیگیری تراکم موبایل و فارسی‌سازی متن پذیرفت؛ UX2-MS54 Prototype مستقل را در ۳۹۰/۳۲۰px به‌ترتیب ۱۱۲/۱۱۱px کوتاه‌تر کرد، Source Run 439 هشت Job سبز و Artifact `11018211937` با دو قاب معتبر؛ CI مستندات شرط Checkpoint، G3 Contract/State و G4/G5 باز |
 | `1.138.0` | UX2-MS54 documentation Run 440 هشت Job سبز و Safe؛ UX2-MS55 فهرست بسته‌شدن G3 و نمونهٔ مستقل هشت وضعیت Avatar/برش/حریم خصوصی را Candidate کرد؛ source correctionهای یکتایی نام قاب و متن فارسی، Run 443 هشت Job سبز/Artifact `11019328744` با ۱۳ قاب معتبر؛ CI مستندات شرط Checkpoint، G3/G4/G5 باز |
 | `1.139.0` | UX2-MS55 documentation Run 444 هشت Job سبز و Safe؛ UX2-MS56 نمونهٔ مستقل Wizard تکثیر با انتخاب/سیاست تعارض/Preview/تأیید محلی و قفل اجرای عملیاتی را Candidate کرد؛ Source Run 445 هشت Job سبز/Artifact `11020397707` با ۱۴ قاب معتبر، CI مستندات شرط Checkpoint، G3/G4/G5 باز |
+| `1.140.0` | UX2-MS56 documentation Run 446 هشت Job سبز و Safe؛ UX2-MS57 نمونهٔ مستقل چرخهٔ پیوست و منشأ مدرک را با قفل اتصال/دریافت و مرور محلی Candidate کرد؛ Run 447 هشت Job سبز ولی index ابعاد تصویر نادرست داشت؛ Source correction Run 448 هشت Job سبز/Artifact `11022376179` با ۱۵ قاب معتبر؛ CI مستندات شرط Checkpoint، G3/G4/G5 باز |

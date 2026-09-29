@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.16`
+- نسخه Candidate: `1.0.0-rc.17`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -208,6 +208,12 @@ Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مص
 وجود ندارد. Source Run 445 هشت Job سبز و Artifact `11020397707` با
 ۱۴ قاب معتبر/بازبینی‌شده شاهد Prototype هستند؛ CI مستندات شرط Checkpoint است؛
 Wizard فعال و Qualification در G4/G5 جدا می‌مانند.
+
+در UX2-MS57 نمونهٔ مستقل `docs/ux/prototypes/ms57/` وضعیت‌های صف،
+بررسی، قرنطینه، آزادشده، ردشده، آفلاین، منع مجوز، خطا، تعارض نسخه و
+بدون پیوست را برای فایل پیام گروه پروژه نمایش می‌دهد. مرور منشأ صرفاً
+محلی است و اتصال، دریافت یا تبدیل مدرک را اجرا نمی‌کند. Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده Evidence نمونه هستند؛ کنترل واقعی بایت/هش/نسخه،
+Permission و Qualification مصرف‌کنندگان در G4/G5 جدا می‌مانند.
 
 ## ۷. Login Experience Contract
 
