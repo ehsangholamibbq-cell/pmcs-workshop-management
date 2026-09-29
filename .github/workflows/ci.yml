@@ -366,6 +366,12 @@ jobs:
           name: pmcs-ms67-profile-feedback
           path: src/web/artifacts/ms67-profile-feedback/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms68-identity-feedback
+          path: src/web/artifacts/ms68-identity-feedback/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest

@@ -3256,6 +3256,17 @@ output {
   background: var(--soft-amber);
 }
 
+.identity-feedback.success {
+  border-inline-start-color: var(--status-success);
+  background: var(--status-success-surface);
+}
+
+.identity-feedback.error {
+  border-inline-start-color: var(--status-danger);
+  color: var(--text-primary);
+  background: var(--status-danger-surface);
+}
+
 .portfolio-kpis {
   margin-top: 1rem;
   display: grid;
