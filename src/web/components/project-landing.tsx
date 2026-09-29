@@ -193,7 +193,7 @@ function ProjectLandingContent() {
         <div className="section-title">
           <div>
             <h2 id="project-list-title">فهرست پروژه‌ها</h2>
-            <p className="muted" role={readState === "error" ? "alert" : "status"}>{message}</p>
+            <p className={readState === "error" ? "project-list-status error" : "muted"} role={readState === "error" ? "alert" : "status"}>{message}</p>
           </div>
           <button type="button" className="secondary-button" disabled={isLoading} onClick={() => void load()}>
             {isLoading ? "در حال دریافت…" : "تازه‌سازی"}
@@ -201,7 +201,7 @@ function ProjectLandingContent() {
         </div>
 
         {readState === "error" && (
-          <div className="empty-project-state" role="alert">
+          <div className="empty-project-state error" role="alert">
             <h3>فهرست پروژه‌ها در دسترس نیست</h3>
             <p>دادهٔ قبلی تا دریافت پاسخ تازه نمایش داده نمی‌شود. برای تلاش دوباره از تازه‌سازی استفاده کنید.</p>
           </div>

@@ -55,6 +55,7 @@ test("the project list hides old cards during refresh and distinguishes a failed
   await expect(main).toHaveAttribute("data-project-read-state", "error");
   await expect(cards).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "فهرست پروژه‌ها در دسترس نیست" })).toBeVisible();
+  await expect(page.locator(".empty-project-state.error")).toHaveCSS("border-top-color", "rgb(170, 55, 64)");
   await expect(page.getByRole("heading", { name: "پروژه‌ای برای نمایش وجود ندارد" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "ایجاد پیش‌نویس پروژه" })).toBeDisabled();
   await expect(main).not.toContainText("Sensitive upstream error");

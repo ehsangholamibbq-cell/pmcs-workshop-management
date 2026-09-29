@@ -582,6 +582,16 @@
   text-align: center;
 }
 
+.project-list-status.error {
+  color: var(--status-danger);
+}
+
+.empty-project-state.error {
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+  color: var(--text-primary);
+}
+
 .project-card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
