@@ -2500,6 +2500,10 @@ output {
 .my-work-feedback.error { border-color: var(--status-danger); background: var(--status-danger-surface); }
 .my-work-feedback p { margin: 0; }
 
+@media (max-width: 900px) {
+  .my-work-center { grid-template-columns: minmax(0, 1fr); }
+}
+
 .my-work-list,
 .notification-list,
 .report-version-list,
