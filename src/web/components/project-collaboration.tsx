@@ -44,7 +44,7 @@ import {
 import { formatPersianDateTime, futureProjectDate } from "@/lib/persian-date";
 
 export function ProjectCollaboration({ projectId }: { readonly projectId: string }) {
-  return <PmcsSessionBoundary><ConversationContent projectId={projectId} /></PmcsSessionBoundary>;
+  return <PmcsSessionBoundary><ConversationContent key={projectId} projectId={projectId} /></PmcsSessionBoundary>;
 }
 
 function ConversationContent({ projectId }: { readonly projectId: string }) {
@@ -60,6 +60,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<readonly ProjectConversationMessage[] | null>(null);
   const [searchStatus, setSearchStatus] = useState("");
+  const [searchError, setSearchError] = useState(false);
+  const [searchBusy, setSearchBusy] = useState(false);
+  const searchRequest = useRef(0);
   const [unread, setUnread] = useState<ProjectConversationUnread | null>(null);
   const [pinningMessageId, setPinningMessageId] = useState<string | null>(null);
   const [pinStatus, setPinStatus] = useState("");
@@ -85,14 +88,33 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [historyBusyId, setHistoryBusyId] = useState<string | null>(null);
   const [historyStatus, setHistoryStatus] = useState("");
   const historyController = useRef<AbortController | null>(null);
+  const accessRevoked = useRef(false);
+
+  const requestRefresh = useCallback(() => {
+    searchRequest.current += 1;
+    setView(null);
+    setFailure("");
+    setSearchResults(null);
+    setSearchStatus("");
+    setSearchError(false);
+    setSearchBusy(false);
+    setUnread(null);
+    setRefresh((value) => value + 1);
+  }, []);
 
   const closeRestrictedConversation = useCallback((status: number) => {
+    accessRevoked.current = true;
     historyController.current?.abort();
     historyController.current = null;
+    searchRequest.current += 1;
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+    setFailure("");
     setDraft("");
     setReplyTo(null);
     setSearchResults(null);
+    setSearchStatus("");
+    setSearchError(false);
+    setSearchBusy(false);
     setUnread(null);
     setPinStatus("");
     setEditing(null);
@@ -108,10 +130,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   useEffect(() => {
     let active = true;
+    accessRevoked.current = false;
     historyController.current?.abort();
     historyController.current = null;
     void loadProjectConversation("/api/pmcs", projectId).then((result) => {
-      if (!active) return;
+      if (!active || accessRevoked.current) return;
       setSearchResults(null);
       setSearchStatus("");
       setHistory(null);
@@ -131,7 +154,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       setView(result);
       setFailure("");
     }).catch(() => {
-      if (!active) return;
+      if (!active || accessRevoked.current) return;
       setFailure("دریافت گفت‌وگو انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.");
     });
     return () => { active = false; };
@@ -141,14 +164,14 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     if (view?.kind !== "ready") return undefined;
     const controller = new AbortController();
     void watchCollaborationEvents("/api/pmcs", projectId, view.lastSequence,
-      () => setRefresh((value) => value + 1), controller.signal).catch((error: unknown) => {
+      requestRefresh, controller.signal).catch((error: unknown) => {
       if (controller.signal.aborted) return;
       if (error instanceof CollaborationAccessError) {
         closeRestrictedConversation(error.status);
       }
     });
     return () => controller.abort();
-  }, [projectId, view, closeRestrictedConversation]);
+  }, [projectId, view, closeRestrictedConversation, requestRefresh]);
 
   useEffect(() => {
     if (view?.kind !== "ready") return undefined;
@@ -158,7 +181,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         if (navigator.onLine) {
           const result = await syncCollaborationMessages("/api/pmcs", projectId);
           if (active && result.sent > 0) {
-            setRefresh((value) => value + 1);
+            requestRefresh();
             setSendStatus("پیام‌های صف به گفت‌وگوی پروژه رسیدند.");
           }
         }
@@ -171,7 +194,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     void recover();
     window.addEventListener("online", recover);
     return () => { active = false; window.removeEventListener("online", recover); };
-  }, [projectId, view?.kind]);
+  }, [projectId, view?.kind, requestRefresh]);
 
   useEffect(() => {
     if (view?.kind !== "ready") return undefined;
@@ -188,17 +211,27 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   async function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready") return;
+    if (view?.kind !== "ready" || searchBusy) return;
+    const request = ++searchRequest.current;
+    setSearchResults(null);
+    setSearchStatus("");
+    setSearchError(false);
+    setSearchBusy(true);
     try {
       const results = await searchProjectConversation("/api/pmcs", projectId, searchQuery);
+      if (request !== searchRequest.current) return;
       setSearchResults(results);
       setSearchStatus(results.length ? "نتیجه‌های همین پروژه" : "پیامی با این عبارت در پروژه پیدا نشد.");
     } catch (error) {
+      if (request !== searchRequest.current) return;
       if (error instanceof CollaborationAccessError) {
         closeRestrictedConversation(error.status);
       } else {
         setSearchStatus(error instanceof Error ? error.message : "جست‌وجو کامل نشد.");
+        setSearchError(true);
       }
+    } finally {
+      if (request === searchRequest.current) setSearchBusy(false);
     }
   }
 
@@ -233,7 +266,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         : null;
       const queue = await listQueuedCollaborationMessages(projectId);
       setPending(queue.length);
-      if (result?.sent) setRefresh((value) => value + 1);
+      if (result?.sent) requestRefresh();
       setSendStatus(queue.length ? "پیام در صف امن دستگاه باقی ماند؛ پس از اتصال دوباره تلاش می‌شود."
         : "پیام در گفت‌وگوی پروژه ثبت شد.");
     } catch {
@@ -255,7 +288,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         messages: current.messages.map((item) => item.id === message.id ? { ...item, pinnedAt } : item),
       } : current);
       setPinStatus(pin ? "پیام برای اعضای پروژه سنجاق شد." : "سنجاق پیام برداشته شد.");
-      setRefresh((value) => value + 1);
+      requestRefresh();
     } catch (error) {
       if (error instanceof CollaborationAccessError) closeRestrictedConversation(error.status);
       else setPinStatus("تغییر سنجاق پیام انجام نشد؛ دوباره تلاش کنید.");
@@ -277,13 +310,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       } : current);
       setEditing(null);
       setEditStatus("ویرایش پیام ثبت شد.");
-      setRefresh((value) => value + 1);
+      requestRefresh();
     } catch (failure) {
       if (failure instanceof CollaborationAccessError) closeRestrictedConversation(failure.status);
       else if (failure instanceof CollaborationRevisionConflict) {
         setEditing((current) => current ? { ...current, conflict: true } : null);
         setEditStatus("پیام همزمان تغییر کرده است؛ نسخهٔ تازه را ببینید، سپس دربارهٔ پیش‌نویس تصمیم بگیرید.");
-        setRefresh((value) => value + 1);
+        requestRefresh();
       } else setEditStatus(failure instanceof Error ? failure.message : "ویرایش پیام کامل نشد.");
     } finally { setEditBusy(false); }
   }
@@ -303,17 +336,17 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       setDeleteStatus("پیام از نمایش گروه برداشته شد؛ سوابق و نگهداری سازمانی حفظ می‌شوند.");
       setReplyTo((current) => current?.id === result.id ? null : current);
       setSearchResults(null);
-      setRefresh((value) => value + 1);
+      requestRefresh();
     } catch (failure) {
       if (failure instanceof CollaborationAccessError) closeRestrictedConversation(failure.status);
       else if (failure instanceof CollaborationRevisionConflict) {
         setDeleting((current) => current ? { ...current, conflict: true } : null);
         setDeleteStatus("نسخهٔ پیام تغییر کرده است؛ پیام تازه را بخوانید و حذف را دوباره تأیید کنید.");
-        setRefresh((value) => value + 1);
+        requestRefresh();
       } else if (failure instanceof CollaborationLegalHoldError) {
         setDeleting(null);
         setDeleteStatus(failure.message);
-        setRefresh((value) => value + 1);
+        requestRefresh();
       } else setDeleteStatus(failure instanceof Error ? failure.message : "حذف پیام کامل نشد.");
     } finally { setDeleteBusy(false); }
   }
@@ -340,13 +373,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setReplyTo((current) => current?.id === result.id ? null : current);
         setSearchResults(null);
       }
-      setRefresh((value) => value + 1);
+      requestRefresh();
     } catch (error) {
       if (error instanceof CollaborationAccessError) closeRestrictedConversation(error.status);
       else if (error instanceof CollaborationRevisionConflict) {
         setModerating((current) => current ? { ...current, conflict: true } : null);
         setModerationStatus("نسخهٔ پیام تغییر کرده است؛ پیام تازه را بخوانید و تعدیل را دوباره تأیید کنید.");
-        setRefresh((value) => value + 1);
+        requestRefresh();
       } else setModerationStatus(error instanceof Error ? error.message : "تعدیل پیام کامل نشد.");
     } finally { setModerationBusy(false); }
   }
@@ -401,12 +434,12 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             <p className="muted">پیام‌ها زمینهٔ همکاری هستند؛ ثبت رسمی فقط با تأیید و مجوز مستقل انجام می‌شود.</p>
           </div>
           <button className="secondary-button" type="button" disabled={!view || view.kind !== "ready"}
-            onClick={() => setRefresh((value) => value + 1)}>تازه‌سازی</button>
+            onClick={requestRefresh}>تازه‌سازی</button>
         </header>
         {failure ? (
           <section className="collaboration-state" role="alert">
             <h2>دریافت گفت‌وگو کامل نشد</h2><p>{failure}</p>
-            <button type="button" onClick={() => setRefresh((value) => value + 1)}>تلاش دوباره</button>
+            <button type="button" onClick={() => requestRefresh()}>تلاش دوباره</button>
           </section>
         ) : !view ? (
           <p className="collaboration-state" role="status">در حال دریافت گفت‌وگوی پروژه…</p>
@@ -437,15 +470,25 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             <form className="collaboration-search" onSubmit={(event) => void submitSearch(event)} role="search">
               <label htmlFor="collaboration-search-query">جست‌وجو در پیام‌های همین پروژه</label>
               <div><input id="collaboration-search-query" value={searchQuery} maxLength={120}
-                onChange={(event) => setSearchQuery(event.target.value)} />
-                <button className="secondary-button" type="submit" disabled={searchQuery.trim().length < 2}>جست‌وجو</button></div>
+                onChange={(event) => {
+                  searchRequest.current += 1;
+                  setSearchQuery(event.target.value);
+                  setSearchResults(null);
+                  setSearchStatus("");
+                  setSearchError(false);
+                  setSearchBusy(false);
+                }} />
+                <button className="secondary-button" type="submit" disabled={searchBusy || searchQuery.trim().length < 2}>
+                  {searchBusy ? "در حال جست‌وجو…" : "جست‌وجو"}</button></div>
             </form>
             {searchResults && <section className="collaboration-search-results" aria-label="نتیجه‌های جست‌وجوی پروژه">
               <div className="collaboration-search-title"><strong>{searchStatus}</strong>
-                <button className="secondary-button" type="button" onClick={() => setSearchResults(null)}>بستن نتایج</button></div>
+                <button className="secondary-button" type="button" onClick={() => {
+                  setSearchResults(null); setSearchStatus("");
+                }}>بستن نتایج</button></div>
               <ul>{searchResults.map((message) => <li key={message.id}>{message.body}</li>)}</ul>
             </section>}
-            {!searchResults && searchStatus && <p role="status">{searchStatus}</p>}
+            {!searchResults && searchStatus && <p role={searchError ? "alert" : "status"}>{searchStatus}</p>}
             {view.messages.length === 0 ? <p className="collaboration-state">هنوز پیامی در این پروژه ثبت نشده است.</p> : (
               <ol className="collaboration-messages">
                 {view.messages.map((message) => (
@@ -613,29 +656,29 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     {view.canConvertAction && !message.deletedAt && !message.redactedAt &&
                       <ProjectActionConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                     {view.canConvertIssue && !message.deletedAt && !message.redactedAt &&
                       <ProjectIssueConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                     {view.canConvertRfi && !message.deletedAt && !message.redactedAt &&
                       <ProjectRfiConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                     {view.canConvertDailyFact && !message.deletedAt && !message.redactedAt &&
                       <ProjectDailyFactConversion projectId={projectId} message={message}
                         tenantId={session.tenantId} actorUserId={session.userId}
                         onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                     {view.canConvertEvidence && !message.deletedAt && !message.redactedAt &&
                       <ProjectEvidenceConversion projectId={projectId} message={message}
                         tenantId={session.tenantId} actorUserId={session.userId}
                         onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                     {view.canConvertTechnicalDocument && !message.deletedAt && !message.redactedAt &&
                       <ProjectTechnicalDocumentConversion projectId={projectId} message={message}
                         actorUserId={session.userId} onAccessLoss={closeRestrictedConversation}
-                        onChanged={() => setRefresh((value) => value + 1)} />}
+                        onChanged={() => requestRefresh()} />}
                   </li>
                 ))}
               </ol>

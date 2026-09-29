@@ -408,6 +408,12 @@ jobs:
           name: pmcs-ms74-my-work-truth
           path: src/web/artifacts/ms74-my-work-truth/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms75-chat-refresh-truth
+          path: src/web/artifacts/ms75-chat-refresh-truth/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
