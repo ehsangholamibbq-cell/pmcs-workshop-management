@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.14`
+- نسخه Candidate: `1.0.0-rc.15`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -193,6 +193,13 @@ Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مص
 `docs/ux/prototypes/ms54/` را با متن فارسی و چیدمان کوتاه‌تر موبایل
 می‌آزماید؛ Run 439/Artifact `11018211937` شواهد این پیگیری محدودند.
 مصرف‌کنندگان فعال، State Contract کامل و Qualification جدا می‌مانند.
+
+در UX2-MS55 نمونهٔ مستقل `docs/ux/prototypes/ms55/` تصویر جایگزین،
+پیش‌نمایش برش، مرز حریم خصوصی و هشت وضعیت مرتبط را بدون بارگذاری یا ذخیره
+نمایش می‌دهد. Run 443 هشت Job سبز و Artifact `11019328744` با ۱۳ قاب
+و Hashهای معتبر شاهد همین Prototype هستند؛ CI مستندات شرط Checkpoint است. فهرست
+`docs/ux/pmcs-v1.1-vx-g3-closure-ledger.md` خانواده‌های باز را به
+برش‌های قابل‌آزمون وصل می‌کند؛ پروفایل فعال و Gateهای G3/G4/G5 بازند.
 
 ## ۷. Login Experience Contract
 
