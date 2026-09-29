@@ -91,7 +91,7 @@ function PortfolioDashboardContent() {
 
   return (
     <main className="app-shell portfolio-shell">
-      <aside className="sidebar portfolio-sidebar" aria-label="ناوبری اصلی">
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
         <SidebarNavigation label="بخش‌های سبد پروژه‌ها">
           <Link className="nav-item active" href="/portfolio" aria-current="page">سبد پروژه‌ها</Link>

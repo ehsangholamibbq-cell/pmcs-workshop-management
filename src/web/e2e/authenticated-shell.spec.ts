@@ -100,21 +100,25 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
       clientWidth: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
     }))).toEqual({ clientWidth: viewport.width, scrollWidth: viewport.width });
-    await expect(page.getByRole("navigation")).toBeVisible();
+    if (viewport.width > 980) await expect(page.getByRole("navigation")).toBeVisible();
+    else await expect(page.getByRole("button", { name: "باز کردن فهرست بخش‌ها" })).toBeVisible();
   }
 
-  const mobileSidebar = page.locator(".sidebar");
-  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
-  await expect(page.locator(".mobile-nav-hint")).toContainText("نوار بالا را به چپ بکشید");
+  const mobileSidebar = page.locator(".disclosure-sidebar");
   await expect.poll(() => mobileSidebar.evaluate((element) =>
-    element.scrollWidth > element.clientWidth)).toBe(true);
+    element.scrollWidth <= element.clientWidth)).toBe(true);
+  const toggle = mobileSidebar.getByRole("button", { name: "باز کردن فهرست بخش‌ها" });
+  await toggle.click();
+  await expect(mobileSidebar.getByRole("navigation", { name: "بخش‌های مرکز فرمان پروژه" })).toBeVisible();
   const profileNavigation = mobileSidebar.getByRole("link", { name: "پروفایل من" });
   await profileNavigation.focus();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
   await expect(profileNavigation).toHaveCSS("outline-style", "solid");
-  await expect(profileNavigation).toHaveCSS("white-space", "nowrap");
-  await expect(profileNavigation).toBeInViewport();
+  await expect(profileNavigation).toHaveCSS("white-space", "normal");
+  await page.keyboard.press("Escape");
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toBeInViewport();
 });
 
 test("loading and failure states stay explicit and localized", async ({ page }) => {

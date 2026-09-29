@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import Link from "next/link";
 import Image from "next/image";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import {
   getCommandCenter,
   recalculateProjectState,
@@ -265,9 +265,9 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
 
   return (
     <main className="app-shell project-print-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
-        <nav>
+        <SidebarNavigation label="بخش‌های مرکز فرمان پروژه">
           <Link className="nav-item" href="/">پروژه‌ها</Link>
           {(session.tenantRole === "TenantAdministrator" || session.tenantRole === "PortfolioViewer") && (
             <a className="nav-item" href="/portfolio">نمای سبد مدیریتی</a>
@@ -289,14 +289,13 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <a className="nav-item" href="/profile">پروفایل من</a>
           {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</a>}
           {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</a>}
-        </nav>
+        </SidebarNavigation>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />
           {isOnline ? "آنلاین" : "آفلاین"}
         </div>
         <SessionBadge />
       </aside>
-      <MobileNavigationHint />
 
       <section className="project-print-sheet" aria-label="خلاصه چاپی مرکز فرمان پروژه">
         <header className="project-print-heading">

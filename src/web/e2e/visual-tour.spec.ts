@@ -50,7 +50,7 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await captureVisualBaseline(page, "28-tablet-project");
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
+  await expect(page.getByRole("button", { name: "باز کردن فهرست بخش‌ها" })).toBeVisible();
   await captureVisualBaseline(page, "21-mobile-project");
 
   await page.goto(`${projectPath}/collaboration`);

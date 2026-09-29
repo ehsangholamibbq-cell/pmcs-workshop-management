@@ -3838,17 +3838,17 @@ output {
     scroll-padding-inline: 1rem;
   }
 
-  .portfolio-sidebar {
+  .disclosure-sidebar {
     position: relative;
     flex-wrap: wrap;
     overflow: visible;
   }
 
-  .portfolio-sidebar .sidebar-desktop-navigation {
+  .disclosure-sidebar .sidebar-desktop-navigation {
     display: none;
   }
 
-  .portfolio-sidebar .sidebar-mobile-navigation {
+  .disclosure-sidebar .sidebar-mobile-navigation {
     display: block;
     position: relative;
     flex: 1 1 12rem;
@@ -3865,7 +3865,7 @@ output {
     cursor: pointer;
   }
 
-  .portfolio-sidebar .sidebar-mobile-navigation nav {
+  .disclosure-sidebar .sidebar-mobile-navigation nav {
     position: absolute;
     z-index: 12;
     top: calc(100% + 0.5rem);
@@ -3882,11 +3882,11 @@ output {
     box-shadow: 0 12px 28px rgba(7, 21, 37, 0.22);
   }
 
-  .portfolio-sidebar .sidebar-mobile-navigation nav[hidden] {
+  .disclosure-sidebar .sidebar-mobile-navigation nav[hidden] {
     display: none;
   }
 
-  .portfolio-sidebar .sidebar-mobile-navigation .nav-item {
+  .disclosure-sidebar .sidebar-mobile-navigation .nav-item {
     display: block;
     white-space: normal;
   }
