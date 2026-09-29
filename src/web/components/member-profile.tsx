@@ -20,6 +20,7 @@ import { toUserMessage } from "@/lib/localization";
 import { SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 
 const maximumAvatarBytes = 5 * 1024 * 1024;
+type ProfileFeedback = { readonly tone: "status" | "success" | "error"; readonly text: string };
 
 export function MemberProfileEditor() {
   const session = usePmcsSession();
@@ -30,7 +31,7 @@ export function MemberProfileEditor() {
   const [avatarDocumentId, setAvatarDocumentId] = useState<string | null>(null);
   const [cropX, setCropX] = useState(0);
   const [cropY, setCropY] = useState(0);
-  const [message, setMessage] = useState("در حال دریافت پروفایل…");
+  const [feedback, setFeedback] = useState<ProfileFeedback | null>({ tone: "status", text: "در حال دریافت پروفایل…" });
   const [isBusy, setIsBusy] = useState(false);
 
   const applyProfile = useCallback((loaded: MemberProfileModel): void => {
@@ -49,10 +50,10 @@ export function MemberProfileEditor() {
       .then((loaded) => {
         if (!active) return;
         applyProfile(loaded);
-        setMessage("");
+        setFeedback(null);
       })
       .catch((error: unknown) => {
-        if (active) setMessage(toUserMessage(error, "دریافت پروفایل انجام نشد."));
+        if (active) setFeedback({ tone: "error", text: toUserMessage(error, "دریافت پروفایل انجام نشد.") });
       });
     return () => { active = false; };
   }, [applyProfile]);
@@ -64,13 +65,13 @@ export function MemberProfileEditor() {
     event.preventDefault();
     if (!profile) return;
     setIsBusy(true);
-    setMessage("در حال ذخیره تغییرات…");
+    setFeedback({ tone: "status", text: "در حال ذخیره تغییرات…" });
     try {
       const loaded = await updateMyProfile(buildUpdate(profile, avatarDocumentId));
       applyProfile(loaded);
-      setMessage("پروفایل با موفقیت به‌روزرسانی شد.");
+      setFeedback({ tone: "success", text: "پروفایل با موفقیت به‌روزرسانی شد." });
     } catch (error) {
-      setMessage(toUserMessage(error, "ذخیره پروفایل انجام نشد."));
+      setFeedback({ tone: "error", text: toUserMessage(error, "ذخیره پروفایل انجام نشد.") });
     } finally {
       setIsBusy(false);
     }
@@ -81,12 +82,12 @@ export function MemberProfileEditor() {
     event.target.value = "";
     if (!file || !profile) return;
     if (!file.type.startsWith("image/") || file.size <= 0 || file.size > maximumAvatarBytes) {
-      setMessage("تصویر باید یکی از فرمت‌های تصویری مجاز و حداکثر ۵ مگابایت باشد.");
+      setFeedback({ tone: "error", text: "تصویر باید یکی از فرمت‌های تصویری مجاز و حداکثر ۵ مگابایت باشد." });
       return;
     }
 
     setIsBusy(true);
-    setMessage("در حال اعتبارسنجی، اسکن امنیتی و ثبت تصویر…");
+    setFeedback({ tone: "status", text: "در حال اعتبارسنجی، اسکن امنیتی و ثبت تصویر…" });
     try {
       const queued = await enqueueDocumentUpload({
         tenantId: session.tenantId,
@@ -113,9 +114,9 @@ export function MemberProfileEditor() {
 
       const loaded = await updateMyProfile(buildUpdate(profile, document.id, true));
       applyProfile(loaded);
-      setMessage("تصویر پروفایل پس از کنترل امنیتی ثبت شد.");
+      setFeedback({ tone: "success", text: "تصویر پروفایل پس از کنترل امنیتی ثبت شد." });
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت تصویر پروفایل انجام نشد."));
+      setFeedback({ tone: "error", text: toUserMessage(error, "ثبت تصویر پروفایل انجام نشد.") });
     } finally {
       setIsBusy(false);
     }
@@ -124,13 +125,13 @@ export function MemberProfileEditor() {
   async function removeAvatar(): Promise<void> {
     if (!profile) return;
     setIsBusy(true);
-    setMessage("در حال حذف ارتباط تصویر…");
+    setFeedback({ tone: "status", text: "در حال حذف ارتباط تصویر…" });
     try {
       const loaded = await updateMyProfile(buildUpdate(profile, null));
       applyProfile(loaded);
-      setMessage("تصویر پروفایل برداشته شد؛ فایل قبلی طبق سیاست نگهداری حفظ می‌شود.");
+      setFeedback({ tone: "success", text: "تصویر پروفایل برداشته شد؛ فایل قبلی طبق سیاست نگهداری حفظ می‌شود." });
     } catch (error) {
-      setMessage(toUserMessage(error, "حذف تصویر انجام نشد."));
+      setFeedback({ tone: "error", text: toUserMessage(error, "حذف تصویر انجام نشد.") });
     } finally {
       setIsBusy(false);
     }
@@ -193,7 +194,7 @@ export function MemberProfileEditor() {
         </div>
       </section>
       <section className="profile-workspace">
-        <form onSubmit={(event) => void save(event)}>
+        <form aria-busy={isBusy} onSubmit={(event) => void save(event)}>
           <div className="section-title">
             <div>
               <p className="eyebrow">اطلاعات مجاز</p>
@@ -251,7 +252,8 @@ export function MemberProfileEditor() {
           )}
           <div className="profile-form-actions">
             <button type="submit" disabled={!profile || isBusy}>{isBusy ? "در حال انجام…" : "ذخیره پروفایل"}</button>
-            <output aria-live="polite">{message}</output>
+            {feedback && <p className={`profile-feedback profile-feedback--${feedback.tone}`}
+              role={feedback.tone === "error" ? "alert" : "status"} aria-atomic="true">{feedback.text}</p>}
           </div>
         </form>
         <aside>

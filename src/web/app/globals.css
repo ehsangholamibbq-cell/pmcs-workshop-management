@@ -5333,7 +5333,26 @@ output {
   margin-top: 1.5rem;
 }
 
-.profile-form-actions output { min-height: auto; }
+.profile-feedback {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--status-info);
+  border-inline-start-width: 4px;
+  border-radius: 0.7rem;
+  color: var(--text-primary);
+  background: var(--status-info-surface);
+  line-height: 1.7;
+}
+
+.profile-feedback--success {
+  border-color: var(--status-success);
+  background: var(--status-success-surface);
+}
+
+.profile-feedback--error {
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
 .profile-workspace aside { align-self: start; color: var(--muted); line-height: 2; }
 .profile-workspace aside h2 { color: var(--ink); line-height: 1.45; }
 .profile-workspace aside dl { display: grid; gap: 0; margin: 1.5rem 0 0; }
