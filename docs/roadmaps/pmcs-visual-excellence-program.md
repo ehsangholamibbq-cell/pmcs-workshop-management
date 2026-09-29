@@ -180,7 +180,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73 و حقیقت کارتابل/اعلان‌ها در MS74؛ سایر مصرف‌کنندگان باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74 و خواندن Chat گروه پروژه در MS75؛ سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
