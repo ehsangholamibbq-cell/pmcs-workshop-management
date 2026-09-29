@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS53 Safe، MS54 Owner Follow-ups Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS62 Safe؛ چهار معیار مالک پاسخ مثبت دارند؛ VX-G3 ممیزی/CI MS63، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -356,3 +356,13 @@ MS54 در نمونهٔ مستقل عرض‌های ۳۹۰/۳۲۰px را ۱۱۲/۱
 Index/Hash/ابعاد معتبر/بازبینی‌شده. CI مستندات شرط Checkpoint است.
 طول صفحه و کنتراست/Keyboard مصرف‌کنندگان فعال در `VX-G4/G5`
 سنجیده می‌شوند؛ قرارداد Stateهای باقیمانده شرط `VX-G3` است.
+
+## پیوست UX2-MS63 — تصمیم محدود Gate
+
+MS61/62 قرارداد Token/Focus/حرکت و شاهد چاپ پُرداده/موبایل را با
+Runهای 461/462 و 466/468 و Artifactهای معتبر تکمیل کردند. بستهٔ MS62
+به مالک ارائه شد و او معیار چاپ/تراکم را نیز در محدودهٔ نمونه پذیرفت.
+فهرست `pmcs-v1.1-vx-g3-closure-ledger.md`، ماتریس Component و Checkpoint
+MS63 شواهد خانواده‌ها و مرزهای بعدی را ثبت می‌کنند. `VX-G3` پس از CI
+مستقل این تصمیم فقط در محدودهٔ Contract/Prototype پذیرفته می‌شود؛
+مهاجرت صفحه‌های فعال `VX-G4` و Qualification `VX-G5` بازند.

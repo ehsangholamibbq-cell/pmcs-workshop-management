@@ -1,7 +1,7 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.26.0`
+- نسخه سند: `1.27.0`
 - وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G1 Audit Complete` با Run 401؛ Design System و Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -179,7 +179,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | --- | --- | --- |
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
-| `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | باز؛ تأیید جهت بصری جایگزین این Gate نیست |
+| `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | چهار معیار مالک در سطح نمونه/قرارداد پاسخ مثبت دارند؛ ممیزی MS63 و CI مستقل شرط پذیرش Gate است |
 | `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
@@ -216,3 +216,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.24.0` | Run 454 مستندات MS59 را با هشت Job سبز پذیرفت؛ MS60 فرم شمسی/فیلتر را در ده وضعیت با پیام مرتبط و نتیجهٔ صادق Candidate کرد؛ Run 455 هشت Job سبز ولی قاب ۳۲۰px متن فنی انگلیسی داشت؛ correction Run 456 هشت Job سبز/Artifact `11025098337` با ۱۶ قاب معتبر و بازبینی‌شده و CI مستندات شرط Checkpoint، G3/G4/G5 باز |
 | `1.25.0` | Run 457 مستندات MS60 را با هشت Job سبز پذیرفت؛ MS61 کنتراست Token، Focus و Reduced Motion را سنجید و بستهٔ چهار معیار مالک را به‌روز کرد؛ Runهای 458/459 در آزمون نمایش معادل سفید شکست خوردند؛ اصلاح متن فارسی و آزمون در Run 460 هشت Job سبز ولی پیام بالای بسته مخفف انگلیسی داشت؛ اصلاح Run 461 هشت Job سبز/Artifact `11027117283` با سه قاب معتبر و بازبینی‌شده؛ CI مستندات شرط Checkpoint، G3/G4/G5 باز |
 | `1.26.0` | UX2-MS61 documentation Run 462 هشت Job سبز و Safe؛ MS62 شاهد ۴۸ردیفی چاپ/تراکم را با صفحه‌بندی نمایش و چهار چاپ چندصفحه‌ای آماده کرد؛ Run 463 مشکل تاریخ ۷۶۸px را یافت، Runهای 464/465 سبز ولی مرور بصری اصلاح عنوان ستون و caption موبایل را لازم کرد؛ Source نهایی Run 466 هشت Job سبز/Artifact `11029742768` با هشت PNG/چهار PDF و ۲۴ صفحه معتبر/بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ سه معیار نخست در سطح طراحی پذیرفته، معیار چهارم تا نمایش و پاسخ مالک باز؛ G3/G4/G5 باز |
+| `1.27.0` | UX2-MS62 بعد از Source Run 466/Artifact ۸ PNG و ۴ PDF، در Run 467 آزمون Focus Login نشست واردشده را به ارث برد و شکست خورد؛ اصلاح محدود Run 468 هشت Job سبز، MS62 Safe. مالک پس از ارائهٔ بستهٔ چاپ پُرداده و موبایل معیار چهارم را نیز در سطح نمونه پذیرفت. MS63 فهرست خانواده‌های قرارداد و نمونه را برای VX-G3 ممیزی می‌کند؛ CI مستقل این تصمیم شرط پذیرش است، G4/G5 باز |
