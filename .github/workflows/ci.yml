@@ -354,6 +354,12 @@ jobs:
           name: pmcs-ms65-project-navigation
           path: src/web/artifacts/ms65-project-navigation/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms66-shell-navigation
+          path: src/web/artifacts/ms66-shell-navigation/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest

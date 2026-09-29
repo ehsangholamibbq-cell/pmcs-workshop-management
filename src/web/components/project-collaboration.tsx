@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { ProjectRfiConversion } from "@/components/project-rfi-conversion";
 import { ProjectDailyFactConversion } from "@/components/project-daily-fact-conversion";
@@ -382,17 +382,17 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   return (
     <main className="app-shell collaboration-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
-        <nav>
+        <SidebarNavigation label="بخش‌های گفت‌وگوی پروژه">
           <Link className="nav-item" href={`/projects/${projectId}`}>مرکز فرمان پروژه</Link>
           <span className="nav-item active" aria-current="page">گفت‌وگوی پروژه</span>
           <Link className="nav-item" href={`/projects/${projectId}/reports`}>مرکز گزارش‌ها</Link>
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
-        </nav>
+        </SidebarNavigation>
         <SessionBadge />
       </aside>
-      <MobileNavigationHint />
+
       <section className="workspace collaboration-workspace" aria-labelledby="conversation-title">
         <header className="topbar">
           <div>

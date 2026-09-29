@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { scopedStorageKey } from "@/lib/field-database";
@@ -127,16 +127,16 @@ function PortfolioReportingContent() {
   }
 
   return <main className="app-shell reporting-shell">
-    <aside className="sidebar" aria-label="ناوبری اصلی">
+    <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
       <BrandMark />
-      <nav>
+      <SidebarNavigation label="بخش‌های گزارش سبد">
         <Link className="nav-item" href="/portfolio">مرکز فرمان سبد پروژه‌ها</Link>
         <span className="nav-item active" aria-current="page">گزارش‌های سبد</span>
         <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
-      </nav>
+      </SidebarNavigation>
       <SessionBadge />
     </aside>
-    <MobileNavigationHint />
+
     <section className="workspace reporting-workspace" aria-labelledby="portfolio-reporting-title">
       <header className="topbar">
         <div><p className="eyebrow">گزارش معتبر در محدودهٔ سازمان</p>

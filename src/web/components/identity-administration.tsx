@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   changeTenantRole,
@@ -96,18 +96,18 @@ function IdentityAdministrationContent() {
 
   return (
     <main className="app-shell identity-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
         <BrandMark />
-        <nav>
+        <SidebarNavigation label="بخش‌های مدیریت هویت">
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
           <Link className="nav-item" href="/profile">پروفایل من</Link>
-          <Link className="nav-item active" href="/admin/users">کاربران و دسترسی‌ها</Link>
+          <Link className="nav-item active" href="/admin/users" aria-current="page">کاربران و دسترسی‌ها</Link>
           <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>
-        </nav>
+        </SidebarNavigation>
         <SessionBadge />
       </aside>
-      <MobileNavigationHint />
+
 
       <section className="workspace identity-workspace">
         <header className="topbar">

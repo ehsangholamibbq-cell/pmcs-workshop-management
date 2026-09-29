@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
-import { MobileNavigationHint } from "@/components/mobile-navigation-hint";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { listDailyReports, type DailyReportSummary } from "@/lib/daily-reports";
@@ -165,17 +165,17 @@ function ReportingContent({ projectId }: { readonly projectId: string }) {
   }
 
   return <main className="app-shell reporting-shell">
-    <aside className="sidebar" aria-label="ناوبری اصلی">
+    <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
       <BrandMark />
-      <nav>
+      <SidebarNavigation label="بخش‌های گزارش پروژه">
         <Link className="nav-item" href={`/projects/${projectId}`}>مرکز فرمان پروژه</Link>
         <Link className="nav-item" href={`/projects/${projectId}/collaboration`}>گفت‌وگوی پروژه</Link>
         <span className="nav-item active" aria-current="page">مرکز گزارش‌ها</span>
         <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
-      </nav>
+      </SidebarNavigation>
       <SessionBadge />
     </aside>
-    <MobileNavigationHint />
+
     <section className="workspace reporting-workspace" aria-labelledby="reporting-title">
       <header className="topbar">
         <div><p className="eyebrow">خروجی‌های معتبر در محدودهٔ همین پروژه</p>

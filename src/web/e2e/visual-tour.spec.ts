@@ -57,18 +57,19 @@ test("capture the actual authenticated PMCS interface with isolated QA data", as
   await expect(page.getByRole("heading", { name: "گفت‌وگو در این پروژه در دسترس نیست" })).toBeVisible();
   await expect.poll(() => page.locator(".collaboration-shell .sidebar").evaluate((element) =>
     element.getBoundingClientRect().height)).toBeLessThan(120);
-  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
+  await expect(page.getByRole("button", { name: "باز کردن فهرست بخش‌ها" })).toBeVisible();
   await captureVisualBaseline(page, "22-project-chat-default-off");
 
   await page.goto(`${projectPath}/reports`);
   await expect(page.getByRole("heading", { name: "گزارش‌گیری در این پروژه در دسترس نیست" })).toBeVisible();
   await expect.poll(() => page.locator(".reporting-shell .sidebar").evaluate((element) =>
     element.getBoundingClientRect().height)).toBeLessThan(120);
-  await expect(page.locator(".mobile-nav-hint")).toBeVisible();
+  await expect(page.getByRole("button", { name: "باز کردن فهرست بخش‌ها" })).toBeVisible();
   await captureVisualBaseline(page, "23-project-reporting-default-off");
 
   await page.goto("/portfolio/reports");
   await expect(page.getByRole("heading", { name: "گزارش‌های سبد در دسترس نیستند" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "باز کردن فهرست بخش‌ها" })).toBeVisible();
   await captureVisualBaseline(page, "24-portfolio-reporting-default-off");
 
   // The preceding full project visit loads many independent API panels. Allow the
