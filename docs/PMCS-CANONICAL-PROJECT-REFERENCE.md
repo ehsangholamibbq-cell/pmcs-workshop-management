@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.126.0`
+- نسخه: `1.127.0`
 - آخرین کنترل: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS65 Safe, MS66 docs Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS66 Safe, MS67 docs Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,11 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source | MS66 `b95155307e7e3c58a30f3d82f57672d667b35a7b`؛ tree `25a04b7efbff6010f6daee4062a0fab92d95e6c6`؛ Run 476 هشت Job سبز؛ Artifact `11036398624` شانزده PNG/Index معتبر و بازبینی‌شده |
-| Current evidence-bearing source checkpoint | `b95155307e7e3c58a30f3d82f57672d667b35a7b`؛ Source Run 476 هشت Job سبز و Artifact `11036398624` معتبر؛ CI مستقل مستندات MS66 شرط است |
-| Source lineage | MS66 از MS65 docs `5aa0248ed3a634a32a60def1349735531e304f10` ادامه یافت؛ source و docs تنها با Commit/fast-forward، بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هر دو هشت Job سبز؛ MS66 Source و Artifact سبز/مرور شده، CI مستندات باز |
+| آخرین Source | MS67 correction `9ecbb5f071b7d63d18c68cfe0b652d9bce11e5f3`؛ tree `27e014c2b57b325b3c69339fdea0fc6dbaba727a`؛ Run 480 هشت Job سبز؛ Artifact `11038772992` پنج PNG/Index معتبر و بازبینی‌شده |
+| Current evidence-bearing source checkpoint | `9ecbb5f071b7d63d18c68cfe0b652d9bce11e5f3`؛ Source Run 480 هشت Job سبز و Artifact `11038772992` معتبر؛ CI مستقل مستندات MS67 شرط است |
+| Source lineage | MS67 از MS66 docs `6a60de8b32d4a4e741479208af3a0a2e086f81c4` ادامه یافت؛ source و docs تنها با Commit/fast-forward، بدون Reset/Force Push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS66-C1`؛ Source Run 476 و docs Run 477 هر دو هشت Job سبز؛ MS67 Source و Artifact سبز/مرور شده، CI مستندات باز |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS63-C1`؛ Run 469 هشت Job سبز، `VX-G3` فقط در محدودهٔ Contract/Prototype پذیرفته |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS62-C1`؛ جدول پُرداده و چاپ چندصفحه‌ای، Runهای 466/468 هشت Job سبز؛ مالک معیار چهارم را در سطح نمونه پذیرفت |
@@ -93,9 +94,9 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.149.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.150.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
-| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.30.0` |
+| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.31.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
@@ -106,7 +107,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 | موضوع | وضعیت قبلی | مرجع مؤثر فعلی |
 | --- | --- | --- |
 | وضعیت V1 | `Feature Complete` یا Qualification در جریان | Superseded؛ V1 با Run 69 `Qualified | Final | Baseline Locked` است |
-| Roadmap Post-V1 | نسخه‌های تا `v1.148.0` | Superseded؛ `v1.149.0` مرجع جاری است |
+| Roadmap Post-V1 | نسخه‌های تا `v1.149.0` | Superseded؛ `v1.150.0` مرجع جاری است |
 | انتهای Development 05 | توقف در RPT1/MS05 | Superseded؛ GitHub/CI پیشرفت معتبر تا `S07-MS33` را اثبات می‌کند |
 | Agent مدیریتی | عنوان کلی یا پنج فاز | Superseded؛ دقیقاً هفت Stage مستقل با Gateهای مستقل |
 | Reporting | Report Designer آزاد در V1.1 | Superseded/خارج از Scope؛ V1.1 فقط گزارش‌های استاندارد و تأییدشده، Designer در V1.2 |
@@ -1071,7 +1072,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری Full CI مستقل مستندات `V1.1-UX2-MS66` است؛ Source Run 476 و شانزده قاب چهار Shell سبز/مرور شده‌اند. پس از آن شکاف‌های مصرف‌کنندگان Component و Routeهای بدون Sidebar در `VX-G4`، سپس Qualification مستقل `VX-G5` انجام می‌شوند.**
+**گام جاری Full CI مستقل مستندات `V1.1-UX2-MS67` است؛ Source Run 480 و پنج قاب Feedback/Form Loading پروفایل سبز/مرور شده‌اند. پس از آن سایر مصرف‌کنندگان و Routeهای فعال در `VX-G4`، سپس Qualification مستقل `VX-G5` انجام می‌شوند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule

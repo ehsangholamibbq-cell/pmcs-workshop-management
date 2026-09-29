@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 زیرکار Navigation شش Shell در MS64–66، G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل در MS64–67، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -393,3 +393,12 @@ Focus/Escape/Overflow در ۸۲۰/۳۹۰/۳۲۰px مهاجرت کرد. Run 473 �
 شانزده تصویر/Index معتبر و بازبینی‌شده دارد. در حالت Flags خاموش، متن
 عدم دسترسی Chat/Reporting محفوظ است. Navigation شش Shell یک زیرکار
 مهاجرت است؛ مصرف‌کنندگان دیگر G4 و Qualification مستقل G5 بازند.
+
+## پیوست UX2-MS67 — نخستین Feedback/Form Loading فعال
+
+در `/profile`، Status و Success از Error جدا و فرم واقعاً Busy/Disabled
+می‌شود. Run 478 هشت Job سبز داشت ولی مرور تصویر عمل انتخاب تصویرِ
+بی‌اثر در Loading را نشان داد؛ Run 479 آن را اصلاح کرد و Run 480
+قفل فیلدهای ویرایشی را نیز با هشت Job سبز سنجید. Artifact نهایی
+`11038772992` پنج قاب/Index معتبر و مرورشده دارد. سایر مصرف‌کنندگان
+Component در G4 و Qualification سراسری G5 بازند.

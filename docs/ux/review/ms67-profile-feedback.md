@@ -17,3 +17,12 @@ Browser E2E دریافتِ معلق، خطای انتخاب فایل بیش از
 همان قرارداد قبلی را دارند. تصاویر و Index شامل Source/Hash/ابعاد پس
 از CI باید دریافت و بازبینی شوند. این یک مصرف‌کنندهٔ فعال Feedback است؛
 دیگر فرم‌ها/Stateها و Qualification سراسری G4/G5 باز می‌مانند.
+
+Source اولیه `30ff0c18e1b0f9d1863320ea00058c25cd49222d` در Run 478
+هشت Job سبز داشت؛ مرور تصویر اصلاح Loading را خواست. اصلاح میانی
+`7c2f4a681ee6377d1d49cd86dfaac43a3e591768` در Run 479 هشت Job
+سبز بود. Source نهایی `9ecbb5f071b7d63d18c68cfe0b652d9bce11e5f3`
+در Run 480 هشت Job سبز و Artifact `11038772992` با ZIP SHA-256
+`c4a46f9f8d3eb04f1f0691b081d7254bda947e5d73f069547b671802e07e0c03`
+پنج PNG/Index معتبر و مرورشده دارد. CI مستقل Checkpoint
+`PMCS-V1.1-UX2-MS67-C1` شرط Safe شدن است.

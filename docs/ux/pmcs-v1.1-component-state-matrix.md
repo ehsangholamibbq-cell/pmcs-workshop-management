@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.20.0` در `UX2-MS66`
+- نسخهٔ Candidate: `0.21.0` در `UX2-MS67`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -17,7 +17,7 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form | Error/Description پراکنده S؛ Success G | Form آفلاین قاب 30؛ Permission وابسته به Route | ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
 | PersianDateInput و FileInput | D | Focus سراسری و FileInput اختصاصی S | Disabled S؛ Loading FileInput S | Date `aria-invalid` S؛ انتخاب/حذف FileInput D | تابع Form/Permission والد | قاب‌های 18/44، 29/30؛ صفحه‌کلید، بازه/تقویم و مصرف‌های دیگر نیاز به ماتریس مستقل دارند |
 | StatusLabel، Badge و Fact/Draft | S | تعامل نامربوط | Loading نباید Fact بسازد D | Label همراه رنگ S | Offline/Stale/NoPermission Label S | semantic tokens در `globals.css`؛ تمایز Fact/Draft/AI و کنتراست هر مصرف باز |
-| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D | Error و Retry D | Offline/NoPermission در Routeهای منتخب D | قاب‌های 25–27، 30–31، 33/35؛ Stateهای مشترک سایر ماژول‌ها باز |
+| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile Form Busy/Disabled D | Error و Retry D؛ Profile Feedback Error/Success D | Offline/NoPermission در Routeهای منتخب D | MS67 پنج قاب/E2E Profile؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
 | Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
 | Shell/Navigation و Print | D | Keyboard Sidebar و شش Shell موبایل Escape/Focus D | Navigation موبایل شش Shell D؛ Routeهای بدون Sidebar مستقل | پیام وضعیت مستقل S | Print بدون Action/Navigation D | MS64–66 شش Shell، ۲۸ قاب مجزا/Index و E2E؛ سایر Componentها، Routeها و Qualification باز |
@@ -228,3 +228,11 @@ Run 476 به Disclosure مشترک منتقل شدند. Artifact `11036398624` �
 قاب ۳۹۰/۳۲۰ باز/بسته، Source/Hash/ابعاد معتبر و مرور بصری دارد.
 Navigation شش Shell در محدودهٔ این زیرکار `D` است؛ Routeهای بدون
 Sidebar، پیام/فرم/جدول/دیالوگ و Qualification مستقل G4/G5 بازند.
+
+## پیوست UX2-MS67 — Feedback فعال پروفایل
+
+Run 480 پیام‌های دریافت/ذخیره، خطا و موفقیت `/profile` را با Role/Tone
+مجزا، Form Busy و غیرفعال‌بودن کنترل‌ها هنگام بارگذاری/ذخیره سنجید.
+Artifact `11038772992` پنج قاب Source/Hash/ابعاد معتبر و مرورشده دارد.
+این `D` فقط به مصرف‌کنندهٔ Profile اشاره می‌کند؛ سایر Form/Feedbackها،
+Routeها و Qualification مستقل در G4/G5 بازند.
