@@ -1,7 +1,7 @@
 # PMCS V1.1 — Design System Contract
 
 - شناسه: `PMCS-DS-001`
-- نسخه Candidate: `1.0.0-rc.20`
+- نسخه Candidate: `1.0.0-rc.21`
 - مسیر بصری: `مدیریت ممتاز`
 - وضعیت: `Owner Direction Approved with Follow-ups | VX-G3 Open`
 - Runtime change: ندارد
@@ -42,7 +42,7 @@
 | `surface.card` | `#FFFFFF` | Card و Form |
 | `border.default` | `#E9DFCF` | Border گرم |
 | `text.primary` | `#17242E` | متن اصلی |
-| `text.secondary` | `#68747C` | متن توضیحی |
+| `text.secondary` | `#5C6971` | متن توضیحی؛ روی سطح کم‌رنگ حداقل ۴٫۵ |
 
 ### Semantic
 
@@ -231,6 +231,15 @@ Stageهای ۲ تا ۷ و رابط تولیدی طبق Roadmap به V1.2 تعل�
 Loading، بدون نتیجه، آفلاین، مجوز و تازگی را با Label و پیام متنی
 می‌سنجد. تقویم و تبدیل مقدار رسمی در نمونه انجام نمی‌شوند. مهاجرت
 مصرف‌کنندگان فعال و Qualification در Gateهای بعدی بازند.
+
+در UX2-MS61 متن ثانویهٔ Token فعال از `#68747C` به `#5C6971` اصلاح
+شد: نسبت آن روی `surface.subtle` از ۴٫۱۹ به ۴٫۹۴، روی بوم گرم به
+۵٫۳۳ و روی کارت سفید به ۵٫۶۵ می‌رسد. آزمون Contract نسبت حداقل ۴٫۵
+را برای متن اصلی/ثانویه، Semantic Status و حالت‌ها روی سطح مربوط
+می‌سنجد؛ Browser، Token محاسبه‌شده، Focus ۳px و Reduced Motion را
+در UI فعال بررسی می‌کند. این ممیزی نمونهٔ قرارداد است و آزمون جامع
+تمام مسیرهای مهاجرت‌یافته در `VX-G5` جدا می‌ماند. بستهٔ تصمیم
+`docs/ux/review/ms61/` چهار معیار مالک را با شواهد به‌روز نشان می‌دهد.
 
 ## ۷. Login Experience Contract
 

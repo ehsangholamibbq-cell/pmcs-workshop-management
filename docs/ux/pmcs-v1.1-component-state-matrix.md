@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.14.0` در `UX2-MS60`
+- نسخهٔ Candidate: `0.15.0` در `UX2-MS61`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -170,3 +170,9 @@ Focus ورودی خطادار، قفل اقدام، پنهان‌سازی نتی
 خنثی با Browser E2E و تصویر سه عرض سنجیده می‌شوند. این فقط `P` برای
 Field/Filter/Table است؛ parser، تقویم، API و همهٔ مصرف‌کنندگان فعال
 در `VX-G4/G5` جداگانه آزموده می‌شوند.
+
+MS61 آزمون Token متن/Status و Focus/Reduced Motion را به قرارداد
+Foundation افزود و بستهٔ `docs/ux/review/ms61/` را با چهار معیار
+مالک به‌روز کرد. خانه‌های نمونهٔ مستقل `P` می‌مانند؛ این شواهد
+خانه‌های `S/G` مصرف‌کنندهٔ فعال را پیش از مهاجرت `VX-G4` به `D`
+تبدیل نمی‌کنند. آزمون تمام مسیرها و مرورگرها در `VX-G5` باز است.
