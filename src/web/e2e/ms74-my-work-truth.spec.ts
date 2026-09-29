@@ -16,6 +16,12 @@ test("work and notifications distinguish current, cached and revoked data", asyn
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
   async function capture(name: string, width: number, height: number) {
     await page.getByTestId("my-work-center").scrollIntoViewIfNeeded();
+    await page.evaluate(() => document.fonts.ready);
+    await expect.poll(async () => {
+      const work = await page.getByTestId("my-work-panel").boundingBox();
+      const notices = await page.getByTestId("notification-panel").boundingBox();
+      return Boolean(work && notices && work.y + work.height <= notices.y + 1);
+    }, { timeout: 10_000 }).toBe(true);
     const workPanel = await page.getByTestId("my-work-panel").boundingBox();
     const notificationPanel = await page.getByTestId("notification-panel").boundingBox();
     expect(workPanel).not.toBeNull();
@@ -26,7 +32,6 @@ test("work and notifications distinguish current, cached and revoked data", asyn
       expect(workPanel.x + workPanel.width).toBeLessThanOrEqual(width + 1);
       expect(notificationPanel.x + notificationPanel.width).toBeLessThanOrEqual(width + 1);
     }
-    await page.evaluate(() => document.fonts.ready);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
     expect(bytes.readUInt32BE(16)).toBe(width);
     expect(bytes.readUInt32BE(20)).toBe(height);
