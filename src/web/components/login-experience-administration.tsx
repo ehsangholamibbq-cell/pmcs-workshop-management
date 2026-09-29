@@ -25,7 +25,7 @@ import { PmcsFileInput } from "@/components/pmcs-file-input";
 
 export function LoginExperienceAdministration() {
   const session = usePmcsSession();
-  const [versions, setVersions] = useState<readonly LoginExperienceVersion[]>([]);
+  const [versions, setVersions] = useState<readonly LoginExperienceVersion[] | null>(null);
   const [compositionVariant, setCompositionVariant] = useState<LoginCompositionVariant>("BlueprintSplit");
   const [surfaceTone, setSurfaceTone] = useState<LoginSurfaceTone>("WarmStone");
   const [accentPalette, setAccentPalette] = useState<LoginAccentPalette>("CorporateNavyGreen");
@@ -36,14 +36,21 @@ export function LoginExperienceAdministration() {
   const [logo, setLogo] = useState<File | null>(null);
   const [hero, setHero] = useState<File | null>(null);
   const [message, setMessage] = useState("در حال دریافت نسخه‌ها…");
+  const [messageKind, setMessageKind] = useState<"status" | "success" | "error">("status");
   const [isBusy, setIsBusy] = useState(false);
 
-  const refresh = useCallback(async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<boolean> => {
+    setVersions(null);
+    setMessage("در حال دریافت نسخه‌ها…");
+    setMessageKind("status");
     try {
       setVersions(await listLoginExperiences());
       setMessage("");
+      return true;
     } catch (error) {
       setMessage(toUserMessage(error, "دریافت نسخه‌های صفحه ورود انجام نشد."));
+      setMessageKind("error");
+      return false;
     }
   }, []);
 
@@ -56,6 +63,7 @@ export function LoginExperienceAdministration() {
     event.preventDefault();
     setIsBusy(true);
     setMessage("در حال ساخت نسخه جدید و کنترل امنیتی دارایی‌های تصویری…");
+    setMessageKind("status");
     const descriptorId = crypto.randomUUID();
     try {
       const logoDocumentId = await uploadAsset(descriptorId, logo);
@@ -88,10 +96,13 @@ export function LoginExperienceAdministration() {
       });
       setLogo(null);
       setHero(null);
-      await refresh();
-      setMessage("نسخه پیش‌نویس ساخته شد؛ پس از بازبینی می‌توانید آن را منتشر کنید.");
+      if (await refresh()) {
+        setMessage("نسخه پیش‌نویس ساخته شد؛ پس از بازبینی می‌توانید آن را منتشر کنید.");
+        setMessageKind("success");
+      }
     } catch (error) {
       setMessage(toUserMessage(error, "ساخت نسخه صفحه ورود انجام نشد."));
+      setMessageKind("error");
     } finally {
       setIsBusy(false);
     }
@@ -118,12 +129,16 @@ export function LoginExperienceAdministration() {
   async function activate(version: LoginExperienceVersion): Promise<void> {
     setIsBusy(true);
     setMessage(version.status === "Draft" ? "در حال انتشار نسخه…" : "در حال بازگشت کنترل‌شده…");
+    setMessageKind("status");
     try {
       await activateLoginExperience(version);
-      await refresh();
-      setMessage(version.status === "Draft" ? "نسخه جدید منتشر شد." : "نسخه انتخاب‌شده دوباره فعال شد.");
+      if (await refresh()) {
+        setMessage(version.status === "Draft" ? "نسخه جدید منتشر شد." : "نسخه انتخاب‌شده دوباره فعال شد.");
+        setMessageKind("success");
+      }
     } catch (error) {
       setMessage(toUserMessage(error, "فعال‌سازی نسخه انجام نشد."));
+      setMessageKind("error");
     } finally {
       setIsBusy(false);
     }
@@ -140,16 +155,16 @@ export function LoginExperienceAdministration() {
         <SessionBadge />
       </header>
       <section className="login-admin-grid">
-        <form onSubmit={(event) => void createDraft(event)}>
+        <form aria-busy={isBusy} onSubmit={(event) => void createDraft(event)}>
           <div className="section-title"><div><p className="eyebrow">نسخه جدید</p><h2>ساخت پیش‌نویس</h2></div><span className="profile-privacy">بدون کد اجرایی دلخواه</span></div>
           <div className="login-admin-fields">
-            <label>ترکیب صفحه<select value={compositionVariant} onChange={(event) => setCompositionVariant(event.target.value as LoginCompositionVariant)}><option value="BlueprintSplit">معماری دو بخشی</option><option value="MonolithFocus">تمرکز یکپارچه</option><option value="WarmMinimal">مینیمال گرم</option></select></label>
-            <label>سطح رنگ<select value={surfaceTone} onChange={(event) => setSurfaceTone(event.target.value as LoginSurfaceTone)}><option value="WarmStone">سنگ گرم</option><option value="WarmIvory">عاج گرم</option><option value="DeepNavy">سرمه‌ای عمیق</option></select></label>
-            <label>رنگ تأکیدی<select value={accentPalette} onChange={(event) => setAccentPalette(event.target.value as LoginAccentPalette)}><option value="CorporateNavyGreen">سرمه‌ای و سبز برند</option><option value="NavySilver">سرمه‌ای و نقره‌ای</option><option value="GreenStone">سبز و سنگی</option></select></label>
-            <label>شدت حرکت<select value={motionPolicy} onChange={(event) => setMotionPolicy(event.target.value as LoginMotionPolicy)}><option value="Calm">آرام</option><option value="Balanced">متعادل</option><option value="Expressive">نمایان</option></select></label>
-            <label>عنوان کوتاه<input value={eyebrow} maxLength={80} required onChange={(event) => setEyebrow(event.target.value)} /></label>
-            <label>تیتر اصلی<input value={headline} maxLength={140} required onChange={(event) => setHeadline(event.target.value)} /></label>
-            <label className="wide">متن همراه<textarea value={supportingText} maxLength={320} required onChange={(event) => setSupportingText(event.target.value)} /></label>
+            <label>ترکیب صفحه<select disabled={isBusy} value={compositionVariant} onChange={(event) => setCompositionVariant(event.target.value as LoginCompositionVariant)}><option value="BlueprintSplit">معماری دو بخشی</option><option value="MonolithFocus">تمرکز یکپارچه</option><option value="WarmMinimal">مینیمال گرم</option></select></label>
+            <label>سطح رنگ<select disabled={isBusy} value={surfaceTone} onChange={(event) => setSurfaceTone(event.target.value as LoginSurfaceTone)}><option value="WarmStone">سنگ گرم</option><option value="WarmIvory">عاج گرم</option><option value="DeepNavy">سرمه‌ای عمیق</option></select></label>
+            <label>رنگ تأکیدی<select disabled={isBusy} value={accentPalette} onChange={(event) => setAccentPalette(event.target.value as LoginAccentPalette)}><option value="CorporateNavyGreen">سرمه‌ای و سبز برند</option><option value="NavySilver">سرمه‌ای و نقره‌ای</option><option value="GreenStone">سبز و سنگی</option></select></label>
+            <label>شدت حرکت<select disabled={isBusy} value={motionPolicy} onChange={(event) => setMotionPolicy(event.target.value as LoginMotionPolicy)}><option value="Calm">آرام</option><option value="Balanced">متعادل</option><option value="Expressive">نمایان</option></select></label>
+            <label>عنوان کوتاه<input disabled={isBusy} value={eyebrow} maxLength={80} required onChange={(event) => setEyebrow(event.target.value)} /></label>
+            <label>تیتر اصلی<input disabled={isBusy} value={headline} maxLength={140} required onChange={(event) => setHeadline(event.target.value)} /></label>
+            <label className="wide">متن همراه<textarea disabled={isBusy} value={supportingText} maxLength={320} required onChange={(event) => setSupportingText(event.target.value)} /></label>
             <PmcsFileInput label="لوگو اختیاری" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               file={logo} disabled={isBusy} onFileChange={setLogo} />
             <PmcsFileInput label="تصویر زمینه اختیاری" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
@@ -160,10 +175,12 @@ export function LoginExperienceAdministration() {
           </div>
           <button type="submit" disabled={isBusy}>{isBusy ? "در حال انجام…" : "ساخت نسخه پیش‌نویس"}</button>
         </form>
-        <section className="login-version-panel">
+        <section className="login-version-panel" aria-busy={versions === null && messageKind !== "error"}>
           <div className="section-title"><div><p className="eyebrow">تاریخچه</p><h2>نسخه‌های قابل بازگشت</h2></div></div>
+          {message && <output className={`login-admin-feedback ${messageKind}`} role={messageKind === "error" ? "alert" : "status"}>{message}</output>}
+          {messageKind === "error" && versions === null && <button className="secondary-button" type="button" onClick={() => void refresh()}>تلاش دوباره برای دریافت نسخه‌ها</button>}
           <div className="login-version-list">
-            {versions.map((version) => (
+            {versions?.map((version) => (
               <article key={version.id}>
                 <div><strong>نسخه {version.versionNumber.toLocaleString("fa-IR")}</strong><span data-status={version.status}>{statusLabel(version.status)}</span></div>
                 <h3>{version.headline}</h3>
@@ -172,9 +189,8 @@ export function LoginExperienceAdministration() {
                 {version.status !== "Published" && <button type="button" className="secondary-button" disabled={isBusy} onClick={() => void activate(version)}>{version.status === "Draft" ? "انتشار" : "بازگشت به این نسخه"}</button>}
               </article>
             ))}
-            {versions.length === 0 && <p className="empty-state">هنوز نسخه‌ای ساخته نشده و طرح جایگزین داخلی امن فعال است.</p>}
+            {versions?.length === 0 && <p className="empty-state">هنوز نسخه‌ای ساخته نشده و طرح جایگزین داخلی امن فعال است.</p>}
           </div>
-          <output aria-live="polite">{message}</output>
         </section>
       </section>
     </main>
