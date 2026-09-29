@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل/هویت/ظاهر ورود/Wizard در MS64–71، G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل/هویت/ظاهر ورود/Wizard در MS64–72، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -434,3 +434,10 @@ Run 489 هشت Job سبز و Artifact `11044303294` چهار قاب معتبر �
 correction Run 494 هشت Job سبز و Artifact `11049002783` چهار قاب معتبر
 و بازبینی‌شده دارد. قاب آماده هنوز کد نقش/وضعیت عضو انگلیسی دارد؛
 فارسی‌سازی آن و سایر مصرف‌کنندگان G4، سپس Qualification مستقل G5 بازند.
+
+## پیوست UX2-MS72 — فرمان Wizard و متن اعضا
+
+قفل Form و Step در هنگام درخواست Preview، حفظ ورودی در خطا و برچسب
+فارسی نقش/وضعیت عضو در Wizard فعال در Run 497 با هشت Job سبز و Artifact
+`11050303281` سه‌قابی معتبر و بازبینی‌شده بررسی شدند. سایر مصرف‌کنندگان G4 و Qualification مستقل
+G5 بازند.

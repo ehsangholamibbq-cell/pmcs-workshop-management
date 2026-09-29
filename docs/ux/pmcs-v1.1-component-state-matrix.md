@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.25.0` در `UX2-MS71`
+- نسخهٔ Candidate: `0.26.0` در `UX2-MS72`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -14,7 +14,7 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | خانواده | Default | Hover/Focus/Pressed | Disabled/Loading | Error/Success | Offline/Permission | Evidence فعلی و شکاف بعدی |
 | --- | --- | --- | --- | --- | --- | --- |
 | Action Button، Secondary و Link | D | Focus سراسری S؛ Hover محدود D؛ Pressed G | Disabled D؛ Loading متن/قفل S | نتیجه در سطح Panel S | توقف عملیات آفلاین/بدون مجوز S | MS46 قاب 45 و E2E ثبات Disabled در Hover؛ Pressed، Touch Target و مصرف‌کنندگان اختصاصی باز |
-| TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form؛ Invite Form Busy/Disabled، Preview Select و فرم ظاهر ورود قفل‌شده D | Error/Description پراکنده S؛ Success در دعوت D | Form آفلاین قاب 30؛ Permission وابسته به Route | MS68 دعوت، MS69 پیش‌نمایش مجوز و MS70 ظاهر ورود؛ ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
+| TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form؛ Invite Form Busy/Disabled، Preview Select، ظاهر ورود و Wizard قفل‌شده D | Error/Description پراکنده S؛ Success در دعوت D | Form آفلاین قاب 30؛ Permission وابسته به Route | MS68 دعوت، MS69 پیش‌نمایش مجوز، MS70 ظاهر ورود و MS72 Wizard؛ ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
 | PersianDateInput و FileInput | D | Focus سراسری و FileInput اختصاصی S | Disabled S؛ Loading FileInput S | Date `aria-invalid` S؛ انتخاب/حذف FileInput D | تابع Form/Permission والد | قاب‌های 18/44، 29/30؛ صفحه‌کلید، بازه/تقویم و مصرف‌های دیگر نیاز به ماتریس مستقل دارند |
 | StatusLabel، Badge و Fact/Draft | S | تعامل نامربوط | Loading نباید Fact بسازد D | Label همراه رنگ S | Offline/Stale/NoPermission Label S | semantic tokens در `globals.css`؛ تمایز Fact/Draft/AI و کنتراست هر مصرف باز |
 | Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile، Identity و Login Admin Form Busy/Disabled D؛ Bootstrap Source/Member Loading D | Error و Retry D؛ Profile، Identity، Login Admin و Bootstrap Feedback Error D | Offline/NoPermission در Routeهای منتخب D | MS67 Profile، MS68 Identity، MS70 Login Admin و MS71 Bootstrap با قاب/E2E؛ Stateهای مشترک سایر ماژول‌ها باز |
@@ -279,3 +279,15 @@ Artifact `11046207203` چهار قاب با Source/Hash/ابعاد معتبر و
 معتبر و بازبینی‌شده دارد. کد نقش/وضعیت عضو هنوز در نمایش انگلیسی است
 و در G4 بعدی فارسی می‌شود. این `D` فقط به دریافت دادهٔ Wizard مربوط
 است؛ سایر G4/G5 بازند.
+
+## پیوست UX2-MS72 — قفل فرمان Wizard و برچسب اعضا
+
+در `/project-bootstraps` هنگام ساخت Preview تمام کنترل‌های Form با
+Fieldset بومی و `aria-busy`، و جابه‌جایی مراحل با Disabled قفل‌اند.
+تأیید Preview حین Refresh غیرفعال است و Handlerهای Preview/Execute/
+Activate فرمان هم‌زمان را رد می‌کنند. خطای ساخت ورودی را نگه می‌دارد.
+نقش و وضعیت اعضا با برچسب فارسی مشترک با مدیریت هویت نشان داده می‌شوند؛
+کد نقش همچنان مقدار واقعی Option و Payload است. Run 497 هشت Job سبز و
+Artifact `11050303281` با سه قاب ۳۹۰/۳۲۰ پس از تطبیق Source/Hash/بایت/ابعاد
+و بازبینی بصری ثبت شدند.
+این `D` فقط به مصرف‌کنندهٔ Wizard اشاره می‌کند؛ سایر G4/G5 بازند.

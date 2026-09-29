@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.154.0`
+- نسخه سند: `1.155.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1868,3 +1868,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.152.0` | UX2-MS68 docs Run 485 هشت Job سبز و Safe؛ MS69 پیش‌نمایش مجوز مؤثر `/admin/users` را با پاک‌کردن نتیجهٔ نقش/پروژهٔ قبلی، قفل Selectها هنگام محاسبه و خطای `alert` متصل کرد. Source Run 489 هشت Job سبز و Artifact `11044303294` با چهار قاب/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، تکمیل G4، G5 و INT1/QA1 بازند |
 | `1.153.0` | UX2-MS69 docs Run 490 هشت Job سبز و Safe؛ MS70 مدیریت ظاهر ورود `/admin/login-experience` را با تفکیک Loading/Error/Empty فهرست، Retry دریافت، حفظ فرم پس از خطای ذخیره و قفل کنترل‌ها هنگام فرمان متصل کرد. Source Run 491 هشت Job سبز/Artifact `11046207203` چهار قاب/Index معتبر و بازبینی‌شده، CI مستقل مستندات شرط Checkpoint؛ دیگر مصرف‌کنندگان G4، G5 و INT1/QA1 بازند |
 | `1.154.0` | UX2-MS70 docs Run 492 هشت Job سبز و Safe؛ MS71 Wizard فعال `/project-bootstraps` را برای خطای دریافت مبدأ/اعضا، Retry و منع Preview با دادهٔ نامعتبر اصلاح کرد. Run 493 هفت Job سبز اما E2E متن Loading پس از خطای مبدأ را یافت؛ correction Run 494 هشت Job سبز/Artifact `11049002783` چهار قاب معتبر و بازبینی‌شده. متن کد نقش/وضعیت عضو در موج بعدی G4 فارسی می‌شود؛ CI مستقل مستندات شرط Checkpoint، باقی G4، G5 و INT1/QA1 بازند |
+| `1.155.0` | UX2-MS71 docs Run 495 هشت Job سبز و Safe؛ MS72 Wizard را حین Preview با Fieldset و Navigation قفل کرد، فرمان‌های Preview/Execute/Activate را در Busy منع و نقش/وضعیت عضو را با برچسب فارسی مشترک نشان داد. Run 496 هفت Job سبز، Assertion نادرست Fieldset را یافت؛ correction Run 497 هشت Job سبز/Artifact `11050303281` با سه قاب و Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint؛ باقی G4، G5 و INT1/QA1 بازند |
