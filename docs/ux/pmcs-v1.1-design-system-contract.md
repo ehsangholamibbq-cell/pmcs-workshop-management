@@ -179,6 +179,13 @@ Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مص
 شواهد همین Prototype هستند؛ بستهٔ مرور مالک و تصمیم `VX-G3`، سپس
 مهاجرت همهٔ مصرف‌کنندگان فعال و Qualification مستقل باقی‌اند.
 
+در UX2-MS53، بستهٔ `docs/ux/review/ms53/` هشت قاب منتخب از UI فعال
+و Prototype را با چهار معیار هویت/خوانایی، حقیقت State، تعامل و چاپ
+کنار Manifest منشأ می‌آورد. شواهد تعاملی MS44/47/49/51/52 از همان
+صفحه باز می‌شوند. این مرور قرارداد Component مصرف‌کنندگان فعال را
+خودکار کامل نمی‌کند؛ تصمیم صریح مالک و رفع شکاف‌های `S/G` شرط
+`VX-G3` است.
+
 ## ۷. Login Experience Contract
 
 ظاهر Login از Authentication جدا می‌ماند. Descriptor فقط Schema-validated است و اجازه HTML/CSS/JavaScript دلخواه ندارد:

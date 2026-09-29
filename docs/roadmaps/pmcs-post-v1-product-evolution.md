@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.135.0`
+- نسخه سند: `1.136.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1449,6 +1449,14 @@ Permission/Offline و Navigation موبایل ساخت. Run 435 هشت Job سب�
 `UX2-MS53` تکمیل بستهٔ مرور منبع‌دار و معیار تصمیم مالک برای `VX-G3`
 است؛ مهاجرت `VX-G4`، Qualification `VX-G5` و INT1/QA1 بازند.
 
+MS52 documentation Run 436 هشت Job سبز و Safe شد. MS53 در
+`docs/ux/review/ms53/` شواهد UI فعال MS50 و Prototypeهای MS49/51/52
+را با Manifest منشأ، لینک تعاملی و چهار معیار تصمیم مالک کنار هم قرار
+می‌دهد. Source Run 437 هشت Job سبز و Artifact `11017486934` با
+سه قاب معتبر/بازبینی‌شده دارد. این بسته آمادهٔ تصمیم است؛ پذیرش `VX-G3` به نظر صریح مالک و
+تکمیل شکاف‌های شرط Gate وابسته می‌ماند. پس از آن مهاجرت مرحله‌ای
+`VX-G4`، Qualification `VX-G5` و سپس INT1/QA1 انجام می‌شوند.
+
 **هدف:** گفت‌وگوی گروهی عملیاتی در Context هر پروژه، بدون تبدیل PMCS به پیام‌رسان عمومی.
 
 Scope:
@@ -1824,3 +1832,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.133.0` | UX2-MS49 documentation Run 430 هشت Job سبز و Safe؛ UX2-MS50 بستهٔ بازبینی بصری ده قاب از چهار Artifact معتبر را با منشأ/Hash و لینک Prototypeها Candidate کرد؛ Source Run 431 هشت Job سبز/Artifact `11005871839` معتبر و بازبینی‌شده، CI مستندات شرط اعتبار، MS51 Component gaps و G3/G4/G5 باز |
 | `1.134.0` | UX2-MS50 documentation Run 432 هشت Job سبز و Safe؛ UX2-MS51 Prototype Popover/Drawer/Toast و ردیف موبایل در هشت وضعیت با Browser E2E/۱۲ قاب را Candidate کرد؛ Source Run 433 هشت Job سبز و Artifact `11005944021` معتبر/بازبینی‌شده، CI مستندات شرط اعتبار، MS52 Login/Shell/Chart و G3/G4/G5 باز |
 | `1.135.0` | UX2-MS51 documentation Run 434 هشت Job سبز و Safe؛ UX2-MS52 نمونهٔ Login/Shell/Chart با جدول جایگزین، حالت‌های بدون داده و PDF A4 را Candidate کرد؛ Source Run 435 هشت Job سبز، Artifact `11007206344` با ۹ PNG/PDF تک‌صفحه‌ای معتبر/بازبینی‌شده، CI مستندات شرط اعتبار، MS53 بستهٔ مرور مالک و G3/G4/G5 باز |
+| `1.136.0` | UX2-MS52 documentation Run 436 هشت Job سبز و Safe؛ UX2-MS53 بستهٔ مرور منبع‌دار VX-G3 را با شواهد MS50/51/52 و چهار معیار تصمیم Candidate کرد؛ Source Run 437 هشت Job سبز، Artifact `11017486934` با سه قاب معتبر/بازبینی‌شده، CI مستندات شرط Checkpoint؛ پذیرش مالک و شکاف‌های Component شرط G3، سپس G4/G5 و INT1/QA1 باز |

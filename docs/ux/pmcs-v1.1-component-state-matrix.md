@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.6.0` در `UX2-MS52`
+- نسخهٔ Candidate: `0.7.0` در `UX2-MS53`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence محدود؛ `VX-G3 System Ready` باز است.
 
@@ -98,6 +98,12 @@ Error/NoPermission/Offline، نمودار و جدول هر دو پنهان‌ا�
 Disclosure با Escape/بازگشت Focus دارد؛ Run 435 و ۹ PNG/PDF A4
 تک‌صفحه‌ای با Source/Hash/ابعاد معتبر/بازبینی‌شده‌اند. این هم فقط
 `P` است، نه تبدیل خودکار خانه‌های مصرف‌کنندگان فعال به `D`.
+
+MS53 در `docs/ux/review/ms53/` شواهد فعال/Prototype را با Manifest
+منشأ و معیار تصمیم مالک کنار هم می‌گذارد. هر پاسخ به چهار معیار باید
+به اصلاح یا شاهد مشخص برای خانه‌های `S/G` وصل شود؛ هیچ خانه‌ای با
+وجود بستهٔ مرور به‌تنهایی به `D` ارتقا نمی‌یابد. تکمیل State contract
+و تأیید صریح مالک پیش‌شرط `VX-G3` باقی می‌مانند.
 
 - نمونهٔ تعاملی Componentهای مشترک با Default/Hover/Focus/Pressed/
   Disabled/Loading/Error/Success/Offline و مقایسهٔ Desktop/Tablet/Mobile؛

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS51 Safe، MS52 Composition Candidate؛ VX-G3/G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ UX2-MS52 Safe، MS53 Review Candidate؛ VX-G3/G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -341,3 +341,10 @@ Login/Shell/Chart را با فونت/نشان رسمی، Navigation موبایل
 Desktop/Mobile، Loading/Permission، Navigation و Print بازبینی شدند.
 CI مستندات شرط Checkpoint است؛ بستهٔ تصمیم مالک برای `VX-G3`،
 مهاجرت `VX-G4` و Qualification `VX-G5` بازند.
+
+MS52 documentation Run 436 هشت Job سبز و Safe شد. MS53 میز
+`docs/ux/review/ms53/` را با هشت قاب منتخب، PDF A4، منشأ Hash-indexed
+و چهار معیار پاسخ مالک تکمیل می‌کند. سه عرض Desktop/Mobile/۳۲۰px و
+لینک‌های Prototype در Browser E2E بررسی می‌شوند. بستهٔ مرور حتی با
+CI سبز تصمیم مالک یا تکمیل خانه‌های `S/G` ماتریس Component نیست؛
+`VX-G3` تا ثبت تصمیم صریح و رفع شکاف‌ها باز است.
