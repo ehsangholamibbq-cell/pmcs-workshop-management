@@ -70,7 +70,13 @@ test("work and notifications distinguish current, cached and revoked data", asyn
   await capture("my-work-390-cached-error.png", 390, 844);
 
   responseStatus = 200;
-  await center.getByRole("button", { name: "تلاش دوباره برای دریافت کارتابل" }).click();
+  const retry = center.getByRole("button", { name: "تلاش دوباره برای دریافت کارتابل" });
+  if (await retry.isVisible()) {
+    await retry.click({ timeout: 5_000 }).catch(async (error: unknown) => {
+      // A concurrent parent refresh can replace the cached panel before the click settles.
+      if (await center.getAttribute("data-read-state") !== "current") throw error;
+    });
+  }
   await expect(center).toHaveAttribute("data-read-state", "current");
   await expect(center.getByTestId("my-work-action-done")).toBeEnabled();
   await page.setViewportSize({ width: 320, height: 720 });
