@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل در MS64–67، G4/G5 باز`
+- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل/هویت در MS64–68، G4/G5 باز`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -402,3 +402,11 @@ Focus/Escape/Overflow در ۸۲۰/۳۹۰/۳۲۰px مهاجرت کرد. Run 473 �
 قفل فیلدهای ویرایشی را نیز با هشت Job سبز سنجید. Artifact نهایی
 `11038772992` پنج قاب/Index معتبر و مرورشده دارد. سایر مصرف‌کنندگان
 Component در G4 و Qualification سراسری G5 بازند.
+
+## پیوست UX2-MS68 — Feedback دعوت و فهرست مدیریت هویت
+
+در `/admin/users` خطای دریافت فهرست از وضعیت Loading و دادهٔ معتبر
+جداست؛ دعوت ناموفق دادهٔ فرم را حفظ می‌کند و Retry همان payload هویت
+فرمان قبلی را نگه می‌دارد. Run 484 هشت Job سبز و Artifact
+`11040584680` شش قاب/Index معتبر و مرورشده دارد. پیش‌نمایش مجوز،
+دیگر مصرف‌کنندگان G4 و Qualification مستقل G5 بازند.
