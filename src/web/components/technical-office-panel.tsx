@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import {
   createDocumentRevision,
@@ -26,7 +26,7 @@ import {
   type TransmittalModel,
 } from "@/lib/technical-office";
 import { scopedStorageKey } from "@/lib/field-database";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 
 interface TechnicalOfficePanelProps {
@@ -51,6 +51,8 @@ export function TechnicalOfficePanel(props: TechnicalOfficePanelProps) {
   const cacheKey = useMemo(() => scopedStorageKey(`pmcs-technical-office:${projectId}`), [projectId]);
   const [state, setState] = useState<TechnicalOfficeStateModel>(emptyState);
   const [message, setMessage] = useState("در حال دریافت دفتر فنی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "cached" | "unavailable" | "forbidden">("loading");
+  const readSequence = useRef(0);
   const [busy, setBusy] = useState(false);
 
   const [documentTitle, setDocumentTitle] = useState("");
@@ -102,21 +104,41 @@ export function TechnicalOfficePanel(props: TechnicalOfficePanelProps) {
   const [acknowledgmentReference, setAcknowledgmentReference] = useState("");
 
   const load = useCallback(async () => {
+    const requestId = ++readSequence.current;
     if (!isOnline) {
       const cached = readCache(cacheKey);
-      if (cached) setState(cached);
+      setState(cached ?? emptyState);
+      setReadState(cached ? "cached" : "unavailable");
       setMessage(cached
-        ? "نسخه ذخیره‌شده نمایش داده می‌شود؛ وضعیت رسمی ممکن است قدیمی باشد."
+        ? "نسخه ذخیره‌شده موجود است، اما تا دریافت مجوز تازه جزئیات و اقدام‌های رسمی نمایش داده نمی‌شوند."
         : "بدون اتصال، نسخه ذخیره‌شده‌ای از دفتر فنی روی این دستگاه وجود ندارد.");
       return;
     }
+    setReadState("loading");
+    setState(emptyState);
+    setMessage("در حال دریافت دفتر فنی…");
     try {
       const next = await getTechnicalOfficeState(apiBaseUrl, identity, projectId);
+      if (requestId !== readSequence.current) return;
       setState(next);
       localStorage.setItem(cacheKey, JSON.stringify(next));
+      setReadState("current");
       setMessage("دفتر فنی با آخرین وضعیت رسمی سرور به‌روز شد.");
     } catch (error) {
-      setMessage(toUserMessage(error, "دفتر فنی دریافت نشد یا دسترسی این کاربر محدود است."));
+      if (requestId !== readSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        localStorage.removeItem(cacheKey);
+        setState(emptyState);
+        setReadState("forbidden");
+        setMessage("دسترسی به دفتر فنی تأیید نشد؛ دادهٔ ذخیره‌شده نمایش داده نمی‌شود.");
+      } else {
+        const cached = readCache(cacheKey);
+        setState(cached ?? emptyState);
+        setReadState(cached ? "cached" : "unavailable");
+        setMessage(cached
+          ? "دریافت تازه کامل نشد؛ نسخهٔ ذخیره‌شده تا تأیید مجوز جدید از دید و اقدام خارج است."
+          : toUserMessage(error, "دفتر فنی دریافت نشد."));
+      }
     }
   }, [apiBaseUrl, cacheKey, identity, isOnline, projectId]);
 
@@ -126,8 +148,8 @@ export function TechnicalOfficePanel(props: TechnicalOfficePanelProps) {
   }, [load, refreshToken]);
 
   async function run(action: () => Promise<unknown>, pendingMessage: string, failureMessage: string) {
-    if (!isOnline) {
-      setMessage("این اقدام رسمی فقط هنگام اتصال به سرور انجام می‌شود.");
+    if (!isOnline || readState !== "current") {
+      setMessage("این اقدام رسمی فقط با اتصال و دادهٔ جاری سرور انجام می‌شود.");
       return;
     }
     setBusy(true);
@@ -232,8 +254,21 @@ export function TechnicalOfficePanel(props: TechnicalOfficePanelProps) {
 
   const approvedRevisions = state.documentRevisions.filter(item => item.status === "Approved");
 
+  if (readState !== "current") {
+    return <section className="section-block technical-office" id="technical-office" data-read-state={readState}>
+      <div className="section-title">
+        <div><p className="eyebrow">دفتر فنی و کنترل اسناد</p><h2>گردش رسمی مدارک و پاسخ‌ها</h2></div>
+      </div>
+      <div className="collaboration-state" role={readState === "loading" || !isOnline ? "status" : "alert"}>
+        <p>{message}</p>
+        {isOnline && readState !== "loading" &&
+          <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دفتر فنی</button>}
+      </div>
+    </section>;
+  }
+
   return (
-    <section className="section-block technical-office" id="technical-office">
+    <section className="section-block technical-office" id="technical-office" data-read-state={readState}>
       <div className="section-title">
         <div><p className="eyebrow">دفتر فنی و کنترل اسناد</p><h2>گردش رسمی مدارک و پاسخ‌ها</h2></div>
         <span className="section-note">بارگذاری فایل ≠ ابلاغ رسمی</span>
