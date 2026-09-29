@@ -79,12 +79,14 @@ test("daily report history hides an old version on refresh, failure and access l
   await expect(history).toHaveAttribute("data-read-state", "unavailable");
   await expect(history.locator(".count-badge")).toHaveText("—");
   await expect(history.getByRole("alert")).not.toContainText("Sensitive report detail");
+  await expect(history.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("history-320-read-error.png", 320, 720, "unavailable");
 
   responseStatus = 403;
   await page.reload();
   await expect(history).toHaveAttribute("data-read-state", "forbidden");
   await expect(history.getByRole("alert")).toContainText("دادهٔ قبلی نمایش داده نمی‌شود");
+  await expect(history.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await expect(history.getByTestId("daily-report-version")).toHaveCount(0);
   await capture("history-320-access-revoked.png", 320, 720, "forbidden");
 
