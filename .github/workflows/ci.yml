@@ -318,6 +318,12 @@ jobs:
           name: pmcs-ms58-reporting-print
           path: src/web/artifacts/ms58-reporting-print/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms59-intelligence-concept
+          path: src/web/artifacts/ms59-intelligence-concept/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest

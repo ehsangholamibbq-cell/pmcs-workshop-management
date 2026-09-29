@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — مرکز هوشمندی مدیریتی</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.65 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; }
+    button { min-height: 44px; cursor: pointer; }
+    :is(a, button, select):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1180px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 84px; height: 58px; flex: none; object-fit: contain; border-radius: 9px; padding: .2rem; background: #fbf8f1; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { width: min(1180px, 100%); margin: auto; padding: 1rem 1rem 3rem; }
+    .note { padding: .6rem .8rem; border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1rem 0; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; padding: .35rem .6rem; background: white; color: inherit; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr); gap: 1rem; }
+    .card { min-width: 0; padding: 1rem; border: 1px solid #e9dfcf; border-radius: 14px; background: white; }
+    h2 { margin: 0 0 .3rem; color: var(--navy); font-size: 1.1rem; }
+    h3 { margin: .7rem 0 .3rem; color: var(--navy); font-size: .94rem; }
+    p { margin: .3rem 0 .7rem; }
+    .muted { color: var(--muted); font-size: .82rem; }
+    .status { padding: .65rem .8rem; border-right: 4px solid #235c99; border-radius: 8px; background: #f1f6f8; }
+    .status[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .status[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .status strong { display: block; }
+    .status p { margin: 0; }
+    .insight { margin-top: .8rem; border: 1px solid #d5e0db; border-radius: 10px; background: #f8faf8; padding: .8rem; }
+    .insight h3 { margin-top: 0; }
+    .badge { display: inline-block; border-radius: 99px; padding: .1rem .5rem; background: #fff1ce; color: #654313; font-size: .75rem; }
+    .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem .8rem; margin: .8rem 0; }
+    .facts div { border-top: 1px solid #d5e0db; padding-top: .4rem; }
+    .facts dt { font-size: .8rem; font-weight: 700; }
+    .facts dd { margin: 0; color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+    .primary, .secondary { border-radius: 8px; padding: .4rem .8rem; font-weight: 700; }
+    .primary { border: 1px solid #11643b; color: white; background: #11643b; }
+    .secondary { border: 1px solid #7b8c94; color: var(--navy); background: white; }
+    button:disabled { cursor: not-allowed; border-color: #aeb8b8; color: #46555b; background: #e4e9e6; }
+    .rule { border-bottom: 1px solid #e9dfcf; padding: .6rem 0; }
+    .rule strong { display: block; }
+    .rule p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .skeleton { height: 22px; width: 70%; margin: .6rem 0; border-radius: 8px; background: #dce5e2; }
+    .foot { color: var(--muted); font-size: .8rem; margin-top: 1rem; }
+    dialog { width: min(520px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; border: 1px solid #d5e0db; border-radius: 14px; padding: 1rem; color: inherit; background: white; box-shadow: 0 20px 60px #0c203655; }
+    dialog::backdrop { background: #0c2036aa; }
+    dialog ul { padding-right: 1.4rem; }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .card { padding: .8rem; } }
+    @media (max-width: 360px) { .brand { width: 65px; height: 50px; } h1 { font-size: 1.04rem; } .facts { grid-template-columns: 1fr; } .controls { display: grid; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @media print { .controls, .actions, dialog { display: none !important; } .layout { display: block; } .card { break-inside: avoid; margin-bottom: .7rem; } }
+  </style>
+</head>
+<body data-state="empty">
+  <a class="skip" href="#main">رفتن به نمونهٔ هوشمندی</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>مرکز هوشمندی مدیریتی</h1><p>PMCS · UX2-MS59 · طرح مفهومی برای نسخهٔ بعد</p></div></div></header>
+  <main id="main">
+    <p class="note"><strong>نمونهٔ طراحی:</strong> پرسش، منابع و پیشنهاد زیر ساختگی‌اند. این صفحه مدل هوشمند، ابزار خواندن، دسترسی به داده یا اقدام عملیاتی را اجرا نمی‌کند.</p>
+    <div class="controls"><label for="state">وضعیت تحلیل نمونه</label><select id="state"><option value="empty">بدون تحلیل</option><option value="loading">در حال بررسی</option><option value="proposal">پیشنهاد آزمایشی</option><option value="uncertain">عدم قطعیت بالا</option><option value="stale">منبع کهنه</option><option value="permission">بدون مجوز</option><option value="offline">آفلاین</option><option value="error">خطای تحلیل</option><option value="conflict">تغییر نسخهٔ منبع</option></select></div>
+    <div class="layout">
+      <section class="card" aria-labelledby="workspace-title"><h2 id="workspace-title">میز تحلیل پروژهٔ نمونه</h2><p class="muted">پرسش نمونه: کدام موضوع نیازمند بررسی انسانی است؟ این یک گفت‌وگوی گروهی یا پاسخ قطعی نیست.</p>
+        <div class="status" id="status" role="status" aria-live="polite"><strong id="status-title"></strong><p id="status-detail"></p><div class="skeleton" id="skeleton" hidden aria-hidden="true"></div></div>
+        <div class="insight" id="insight" hidden><span class="badge">فرضیهٔ آزمایشی، نه واقعیت قطعی</span><h3>موضوع پیشنهادی برای بررسی</h3><p>در دادهٔ فرضیِ نمونه، تأخیر در بازبینی یک گزارش می‌تواند نیازمند پیگیری باشد؛ هیچ نتیجهٔ رسمی یا اقدام خودکار از این متن به دست نمی‌آید.</p>
+          <dl class="facts"><div><dt>منشأ</dt><dd>دو رکورد ساختگی در پروژهٔ نمونه؛ ارجاع واقعی وجود ندارد</dd></div><div><dt>تازگی</dt><dd id="freshness">فرضی؛ نیازمند تطبیق لحظه‌ای</dd></div><div><dt>عدم قطعیت</dt><dd id="uncertainty">بالا؛ علت و اثر تأیید نشده‌اند</dd></div><div><dt>دامنهٔ مجوز</dt><dd>در محصول باید برای هر منبع جدا بررسی شود</dd></div></dl>
+          <p id="human-step"><strong>گام انسانی:</strong> مسئول مجاز باید منابع، تاریخ، نسخه و تناقض را بررسی کند و سپس مستقل تصمیم بگیرد.</p></div>
+        <div class="actions"><button class="secondary" id="review" type="button" disabled>مرور منشأ نمونه</button><button class="primary" id="draft" type="button" disabled>ساخت پیش‌نویس واقعی غیرفعال است</button><button class="secondary" id="action" type="button" disabled>اقدام رسمی غیرفعال است</button></div>
+        <p class="muted" id="review-result" role="status">هیچ پیشنهاد نمونه، واقعیت ثبت‌شده یا مجوز اقدام نیست.</p>
+      </section>
+      <aside class="card" aria-labelledby="boundary-title"><h2 id="boundary-title">مسیر تصمیم و مرزها</h2><div class="rule"><strong>منبع و مجوز</strong><p>هر خواندن باید در همان پروژه، با مجوز همان کاربر و ارجاع قابل ردیابی انجام شود.</p></div><div class="rule"><strong>تازگی و تعارض</strong><p>نسخهٔ تغییرکرده یا دادهٔ کهنه، پیشنهاد قبلی را از تصمیم مستقل می‌کند.</p></div><div class="rule"><strong>عدم قطعیت</strong><p>فرضیه با واقعیت، پیش‌نویس و هشدار رسمی از نظر متن و رنگ جداست.</p></div><div class="rule"><strong>اقدام انسانی</strong><p>ساخت پیش‌نویس و اقدام رسمی به مرحله‌های مستقل آینده و تأیید انسانی وابسته‌اند.</p></div></aside>
+    </div>
+    <p class="foot">این نمونه فقط قرارداد بصری را مرور می‌کند. رابط اجرایی عامل هوشمند در V1.1 خارج از دامنه است و گفت‌وگو فقط گروه پروژه می‌ماند.</p>
+  </main>
+  <dialog id="review-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title">مرور منشأ نمونه</h2><p>این دو رکورد ساختگی‌اند؛ هیچ دادهٔ مجاز واقعی یا ارزیابی مدل در این صفحه خوانده نشده است.</p><ul><li>شناسه و نسخهٔ منبع باید از پاسخ مجاز همان پروژه بیایند.</li><li>زمان و دامنهٔ اعتبار باید در لحظهٔ تصمیم دوباره سنجیده شوند.</li><li>عدم قطعیت و استدلال باید جدا از واقعیت ثبت‌شده رسمی نمایش داده شوند.</li></ul><div class="actions"><button class="secondary" id="close" type="button">بستن مرور</button></div></dialog>
+  <script>
+    const $ = id => document.getElementById(id), state = $('state'), dialog = $('review-dialog'), review = $('review');
+    const states = {
+      empty: ['تحلیلی موجود نیست', 'تا دریافت منابع مجاز و به‌روز، پیشنهاد یا واقعیت ثبت‌شده نمایش داده نمی‌شود.', 'normal', false],
+      loading: ['در حال بررسی نمونه', 'جای‌نگهدار خنثی است؛ نتیجه یا عدد ساختگی نشان داده نمی‌شود.', 'normal', false],
+      proposal: ['پیشنهاد آزمایشی', 'فقط برای مرور انسانی است؛ منابع این نمونه واقعی و قابل استناد نیستند.', 'normal', true],
+      uncertain: ['عدم قطعیت بالا', 'علت و اثر نامعلوم‌اند؛ پیشنهاد نیاز به شواهد مستقل دارد.', 'warning', true],
+      stale: ['منبع کهنه', 'پس از تغییر زمان یا نسخه، تحلیل قبلی برای تصمیم معتبر نیست.', 'warning', true],
+      permission: ['دسترسی مجاز نیست', 'نام و متن منابع حفاظت‌شده پنهان‌اند؛ تحلیل نمایش داده نمی‌شود.', 'warning', false],
+      offline: ['اتصال برقرار نیست', 'منبع سرور و مجوز لحظه‌ای معلوم نیست؛ پیشنهاد قبلی معتبر فرض نمی‌شود.', 'warning', false],
+      error: ['تحلیل کامل نشد', 'پاسخ ناقص به پیشنهاد یا واقعیت تبدیل نمی‌شود.', 'error', false],
+      conflict: ['نسخهٔ منبع تغییر کرده است', 'پیشنهاد پیشین باید با نسخهٔ تازه دوباره بررسی شود.', 'error', false],
+    };
+    function render() {
+      const key = state.value, [title, detail, tone, visible] = states[key];
+      document.body.dataset.state = key; $('status-title').textContent = title; $('status-detail').textContent = detail;
+      $('status').dataset.tone = tone; $('status').setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      $('insight').hidden = !visible; $('skeleton').hidden = key !== 'loading';
+      $('freshness').textContent = key === 'stale' ? 'کهنه؛ تا بازخوانی معتبر نیست' : 'فرضی؛ نیازمند تطبیق لحظه‌ای';
+      $('uncertainty').textContent = key === 'uncertain' ? 'بسیار بالا؛ استنتاج قابل اتکا نیست' : 'بالا؛ علت و اثر تأیید نشده‌اند';
+      review.disabled = !visible || key === 'stale'; $('draft').disabled = true; $('action').disabled = true;
+      $('review-result').textContent = 'هیچ پیشنهاد نمونه، واقعیت ثبت‌شده یا مجوز اقدام نیست.';
+    }
+    state.addEventListener('change', render);
+    review.addEventListener('click', () => { dialog.showModal(); $('close').focus(); });
+    $('close').addEventListener('click', () => { dialog.close(); $('review-result').textContent = 'مرور محلی پایان یافت؛ هیچ داده یا اقدامی ثبت نشد.'; review.focus(); });
+    dialog.addEventListener('close', () => review.focus());
+    render();
+  </script>
+</body>
+</html>
