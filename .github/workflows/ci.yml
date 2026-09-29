@@ -336,6 +336,12 @@ jobs:
           name: pmcs-ms61-owner-review
           path: src/web/artifacts/ms61-owner-review/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms62-dense-print
+          path: src/web/artifacts/ms62-dense-print/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
