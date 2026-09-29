@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
+import { projectId } from "./support";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const output = resolve(root, "src/web/artifacts/ms69-permission-preview");
@@ -26,6 +27,10 @@ test("permission preview never presents a prior role's result as current", async
   let releasePreview: () => void = () => {};
   const previewGate = new Promise<void>(resolve => { releasePreview = resolve; });
   let requests = 0;
+  await page.route("**/api/pmcs/api/v1/projects", async route => {
+    await route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify([{ id: projectId, code: "MS69-QA", name: "پروژه نمونهٔ پیش‌نمایش" }]) });
+  });
   await page.route(/\/identity\/permissions\/preview\?/u, async route => {
     requests += 1;
     if (requests === 1) {
