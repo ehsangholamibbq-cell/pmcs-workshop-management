@@ -1,7 +1,7 @@
 # PMCS V1.1 — ماتریس Stateهای Component مشترک
 
 - شناسه: `PMCS-UX-COMPONENT-STATES-001`
-- نسخهٔ Candidate: `0.24.0` در `UX2-MS70`
+- نسخهٔ Candidate: `0.25.0` در `UX2-MS71`
 - مرجع: `PMCS-DS-001`، `PMCS-RM-VISUAL-001` و inventory فعال `VX-G1`
 - وضعیت: Evidence قرارداد/نمونه برای `VX-G3`؛ خانه‌های فعال `S/G` در G4/G5 بازند.
 
@@ -17,7 +17,7 @@ Qualification تمام مصرف‌کنندگان یا همهٔ viewportها نی
 | TextField، Select و Textarea | D | Focus S؛ Hover/Pressed نامربوط | Disabled S؛ Loading در سطح Form؛ Invite Form Busy/Disabled، Preview Select و فرم ظاهر ورود قفل‌شده D | Error/Description پراکنده S؛ Success در دعوت D | Form آفلاین قاب 30؛ Permission وابسته به Route | MS68 دعوت، MS69 پیش‌نمایش مجوز و MS70 ظاهر ورود؛ ارتباط Label/Error/Description و کنتراست Focus در همهٔ فرم‌ها باز |
 | PersianDateInput و FileInput | D | Focus سراسری و FileInput اختصاصی S | Disabled S؛ Loading FileInput S | Date `aria-invalid` S؛ انتخاب/حذف FileInput D | تابع Form/Permission والد | قاب‌های 18/44، 29/30؛ صفحه‌کلید، بازه/تقویم و مصرف‌های دیگر نیاز به ماتریس مستقل دارند |
 | StatusLabel، Badge و Fact/Draft | S | تعامل نامربوط | Loading نباید Fact بسازد D | Label همراه رنگ S | Offline/Stale/NoPermission Label S | semantic tokens در `globals.css`؛ تمایز Fact/Draft/AI و کنتراست هر مصرف باز |
-| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile، Identity و Login Admin Form Busy/Disabled D | Error و Retry D؛ Profile، Identity و Login Admin Feedback Error/Success D | Offline/NoPermission در Routeهای منتخب D | MS67 Profile، MS68 Identity و MS70 Login Admin با قاب/E2E؛ Stateهای مشترک سایر ماژول‌ها باز |
+| Empty، Loading/Skeleton و Error | D | Retry Focus S | Skeleton پنهان از AT در Portfolio D؛ Profile، Identity و Login Admin Form Busy/Disabled D؛ Bootstrap Source/Member Loading D | Error و Retry D؛ Profile، Identity، Login Admin و Bootstrap Feedback Error D | Offline/NoPermission در Routeهای منتخب D | MS67 Profile، MS68 Identity، MS70 Login Admin و MS71 Bootstrap با قاب/E2E؛ Stateهای مشترک سایر ماژول‌ها باز |
 | Table، Filter و Mobile fallback | D | Row/Action Focus S | فیلتر خالی D؛ Loading وابسته به Route | Validation پراکنده S | دادهٔ ممنوع باید پنهان بماند D | قاب‌های 03/20/25 و 36/38؛ تراکم، overflow و جدول موبایل در G4/G5 باز |
 | Modal، Dialog، Popover و Confirm | S | Focus/Keyboard نمونهٔ تقویم S | Blocking Preview D | Conflict/Blocked D | اجرای فاقد مجوز ممنوع S | قاب‌های 29/41 و E2E عدم Execute؛ MS49 Dialog بومی با Escape/return فقط P؛ مصرف‌کنندگان فعال و Popoverها باز |
 | Shell/Navigation و Print | D | Keyboard Sidebar و شش Shell موبایل Escape/Focus D | Navigation موبایل شش Shell D؛ Routeهای بدون Sidebar مستقل | پیام وضعیت مستقل S | Print بدون Action/Navigation D | MS64–66 شش Shell، ۲۸ قاب مجزا/Index و E2E؛ سایر Componentها، Routeها و Qualification باز |
@@ -266,3 +266,16 @@ Loading/Success با `status` و Error با `alert` از هم جدا هستند.
 Artifact `11046207203` چهار قاب با Source/Hash/ابعاد معتبر و بازبینی‌شده
 دارد. این `D` محدود به مصرف‌کنندهٔ فعال ظاهر ورود است؛ G4/G5 سراسری
 بازند.
+
+## پیوست UX2-MS71 — حقیقت دادهٔ مبدأ و اعضا در Wizard
+
+در `/project-bootstraps` فهرست پروژه و اعضا تا دریافت پاسخ معتبر
+ناشناخته می‌مانند. خطای مبدأ، Select را با پیام خطا قفل می‌کند؛ خطای
+اعضا به‌عنوان «بدون عضو» نمایش داده نمی‌شود. Retry هر دو فهرست را
+تازه می‌خواند و Preview تا وجود مبدأ معتبر و در دسترس بودن دادهٔ
+اعضای انتخاب‌شده مسدود است؛ حذف آگاهانهٔ دستهٔ اعضا امکان ادامهٔ
+بدون آن را حفظ می‌کند. Run 493 متن Loading باقی‌مانده پس از خطا را
+یافت؛ correction Run 494 هشت Job سبز و Artifact `11049002783` چهار قاب
+معتبر و بازبینی‌شده دارد. کد نقش/وضعیت عضو هنوز در نمایش انگلیسی است
+و در G4 بعدی فارسی می‌شود. این `D` فقط به دریافت دادهٔ Wizard مربوط
+است؛ سایر G4/G5 بازند.

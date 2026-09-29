@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.153.0`
+- نسخه سند: `1.154.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1867,3 +1867,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.151.0` | UX2-MS67 docs Run 481 پس از timeout بیرونی Docker Hub در بازاجرا هشت Job سبز و Safe؛ MS68 بازخورد/بارگذاری فهرست و فرم دعوت `/admin/users` را با حفظ دادهٔ خطاخورده و Idempotency Key ثابت برای Retry همان payload متصل کرد. Run 482 با درخت کد یکسان هشت Job سبز؛ Run 483 با assertion نادرست ۵۰۳ شکست خورد و Run 484 هشت Job سبز/Artifact `11040584680` با شش قاب/Index معتبر و مرورشده دارد. CI مستقل مستندات شرط Checkpoint؛ تکمیل G4، Qualification G5 و INT1/QA1 بازند |
 | `1.152.0` | UX2-MS68 docs Run 485 هشت Job سبز و Safe؛ MS69 پیش‌نمایش مجوز مؤثر `/admin/users` را با پاک‌کردن نتیجهٔ نقش/پروژهٔ قبلی، قفل Selectها هنگام محاسبه و خطای `alert` متصل کرد. Source Run 489 هشت Job سبز و Artifact `11044303294` با چهار قاب/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، تکمیل G4، G5 و INT1/QA1 بازند |
 | `1.153.0` | UX2-MS69 docs Run 490 هشت Job سبز و Safe؛ MS70 مدیریت ظاهر ورود `/admin/login-experience` را با تفکیک Loading/Error/Empty فهرست، Retry دریافت، حفظ فرم پس از خطای ذخیره و قفل کنترل‌ها هنگام فرمان متصل کرد. Source Run 491 هشت Job سبز/Artifact `11046207203` چهار قاب/Index معتبر و بازبینی‌شده، CI مستقل مستندات شرط Checkpoint؛ دیگر مصرف‌کنندگان G4، G5 و INT1/QA1 بازند |
+| `1.154.0` | UX2-MS70 docs Run 492 هشت Job سبز و Safe؛ MS71 Wizard فعال `/project-bootstraps` را برای خطای دریافت مبدأ/اعضا، Retry و منع Preview با دادهٔ نامعتبر اصلاح کرد. Run 493 هفت Job سبز اما E2E متن Loading پس از خطای مبدأ را یافت؛ correction Run 494 هشت Job سبز/Artifact `11049002783` چهار قاب معتبر و بازبینی‌شده. متن کد نقش/وضعیت عضو در موج بعدی G4 فارسی می‌شود؛ CI مستقل مستندات شرط Checkpoint، باقی G4، G5 و INT1/QA1 بازند |
