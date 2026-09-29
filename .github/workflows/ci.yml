@@ -264,6 +264,12 @@ jobs:
           name: pmcs-ms49-system-states
           path: src/web/artifacts/ms49-system-states/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms50-vx-g3-review
+          path: src/web/artifacts/ms50-vx-g3-review/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
