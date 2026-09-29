@@ -194,7 +194,7 @@ export function MemberProfileEditor() {
         </div>
       </section>
       <section className="profile-workspace">
-        <form aria-busy={isBusy} onSubmit={(event) => void save(event)}>
+        <form aria-busy={!profile || isBusy} onSubmit={(event) => void save(event)}>
           <div className="section-title">
             <div>
               <p className="eyebrow">اطلاعات مجاز</p>
@@ -205,7 +205,8 @@ export function MemberProfileEditor() {
           <div className="profile-form-grid">
             <label>
               نام نمایشی
-              <input value={displayName} maxLength={200} required onChange={(event) => setDisplayName(event.target.value)} />
+              <input value={displayName} maxLength={200} required disabled={!profile || isBusy}
+                onChange={(event) => setDisplayName(event.target.value)} />
             </label>
             <label>
               ایمیل سازمانی
@@ -213,11 +214,13 @@ export function MemberProfileEditor() {
             </label>
             <label>
               عنوان شغلی
-              <input value={jobTitle} maxLength={160} onChange={(event) => setJobTitle(event.target.value)} />
+              <input value={jobTitle} maxLength={160} disabled={!profile || isBusy}
+                onChange={(event) => setJobTitle(event.target.value)} />
             </label>
             <label>
               تلفن کاری
-              <input value={workPhone} maxLength={40} inputMode="tel" onChange={(event) => setWorkPhone(event.target.value)} />
+              <input value={workPhone} maxLength={40} inputMode="tel" disabled={!profile || isBusy}
+                onChange={(event) => setWorkPhone(event.target.value)} />
             </label>
             <label>
               واحد سازمانی
@@ -246,8 +249,8 @@ export function MemberProfileEditor() {
           </div>
           {avatarDocumentId && (
             <div className="profile-crop-controls">
-              <label>تنظیم افقی قاب <input type="range" min="0" max="20" value={cropX} onChange={(event) => setCropX(Number(event.target.value))} /></label>
-              <label>تنظیم عمودی قاب <input type="range" min="0" max="20" value={cropY} onChange={(event) => setCropY(Number(event.target.value))} /></label>
+              <label>تنظیم افقی قاب <input type="range" min="0" max="20" value={cropX} disabled={isBusy} onChange={(event) => setCropX(Number(event.target.value))} /></label>
+              <label>تنظیم عمودی قاب <input type="range" min="0" max="20" value={cropY} disabled={isBusy} onChange={(event) => setCropY(Number(event.target.value))} /></label>
             </div>
           )}
           <div className="profile-form-actions">

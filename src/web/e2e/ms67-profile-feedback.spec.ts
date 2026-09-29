@@ -37,13 +37,16 @@ test("active Profile distinguishes loading, validation error and saved state", a
   const form = page.locator(".profile-workspace form");
   await expect(feedback).toHaveAttribute("role", "status");
   await expect(feedback).toContainText("در حال دریافت پروفایل…");
-  await expect(form).toHaveAttribute("aria-busy", "false");
+  await expect(form).toHaveAttribute("aria-busy", "true");
+  await expect(page.getByRole("textbox", { name: "نام نمایشی" })).toBeDisabled();
   await expect(page.getByLabel("انتخاب تصویر")).toBeDisabled();
   await expect(page.locator(".profile-photo-controls .file-button")).toHaveAttribute("aria-disabled", "true");
   await capture("profile-390-loading.png", 390, 844);
   releaseLoad();
   await expect(page.getByRole("heading", { name: "مشخصات کاری من" })).toBeVisible();
   await expect(feedback).toHaveCount(0);
+  await expect(form).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByRole("textbox", { name: "نام نمایشی" })).toBeEnabled();
   await expect(page.getByLabel("انتخاب تصویر")).toBeEnabled();
 
   const invalidImage = { name: "too-large.png", mimeType: "image/png",
@@ -73,11 +76,13 @@ test("active Profile distinguishes loading, validation error and saved state", a
   });
   await page.getByRole("button", { name: "ذخیره پروفایل" }).click();
   await expect(form).toHaveAttribute("aria-busy", "true");
+  await expect(page.getByRole("textbox", { name: "نام نمایشی" })).toBeDisabled();
   await expect(feedback).toHaveAttribute("role", "status");
   await expect(feedback).toContainText("در حال ذخیره تغییرات…");
   await capture("profile-320-saving.png", 320, 720);
   releaseSave();
   await expect(form).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByRole("textbox", { name: "نام نمایشی" })).toBeEnabled();
   await expect(feedback).toHaveAttribute("role", "status");
   await expect(feedback).toContainText("پروفایل با موفقیت به‌روزرسانی شد.");
   await capture("profile-320-success.png", 320, 720);
