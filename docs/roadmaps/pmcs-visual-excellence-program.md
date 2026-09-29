@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.39.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS76 در `VX-G4`، مهاجرت کامل/Qualification باز
+- نسخه سند: `1.40.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS77 در `VX-G4`، مهاجرت کامل/Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -180,7 +180,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74، خواندن Chat گروه پروژه در MS75 و تجمیع سبد در MS76؛ سایر مصرف‌کنندگان باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74، خواندن Chat گروه پروژه در MS75 و تجمیع سبد در MS76 و حقیقت دسترسی مرکز فرمان پروژه در MS77؛ سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
@@ -229,3 +229,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.37.0` | MS72 docs Run 498 هشت Job سبز و Safe؛ MS73 بازخورد درخواست/دانلود و حقیقت Refresh مرکز گزارش پروژه/سبد را متصل کرد؛ Source Run 499 هشت Job سبز، Artifact `11052607582` با چهار PNG/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 باز |
 | `1.38.0` | MS73 docs Run 500 هشت Job سبز و Safe؛ MS74 حقیقت دریافت/فرمان کارتابل و اعلان‌ها را با تفکیک Loading/Current/Cached/Unavailable/Forbidden متصل کرد؛ Run 501 سبز ولی تصویر موبایل هم‌پوشانی داشت، اصلاح نهایی Run 502 هشت Job سبز/Artifact `11054696874` با سه PNG/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 باز |
 | `1.39.0` | MS74 docs Run 503 و MS75 docs Run 507 هرکدام هشت Job سبز و Safe؛ خواندن و جست‌وجوی Chat گروه پروژه در MS75 متصل شد. MS76 تجمیع قدیمی سبد را در Refresh/Error پنهان کرد؛ Run 509 و ثبت اولیهٔ Run 510 سبز بودند، اما بازبینی رنگ خطا اصلاح Source را لازم کرد. Source نهایی Run 511 هشت Job سبز/Artifact `11058654451` چهار PNG/Index معتبر و بازبینی‌شده دارد؛ CI مستقل این اصلاح مستندات شرط C2 و سپس سایر مصرف‌کنندگان G4 و G5 بازند |
+| `1.40.0` | MS76 C3 docs Run 513 هشت Job سبز و Safe؛ MS77 مرکز فرمان پروژه را در Refresh و قطع/بازگشت دسترسی از داده و فرمان کهنه پاک کرد. Run 516 هشت Job سبز/Artifact `11062655536` سه PNG/Index معتبر و بازبینی‌شده دارد؛ CI مستقل مستندات شرط Checkpoint، ممیزی سایر مصرف‌کنندگان G4 و سپس G5 بازند |
