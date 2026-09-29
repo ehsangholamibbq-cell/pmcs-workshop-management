@@ -67,8 +67,11 @@ test("project Chat clears stale room and search data during refresh, failure and
   await page.getByLabel("جست‌وجو در پیام‌های همین پروژه").fill("عبارت تازه");
   await expect(page.getByRole("region", { name: "نتیجه‌های جست‌وجوی پروژه" })).toHaveCount(0);
   await page.getByRole("button", { name: "جست‌وجو", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("عملیات گفت‌وگوی پروژه کامل نشد");
-  await expect(page.getByRole("alert")).not.toContainText("Sensitive search error");
+  const searchAlert = page.locator(".collaboration-room p[role='alert']").filter({
+    hasText: "عملیات گفت‌وگوی پروژه کامل نشد",
+  });
+  await expect(searchAlert).toBeVisible();
+  await expect(searchAlert).not.toContainText("Sensitive search error");
   await capture("chat-390-search-error.png", 390, 844);
 
   await page.getByRole("button", { name: "تازه‌سازی" }).click();

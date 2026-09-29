@@ -90,9 +90,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const historyController = useRef<AbortController | null>(null);
   const accessRevoked = useRef(false);
 
-  const requestRefresh = useCallback(() => {
+  const requestRefresh = useCallback((clearView = false) => {
     searchRequest.current += 1;
-    setView(null);
+    if (clearView) setView(null);
     setFailure("");
     setSearchResults(null);
     setSearchStatus("");
@@ -164,7 +164,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     if (view?.kind !== "ready") return undefined;
     const controller = new AbortController();
     void watchCollaborationEvents("/api/pmcs", projectId, view.lastSequence,
-      requestRefresh, controller.signal).catch((error: unknown) => {
+      () => requestRefresh(), controller.signal).catch((error: unknown) => {
       if (controller.signal.aborted) return;
       if (error instanceof CollaborationAccessError) {
         closeRestrictedConversation(error.status);
@@ -434,7 +434,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             <p className="muted">پیام‌ها زمینهٔ همکاری هستند؛ ثبت رسمی فقط با تأیید و مجوز مستقل انجام می‌شود.</p>
           </div>
           <button className="secondary-button" type="button" disabled={!view || view.kind !== "ready"}
-            onClick={requestRefresh}>تازه‌سازی</button>
+            onClick={() => requestRefresh(true)}>تازه‌سازی</button>
         </header>
         {failure ? (
           <section className="collaboration-state" role="alert">
