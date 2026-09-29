@@ -17,20 +17,23 @@ test("daily report history hides an old version on refresh, failure and access l
     expectedState: "current" | "loading" | "unavailable" | "forbidden") {
     const history = page.getByTestId("daily-report-history");
     let bytes: Buffer | null = null;
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
       await expect(history).toHaveAttribute("data-read-state", expectedState);
       await page.evaluate(() => document.fonts.ready);
       await history.evaluate((element) => window.scrollTo({
         top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150),
         behavior: "instant",
       }));
-      const headingTop = await history.getByRole("heading", { name: "نسخه‌های گزارش روزانه" })
+      const headingTop = () => history.getByRole("heading", { name: "نسخه‌های گزارش روزانه" })
         .evaluate((element) => element.getBoundingClientRect().top);
-      expect(headingTop).toBeGreaterThanOrEqual(120);
-      expect(headingTop).toBeLessThan(250);
+      await expect.poll(headingTop).toBeGreaterThanOrEqual(120);
+      expect(await headingTop()).toBeLessThan(250);
+      await page.waitForTimeout(400);
       if (await history.getAttribute("data-read-state") !== expectedState) continue;
       const candidate = await page.screenshot({ animations: "disabled", caret: "hide" });
       if (await history.getAttribute("data-read-state") !== expectedState) continue;
+      // A settled DOM can precede the browser's painted frame after scrolling.
+      if (candidate.length < 10_000) continue;
       bytes = candidate;
       break;
     }
