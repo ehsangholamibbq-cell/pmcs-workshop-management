@@ -5863,6 +5863,20 @@ output {
   border-color: var(--status-danger);
   background: var(--status-danger-surface);
 }
+.project-location-settings .location-command-message[data-kind="error"] {
+  color: var(--status-danger);
+  border: 1px solid var(--status-danger);
+  border-radius: 0.7rem;
+  background: var(--status-danger-surface);
+  padding: 0.7rem 0.85rem;
+}
+.project-location-settings .location-command-message[data-kind="success"] {
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+  border-radius: 0.7rem;
+  background: var(--status-success-surface);
+  padding: 0.7rem 0.85rem;
+}
 
 /* Keep the project calendar readable in the narrow project command center. */
 @media (max-width: 520px) {

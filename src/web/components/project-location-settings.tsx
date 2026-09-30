@@ -30,6 +30,7 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
   const [parentLocationId, setParentLocationId] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState("محل‌ها مرجع مشترک ثبت واقعیت و گزارش‌گیری هستند.");
+  const [messageKind, setMessageKind] = useState<"info" | "success" | "error">("info");
   const activeLocations = props.locations.filter((location) => location.status === "Active");
   const canCommand = props.isOnline && props.readState === "current";
 
@@ -39,11 +40,13 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
     const effectiveParentId = parentLocationId || activeLocations[0]?.id;
     if (!effectiveParentId) {
       setMessage("محل ریشه پروژه در دسترس نیست؛ ابتدا فهرست را تازه‌سازی کنید.");
+      setMessageKind("error");
       return;
     }
     setBusyId("create");
     const commandVersion = props.readVersion;
     setMessage("در حال ثبت محل پروژه…");
+    setMessageKind("info");
     try {
       await createProjectLocation(
         props.apiBaseUrl,
@@ -56,9 +59,11 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
       setName("");
       setParentLocationId("");
       setMessage("محل ثبت شد و در ورودی‌های عملیاتی قابل انتخاب است.");
+      setMessageKind("success");
       props.onChanged();
     } catch (error) {
       if (!props.isCurrentRead(commandVersion)) return;
+      setMessageKind("error");
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         props.onAccessRevoked();
         setMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ ورودی شما برای تلاش بعدی محفوظ است.");
@@ -73,6 +78,7 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
     setBusyId(location.id);
     const commandVersion = props.readVersion;
     setMessage(`در حال غیرفعال‌کردن محل ${location.name}…`);
+    setMessageKind("info");
     try {
       await retireProjectLocation(
         props.apiBaseUrl,
@@ -82,9 +88,11 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
       );
       if (!props.isCurrentRead(commandVersion)) return;
       setMessage("محل غیرفعال شد؛ سوابق قبلی با شناسه همان محل حفظ می‌شوند.");
+      setMessageKind("success");
       props.onChanged();
     } catch (error) {
       if (!props.isCurrentRead(commandVersion)) return;
+      setMessageKind("error");
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         props.onAccessRevoked();
         setMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی کنار گذاشته شد.");
@@ -149,7 +157,8 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
           {busyId === "create" ? "در حال ثبت…" : "افزودن محل"}
         </button>
       </form>
-      <p className="calculation-note" aria-live="polite">{message}</p>
+      <p className="calculation-note location-command-message" data-kind={messageKind}
+        role={messageKind === "error" ? "alert" : "status"}>{message}</p>
     </section>
   );
 }

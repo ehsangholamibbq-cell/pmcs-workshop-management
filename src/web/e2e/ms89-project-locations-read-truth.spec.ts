@@ -81,6 +81,8 @@ test("location cache is labeled local and cannot authorize create or retire", as
   await expect(panel.getByLabel("نام محل")).toHaveValue("محل جدید");
   await expect(panel.locator(".calculation-note")).toContainText("در حال حاضر مشکلی در سرور رخ داده است");
   await expect(panel.locator(".calculation-note")).not.toContainText("Sensitive location detail");
+  await expect(panel.locator(".calculation-note")).toHaveAttribute("role", "alert");
+  await expect(panel.locator(".calculation-note")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("locations-390-command-error.png", 390, 844, "current", true);
 
   await page.context().setOffline(true);
