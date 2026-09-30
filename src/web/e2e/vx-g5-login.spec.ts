@@ -24,7 +24,7 @@ test("identity error preserves a working login and missing official image retain
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto("/login?error=identity");
-  await expect(page.getByRole("alert")).toContainText("ورود کامل نشد");
+  await expect(page.locator(".login-error[role='alert']")).toContainText("ورود کامل نشد");
   await expect(page.getByRole("button", { name: "ورود امن", exact: true })).toBeEnabled();
   await auditSurface(page, report, "identity-error-320");
   await report.capture(page, "identity-error-320.png");

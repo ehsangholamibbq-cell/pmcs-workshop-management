@@ -340,7 +340,7 @@
 
 .login-card button:hover::after { left: 115%; }
 .login-card button:disabled { opacity: 0.65; cursor: wait; }
-.login-card small { display: block; color: #747c79; line-height: 1.8; }
+.login-card small { display: block; color: #59635f; line-height: 1.8; }
 .login-card .login-error { color: #9b332e; }
 
 .login-card footer {
@@ -350,8 +350,8 @@
   margin-top: 2.25rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(16, 27, 51, 0.09);
-  color: #8a908c;
-  font-size: 0.62rem;
+  color: #59635f;
+  font-size: 0.72rem;
 }
 
 .login-card footer span:first-child {
@@ -5330,7 +5330,7 @@ output {
   overflow: hidden;
   background: linear-gradient(105deg, var(--login-navy), color-mix(in srgb, var(--login-navy) 72%, var(--login-accent)));
 }
-.login-shell[data-composition] .login-card small { color: #747c79; line-height: 1.8; }
+.login-shell[data-composition] .login-card small { color: #59635f; line-height: 1.8; }
 
 .login-shell[data-composition="MonolithFocus"] { grid-template-columns: minmax(0, 1fr); }
 .login-shell[data-composition="MonolithFocus"] .login-brand { padding-inline-end: min(44vw, 38rem); }

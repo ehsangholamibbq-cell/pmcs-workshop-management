@@ -138,7 +138,7 @@ export async function enqueueDocumentUpload(
     retainUntil: input.retainUntil ?? null,
     legalHold: input.legalHold ?? false,
     createdAtDevice: new Date().toISOString(),
-    blob: input.file,
+    blob: new Blob([await input.file.arrayBuffer()], { type: input.file.type }),
     status: "queued",
     attemptCount: 0,
   };
