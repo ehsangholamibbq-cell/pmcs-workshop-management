@@ -14,7 +14,7 @@ test("location cache is labeled local and cannot authorize create or retire", as
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
   const panel = page.getByTestId("project-location-settings");
   async function capture(name: string, width: number, height: number,
-    state: "current" | "loading" | "cached" | "forbidden") {
+    state: "current" | "loading" | "cached" | "forbidden", showCommandFeedback = false) {
     await expect(panel).toHaveAttribute("data-read-state", state);
     await page.evaluate(() => document.fonts.ready);
     await expect.poll(async () => {
@@ -27,6 +27,12 @@ test("location cache is labeled local and cannot authorize create or retire", as
       const settled = await heading.evaluate((element) => element.getBoundingClientRect().top);
       return settled >= 120 && settled < 250;
     }, { timeout: 10_000 }).toBe(true);
+    if (showCommandFeedback) {
+      await panel.locator(".calculation-note").evaluate((element) => window.scrollTo({
+        top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 680),
+        behavior: "instant",
+      }));
+    }
     await page.waitForTimeout(300);
     await expect(panel).toHaveAttribute("data-read-state", state);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -73,7 +79,9 @@ test("location cache is labeled local and cannot authorize create or retire", as
   await expect(panel.getByRole("button", { name: "افزودن محل" })).toBeEnabled();
   await expect(panel.getByLabel("کد محل")).toHaveValue("NEW");
   await expect(panel.getByLabel("نام محل")).toHaveValue("محل جدید");
-  await capture("locations-390-command-error.png", 390, 844, "current");
+  await expect(panel.locator(".calculation-note")).toContainText("سرویس موردنیاز هنوز آماده نیست");
+  await expect(panel.locator(".calculation-note")).not.toContainText("Sensitive location detail");
+  await capture("locations-390-command-error.png", 390, 844, "current", true);
 
   await page.context().setOffline(true);
   await expect(panel).toHaveAttribute("data-read-state", "cached");
