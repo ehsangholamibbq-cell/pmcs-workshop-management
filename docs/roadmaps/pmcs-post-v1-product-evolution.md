@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.179.0`
+- نسخه سند: `1.180.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1897,3 +1897,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.178.0` | MS95 docs Run 607 (`36718588864`) هشت Job سبز و Safe؛ MS96 هنگام رویداد زنده Chat، اتاق کهنه را پنهان و پیش‌نویس گروه را حفظ می‌کند. Source Run 608 (`36721368366`) هشت Job سبز؛ Artifact `11101520753` سه PNG/Index معتبر و مرورشده، ZIP SHA-256 `3fb5f65eb16da8303535a52098b7b4661ba849b6bf38a58f1cca9e22deccf41c`. CI مستقل مستندات شرط Checkpoint؛ قطع دسترسی مدرک و واکنش/پیوست/تبدیل‌های Chat و ممیزی G4، سپس G5 و INT1/QA1 بازند |
 
 | `1.179.0` | MS96 docs correction Run 610 (`36723757480`) هشت Job سبز و Safe؛ MS97 مدرک محلی را هنگام نسخهٔ ذخیره‌شده و قطع صریح دسترسی پروژه صادق/غیرفعال می‌کند. Runs 611–612 شکست Assertion و تداخل Fixture مشترک با آزمون آفلاین را یافتند؛ Source نهایی Run 613 (`36729215873`) هشت Job سبز و Artifact `11105655617` چهار PNG/Index معتبر و مرورشده، ZIP SHA-256 `11ef4e9a516fb4ea5b31319093159830010a4cb11c83830a8f3c80a2155690e1` دارد. CI مستقل مستندات شرط Checkpoint؛ واکنش/پیوست/تبدیل‌های Chat و ممیزی G4، سپس G5 و INT1/QA1 بازند |
+
+| `1.180.0` | MS97 docs Run 614 (`36731440718`) هشت Job سبز و Safe؛ MS98 پنل واکنش/پیوست Chat را در بازخوانی، خطای خواندن، پاسخ جاری و قطع دسترسی صادق نگه می‌دارد. Source نهایی Run 618 (`36737330040`) هشت Job سبز؛ Artifact `11109236123` چهار PNG/Index معتبر و مرورشده، ZIP SHA-256 `9be4e0780da5a1d3c949b91264c4cc3433c7189a52e027bae153c073857425de`. CI مستقل مستندات شرط Checkpoint؛ شش تبدیل Chat و ممیزی G4، سپس G5 و INT1/QA1 بازند |
