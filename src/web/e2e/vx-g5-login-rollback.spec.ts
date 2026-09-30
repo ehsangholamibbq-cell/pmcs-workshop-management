@@ -35,8 +35,8 @@ test("Login design publishes and rolls back through the real UI while failed cus
     const candidate = page.locator(".login-version-list article").filter({ hasText: headline });
     await expect(candidate).toContainText("پیش‌نویس");
     await candidate.getByRole("button", { name: "انتشار", exact: true }).click();
-    await expect(candidate.locator('[data-status="Published"]')).toBeVisible();
     changed = true;
+    await expect(candidate.locator('[data-status="Published"]')).toBeVisible();
     const descriptor = await (await page.request.get("/api/login-experience")).json();
     expect(descriptor.headline).toBe(headline);
     expect(descriptor.logoUrl).toBeTruthy(); expect(descriptor.heroUrl).toBeTruthy();
@@ -49,6 +49,7 @@ test("Login design publishes and rolls back through the real UI while failed cus
     await expect.poll(() => official.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     await expect(guest.locator(".login-hero-media img")).toHaveCount(0);
     await auditSurface(guest, report, "published-custom-assets-failed-320");
+    await guest.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await report.capture(guest, "published-custom-assets-failed-320.png");
     await restore(page);
     await guest.reload();

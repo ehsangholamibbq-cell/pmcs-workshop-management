@@ -3278,12 +3278,45 @@ output {
   background: var(--soft-teal);
 }
 
+.operational-trend {
+  margin: 1.2rem 0 0;
+}
+
+.operational-trend figcaption {
+  font-weight: 600;
+}
+
 .trend-strip {
-  margin-top: 1.2rem;
-  padding-top: 0.9rem;
+  margin: 0.5rem 0 0;
+  padding: 0.9rem 0 0;
   border-top: 1px solid var(--line);
   display: flex;
-  gap: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.trend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.trend-item div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.trend-item .trend-point {
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
+
+.trend-item small {
+  color: var(--muted);
 }
 
 .triage-controls,

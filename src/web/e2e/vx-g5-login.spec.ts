@@ -15,6 +15,7 @@ test("guest Login meets independent RTL, keyboard, reduced-motion and accessibil
     report.record(`login-${viewport.width}:routeReadyMilliseconds`, ready);
     expect(ready).toBeLessThanOrEqual(routeReadyBudget);
     await auditSurface(page, report, `login-${viewport.width}`);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await report.capture(page, `login-${viewport.width}.png`);
   }
 });
@@ -27,6 +28,7 @@ test("identity error preserves a working login and missing official image retain
   await expect(page.locator(".login-error[role='alert']")).toContainText("ورود کامل نشد");
   await expect(page.getByRole("button", { name: "ورود امن", exact: true })).toBeEnabled();
   await auditSurface(page, report, "identity-error-320");
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await report.capture(page, "identity-error-320.png");
   const context = await browser.newContext({ storageState: { cookies: [], origins: [] },
     viewport: { width: 320, height: 900 }, reducedMotion: "reduce" });
