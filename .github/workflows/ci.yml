@@ -531,6 +531,12 @@ jobs:
           name: pmcs-ms93-sync-device-read-truth
           path: src/web/artifacts/ms93-sync-device-read-truth/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms96-chat-event-refresh-truth
+          path: src/web/artifacts/ms96-chat-event-refresh-truth/
+          if-no-files-found: error
 
       - if: success()
         uses: actions/upload-artifact@v4

@@ -1547,6 +1547,7 @@ textarea {
 
 .collaboration-workspace { max-width: 88rem; width: 100%; }
 .collaboration-room { margin-top: 1.5rem; }
+.collaboration-room[hidden] { display: none; }
 .collaboration-boundary {
   margin: 0 0 1rem;
   padding: 0.8rem 1rem;

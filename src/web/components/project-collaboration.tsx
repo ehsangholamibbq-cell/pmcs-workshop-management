@@ -51,6 +51,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const session = usePmcsSession();
   const [view, setView] = useState<ProjectConversationView | null>(null);
   const [failure, setFailure] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(0);
@@ -92,6 +93,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   const requestRefresh = useCallback((clearView = false) => {
     searchRequest.current += 1;
+    setIsRefreshing(true);
     if (clearView) setView(null);
     setFailure("");
     setSearchResults(null);
@@ -108,6 +110,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     historyController.current = null;
     searchRequest.current += 1;
     setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+    setIsRefreshing(false);
     setFailure("");
     setDraft("");
     setReplyTo(null);
@@ -152,9 +155,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
         setModerationStatus("");
       }
       setView(result);
+      setIsRefreshing(false);
       setFailure("");
     }).catch(() => {
       if (!active || accessRevoked.current) return;
+      setIsRefreshing(false);
       setFailure("دریافت گفت‌وگو انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.");
     });
     return () => { active = false; };
@@ -452,8 +457,9 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
           <section className="collaboration-state" role="alert">
             <h2>دسترسی به گفت‌وگو ندارید</h2><p>عضویت یا مجوز پروژه را با مدیر بررسی کنید.</p>
           </section>
-        ) : (
-          <section className="collaboration-room" aria-label="پیام‌های اخیر پروژه">
+        ) : (<>
+          {isRefreshing && <p className="collaboration-state" role="status">در حال دریافت گفت‌وگوی پروژه…</p>}
+          <section className="collaboration-room" aria-label="پیام‌های اخیر پروژه" hidden={isRefreshing}>
             <div className="collaboration-room-heading">
               <p className="collaboration-boundary">آخرین پیام‌های همین پروژه</p>
               <div className="collaboration-read-state">
@@ -699,6 +705,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
               </div>
             </form>
           </section>
+          </>
         )}
       </section>
     </main>
