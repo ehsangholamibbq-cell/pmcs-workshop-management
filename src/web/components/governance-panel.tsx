@@ -24,10 +24,14 @@ interface GovernancePanelProps {
 
 export function GovernancePanel(props: GovernancePanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
+  const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
   const [state, setState] = useState<GovernanceStateModel | null>(null);
   const [message, setMessage] = useState("در حال دریافت دفتر کنترل مدیریتی…");
   const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const effectiveReadState = visibleScope === readScope ? readState : "loading";
   const readSequence = useRef(0);
+  const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [evidence, setEvidence] = useState("");
   const [confidentiality, setConfidentiality] = useState<Confidentiality>("GeneralProject");
@@ -56,11 +60,14 @@ export function GovernancePanel(props: GovernancePanelProps) {
 
   const load = useCallback(async (): Promise<boolean> => {
     const requestId = ++readSequence.current;
+    currentReadSequence.current = 0;
     setState(null);
+    setVisibleScope(null);
     setSelectedRisk(null);
     setMaterializingRisk(null);
     setSelectedDecision(null);
     if (!props.isOnline) {
+      setVisibleScope(readScope);
       setReadState("offline");
       setMessage("دفتر ریسک و تصمیم شامل اطلاعات حساس است و روی مرورگر ذخیره نمی‌شود؛ برای مشاهده به سرور متصل شوید.");
       return false;
@@ -78,33 +85,48 @@ export function GovernancePanel(props: GovernancePanelProps) {
       setMessage(next.setupState === "SetupRequired"
         ? "برای امتیازدهی و پایش مهلت‌ها، ماتریس ریسک و قواعد توافق سطح خدمت باید نسخه‌گذاری شوند."
         : "دفتر کنترل مدیریتی از سوابق رسمی و قابل ردیابی دریافت شد.");
+      currentReadSequence.current = requestId;
+      setVisibleScope(readScope);
       setReadState("current");
       return true;
     } catch (error) {
       if (requestId !== readSequence.current) return false;
       const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setVisibleScope(readScope);
       setReadState(denied ? "forbidden" : "unavailable");
       setMessage(denied ? "دسترسی به دفتر ریسک و تصمیم این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
         : toUserMessage(error, "دفتر کنترل مدیریتی دریافت نشد."));
       return false;
     }
-  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
+  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId, readScope]);
 
   useEffect(() => { const id = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(id); }, [load, props.refreshToken]);
 
   async function run(key: string, command: () => Promise<unknown>, success: string) {
-    if (!props.isOnline || readState !== "current" || busy !== null) return false;
+    if (!props.isOnline || effectiveReadState !== "current" || !state || busy !== null ||
+      currentReadSequence.current !== readSequence.current) return false;
+    const commandSequence = readSequence.current;
     setBusy(key);
-    try { await command(); if (!await load()) return false; setMessage(success); props.onChanged(); return true; }
+    try {
+      await command();
+      if (commandSequence !== readSequence.current) return false;
+      if (!await load()) return false;
+      setMessage(success);
+      props.onChanged();
+      return true;
+    }
     catch (error) {
+      if (commandSequence !== readSequence.current) return false;
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         readSequence.current += 1;
+        currentReadSequence.current = 0;
         setState(null); setSelectedRisk(null); setMaterializingRisk(null); setSelectedDecision(null);
+        setVisibleScope(readScope);
         setReadState("forbidden");
         setMessage("دسترسی به دفتر ریسک و تصمیم این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
         return false;
       }
-      if (await load()) setMessage(toUserMessage(error, "عملیات کنترل مدیریتی انجام نشد."));
+      setMessage(toUserMessage(error, "عملیات کنترل مدیریتی انجام نشد."));
       return false;
     }
     finally { setBusy(null); }
@@ -208,11 +230,11 @@ export function GovernancePanel(props: GovernancePanelProps) {
       ? "مسئله پس از راستی‌آزمایی بسته شد." : "وضعیت مسئله بدون حذف سابقه به مرحله بعد رفت.");
   }
 
-  if (readState !== "current") return <section className="section-block governance-panel" id="governance"
-    data-testid="governance-panel" data-read-state={readState}>
+  if (effectiveReadState !== "current") return <section className="section-block governance-panel" id="governance"
+    data-testid="governance-panel" data-read-state={effectiveReadState}>
     <div className="section-title"><div><p className="eyebrow">کنترل مبتنی بر شواهد</p><h2>ریسک، مسئله، تصمیم و توافق سطح خدمت</h2></div></div>
-    <p className="calculation-note" role={readState === "unavailable" || readState === "forbidden" ? "alert" : "status"}>{message}</p>
-    {props.isOnline && readState !== "loading" &&
+    <p className="calculation-note" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت دفتر کنترل مدیریتی…" : message}</p>
+    {props.isOnline && effectiveReadState !== "loading" &&
       <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دفتر کنترل مدیریتی</button>}
   </section>;
 
