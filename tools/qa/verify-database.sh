@@ -88,7 +88,7 @@ fi
 expect_equal \
   "canonical migration ledger size" \
   "63" \
-  "select count(*) from foundation.schema_migrations where not (module = 'intelligence' and version in ('20261001-001', '20261001-002'));"
+  "select count(*) from foundation.schema_migrations where not (module = 'intelligence' and version in ('20261001-001', '20261001-002', '20261001-003'));"
 
 expect_equal \
   "INT1 administration grant migration identity" \
@@ -109,6 +109,16 @@ expect_equal \
   "INT1 profile selections default deny" \
   "0" \
   "select count(*) from intelligence.profile_selections;"
+
+expect_equal \
+  "INT1 reference Run migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'intelligence' and version = '20261001-003';"
+
+expect_equal \
+  "INT1 reference Runs default empty" \
+  "0" \
+  "select count(*) from intelligence.reference_runs;"
 
 expect_equal \
   "collaboration default room migration identity" \

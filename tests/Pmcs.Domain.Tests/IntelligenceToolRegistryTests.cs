@@ -47,7 +47,7 @@ public sealed class IntelligenceToolRegistryTests
         Assert.Equal(4, CreateRegistry(true).RegisteredTools().Count);
     }
 
-    private IntelligenceToolRegistry CreateRegistry(bool allowed) => new(
+    private static IntelligenceToolRegistry CreateRegistry(bool allowed) => new(
         new Catalog(), new Permission(allowed), new Reporting(), new Collaboration());
 
     private static JsonElement Args(Guid projectId) =>
