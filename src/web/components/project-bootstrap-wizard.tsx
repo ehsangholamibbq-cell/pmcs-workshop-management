@@ -422,11 +422,11 @@ export function ProjectBootstrapWizard() {
         <section className="bootstrap-panel bootstrap-preview">
           <PanelHeading eyebrow="ارزیابی آزمایشی قطعی" title="پیش‌نمایش انتقال" detail={`چکیده: ${preview.previewDigest}`} />
           <Summary summary={preview.summary} />
-          <div className="bootstrap-preview-table" role="table" aria-label="نتیجه پیش‌نمایش">
+          <section className="bootstrap-preview-table" aria-label="نتیجه پیش‌نمایش">
             {preview.items.map((item, index) => <article key={`${item.contributorId}-${item.code}-${index}`} className={`disposition-${item.disposition.toLowerCase()}`}>
               <span>{dispositionLabel(item.disposition)}</span><div><strong>{item.title}</strong><small>{categoryLabel(item.category)} · {item.contributorId}</small><p>{item.detail}</p></div>
             </article>)}
-          </div>
+          </section>
           <details className="bootstrap-exclusions"><summary>مواردی که همیشه مستثنا هستند</summary><ul>{preview.alwaysExcluded.map((item) => <li key={item}>{item}</li>)}</ul></details>
           <label className="bootstrap-confirm"><input type="checkbox" disabled={isBusy} checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />پیش‌نمایش، موارد مستثنا و سیاست تعارض را بررسی و اجرای همین چکیده را تأیید می‌کنم.</label>
           {executionBlocked && <p className="bootstrap-blocked">پیش‌نمایش دارای مانع اجرایی است؛ سیاست تعارض را نمی‌توان پس از ساخت برنامه تغییر داد و برای اصلاح انتخاب‌ها باید برنامه تازه ساخته شود.</p>}
