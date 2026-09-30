@@ -580,10 +580,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         </div>
                       </form>}
                     {!message.deletedAt && !message.redactedAt &&
-                      <ProjectMessageReactions key={`${message.id}-${refresh}`} projectId={projectId} messageId={message.id}
+                      <ProjectMessageReactions projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt &&
-                      <ProjectMessageAttachments key={`${message.id}-${refresh}`} projectId={projectId} messageId={message.id}
+                      <ProjectMessageAttachments projectId={projectId} messageId={message.id}
                         canUpload={view.canUpload && message.authorUserId.toLowerCase() === session.userId.toLowerCase()}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt && <div className="collaboration-message-actions">
@@ -1143,14 +1143,22 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
 }) {
   const [expanded, setExpanded] = useState(false);
   const [view, setView] = useState<ProjectMessageReactionsView | null>(null);
+  const [readToken, setReadToken] = useState(-1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const currentRefresh = useRef(refreshToken);
+  currentRefresh.current = refreshToken;
+  const currentView = readToken === refreshToken ? view : null;
 
   useEffect(() => {
     if (!expanded) return undefined;
     const controller = new AbortController();
+    setView(null);
+    setError("");
     void loadProjectMessageReactions("/api/pmcs", projectId, messageId, controller.signal)
-      .then((result) => { if (!controller.signal.aborted) { setView(result); setError(""); } })
+      .then((result) => { if (!controller.signal.aborted) {
+        setView(result); setReadToken(refreshToken); setError("");
+      } })
       .catch((failure: unknown) => {
         if (controller.signal.aborted) return;
         setView(null);
@@ -1161,13 +1169,16 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
   }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
 
   async function toggle(emoji: ProjectReactionEmoji, reactedByMe: boolean) {
-    if (!view?.canReact || busy) return;
+    if (!currentView?.canReact || busy) return;
     setBusy(true);
     setError("");
     try {
       await setProjectMessageReaction("/api/pmcs", projectId, messageId, emoji, !reactedByMe);
-      setView(await loadProjectMessageReactions("/api/pmcs", projectId, messageId));
+      const result = await loadProjectMessageReactions("/api/pmcs", projectId, messageId);
+      if (currentRefresh.current !== refreshToken) return;
+      setView(result); setReadToken(refreshToken);
     } catch (failure) {
+      if (currentRefresh.current !== refreshToken) return;
       setView(null);
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
       else setError("ثبت واکنش کامل نشد؛ دوباره تلاش کنید.");
@@ -1184,16 +1195,16 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
     </button>
     {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel"
       aria-label="واکنش‌های همین پیام">
-      {!view && !error && <span role="status">در حال دریافت واکنش‌ها…</span>}
-      {view && <>
-        {view.reactions.map((reaction) => <button key={reaction.emoji} type="button"
+      {!currentView && !error && <span role="status">در حال دریافت واکنش‌ها…</span>}
+      {currentView && <>
+        {currentView.reactions.map((reaction) => <button key={reaction.emoji} type="button"
           className="collaboration-reaction-button" aria-pressed={reaction.reactedByMe}
           aria-label={`${reaction.emoji}، ${reaction.count.toLocaleString("fa-IR")} واکنش`}
-          disabled={!view.canReact || busy}
+          disabled={!currentView.canReact || busy}
           onClick={() => void toggle(reaction.emoji, reaction.reactedByMe)}>
           <span aria-hidden="true">{reaction.emoji}</span> {reaction.count.toLocaleString("fa-IR")}
         </button>)}
-        {!view.canReact && <span>نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.</span>}
+        {!currentView.canReact && <span>نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.</span>}
       </>}
       {error && <span role="alert">{error}</span>}
     </div>}
@@ -1209,15 +1220,24 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
 }) {
   const [expanded, setExpanded] = useState(false);
   const [attachments, setAttachments] = useState<readonly ProjectMessageAttachment[] | null>(null);
+  const [readToken, setReadToken] = useState(-1);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const currentRefresh = useRef(refreshToken);
+  currentRefresh.current = refreshToken;
+  const currentAttachments = readToken === refreshToken ? attachments : null;
 
   useEffect(() => {
     if (!expanded) return undefined;
     const controller = new AbortController();
+    setAttachments(null);
+    setError("");
+    setNotice("");
     void loadProjectMessageAttachments("/api/pmcs", projectId, messageId, controller.signal)
-      .then((result) => { if (!controller.signal.aborted) { setAttachments(result); setError(""); } })
+      .then((result) => { if (!controller.signal.aborted) {
+        setAttachments(result); setReadToken(refreshToken); setError("");
+      } })
       .catch((failure: unknown) => {
         if (controller.signal.aborted) return;
         setAttachments(null);
@@ -1259,10 +1279,10 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
     </button>
     {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel"
       aria-label="پیوست‌های همین پیام">
-      {!attachments && !error && <span role="status">در حال دریافت پیوست‌ها…</span>}
-      {attachments?.length === 0 && <span>پیوست تأییدشده‌ای برای این پیام ثبت نشده است.</span>}
-      {attachments && attachments.length > 0 && <ul>
-        {attachments.map((attachment) => <li key={attachment.documentId}>
+      {!currentAttachments && !error && <span role="status">در حال دریافت پیوست‌ها…</span>}
+      {currentAttachments?.length === 0 && <span>پیوست تأییدشده‌ای برای این پیام ثبت نشده است.</span>}
+      {currentAttachments && currentAttachments.length > 0 && <ul>
+        {currentAttachments.map((attachment) => <li key={attachment.documentId}>
           <span>{attachment.originalFileName} · {attachment.sizeBytes.toLocaleString("fa-IR")} بایت</span>
           <button type="button" className="secondary-button" disabled={Boolean(busyId)}
             onClick={() => void download(attachment)}>
@@ -1272,11 +1292,13 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       </ul>}
       {notice && <span role="status">{notice}</span>}
       {error && <span role="alert">{error}</span>}
-      {canUpload && attachments && !error && <ProjectMessageUpload projectId={projectId} messageId={messageId}
-        attachedDocumentIds={attachments?.map((attachment) => attachment.documentId) ?? []}
+      {canUpload && currentAttachments && !error && <ProjectMessageUpload projectId={projectId} messageId={messageId}
+        attachedDocumentIds={currentAttachments.map((attachment) => attachment.documentId)}
         onAccessLoss={onAccessLoss} onAttached={async () => {
           setAttachments(null);
-          setAttachments(await loadProjectMessageAttachments("/api/pmcs", projectId, messageId));
+          const result = await loadProjectMessageAttachments("/api/pmcs", projectId, messageId);
+          if (currentRefresh.current !== refreshToken) return;
+          setAttachments(result); setReadToken(refreshToken);
           setNotice("پیوست آزادشده به همین پیام متصل شد.");
         }} />}
     </div>}

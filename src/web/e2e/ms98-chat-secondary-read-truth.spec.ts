@@ -70,7 +70,7 @@ test("group message reactions and attachments discard stale reads across event, 
     contentType: "application/json", body: JSON.stringify({ lastReadSequence: 0, unreadCount: 0 }) }));
   const reactions = `**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/reactions`;
   await page.route(reactions, route => route.fulfill(phase === "error" ? { status: 503 } : {
-    status: 200, contentType: "application/json", body: JSON.stringify({ canReact: false,
+    status: 200, contentType: "application/json", body: JSON.stringify({ messageId, canReact: false,
       reactions: phase === "old" ? [{ emoji: "👍", count: 1, reactedByMe: false }]
         : [{ emoji: "✅", count: 2, reactedByMe: false }] }),
   }));
