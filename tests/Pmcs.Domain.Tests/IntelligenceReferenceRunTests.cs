@@ -63,14 +63,21 @@ public sealed class IntelligenceReferenceRunTests
         run.Start(now);
         Assert.Throws<InvalidOperationException>(() =>
             run.SelectFallback(alternate, 3, "ai.provider.rejected"));
+        run.RecordUsage(12, 9, 60);
         run.SelectFallback(alternate, 3, "ai.provider.timeout");
+        run.RecordUsage(10, 8, 52);
         Assert.Equal("GoogleGemini", run.Provider);
         Assert.Equal(3, run.ProviderVersion);
         Assert.Equal(first, run.InitialModelCatalogId);
         Assert.Equal("OpenAI", run.InitialProvider);
         Assert.Equal(2, run.InitialProviderVersion);
         Assert.Equal("ai.provider.timeout", run.FallbackReason);
+        Assert.Equal(22, run.InputTokens);
+        Assert.Equal(17, run.OutputTokens);
+        Assert.Equal(112, run.CostMicrounits);
         Assert.Throws<InvalidOperationException>(() =>
             run.SelectFallback(model, 2, "ai.provider.timeout"));
+        run.Fail("ai.provider.invalid_response", now.AddSeconds(1));
+        Assert.Equal(112, run.CostMicrounits);
     }
 }

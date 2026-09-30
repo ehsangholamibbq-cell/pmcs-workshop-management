@@ -108,6 +108,19 @@ internal sealed class IntelligenceReferenceRun
         Revision++;
     }
 
+    internal void RecordUsage(int inputTokens, int outputTokens, long costMicrounits)
+    {
+        if (Status != IntelligenceRunStatus.Running || inputTokens < 0 || outputTokens < 0 ||
+            costMicrounits < 0 || inputTokens > int.MaxValue - InputTokens ||
+            outputTokens > int.MaxValue - OutputTokens ||
+            costMicrounits > long.MaxValue - CostMicrounits)
+            throw new InvalidOperationException("Invalid reference Run usage.");
+        InputTokens += inputTokens;
+        OutputTokens += outputTokens;
+        CostMicrounits += costMicrounits;
+        Revision++;
+    }
+
     internal void Complete(int inputTokens, int outputTokens, long costMicrounits,
         DateTimeOffset now)
     {

@@ -160,7 +160,7 @@ internal static class IntelligenceReferenceRunEndpoints
                         item.OutputMicrounitsPerToken > 0)
                     .Select(item => ModelSelectionPolicy.Select(profile, catalog,
                         actor.TenantId, projectId, IntelligenceDataClass.Confidential,
-                        EstimateCost(profile, item!), item!.Id,
+                        run.CostMicrounits + EstimateCost(profile, item!), item!.Id,
                         fallback: true, failureCode: failureCode))
                     .FirstOrDefault(item => item.Allowed && item.Model is not null);
                 if (alternate?.Model is null) return false;
@@ -189,6 +189,14 @@ internal static class IntelligenceReferenceRunEndpoints
                             item.VerifiedAt != null, attemptTimeout.Token))
                         throw new ReferenceGatewayException("ai.profile.model_unavailable");
                     var toolDecision = await adapter.DecideToolAsync(question, toolSet, attemptTimeout.Token);
+                    var currentModel = catalog.Single(item => item.Id == run.ModelCatalogId);
+                    run.RecordUsage(toolDecision.InputTokens, toolDecision.OutputTokens,
+                        (long)toolDecision.InputTokens * currentModel.InputMicrounitsPerToken +
+                        (long)toolDecision.OutputTokens * currentModel.OutputMicrounitsPerToken);
+                    if (run.InputTokens > profile.MaximumInputTokens ||
+                        run.OutputTokens > profile.MaximumOutputTokens ||
+                        run.CostMicrounits > profile.MaximumCostMicrounits)
+                        throw new ReferenceGatewayException("ai.profile.limit_exceeded");
                     var invoked = await registry.InvokeAsync(actor.TenantId, actor.UserId,
                         projectId, toolDecision.ToolId, toolDecision.Arguments, attemptTimeout.Token);
                     if (!invoked.Allowed)
@@ -210,18 +218,15 @@ internal static class IntelligenceReferenceRunEndpoints
                     var toolJson = JsonSerializer.Serialize(invoked.Data);
                     var reply = await adapter.AnswerAsync(question, toolDecision.ToolId,
                         toolJson, profile.MaximumOutputTokens, attemptTimeout.Token);
-                    var inputTokens = toolDecision.InputTokens + reply.InputTokens;
-                    var outputTokens = toolDecision.OutputTokens + reply.OutputTokens;
-                    var currentModel = catalog.Single(item => item.Id == run.ModelCatalogId);
-                    var cost = (long)inputTokens * currentModel.InputMicrounitsPerToken +
-                        (long)outputTokens * currentModel.OutputMicrounitsPerToken;
-                    if (toolDecision.InputTokens < 0 || toolDecision.OutputTokens < 0 ||
-                        inputTokens < 0 || outputTokens < 0 ||
-                        inputTokens > profile.MaximumInputTokens ||
-                        outputTokens > profile.MaximumOutputTokens ||
-                        cost > profile.MaximumCostMicrounits)
+                    run.RecordUsage(reply.InputTokens, reply.OutputTokens,
+                        (long)reply.InputTokens * currentModel.InputMicrounitsPerToken +
+                        (long)reply.OutputTokens * currentModel.OutputMicrounitsPerToken);
+                    if (run.InputTokens > profile.MaximumInputTokens ||
+                        run.OutputTokens > profile.MaximumOutputTokens ||
+                        run.CostMicrounits > profile.MaximumCostMicrounits)
                         throw new ReferenceGatewayException("ai.profile.limit_exceeded");
-                    run.Complete(inputTokens, outputTokens, cost, clock.UtcNow);
+                    run.Complete(run.InputTokens, run.OutputTokens, run.CostMicrounits,
+                        clock.UtcNow);
                     answer = reply.Answer;
                     break;
                 }

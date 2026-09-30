@@ -256,6 +256,8 @@ psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null \
     where use_case = 'int1.reference';"
 post_run 8 'int1-fixture-timeout' 200
 grep -q 'ai.provider.timeout' "${response_file}"
+post_run a 'int1-fixture-invalid-answer' 200
+grep -q 'ai.provider.invalid_response' "${response_file}"
 post_run 9 'int1-fixture-cross-project' 502
 grep -q 'ai.tool.arguments_invalid' "${response_file}"
 select_model 2
@@ -269,14 +271,14 @@ post_run 6 'fixture-disabled' 409
 grep -q 'ai.provider.disabled' "${response_file}"
 
 state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
-  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.arguments_invalid')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-000000000000' and status = 'Failed' and not fallback and error_code = 'ai.provider.unavailable')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(*) filter (where fallback and fallback_reason = 'ai.provider.timeout' and provider = 'GoogleGemini')::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
-if [[ "${state}" != '5|1|1|1|1|1|3|0' ]]; then
+  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.arguments_invalid')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-000000000000' and status = 'Failed' and not fallback and error_code = 'ai.provider.unavailable')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(*) filter (where fallback and fallback_reason = 'ai.provider.timeout' and provider = 'GoogleGemini')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-00000000000a' and fallback_reason = 'ai.provider.invalid_response' and input_tokens = 34 and output_tokens = 26 and cost_microunits = 172)::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
+if [[ "${state}" != '6|1|1|1|1|1|1|3|0' ]]; then
   echo "INT1 reference lineage diverged: ${state}." >&2
   exit 1
 fi
 side_effects="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
   --tuples-only --no-align --command "select (select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunFinished' and resource_id like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'intelligence.reference-run.finished' and payload->'run'->>'Id' like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.idempotency_records where operation like 'intelligence.reference.run:%' and key like 'int1-reference-%')::text || '|' || (select count(*) from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%' and status = 'Completed' and cost_microunits = 112 and session_id <> id and session_expires_at = requested_at + interval '10 minutes')::text;")"
-if [[ "${side_effects}" != '8|8|8|5' ]]; then
+if [[ "${side_effects}" != '9|9|9|5' ]]; then
   echo "INT1 metadata, audit, outbox or receipt evidence diverged: ${side_effects}." >&2
   exit 1
 fi
@@ -296,4 +298,4 @@ if grep -Eq 'fixture-openai|Fixture catalog result|qa-fixture-only' "${log_file}
   echo 'INT1 reference logged request, answer or fixture credential.' >&2
   exit 1
 fi
-echo 'INT1 reference QA DB, three adapters, fallback including timeout, disable, replay and metadata-only checks passed.'
+echo 'INT1 reference QA DB, three adapters, bounded fallback/usage, scope denial, disable, replay and metadata-only checks passed.'
