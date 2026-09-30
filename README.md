@@ -5,8 +5,8 @@
 ## وضعیت فعلی
 
 Current safe checkpoint after independent documentation CI:
-`PMCS-V1.1-UX2-MS100-C1`, source `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac`
-(Full CI Run `36768157030`, 8/8). `VX-G4` covers 11 active routes and 41 components; `VX-G5` qualifies
+`PMCS-V1.1-UX2-MS100-C1`, source `fd13282c7e71a77c5192761e127966467045f297`
+(Full CI Run `36772469486`, 8/8). `VX-G4` covers 11 active routes and 41 components; `VX-G5` qualifies
 the visual, accessibility, responsive, print and build evidence across Chromium,
 Firefox and WebKit. UX2 is complete; INT1/QA1 and V1.1 lock follow in separate
 gates. Collaboration and Reporting/OutputAccess/Worker remain disabled by

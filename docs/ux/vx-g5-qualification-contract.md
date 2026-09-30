@@ -1,6 +1,6 @@
 # VX-G5 — Independent qualification contract
 
-- نسخه: `1.0.0`؛ وضعیت: Qualified در `PMCS-V1.1-UX2-MS100-C1` پس از Source Run 638 (`36768157030`)، Artifact `11123482326` و Full CI مستقل مستندات. معیارهای زیر پیش از اجرا Candidate بودند و تغییر داده نشدند.
+- نسخه: `1.0.0`؛ وضعیت: Qualified در `PMCS-V1.1-UX2-MS100-C1` پس از Source Run 640 (`36772469486`)، Artifact `11124980874` و Full CI مستقل مستندات. معیارهای زیر پیش از اجرا Candidate بودند و تغییر داده نشدند.
 - پیش‌نیاز: پایان G4 با Full CI Source، Artifact معتبر و CI مستقل مستندات. این فایل بدون Checkpoint و CI مستقل مستندات به‌تنهایی پایان G5 را اعلام نمی‌کند.
 
 ## ماتریس مستقل
