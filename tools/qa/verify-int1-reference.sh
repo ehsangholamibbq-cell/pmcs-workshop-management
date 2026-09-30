@@ -63,6 +63,26 @@ values ('11111111-1111-1111-1111-111111111111', 'int1.reference',
     'a2000000-0000-4000-8000-000000000001',
     'a1000000-0000-4000-8000-000000000001',
     '22222222-2222-2222-2222-222222222222', now(), 1);
+insert into intelligence.reference_runs
+    (id, session_id, session_expires_at, tenant_id, project_id, requested_by,
+     profile_version_id, profile_version, model_catalog_id, model_version,
+     initial_model_catalog_id, initial_model_version, initial_provider,
+     initial_provider_version, provider, provider_version, model, prompt_version,
+     policy_version, request_hash, status, fallback, input_tokens, output_tokens,
+     cost_microunits, requested_at, validated_at, started_at, revision)
+values
+    ('a3000000-0000-4000-8000-000000000007',
+     'a4000000-0000-4000-8000-000000000007', now() - interval '10 minutes',
+     '11111111-1111-1111-1111-111111111111',
+     '33333333-3333-3333-3333-333333333333',
+     '22222222-2222-2222-2222-222222222222',
+     'a2000000-0000-4000-8000-000000000001', 1,
+     'a1000000-0000-4000-8000-000000000001', 1,
+     'a1000000-0000-4000-8000-000000000001', 1, 'OpenAI', 2,
+     'OpenAI', 2, 'int1-fixture', 'int1-fixture-prompt-v1',
+     'int1-fixture-policy-v1', repeat('a', 64), 'Running', false, 0, 0,
+     0, now() - interval '20 minutes', now() - interval '20 minutes',
+     now() - interval '20 minutes', 3);
 SQL
 
 port=5092
@@ -117,6 +137,21 @@ for _ in {1..60}; do
 done
 if [[ "${ready}" != true ]]; then
   echo 'INT1 QA API did not become ready.' >&2
+  exit 1
+fi
+
+recovered=false
+for _ in {1..30}; do
+  recovery_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+    --tuples-only --no-align --command "select status || '|' || error_code from intelligence.reference_runs where id = 'a3000000-0000-4000-8000-000000000007';")"
+  if [[ "${recovery_state}" == 'Failed|ai.run.abandoned' ]]; then
+    recovered=true
+    break
+  fi
+  sleep 1
+done
+if [[ "${recovered}" != true ]]; then
+  echo 'INT1 abandoned Run was not recovered.' >&2
   exit 1
 fi
 
@@ -195,6 +230,12 @@ side_effects="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1
   --tuples-only --no-align --command "select (select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunFinished' and resource_id like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'intelligence.reference-run.finished' and payload->'run'->>'Id' like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.idempotency_records where operation like 'intelligence.reference.run:%' and key like 'int1-reference-%')::text || '|' || (select count(*) from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%' and status = 'Completed' and cost_microunits = 112 and session_id <> id and session_expires_at = requested_at + interval '10 minutes')::text;")"
 if [[ "${side_effects}" != '5|5|5|4' ]]; then
   echo "INT1 metadata, audit, outbox or receipt evidence diverged: ${side_effects}." >&2
+  exit 1
+fi
+recovery_audit="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command "select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunAbandoned' and resource_id = 'a3000000-0000-4000-8000-000000000007';")"
+if [[ "${recovery_audit}" != '1' ]]; then
+  echo "INT1 abandoned Run audit diverged: ${recovery_audit}." >&2
   exit 1
 fi
 leaks="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \

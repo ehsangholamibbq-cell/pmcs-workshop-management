@@ -30,3 +30,5 @@
 ## آزمون متصل ایزوله
 
 `tools/qa/verify-int1-reference.sh` پس از assertionهای baseline در پایگاه `pmcs_qa_*` سه مدل fixture را ثبت می‌کند و API را فقط با QA Gateway احراز‌شده، Feature Flag موقت و `INT1FixtureEnabled` بالا می‌آورد. Handler ساختگی تنها در همین محیط و با این دو Gate وارد DI می‌شود. این آزمون مسیر HTTP، انتخاب هر سه مدل، ابزار مالک با مجوز واقعی، fallback، ابزار ناشناخته، disable، replay و نبود سؤال/پاسخ/کلید در چهار Store را بررسی می‌کند؛ هیچ درخواست بیرونی نمی‌فرستد و معادل آزمون اتصال زنده نیست. در استقرار عادی هر دو Flag خاموش‌اند.
+
+همان سناریوی QA یک Run قدیمیِ `Running` با Session منقضی می‌سازد و پس از شروع Worker، تبدیل آن به `Failed/ai.run.abandoned` و Audit یکتا را بررسی می‌کند. Restore drill شاخه نیز حضور migration lineage و پنج ستون نسخه/انتخاب اولیه را در پایگاه بازیابی‌شده می‌سنجد.
