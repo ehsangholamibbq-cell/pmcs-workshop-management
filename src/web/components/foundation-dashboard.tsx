@@ -501,6 +501,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               onQueued={handleQueued}
               measurementItems={measurementItems}
               locations={projectLocations}
+              locationReadState={locationReadState}
             />
             <EvidenceCapture
               tenantId={tenantId}
