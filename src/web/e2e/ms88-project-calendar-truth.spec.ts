@@ -47,11 +47,16 @@ test("project calendar hides an old setting and save command after failed or for
   }
 
   let responseStatus = 200;
+  let authorizedProject: unknown = null;
   let releaseFailure: () => void = () => {};
   const failureGate = new Promise<void>(resolve => { releaseFailure = resolve; });
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}`, async route => {
     if (responseStatus === 503) await failureGate;
-    if (responseStatus === 200) return route.continue();
+    if (responseStatus === 200) {
+      if (authorizedProject === null) authorizedProject = await (await route.fetch()).json();
+      return route.fulfill({ status: 200, contentType: "application/json",
+        body: JSON.stringify(authorizedProject) });
+    }
     return route.fulfill({ status: responseStatus, contentType: "application/problem+json",
       body: JSON.stringify({ status: responseStatus, title: "Sensitive calendar detail" }) });
   });
