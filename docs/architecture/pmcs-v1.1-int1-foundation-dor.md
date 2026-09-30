@@ -26,6 +26,8 @@
 
 Grant مدیر ارشد در Store مستقل با Actor ID، Tenant مبنا برای انتساب هویت، scope، صادرکننده، زمان اعتبار و revocation ثبت می‌شود؛ از `TenantAdministrator`، `PortfolioViewer`، project wildcard یا token claim آزاد استنتاج نمی‌شود. Bootstrapping این Grant یک عملیات صریح و ممیزی‌شدهٔ استقرار است، نه اعطای خودکار به کاربران موجود. تفویض Tenant نمی‌تواند Provider، Credential، Global Policy یا مدل بیرون allowlist را تغییر دهد. تغییر/ابطال Grant، عضویت پروژه و Permission منبع در زمان فرمان و هر Tool call دوباره بررسی می‌شود. Preview نیز همان تصمیم واقعی را نشان می‌دهد. Cross-tenant حتی برای شناسه‌های موجود پاسخ امن می‌گیرد.
 
+نخستین Grant سراسری فقط با `ops/intelligence/bootstrap-superadmin.sh` و تأیید صریح اپراتور پایگاه‌داده، پس از Migration و احراز فعال‌بودن حساب مقصد/اپراتور ایجاد می‌شود. این عملیات یک‌باره، تراکنشی، دارای Audit و انقضای ۹۰روزه است؛ هیچ حسابی در Migration یا startup خودکار ارتقا نمی‌گیرد. پس از آن صدور/ابطال Grant با Permission مستقل `intelligence.providers.manage`، revision، idempotency و audit در سطح مدیریت محدود انجام می‌شود.
+
 ## قرارداد داده و نسخه
 
 - `ProviderCatalog`: شناسه و نسخه، adapter kind، endpoint HTTPS تأییدشده، secret reference بیرون DB و log، وضعیت فعال/غیرفعال، capability flags. Catalog و Model فعال تنها پس از validation قابل انتخاب‌اند؛ نبود credential = `Unavailable`.

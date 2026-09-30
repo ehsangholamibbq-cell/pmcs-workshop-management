@@ -32,5 +32,8 @@ internal sealed class IntelligenceAdministrationGrantMigration : IDatabaseMigrat
         create index if not exists ix_intelligence_grants_actor
             on intelligence.administration_grants(actor_tenant_id, actor_id, permission, scope_tenant_id)
             where revoked_at is null;
+        create unique index if not exists ux_intelligence_active_grant
+            on intelligence.administration_grants(actor_tenant_id, actor_id, permission, scope_tenant_id)
+            nulls not distinct where revoked_at is null;
         """;
 }

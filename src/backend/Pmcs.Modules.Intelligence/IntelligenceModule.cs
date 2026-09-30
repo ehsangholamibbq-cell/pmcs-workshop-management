@@ -62,5 +62,6 @@ public sealed class IntelligenceModule : IModule
     {
         endpoints.MapIntelligenceEndpoints();
         endpoints.MapModelProviderAdministration();
+        endpoints.MapIntelligenceGrantEndpoints();
     }
 }
