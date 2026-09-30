@@ -71,7 +71,9 @@ public sealed class IntelligenceModule : IModule
         services.AddSingleton<IDatabaseMigration, IntelligenceModelProfileMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceReferenceRunMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceModelPriceMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceReferenceSessionMigration>();
         services.AddHostedService<AdvisoryGenerationWorker>();
+        services.AddHostedService<ReferenceRunRecoveryWorker>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

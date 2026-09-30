@@ -98,6 +98,8 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
             builder.ToTable("reference_runs");
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.SessionId).HasColumnName("session_id");
+            builder.Property(x => x.SessionExpiresAt).HasColumnName("session_expires_at");
             builder.Property(x => x.TenantId).HasColumnName("tenant_id");
             builder.Property(x => x.ProjectId).HasColumnName("project_id");
             builder.Property(x => x.RequestedBy).HasColumnName("requested_by");

@@ -8,6 +8,8 @@
 
 `POST /api/v1/projects/{projectId}/intelligence/reference-runs` با `RequestId` یکتا، پرسش متنی محدود و `Idempotency-Key`، فقط یک فراخوانی ابزار خواندنی ثبت‌شده و یک پاسخ ساختاریافته انجام می‌دهد. `GET .../{runId}` فقط metadata درخواست همان کاربر را نشان می‌دهد؛ پاسخ متنی و payload ابزار در DB، Outbox، idempotency receipt و Audit ذخیره نمی‌شوند. تکرار درخواست با کلید یکسان فقط metadata برمی‌گرداند و پاسخ گذرا را دوباره تولید نمی‌کند. این سطح، Chat/Agent عمومی یا Action نوشتنی نیست.
 
+هر Run یک Session مستقل یک‌نوبتی با شناسه و انقضای ده‌دقیقه‌ای دارد. هیچ تاریخچهٔ گفتگو برای نوبت بعد نگهداری یا بازاستفاده نمی‌شود؛ RequestId همان شناسهٔ Run و SessionId مجزا است. Context فقط در حافظهٔ همان درخواست و در محدودهٔ timeout Profile حضور دارد.
+
 قبل از Run، `insights.generate`، وجود پروژه، انتخاب Profile نسخه‌دار، scope، طبقه‌بندی `Confidential`، قابلیت‌های `StructuredOutput | ToolCalling`، مدل فعال و تأییدشده، پیکربندی adapter و نرخ مصرف بررسی می‌شوند. Tool Registry در هر فراخوانی `insights.generate` و Permission منبع manifest را دوباره می‌سنجد و فقط به Application Contract ماژول مالک می‌رود. خروجی‌های Reporting فقط metadata هستند؛ Collaboration حداکثر هشت پیام، هر متن تا ۵۰۰ نویسه، بدون فایل/ضمیمه برمی‌گرداند. آداپتور هیچ SQL، URL ابزار داخلی یا secret در اختیار مدل نمی‌گذارد.
 
 سه آداپتور OpenAI، Google Gemini و Anthropic Claude تصمیم native function call را به شناسهٔ manifest نگاشت می‌کنند. ورودی ابزار با `projectId` درخواست و schema بسته مقایسه می‌شود. پاسخ نهایی باید یک `answer` محدود و تنها citation همان ابزار داشته باشد؛ پاسخ ناقص، ابزار ناشناخته، تغییر ابزار در fallback و مصرف بالاتر از سقف رد می‌شوند. Fallback فقط برای timeout، unavailable و invalid response به مدل تأییدشدهٔ همان Profile با محدودیت برابر انجام می‌شود.
@@ -18,5 +20,5 @@
 
 - CI کامل یک SHA واحد، آزمون‌های منفی cross-tenant/project و سناریوی end-to-end Run با DB و Provider ساختگی.
 - تست اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable`؛ credential در مخزن/CI عمومی نگهداری نمی‌شود.
-- بررسی timeout/cancellation، بازیابی Runهای `Running` رهاشده، محدودیت Session و اعتبارسنجی عملیاتی migration/restore.
+- بررسی مستقل timeout/cancellation، بازیابی Runهای `Running` رهاشده، انقضای Session و اعتبارسنجی عملیاتی migration/restore.
 - Audit و telemetry metadata-only و بررسی مستقل هزینه، fallback و عدم نشت payload در log.

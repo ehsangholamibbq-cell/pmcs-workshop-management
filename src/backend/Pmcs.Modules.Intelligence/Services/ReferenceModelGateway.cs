@@ -90,6 +90,8 @@ internal abstract class ReferenceModelAdapter(HttpClient client, ModelProviderCo
         var match = tools.SingleOrDefault(tool => Alias(tool.Id) == decision.ToolId);
         if (match is null)
             throw new ReferenceGatewayException("ai.tool.unknown");
+        if (decision.InputTokens < 0 || decision.OutputTokens < 0)
+            throw new ReferenceGatewayException("ai.provider.invalid_response");
         return decision with { ToolId = match.Id };
     }
 

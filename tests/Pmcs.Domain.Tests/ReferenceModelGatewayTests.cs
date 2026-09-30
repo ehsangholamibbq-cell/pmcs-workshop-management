@@ -56,6 +56,29 @@ public sealed class ReferenceModelGatewayTests
         Assert.Equal("ai.provider.not_configured", error.Code);
     }
 
+    [Theory]
+    [InlineData("OpenAI")]
+    [InlineData("GoogleGemini")]
+    [InlineData("AnthropicClaude")]
+    public async Task UndeclaredToolAndInvalidCitationFailClosed(string provider)
+    {
+        using var toolClient = new HttpClient(new FixtureHandler(provider, Guid.NewGuid(),
+            invalidTool: true));
+        var tools = new ReportingModule().Descriptor.Tools.Take(1).ToArray();
+        var toolError = await Assert.ThrowsAsync<ReferenceGatewayException>(() =>
+            Create(provider, toolClient).DecideToolAsync("x", tools, CancellationToken.None));
+        Assert.Equal("ai.tool.unknown", toolError.Code);
+
+        using var answerClient = new HttpClient(new FixtureHandler(provider, Guid.NewGuid(),
+            invalidAnswer: true));
+        var adapter = Create(provider, answerClient);
+        await adapter.DecideToolAsync("x", tools, CancellationToken.None);
+        var answerError = await Assert.ThrowsAsync<ReferenceGatewayException>(() =>
+            adapter.AnswerAsync("x", tools[0].Id, "{\"definitions\":[]}", 100,
+                CancellationToken.None));
+        Assert.Equal("ai.provider.invalid_response", answerError.Code);
+    }
+
     private static IReferenceModelAdapter Create(string provider, HttpClient client)
     {
         var config = new ModelProviderConfiguration("configured", "test-secret");
@@ -67,7 +90,8 @@ public sealed class ReferenceModelGatewayTests
         };
     }
 
-    private sealed class FixtureHandler(string provider, Guid projectId) : HttpMessageHandler
+    private sealed class FixtureHandler(string provider, Guid projectId,
+        bool invalidTool = false, bool invalidAnswer = false) : HttpMessageHandler
     {
         internal List<string> Requests { get; } = [];
 
@@ -88,7 +112,12 @@ public sealed class ReferenceModelGatewayTests
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(json.Replace("PROJECT", projectId.ToString(),
-                    StringComparison.Ordinal), Encoding.UTF8, "application/json")
+                    StringComparison.Ordinal)
+                    .Replace("reporting_catalog_list", first && invalidTool
+                        ? "unexpected_tool" : "reporting_catalog_list", StringComparison.Ordinal)
+                    .Replace("reporting.catalog.list", !first && invalidAnswer
+                        ? "unexpected.citation" : "reporting.catalog.list", StringComparison.Ordinal),
+                    Encoding.UTF8, "application/json")
             };
         }
     }

@@ -16,7 +16,8 @@ namespace Pmcs.Modules.Intelligence.Endpoints;
 
 internal sealed record StartReferenceRunRequest(Guid RequestId, string? Question);
 
-internal sealed record ReferenceRunMetadata(Guid Id, Guid ProjectId,
+internal sealed record ReferenceRunMetadata(Guid Id, Guid SessionId,
+    DateTimeOffset SessionExpiresAt, Guid ProjectId,
     IntelligenceRunStatus Status, Guid ProfileVersionId, int ProfileVersion,
     Guid ModelCatalogId, int ModelVersion, string Provider, string Model,
     string PromptVersion, string PolicyVersion, string? ToolId, string? ToolDecision,
@@ -25,7 +26,8 @@ internal sealed record ReferenceRunMetadata(Guid Id, Guid ProjectId,
     DateTimeOffset? CompletedAt)
 {
     internal static ReferenceRunMetadata From(IntelligenceReferenceRun run) => new(
-        run.Id, run.ProjectId, run.Status, run.ProfileVersionId, run.ProfileVersion,
+        run.Id, run.SessionId, run.SessionExpiresAt, run.ProjectId,
+        run.Status, run.ProfileVersionId, run.ProfileVersion,
         run.ModelCatalogId, run.ModelVersion, run.Provider, run.Model,
         run.PromptVersion, run.PolicyVersion, run.ToolId, run.ToolDecision,
         run.Fallback, run.FallbackReason, run.InputTokens, run.OutputTokens,

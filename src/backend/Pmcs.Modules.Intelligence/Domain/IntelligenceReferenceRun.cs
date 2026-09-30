@@ -6,6 +6,8 @@ internal enum IntelligenceRunStatus { Requested, Validated, Running, Completed, 
 internal sealed class IntelligenceReferenceRun
 {
     public Guid Id { get; private set; }
+    public Guid SessionId { get; private set; }
+    public DateTimeOffset SessionExpiresAt { get; private set; }
     public Guid TenantId { get; private set; }
     public Guid ProjectId { get; private set; }
     public Guid RequestedBy { get; private set; }
@@ -47,7 +49,8 @@ internal sealed class IntelligenceReferenceRun
             throw new ArgumentException("Invalid reference Run identity or policy.");
         return new IntelligenceReferenceRun
         {
-            Id = id, TenantId = tenantId, ProjectId = projectId, RequestedBy = actorId,
+            Id = id, SessionId = Guid.NewGuid(), SessionExpiresAt = now.AddMinutes(10),
+            TenantId = tenantId, ProjectId = projectId, RequestedBy = actorId,
             ProfileVersionId = profile.Id, ProfileVersion = profile.Version,
             ModelCatalogId = model.Id, ModelVersion = model.Version,
             Provider = model.Provider, Model = model.Model,

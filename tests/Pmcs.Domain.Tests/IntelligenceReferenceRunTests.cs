@@ -21,6 +21,8 @@ public sealed class IntelligenceReferenceRunTests
             Guid.NewGuid(), profile, model, new string('a', 64), now);
 
         Assert.Equal(IntelligenceRunStatus.Requested, run.Status);
+        Assert.NotEqual(Guid.Empty, run.SessionId);
+        Assert.Equal(now.AddMinutes(10), run.SessionExpiresAt);
         Assert.Equal(profile.Id, run.ProfileVersionId);
         Assert.Equal(3, run.ProfileVersion);
         Assert.Equal(2, run.ModelVersion);
