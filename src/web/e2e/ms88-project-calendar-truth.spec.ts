@@ -69,7 +69,9 @@ test("project calendar hides an old setting and save command after failed or for
   await capture("calendar-390-current.png", 390, 844, "current");
 
   responseStatus = 503;
-  await page.reload();
+  await page.context().setOffline(true);
+  await expect(panel).toHaveAttribute("data-read-state", "offline");
+  await page.context().setOffline(false);
   await expect(panel).toHaveAttribute("data-read-state", "loading");
   await expect(panel.getByRole("combobox", { name: "نوع تقویم پروژه" })).toHaveCount(0);
   await page.setViewportSize({ width: 320, height: 720 });
@@ -83,14 +85,14 @@ test("project calendar hides an old setting and save command after failed or for
   await capture("calendar-320-read-error.png", 320, 720, "unavailable");
 
   responseStatus = 403;
-  await page.reload();
+  await panel.getByRole("button", { name: "تلاش دوباره برای دریافت تقویم پروژه" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "forbidden");
   await expect(panel.getByRole("alert")).toContainText("تنظیم قبلی نمایش داده نمی‌شود");
   await expect(panel.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("calendar-320-access-revoked.png", 320, 720, "forbidden");
 
   responseStatus = 200;
-  await page.reload();
+  await panel.getByRole("button", { name: "تلاش دوباره برای دریافت تقویم پروژه" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "current");
   await expect(panel.getByRole("combobox", { name: "نوع تقویم پروژه" })).toBeVisible();
   await capture("calendar-320-restored.png", 320, 720, "current");
