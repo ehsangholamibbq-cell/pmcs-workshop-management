@@ -23,8 +23,8 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source | MS86 correction `648f14990d155c05a4ca4404cfcbf2c6d07aab11`؛ tree `ba5c2238f52dc5ea6c70d2ce151bd3540dc53040`؛ Run 551 هشت Job سبز؛ Artifact `11072588519` شش PNG/Index معتبر و بازبینی‌شده |
-| Current evidence-bearing source checkpoint | `648f14990d155c05a4ca4404cfcbf2c6d07aab11`؛ Source Run 551 هشت Job سبز و Artifact `11072588519` معتبر؛ CI مستقل مستندات MS86 شرط است |
+| آخرین Source | MS86 correction `648f14990d155c05a4ca4404cfcbf2c6d07aab11`؛ tree `ba5c2238f52dc5ea6c70d2ce151bd3540dc53040`؛ Run 552 هشت Job سبز؛ Artifact `11072588519` شش PNG/Index معتبر و بازبینی‌شده |
+| Current evidence-bearing source checkpoint | `648f14990d155c05a4ca4404cfcbf2c6d07aab11`؛ Source Run 552 هشت Job سبز و Artifact `11072588519` معتبر؛ CI مستقل مستندات MS86 شرط است |
 | Source lineage | MS86 از MS85 docs `b71d61d4f004cf771f42faacc20d7e836ebfa8cb` ادامه یافت؛ correctionها با Commit/fast-forward، بدون Reset/Force Push |
 | Current safe checkpoint | `PMCS-V1.1-UX2-MS85-C1`؛ Source Run 548 و docs Run 549 هر دو هشت Job سبز؛ MS86 Source و Artifact سبز/مرور شده، CI مستندات باز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
@@ -1072,7 +1072,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**گام جاری Full CI مستقل مستندات `V1.1-UX2-MS86` است؛ Source Run 551 و شش قاب واقعیت تدارکات سبز/مرور شده‌اند. پس از آن ممیزی و مهاجرت سایر مصرف‌کنندگان فعال در `VX-G4`، سپس Qualification مستقل `VX-G5` انجام می‌شوند.**
+**گام جاری Full CI مستقل مستندات `V1.1-UX2-MS86` است؛ Source Run 552 و شش قاب واقعیت تدارکات سبز/مرور شده‌اند. پس از آن ممیزی و مهاجرت سایر مصرف‌کنندگان فعال در `VX-G4`، سپس Qualification مستقل `VX-G5` انجام می‌شوند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
