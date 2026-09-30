@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.45.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS82 در `VX-G4`، مهاجرت کامل/Qualification باز
+- نسخه سند: `1.46.0`
+- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS83 در `VX-G4`، مهاجرت کامل/Qualification باز
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -180,7 +180,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74، خواندن Chat گروه پروژه در MS75 و تجمیع سبد در MS76 و حقیقت دسترسی مرکز فرمان پروژه در MS77 و فهرست پروژه در MS78، دفتر فنی در MS79 و تاریخچه گزارش روزانه در MS80 و دفتر پیشرفت در MS81 و مبنای برنامه در MS82؛ سایر مصرف‌کنندگان باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74، خواندن Chat گروه پروژه در MS75 و تجمیع سبد در MS76 و حقیقت دسترسی مرکز فرمان پروژه در MS77 و فهرست پروژه در MS78، دفتر فنی در MS79 و تاریخچه گزارش روزانه در MS80 و دفتر پیشرفت در MS81 و مبنای برنامه در MS82 و کنترل مالی پایه در MS83؛ سایر مصرف‌کنندگان باز |
 | `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
@@ -235,3 +235,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.43.0` | MS79 docs correction Run 529 هشت Job سبز و Safe؛ MS80 تاریخچه گزارش روزانه را با تفکیک Current/Loading/Unavailable/Forbidden/Offline و منع نمایش نسخه/فرمان کهنه مهاجرت داد. Source نهایی Run 534 هشت Job سبز/Artifact `11068532055` با پنج قاب و Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، باقی G4 و سپس G5 بازند |
 | `1.44.0` | MS80 docs correction Run 536 هشت Job سبز و Safe؛ MS81 دفتر پیشرفت را با Current/Loading/Unavailable/Forbidden/Offline و منع نمایش داده/فرمان کهنه مهاجرت داد. Source Run 539 هشت Job سبز/Artifact `11069246238` پنج قاب/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، مبنای برنامه و باقی G4، سپس G5 بازند |
 | `1.45.0` | MS81 docs Run 540 هشت Job سبز و Safe؛ MS82 مبنای برنامه را با Current/Loading/Unavailable/Forbidden/Offline و منع نمایش داده/فرمان کهنه مهاجرت داد. Source Run 541 هشت Job سبز/Artifact `11070325003` پنج قاب/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، مالی و باقی G4، سپس G5 بازند |
+| `1.46.0` | MS82 docs Run 542 هشت Job سبز و Safe؛ MS83 کنترل مالی پایه را با Current/Loading/Unavailable/Forbidden/Offline و منع نمایش داده/فرمان کهنه مهاجرت داد. Source Run 544 هشت Job سبز/Artifact `11070393951` پنج قاب/Index معتبر و بازبینی‌شده؛ CI مستقل مستندات شرط Checkpoint، مالی تکمیلی و باقی G4، سپس G5 بازند |

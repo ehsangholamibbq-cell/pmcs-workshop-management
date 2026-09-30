@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.164.0`
+- نسخه سند: `1.165.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1878,3 +1878,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.162.0` | UX2-MS79 docs correction Run 529 هشت Job سبز و Safe؛ MS80 تاریخچه نسخه‌های گزارش روزانه را در Refresh، خطای دریافت، آفلاین و لغو دسترسی از فهرست/فرمان کهنه جدا کرد و پیام خطا را با Token خطر متمایز ساخت. Source نهایی Run 534 هشت Job سبز/Artifact `11068532055` با پنج قاب و Index معتبر و بازبینی‌شده دارد؛ CI مستقل مستندات شرط Checkpoint، برنامه‌ریزی و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.163.0` | UX2-MS80 docs correction Run 536 هشت Job سبز و Safe؛ MS81 دفتر پیشرفت را در Refresh/خطا/قطع مجوز از اقلام و فرمان کهنه جدا کرد و بازگشت پاسخ جاری را آزمود. Source Run 539 هشت Job سبز/Artifact `11069246238` با پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، مبنای برنامه و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.164.0` | UX2-MS81 docs Run 540 هشت Job سبز و Safe؛ MS82 مبنای برنامه را در Refresh، خطا و قطع مجوز از نسخه/فرمان کهنه جدا و پیام موفقیت را به Refresh معتبر مشروط کرد. Source Run 541 هشت Job سبز/Artifact `11070325003` با پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، مالی و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
+| `1.165.0` | UX2-MS82 docs Run 542 هشت Job سبز و Safe؛ MS83 کنترل مالی پایه را در Refresh، خطا و لغو مجوز از سند/بودجه/فرمان کهنه جدا کرد. Source Run 544 هشت Job سبز/Artifact `11070393951` پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، مالی تکمیلی و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
