@@ -53,6 +53,7 @@ public sealed class IntelligenceModule : IModule
                 configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
         services.AddScoped<IntelligenceAdministrationAccess>();
         services.AddScoped<PermissionAwareContextAssembler>();
+        services.AddScoped<IntelligenceToolRegistry>();
         services.AddSingleton<IDatabaseMigration, IntelligenceInitialMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceAdministrationGrantMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceModelProfileMigration>();

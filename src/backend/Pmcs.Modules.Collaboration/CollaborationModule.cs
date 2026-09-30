@@ -8,6 +8,7 @@ using Pmcs.Modules.Collaboration.Endpoints;
 using Pmcs.Modules.Collaboration.Migrations;
 using Pmcs.Modules.Collaboration.Persistence;
 using Pmcs.Modules.Collaboration.Services;
+using Pmcs.Modules.Collaboration.Contracts;
 using Pmcs.Modules.Documents.Contracts;
 
 namespace Pmcs.Modules.Collaboration;
@@ -57,6 +58,7 @@ public sealed class CollaborationModule : IModule
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddSingleton(CollaborationRuntimeOptions.Create(configuration));
         services.AddDbContext<CollaborationDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IProjectChatContextReadService, ProjectChatContextReadService>();
         services.AddScoped<IProjectChatDocumentOwner, ProjectChatDocumentOwner>();
         services.AddSingleton<IDatabaseMigration, CollaborationInitialMigration>();
         services.AddSingleton<IDatabaseMigration, CollaborationInteractionMigration>();

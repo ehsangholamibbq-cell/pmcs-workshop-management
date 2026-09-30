@@ -300,7 +300,7 @@ const allowedProjectReferences = new Map([
   ["Pmcs.Modules.Finance", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Commercial", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.QualitySafety", ["Pmcs.BuildingBlocks", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.ProjectIntelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.IdentityAccess", "Pmcs.Modules.Projects"]],
-  ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects"]],
+  ["Pmcs.Modules.Intelligence", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Collaboration", "Pmcs.Modules.Commercial", "Pmcs.Modules.Finance", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects", "Pmcs.Modules.Reporting"]],
   ["Pmcs.Modules.WorkManagement", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Projects"]],
   ["Pmcs.Modules.Reporting", ["Pmcs.BuildingBlocks", "Pmcs.Modules.ActionControl", "Pmcs.Modules.Commercial", "Pmcs.Modules.Documents", "Pmcs.Modules.FieldOperations", "Pmcs.Modules.Finance", "Pmcs.Modules.Planning", "Pmcs.Modules.ProjectIntelligence", "Pmcs.Modules.Projects", "Pmcs.Modules.QualitySafety", "Pmcs.Modules.TechnicalOffice"]],
   ["Pmcs.Modules.QualityAssurance", ["Pmcs.BuildingBlocks"]],
