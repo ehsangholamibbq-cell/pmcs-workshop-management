@@ -640,7 +640,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             measurementItems={measurementItems}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
-          <SyncIssuesPanel apiBaseUrl={apiBaseUrl} projectId={projectId} refreshToken={refreshToken} />
+          <SyncIssuesPanel apiBaseUrl={apiBaseUrl} tenantId={tenantId} userId={userId} projectId={projectId} isOnline={isOnline} refreshToken={refreshToken} />
           {displayCommandCenter?.canReadCommercial && (
             <>
               <CommercialControl

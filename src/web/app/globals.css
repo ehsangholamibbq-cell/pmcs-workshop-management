@@ -5934,3 +5934,21 @@ output {
   border-color: var(--status-danger);
   background: var(--status-danger-surface);
 }
+
+.sync-recovery-center .device-read-message {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--status-info);
+  border-radius: 0.8rem;
+  background: var(--status-info-surface);
+}
+.sync-recovery-center[data-device-read-state="offline"] .device-read-message {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+.sync-recovery-center[data-device-read-state="unavailable"] .device-read-message,
+.sync-recovery-center[data-device-read-state="forbidden"] .device-read-message {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
