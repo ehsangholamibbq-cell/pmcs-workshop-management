@@ -114,6 +114,9 @@ internal static class IntelligenceReferenceRunEndpoints
             IntelligenceDataClass.Confidential, estimatedUnits, selection.ModelId);
         if (!decision.Allowed || decision.Model is null)
             return Results.Conflict(new { code = decision.Code });
+        if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                item.Provider == decision.Model.Provider && item.Enabled, cancellationToken))
+            return Results.Conflict(new { code = "ai.provider.disabled" });
         if (profile.MaximumOutputTokens < 64)
             return Results.Conflict(new { code = "ai.profile.limit_exceeded" });
         var available = adapters.SingleOrDefault(item => item.Provider == decision.Model.Provider &&
@@ -143,7 +146,9 @@ internal static class IntelligenceReferenceRunEndpoints
             {
                 try
                 {
-                    if (!await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
+                    if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                            item.Provider == run.Provider && item.Enabled, timeout.Token) ||
+                        !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
                             item.VerifiedAt != null, timeout.Token))
                         throw new ReferenceGatewayException("ai.profile.model_unavailable");
@@ -159,7 +164,9 @@ internal static class IntelligenceReferenceRunEndpoints
                     else if (run.ToolId != toolDecision.ToolId || run.ToolDecision != "Allowed")
                         throw new ReferenceGatewayException("ai.tool.fallback_changed_tool");
                     await db.SaveChangesAsync(timeout.Token);
-                    if (!await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
+                    if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                            item.Provider == run.Provider && item.Enabled, timeout.Token) ||
+                        !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
                             item.VerifiedAt != null, timeout.Token))
                         throw new ReferenceGatewayException("ai.profile.model_unavailable");
@@ -185,9 +192,13 @@ internal static class IntelligenceReferenceRunEndpoints
                     profile.AllowFallback && error.Code is ("ai.provider.timeout" or
                         "ai.provider.unavailable" or "ai.provider.invalid_response"))
                 {
+                    var enabledProviders = (await db.ProviderRegistrations.AsNoTracking()
+                        .Where(item => item.Enabled).Select(item => item.Provider)
+                        .ToArrayAsync(timeout.Token)).ToHashSet(StringComparer.Ordinal);
                     var alternate = profile.FallbackModelIds
                         .Select(id => catalog.FirstOrDefault(item => item.Id == id))
                         .Where(item => item is not null &&
+                            enabledProviders.Contains(item.Provider) &&
                             item.InputMicrounitsPerToken > 0 &&
                             item.OutputMicrounitsPerToken > 0)
                         .Select(item => ModelSelectionPolicy.Select(profile, catalog,

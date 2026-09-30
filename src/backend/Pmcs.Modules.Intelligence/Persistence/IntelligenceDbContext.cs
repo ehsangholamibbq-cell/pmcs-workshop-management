@@ -12,10 +12,24 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
     public DbSet<IntelligenceProfileVersion> ProfileVersions => Set<IntelligenceProfileVersion>();
     public DbSet<IntelligenceProfileSelection> ProfileSelections => Set<IntelligenceProfileSelection>();
     public DbSet<IntelligenceReferenceRun> ReferenceRuns => Set<IntelligenceReferenceRun>();
+    public DbSet<IntelligenceProviderRegistration> ProviderRegistrations => Set<IntelligenceProviderRegistration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("intelligence");
+
+        modelBuilder.Entity<IntelligenceProviderRegistration>(builder =>
+        {
+            builder.ToTable("provider_registrations");
+            builder.HasKey(x => x.Provider);
+            builder.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(40);
+            builder.Property(x => x.Version).HasColumnName("version");
+            builder.Property(x => x.Enabled).HasColumnName("enabled");
+            builder.Property(x => x.VerifiedAt).HasColumnName("verified_at");
+            builder.Property(x => x.CreatedBy).HasColumnName("created_by");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+        });
 
         modelBuilder.Entity<IntelligenceAdministrationGrant>(builder =>
         {

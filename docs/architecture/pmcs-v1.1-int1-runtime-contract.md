@@ -10,7 +10,7 @@
 
 هر Run یک Session مستقل یک‌نوبتی با شناسه و انقضای ده‌دقیقه‌ای دارد. هیچ تاریخچهٔ گفتگو برای نوبت بعد نگهداری یا بازاستفاده نمی‌شود؛ RequestId همان شناسهٔ Run و SessionId مجزا است. Context فقط در حافظهٔ همان درخواست و در محدودهٔ timeout Profile حضور دارد.
 
-قبل از Run، `insights.generate`، وجود پروژه، انتخاب Profile نسخه‌دار، scope، طبقه‌بندی `Confidential`، قابلیت‌های `StructuredOutput | ToolCalling`، مدل فعال و تأییدشده، پیکربندی adapter و نرخ مصرف بررسی می‌شوند. Tool Registry در هر فراخوانی `insights.generate` و Permission منبع manifest را دوباره می‌سنجد و فقط به Application Contract ماژول مالک می‌رود. خروجی‌های Reporting فقط metadata هستند؛ Collaboration حداکثر هشت پیام، هر متن تا ۵۰۰ نویسه، بدون فایل/ضمیمه برمی‌گرداند. آداپتور هیچ SQL، URL ابزار داخلی یا secret در اختیار مدل نمی‌گذارد.
+قبل از Run، `insights.generate`، وجود پروژه، انتخاب Profile نسخه‌دار، scope، طبقه‌بندی `Confidential`، قابلیت‌های `StructuredOutput | ToolCalling`، Provider فعال‌شدهٔ مستقل، مدل فعال و تأییدشده، پیکربندی adapter و نرخ مصرف بررسی می‌شوند. Tool Registry در هر فراخوانی `insights.generate` و Permission منبع manifest را دوباره می‌سنجد و فقط به Application Contract ماژول مالک می‌رود. خروجی‌های Reporting فقط metadata هستند؛ Collaboration حداکثر هشت پیام، هر متن تا ۵۰۰ نویسه، بدون فایل/ضمیمه برمی‌گرداند. آداپتور هیچ SQL، URL ابزار داخلی یا secret در اختیار مدل نمی‌گذارد.
 
 سطح مدیریت `GET /api/v1/intelligence/admin/profiles/preview` تصمیم مدل، محدودهٔ پروژه، مجوز اجرا، پیکربندی adapter و هزینهٔ سقف را بدون Secret نشان می‌دهد. Preview خود دسترسی اجرای مدل یا ابزار نمی‌دهد. Latency از timestampهای Run مشتق و همراه usage/cost و علت خطا در metadata/Audit ثبت می‌شود.
 

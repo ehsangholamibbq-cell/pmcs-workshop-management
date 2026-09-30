@@ -138,10 +138,14 @@ internal static class IntelligenceProfileAdministrationEndpoints
             projectId, IntelligenceDataClass.Confidential, estimatedCost, requestedId);
         var configured = adapters.Any(item => item.Provider == selected.Provider &&
             item.ConfiguredModel == selected.Model && item.IsConfigured);
+        var providerEnabled = await dbContext.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+            item.Provider == selected.Provider && item.Enabled, cancellationToken);
         return Results.Ok(new
         {
-            allowed = decision.Allowed && configured && profile.MaximumOutputTokens >= 64,
-            code = decision.Allowed && !configured ? "ai.provider.not_configured" :
+            allowed = decision.Allowed && configured && providerEnabled &&
+                profile.MaximumOutputTokens >= 64,
+            code = decision.Allowed && !providerEnabled ? "ai.provider.disabled" :
+                decision.Allowed && !configured ? "ai.provider.not_configured" :
                 decision.Allowed && profile.MaximumOutputTokens < 64
                     ? "ai.profile.limit_exceeded" : decision.Code,
             profileVersionId = profile.Id, profileVersion = profile.Version,
@@ -193,8 +197,12 @@ internal static class IntelligenceProfileAdministrationEndpoints
             .Where(item => request.AllowedModelIds.Contains(item.Id))
             .ToArrayAsync(cancellationToken);
         var catalog = models.Select(item => item.ToPolicy()).ToArray();
+        var enabledProviders = (await dbContext.ProviderRegistrations.AsNoTracking()
+            .Where(item => item.Enabled).Select(item => item.Provider)
+            .ToArrayAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
         if (profile.AllowedModelIds.Any(id => !ModelSelectionPolicy.IsApprovedModel(profile, catalog, id)) ||
-            models.Any(item => !probes.Any(probe => probe.Provider == item.Provider &&
+            models.Any(item => !enabledProviders.Contains(item.Provider) ||
+                !probes.Any(probe => probe.Provider == item.Provider &&
                 probe.Availability.Model == item.Model &&
                 probe.Availability.Status != ProviderProbeStatus.Unavailable)))
             return Results.Conflict(new { code = "ai.profile.model_unavailable" });
@@ -255,6 +263,8 @@ internal static class IntelligenceProfileAdministrationEndpoints
         var model = await dbContext.ModelCatalog.AsNoTracking().SingleOrDefaultAsync(
             item => item.Id == request.ModelId, cancellationToken);
         if (model is null || !ModelSelectionPolicy.IsApprovedModel(profile, [model.ToPolicy()], request.ModelId) ||
+            !await dbContext.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                item.Provider == model.Provider && item.Enabled, cancellationToken) ||
             !probes.Any(probe => probe.Provider == model.Provider &&
                 probe.Availability.Model == model.Model &&
                 probe.Availability.Status != ProviderProbeStatus.Unavailable))

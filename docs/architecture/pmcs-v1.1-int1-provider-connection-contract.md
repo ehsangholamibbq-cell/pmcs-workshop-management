@@ -1,7 +1,7 @@
 # INT1 — قرارداد مسیر اتصال Provider
 
 - شناسه: `PMCS-V1.1-INT1-PROVIDER-001`
-- وضعیت: مسیر Probe و compatibility fixture؛ این سند ادعای اتصال زنده یا Gateway کامل ندارد.
+- وضعیت: Probe، فعال‌سازی مستقل Provider و compatibility fixture؛ اتصال زنده هنوز شواهد جدا می‌خواهد.
 - Parent: `PMCS-V1.1-INT1-DOR-001` و ADR 0032
 
 سه آداپتور مستقل `OpenAI`، `GoogleGemini` و `AnthropicClaude` از تنظیمات `OpenAI:*`،
@@ -22,7 +22,7 @@ Compatibility suite محلی با Handler جعلی، شکل درخواست، م�
 مدل دارای `ToolCalling` مستلزم هر دو آزمون ساختاریافته و ابزار بومی است؛ خطا یا ابزار
 ناشناخته آن را فعال نمی‌کند. آزمون اتصال زنده با کلیدهای پیکربندی‌شده در محیط
 ایزوله و Grant مدیریتیِ صریح باید جدا ثبت شود؛ نبود کلید نتیجهٔ موفقیت نیست. قابلیت
-Tool Registry اجرایی، Run، Profile و fallback متصل هنوز در MSهای بعدی INT1 بازند.
+Tool Registry، Profile و Reference Run محدود در `pmcs-v1.1-int1-runtime-contract.md` دنبال می‌شوند. Provider در Store مستقل به‌صورت پیش‌فرض غیرفعال است؛ فقط Grant مدیر ارشد می‌تواند آن را ثبت، پس از آزمون ساختاریافته و tool calling فعال یا با revision/idempotency/audit غیرفعال کند. نبود Credential، Provider غیرفعال یا Model تأییدنشده انتخاب و Run را می‌بندد. کلید فقط از پیکربندی استقرار خوانده می‌شود و در Store و log ذخیره نمی‌شود.
 
 مراجع API هنگام طراحی: [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses)،
 [Gemini generateContent](https://ai.google.dev/api/generate-content)،

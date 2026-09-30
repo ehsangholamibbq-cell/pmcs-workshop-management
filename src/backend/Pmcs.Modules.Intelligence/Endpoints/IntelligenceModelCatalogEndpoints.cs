@@ -68,6 +68,9 @@ internal static class IntelligenceModelCatalogEndpoints
         if (probe is null || probe.Availability.Status == ProviderProbeStatus.Unavailable ||
             probe.Availability.Model != request.Model)
             return Results.BadRequest(new { code = "ai.model.configuration_unavailable" });
+        if (!await dbContext.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                item.Provider == request.Provider, cancellationToken))
+            return Results.Conflict(new { code = "ai.provider.not_registered" });
 
         var replay = await IntelligenceAdminMutationSupport.CheckAsync(context, actor,
             idempotencyStore, "intelligence.models.register", request, cancellationToken);
@@ -118,6 +121,9 @@ internal static class IntelligenceModelCatalogEndpoints
         if (entry is null) return Results.NotFound(new { code = "ai.model.not_found" });
         if (entry.Revision != request.BaseRevision)
             return Results.Conflict(new { code = "ai.model.revision_conflict" });
+        if (!await dbContext.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
+                item.Provider == entry.Provider && item.Enabled, cancellationToken))
+            return Results.Conflict(new { code = "ai.provider.disabled" });
         var probe = probes.Single(x => x.Provider == entry.Provider);
         if (probe.Availability.Model != entry.Model)
             return Results.Conflict(new { code = "ai.model.configuration_changed" });
