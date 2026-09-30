@@ -135,7 +135,8 @@ test("evidence preserves a failed selection and queues once with explicit local 
   await capture("evidence-320-saving.png", 320, 720);
   await page.evaluate(() => (window as typeof window & { releaseEvidenceDigest: () => void }).releaseEvidenceDigest());
   await expect(evidence).toHaveAttribute("aria-busy", "false");
-  await expect(evidence.getByRole("status")).toContainText("تا پذیرش سرور رسمی نیست");
+  await expect(evidence.locator(".evidence-feedback[role='status']"))
+    .toContainText("تا پذیرش سرور رسمی نیست");
   await expect(evidence.locator(".pmcs-file-input-name")).toHaveText("فایلی انتخاب نشده");
   await expect(save).toBeDisabled();
   const attachments = await readAttachments();

@@ -17,15 +17,19 @@ test("local evidence stays provisional and revoked project access stops new atta
   const input = evidence.getByLabel("عکس یا سند پی‌دی‌اف", { exact: true });
   const save = evidence.getByRole("button", { name: "ذخیره مدرک روی این دستگاه", exact: true });
   async function capture(name: string, width: number, height: number, state: string) {
-    await expect(evidence).toHaveAttribute("data-project-read-state", state);
+    const target = state === "forbidden"
+      ? page.getByRole("heading", { name: "دسترسی به پروژه تأیید نشد" }) : evidence;
+    if (state === "forbidden") await expect(page.locator("main")).toHaveAttribute("data-command-read-state", state);
+    else await expect(evidence).toHaveAttribute("data-project-read-state", state);
     await page.evaluate(() => document.fonts.ready);
     await expect.poll(async () => {
-      await evidence.evaluate(element => window.scrollTo({
+      await target.evaluate(element => window.scrollTo({
         top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 260), behavior: "instant",
       })).catch(() => undefined);
       await page.waitForTimeout(150);
-      const box = await evidence.boundingBox();
-      return Boolean(box && box.y >= 140 && box.y + box.height <= height - 20);
+      const box = await target.boundingBox();
+      return Boolean(box && box.y >= (state === "forbidden" ? 40 : 140) &&
+        box.y + box.height <= height - 20);
     }, { timeout: 15_000 }).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
@@ -88,15 +92,13 @@ test("local evidence stays provisional and revoked project access stops new atta
 
   readStatus = 403;
   await page.context().setOffline(false);
-  await expect(evidence).toHaveAttribute("data-project-read-state", "forbidden");
-  await expect(input).toBeDisabled();
-  await expect(evidence.getByRole("button", { name: "ذخیره مدرک غیرفعال است" })).toBeDisabled();
-  await expect(evidence.getByRole("alert")).toContainText("مدرک تازه روی این دستگاه صف نمی‌شود");
+  await expect(page.getByRole("heading", { name: "دسترسی به پروژه تأیید نشد" })).toBeVisible();
+  await expect(evidence).toHaveCount(0);
   expect(await attachmentCount()).toBe(2);
   await capture("evidence-320-access-revoked.png", 320, 720, "forbidden");
 
   readStatus = 200;
-  await page.reload();
+  await page.getByRole("button", { name: "تلاش دوباره" }).click();
   await expect(evidence).toHaveAttribute("data-project-read-state", "current");
   await expect(input).toBeEnabled();
   await attach("restored-proof.png");
