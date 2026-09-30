@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createAmendment,
   createContract,
@@ -27,7 +27,7 @@ import {
   type PurchaseOrderModel,
   type PurchaseRequestModel,
 } from "@/lib/commercial";
-import { formatAmountFa, toUserMessage } from "@/lib/localization";
+import { ApiRequestError, formatAmountFa, toUserMessage } from "@/lib/localization";
 import { getSupplyState, type SupplyItemModel } from "@/lib/supply";
 
 interface CommercialControlProps {
@@ -50,6 +50,8 @@ export function CommercialControl(props: CommercialControlProps) {
   const [supplyItems, setSupplyItems] = useState<readonly SupplyItemModel[]>([]);
   const [state, setState] = useState<CommercialStateModel | null>(null);
   const [message, setMessage] = useState("در حال دریافت رجیستر قرارداد و خرید…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [partyCode, setPartyCode] = useState("");
@@ -92,12 +94,23 @@ export function CommercialControl(props: CommercialControlProps) {
   const activeContracts = contracts.filter((contract) => contract.status === "Active");
   const approvedRequests = requests.filter((request) => request.status === "Approved");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    setParties([]);
+    setContracts([]);
+    setAmendments([]);
+    setRequests([]);
+    setOrders([]);
+    setSupplyItems([]);
+    setState(null);
     if (!props.isOnline) {
-      setMessage("رجیستر قرارداد و خرید برخط‌محور است؛ داده ثبت‌شده سرور تغییری نمی‌کند.");
-      return;
+      setReadState("offline");
+      setMessage("رجیستر قرارداد و خرید هنگام اتصال به سرور در دسترس است.");
+      return false;
     }
 
+    setReadState("loading");
+    setMessage("در حال دریافت رجیستر قرارداد و خرید…");
     try {
       const [loadedParties, loadedContracts, loadedAmendments, loadedRequests, loadedOrders, loadedState, loadedSupplyState] = await Promise.all([
         listParties(props.apiBaseUrl, identity, props.projectId),
@@ -108,6 +121,7 @@ export function CommercialControl(props: CommercialControlProps) {
         getCommercialState(props.apiBaseUrl, identity, props.projectId),
         getSupplyState(props.apiBaseUrl, identity, props.projectId).catch(() => null),
       ]);
+      if (requestId !== readSequence.current) return false;
       setParties(loadedParties);
       setContracts(loadedContracts);
       setAmendments(loadedAmendments);
@@ -115,9 +129,16 @@ export function CommercialControl(props: CommercialControlProps) {
       setOrders(loadedOrders);
       setState(loadedState);
       setSupplyItems(loadedSupplyState?.items.filter((item) => item.status === "Active") ?? []);
+      setReadState("current");
       setMessage(commercialStateMessage(loadedState));
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "دریافت رجیستر قرارداد و خرید ناموفق بود."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به رجیستر قرارداد و خرید این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "رجیستر قرارداد و خرید دریافت نشد."));
+      return false;
     }
   }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
 
@@ -127,14 +148,22 @@ export function CommercialControl(props: CommercialControlProps) {
   }, [load, props.refreshToken]);
 
   async function run(id: string, action: () => Promise<unknown>, success: string): Promise<boolean> {
+    if (!props.isOnline || readState !== "current" || busyId !== null) return false;
     setBusyId(id);
     try {
       await action();
+      if (!await load()) return false;
       setMessage(success);
-      await load();
       props.onChanged?.();
       return true;
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        setParties([]); setContracts([]); setAmendments([]); setRequests([]); setOrders([]); setSupplyItems([]); setState(null);
+        setReadState("forbidden");
+        setMessage("دسترسی به رجیستر قرارداد و خرید این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+        return false;
+      }
       setMessage(toUserMessage(error, "عملیات قرارداد و خرید ناموفق بود."));
       return false;
     } finally {
@@ -300,8 +329,18 @@ export function CommercialControl(props: CommercialControlProps) {
     ), "وضعیت تعهد به‌روزرسانی شد.");
   }
 
+  if (readState !== "current") return (
+    <article className="operational-card commercial-control" id="commercial" data-testid="commercial-control" data-read-state={readState}>
+      <div className="card-heading"><div><p className="eyebrow">کنترل پایه قرارداد و تدارکات</p><h2>رجیستر قرارداد، الحاقیه و تعهد خرید</h2></div></div>
+      <p className={`microcopy ${readState === "loading" || readState === "offline" ? "read-truth-loading" : "read-truth-danger"}`}
+        role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {props.isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت رجیستر قرارداد و خرید</button>}
+    </article>
+  );
+
   return (
-    <article className="operational-card commercial-control" id="commercial">
+    <article className="operational-card commercial-control" id="commercial" data-testid="commercial-control" data-read-state={readState}>
       <div className="card-heading">
         <div>
           <p className="eyebrow">کنترل پایه قرارداد و تدارکات</p>
@@ -348,7 +387,7 @@ export function CommercialControl(props: CommercialControlProps) {
             <button type="submit" disabled={!props.isOnline || busyId === "new-contract"}>ثبت پیش‌نویس قرارداد</button>
           </form>
 
-          <div className="finance-list">
+          <div className="finance-list" data-testid="commercial-contract-list">
             {contracts.slice(0, 6).map((item) => <div className="finance-item" key={item.id}>
               <div><strong>{item.number} · {item.title}</strong><span>{moneyOrUnknown(item.originalApprovedAmount, item.currencyCode)}</span><small>{contractStatusLabel(item.status)} · نسخه {item.revision.toLocaleString("fa-IR")}</small></div>
               <div className="review-actions">

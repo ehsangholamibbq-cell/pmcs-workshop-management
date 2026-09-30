@@ -5738,3 +5738,24 @@ output {
   .login-admin-fields { grid-template-columns: 1fr; }
   .login-admin-fields .wide { grid-column: auto; }
 }
+
+.commercial-control[data-read-state="loading"] > .microcopy,
+.commercial-control[data-read-state="offline"] > .microcopy,
+.commercial-control[data-read-state="unavailable"] > .microcopy,
+.commercial-control[data-read-state="forbidden"] > .microcopy {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--status-info);
+  border-radius: 0.8rem;
+  background: var(--status-info-surface);
+}
+.commercial-control[data-read-state="offline"] > .microcopy {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+.commercial-control[data-read-state="unavailable"] > .microcopy,
+.commercial-control[data-read-state="forbidden"] > .microcopy {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
