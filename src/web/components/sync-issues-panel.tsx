@@ -44,6 +44,7 @@ export function SyncIssuesPanel({ apiBaseUrl, tenantId, userId, projectId, isOnl
   const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
+  const [commandAccessRevoked, setCommandAccessRevoked] = useState(false);
   const [currentDeviceId, setCurrentDeviceId] = useState("");
 
   const load = useCallback(async (): Promise<boolean> => {
@@ -52,6 +53,7 @@ export function SyncIssuesPanel({ apiBaseUrl, tenantId, userId, projectId, isOnl
     setVisibleScope(null);
     setDevices([]);
     setMessage("");
+    setCommandAccessRevoked(false);
     setLocalReady(false);
     setLocalScope(null);
     setLoadingFailed(false);
@@ -117,6 +119,7 @@ export function SyncIssuesPanel({ apiBaseUrl, tenantId, userId, projectId, isOnl
     setDeviceReadState("forbidden");
     setVisibleScope(readScope);
     setMessage("");
+    setCommandAccessRevoked(true);
   }
 
   async function resolve(issue: OperationIssue, resolution: "keep-server" | "reapply") {
@@ -268,7 +271,9 @@ export function SyncIssuesPanel({ apiBaseUrl, tenantId, userId, projectId, isOnl
         {effectiveDeviceState === "loading" ? "در حال دریافت دستگاه‌های ثبت‌شده از سرور…" :
           effectiveDeviceState === "offline" ? "صف و تعارض‌های این دستگاه محلی‌اند؛ فهرست و لغو دستگاه‌های حساب فقط با اتصال و پاسخ جاری سرور ممکن است." :
           effectiveDeviceState === "unavailable" ? "فهرست دستگاه‌های حساب دریافت نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود." :
-          effectiveDeviceState === "forbidden" ? "دسترسی به دستگاه‌های حساب تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود." :
+          effectiveDeviceState === "forbidden" ? commandAccessRevoked
+            ? "فرمان انجام نشد؛ دسترسی دوباره تأیید نشد و داده و فرمان قبلی نمایش داده نمی‌شود."
+            : "دسترسی به دستگاه‌های حساب تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود." :
           visibleDevices.length ? "دستگاه‌های حساب با پاسخ جاری سرور تأیید شدند." : "دستگاه ثبت‌شده‌ای برای این حساب گزارش نشد."}
       </p>
       {isOnline && (effectiveDeviceState === "unavailable" || effectiveDeviceState === "forbidden") &&

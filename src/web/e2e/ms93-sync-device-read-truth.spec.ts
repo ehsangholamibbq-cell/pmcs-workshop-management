@@ -98,6 +98,7 @@ test("local sync diagnostics remain distinct from current account devices and re
   await panel.getByRole("button", { name: "لغو نشست و مجوز آفلاین" }).click();
   await expect(panel).toHaveAttribute("data-device-read-state", "forbidden");
   expect(revokeCount).toBe(1);
+  await expect(panel.locator(".device-read-message")).toContainText("فرمان انجام نشد");
   await capture("sync-device-320-command-revoked.png", 320, 720, "forbidden");
 
   writeFileSync(resolve(output, "index.json"), JSON.stringify({ contractVersion: 1,
