@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت: `VX-G1 Audit Complete با Run 401؛ VX-G3 Contract/Prototype پذیرفته با Run 469؛ VX-G4 Navigation شش Shell و Feedback پروفایل/هویت/ظاهر ورود/Wizard در MS64–72، G4/G5 باز`
+- وضعیت زنده: `VX-G1 Audit Complete؛ VX-G3 Contract/Prototype؛ VX-G4 Migration Complete در MS99؛ VX-G5 Qualified در MS100 پس از Source/Docs CI مستقل`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -10,7 +10,9 @@
 > بخش‌های ۱ تا ۶ یافته‌های تاریخی baseline روز ۲۰۲۶-۰۹-۱۷ هستند. وضعیت زندهٔ
 > مسیرها و stateها و Evidence جدید در پیوست UX2-MS33 پایین و سند
 > `pmcs-v1.1-route-state-baseline.md` ثبت می‌شود؛ یافتهٔ تاریخی را وضعیت فعلی
-> لوگو یا Design System تفسیر نکنید.
+> لوگو یا Design System تفسیر نکنید. وضعیت تاریخی جدول بخش ۵ به تاریخ Baseline
+> تعلق دارد؛ وضعیت جاری G4 در `vx-g4-active-consumer-audit.md` و نتیجهٔ G5
+> در `vx-g5-qualification-contract.md` و Checkpoint MS100 ثبت شده‌اند.
 
 ## ۱. دامنه ممیزی
 
