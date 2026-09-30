@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.145.0`
+- نسخه: `1.146.0`
 - آخرین کنترل: ۲۰۲۶-۱۰-۰۱
-- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 DoR در جریان؛ QA1 باز`
+- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 در اجرا؛ QA1 باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -94,18 +94,18 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.186.0` |
-| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.2.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.187.0` |
+| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.3.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
-وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1، PRJ1، G4 و G5/UX2 بسته؛ F01–F10 و COL1 متصل؛ DoR مستقل INT1 در `docs/architecture/pmcs-v1.1-int1-foundation-dor.md` ثبت شده و Runtime/Gate خروج INT1، QA1 و قفل V1.1 باز می‌مانند.
+وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1، PRJ1، G4 و G5/UX2 بسته؛ F01–F10 و COL1 متصل؛ DoR مستقل INT1 با Run 645 هشت Job سبز بسته شد. Runtime محدود INT1 در حال اجراست و Gate خروج آن، QA1 و قفل V1.1 باز می‌مانند.
 
 تصمیم مالک محصول برای INT1: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و
 Anthropic/Claude با Profile نسخه‌دار، Permission مستقل مدیر ارشد و تفویض صریح محدود،
 سقف مصرف/داده، fallback هم‌سطح و audit lineage طبق `docs/adr/0032-int1-controlled-multi-provider-selection.md`
-مصوب است. ثبت تصمیم، اجرای Runtime یا بسته‌شدن Gate INT1 محسوب نمی‌شود.
+مصوب است. قرارداد اجرای محدود در `docs/architecture/pmcs-v1.1-int1-runtime-contract.md` ثبت شده و تصمیم به‌تنهایی Gate خروج INT1 را نمی‌بندد.
 
 ## آخرین تصمیم‌های مؤثر و Supersededها
 
@@ -1077,8 +1077,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**MS99 با Source Run 623 و docs Run 624 هشت Job سبز و Safe، G4 را بست. MS100 با Source `fd13282` و Run 640 هشت Job سبز، Artifact `11124980874` معتبر/مرور شده و docs `c950ec0`/Run 642 هشت Job سبز، G5 و UX2 را بست. INT1-MS01، DoR و Gap Analysis را از HEAD `52a56f9` ثبت می‌کند؛ پس از CI مستقل آن، MS02 Store و مجوزهای مستقل است.**
-INT1/QA1، Production و قفل V1.1 Gateهای جدا می‌مانند.
+**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1-MS01 DoR از Parent `52a56f9` در Commit `241892f` و Run 645 هشت Job سبز بست. Store مجوز، Catalog/Profile، سه آداپتور، Registry خواندنی و Reference Run محدود تا Source `cc6c7c3` پیاده شده‌اند. گام جاری، CI مستقل همان SHA، آزمون منفی end-to-end، اتصال واقعی سه Provider و بررسی Gate خروج ADR 0032 است.**
+Agent Stage 2، QA1، Production و قفل V1.1 Gateهای جدا می‌مانند.
 
 ## Resume Rule
 

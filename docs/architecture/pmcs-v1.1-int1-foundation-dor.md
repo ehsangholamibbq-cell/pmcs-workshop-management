@@ -1,8 +1,8 @@
 # INT1 — Definition of Ready و قرارداد Foundation
 
 - شناسه: `PMCS-V1.1-INT1-DOR-001`
-- نسخه: `1.0.0`
-- وضعیت: DoR؛ این سند به‌تنهایی Runtime یا Gate خروج INT1 را نمی‌بندد.
+- نسخه: `1.1.0`
+- وضعیت: DoR مستقل با Run 645 (`36783866696`) و هشت Job سبز بسته شد؛ این سند به‌تنهایی Gate خروج INT1 را نمی‌بندد.
 - Parent: `PMCS-V1.1-UX2-MS100-C1`، SHA آغاز `52a56f9967309c7961e132d68504c7c679159bcd`
 - تصمیم لازم‌الاجرا: [ADR 0032](../adr/0032-int1-controlled-multi-provider-selection.md)
 
@@ -50,3 +50,7 @@ Grant مدیر ارشد در Store مستقل با Actor ID، Tenant مبنا ب
 ## مرز خروج
 
 Stage 2 Agent خواندنی کامل، RAG، Executive Intelligence UI، Draft/Controlled Write، Chat عمومی `@PMCS`، QA1 و قفل V1.1 در این Gate شروع نمی‌شوند. هیچ endpoint ناقص یا Profile فعال بدون Gate خروج INT1 در Production پیش‌فرض روشن نمی‌شود.
+
+## ثبت شروع اجرا
+
+DoR در Commit `241892fca22a995e31f922d35320eb771059d346` با CI شمارهٔ ۶۴۵ بسته شد. پس از آن Store Grant، Catalog و Profile نسخه‌دار، سه Probe Provider، Tool Registry و مسیر Reference Run پشت Feature Flag خاموش‌به‌پیش‌فرض در Commitهای افزایشی شاخه پیاده‌سازی شدند. قرارداد Runtime و Gateهای باقیمانده در [سند Runtime مرجع](pmcs-v1.1-int1-runtime-contract.md) ثبت است. این ثبت، MS02–MS06 یا خروج INT1 را Safe اعلام نمی‌کند.
