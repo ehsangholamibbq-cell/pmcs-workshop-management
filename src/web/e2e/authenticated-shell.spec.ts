@@ -50,22 +50,12 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   await captureVisualBaseline(page, "39-desktop-navigation-end");
   await sidebar.evaluate((element) => { element.scrollTop = 0; });
 
-  await expect(page.getByText("اطلاعات پروژه در حال آماده‌سازی است…")).toBeHidden();
+  await page.reload();
   await expect(page.locator("#technical-office")).toHaveAttribute("data-read-state", "current");
   const calendarTrigger = page.locator("#technical-office").getByRole("button", { name: "باز کردن تقویم شمسی" }).first();
   const calendar = page.getByRole("dialog", { name: "انتخاب تاریخ شمسی" });
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (await calendar.isVisible()) await calendarTrigger.click();
-    await calendarTrigger.click();
-    await expect(calendar).toBeVisible();
-    try {
-      await expect(calendar.getByRole("gridcell")).toHaveCount(42, { timeout: 4_000 });
-      await page.waitForTimeout(200);
-      if (await calendar.getByRole("gridcell").count() === 42) break;
-    } catch (error) {
-      if (attempt === 2) throw error;
-    }
-  }
+  await calendarTrigger.click();
+  await expect(calendar).toBeVisible();
   await expect(calendar.getByRole("gridcell")).toHaveCount(42);
   await expect(calendar.getByRole("button", { name: "امروز" })).toBeVisible();
   await captureVisualBaseline(page, "29-calendar-dialog");

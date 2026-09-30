@@ -27,7 +27,7 @@ test("independent route, module, RTL, keyboard, accessibility and responsive mat
     await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
     if (name === "project") {
       await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "current");
-      await expect.poll(() => page.locator('[data-testid="fact-location"] option').count()).toBeGreaterThan(1);
+      await expect.poll(() => page.locator('#fact-location option').count()).toBeGreaterThan(1);
     }
     if (name === "users") await expect(page.getByRole("heading", { name: "دعوت‌های اخیر", exact: true })).toBeVisible();
     if (name === "bootstrap") await expect(page.locator(`option[value="${projectId}"]`)).toBeAttached();
