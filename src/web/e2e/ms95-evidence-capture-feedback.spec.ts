@@ -26,8 +26,10 @@ test("evidence preserves a failed selection and queues once with explicit local 
       return Boolean(box && box.y >= 130 && box.y + box.height < height - 15);
     }).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const controlBox = await evidence.locator(".pmcs-file-input-control").boundingBox();
     const nameBox = await evidence.locator(".pmcs-file-input-name").boundingBox();
-    expect(nameBox?.width).toBeGreaterThan(70);
+    expect(controlBox?.width).toBeGreaterThan(180);
+    expect(nameBox?.height).toBeLessThan(80);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
     expect(bytes.readUInt32BE(16)).toBe(width);
     expect(bytes.readUInt32BE(20)).toBe(height);
