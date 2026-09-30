@@ -103,6 +103,18 @@ fi
 current_step="checking the development identity session"
 tenant_id="11111111-1111-1111-1111-111111111111"
 user_id="22222222-2222-2222-2222-222222222222"
+int1_project_id="33333333-3333-3333-3333-333333333333"
+int1_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --request POST \
+  --header "X-Tenant-Id: ${tenant_id}" \
+  --header "X-User-Id: ${user_id}" \
+  --header 'Content-Type: application/json' \
+  --data '{"requestId":"55555555-5555-4555-8555-555555555555","question":"Status?"}' \
+  "http://127.0.0.1:${port}/api/v1/projects/${int1_project_id}/intelligence/reference-runs")"
+if [[ "${int1_status}" != "404" ]]; then
+  echo "INT1 reference Run must remain default off; received HTTP ${int1_status}." >&2
+  exit 1
+fi
 curl --silent --fail \
   --header "X-Tenant-Id: ${tenant_id}" \
   --header "X-User-Id: ${user_id}" \

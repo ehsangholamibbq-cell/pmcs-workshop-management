@@ -79,6 +79,37 @@ public sealed class ReferenceModelGatewayTests
         Assert.Equal("ai.provider.invalid_response", answerError.Code);
     }
 
+    [Theory]
+    [InlineData("OpenAI")]
+    [InlineData("GoogleGemini")]
+    [InlineData("AnthropicClaude")]
+    public async Task ProviderFailureAndOversizedToolContextNeverYieldAnAnswer(string provider)
+    {
+        var tools = new ReportingModule().Descriptor.Tools.Take(1).ToArray();
+        using var unavailableClient = new HttpClient(new FixtureHandler(provider,
+            Guid.NewGuid(), responseStatus: HttpStatusCode.ServiceUnavailable));
+        var unavailable = await Assert.ThrowsAsync<ReferenceGatewayException>(() =>
+            Create(provider, unavailableClient).DecideToolAsync("x", tools,
+                CancellationToken.None));
+        Assert.Equal("ai.provider.unavailable", unavailable.Code);
+
+        using var rejectedClient = new HttpClient(new FixtureHandler(provider,
+            Guid.NewGuid(), responseStatus: HttpStatusCode.Unauthorized));
+        var rejected = await Assert.ThrowsAsync<ReferenceGatewayException>(() =>
+            Create(provider, rejectedClient).DecideToolAsync("x", tools,
+                CancellationToken.None));
+        Assert.Equal("ai.provider.rejected", rejected.Code);
+
+        var handler = new FixtureHandler(provider, Guid.NewGuid());
+        using var client = new HttpClient(handler);
+        var adapter = Create(provider, client);
+        var oversized = await Assert.ThrowsAsync<ReferenceGatewayException>(() =>
+            adapter.AnswerAsync("x", tools[0].Id, new string('X', 12_001), 100,
+                CancellationToken.None));
+        Assert.Equal("ai.profile.limit_exceeded", oversized.Code);
+        Assert.Empty(handler.Requests);
+    }
+
     private static IReferenceModelAdapter Create(string provider, HttpClient client)
     {
         var config = new ModelProviderConfiguration("configured", "test-secret");
@@ -91,7 +122,8 @@ public sealed class ReferenceModelGatewayTests
     }
 
     private sealed class FixtureHandler(string provider, Guid projectId,
-        bool invalidTool = false, bool invalidAnswer = false) : HttpMessageHandler
+        bool invalidTool = false, bool invalidAnswer = false,
+        HttpStatusCode responseStatus = HttpStatusCode.OK) : HttpMessageHandler
     {
         internal List<string> Requests { get; } = [];
 
@@ -99,6 +131,8 @@ public sealed class ReferenceModelGatewayTests
             CancellationToken cancellationToken)
         {
             Requests.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
+            if (responseStatus != HttpStatusCode.OK)
+                return new HttpResponseMessage(responseStatus);
             var first = Requests.Count == 1;
             var json = (provider, first) switch
             {
