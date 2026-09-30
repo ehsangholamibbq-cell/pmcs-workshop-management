@@ -22,7 +22,8 @@ internal sealed record ReferenceRunMetadata(Guid Id, Guid SessionId,
     Guid ModelCatalogId, int ModelVersion, string Provider, string Model,
     string PromptVersion, string PolicyVersion, string? ToolId, string? ToolDecision,
     bool Fallback, string? FallbackReason, int InputTokens, int OutputTokens,
-    long CostMicrounits, string? ErrorCode, DateTimeOffset RequestedAt,
+    long CostMicrounits, long? LatencyMilliseconds, string? ErrorCode,
+    DateTimeOffset RequestedAt,
     DateTimeOffset? CompletedAt)
 {
     internal static ReferenceRunMetadata From(IntelligenceReferenceRun run) => new(
@@ -31,7 +32,8 @@ internal sealed record ReferenceRunMetadata(Guid Id, Guid SessionId,
         run.ModelCatalogId, run.ModelVersion, run.Provider, run.Model,
         run.PromptVersion, run.PolicyVersion, run.ToolId, run.ToolDecision,
         run.Fallback, run.FallbackReason, run.InputTokens, run.OutputTokens,
-        run.CostMicrounits, run.ErrorCode, run.RequestedAt, run.CompletedAt);
+        run.CostMicrounits, run.LatencyMilliseconds, run.ErrorCode,
+        run.RequestedAt, run.CompletedAt);
 }
 
 internal static class IntelligenceReferenceRunEndpoints
@@ -240,6 +242,8 @@ internal static class IntelligenceReferenceRunEndpoints
                     ["toolId"] = run.ToolId, ["toolDecision"] = run.ToolDecision,
                     ["fallbackReason"] = run.FallbackReason,
                     ["inputTokens"] = run.InputTokens, ["outputTokens"] = run.OutputTokens,
+                    ["costMicrounits"] = run.CostMicrounits,
+                    ["latencyMilliseconds"] = run.LatencyMilliseconds,
                     ["errorCode"] = run.ErrorCode
                 }, http.TraceIdentifier),
             new OutboxEnvelope(Guid.NewGuid(), actor.TenantId, projectId,

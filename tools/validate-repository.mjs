@@ -317,6 +317,13 @@ for (const [project, allowed] of allowedProjectReferences) {
 
 const moduleFiles = walk(join(root, "src/backend"))
   .filter((file) => file.endsWith(".cs") && file.includes("Pmcs.Modules."));
+const referenceGateway = readFileSync(join(root,
+  "src/backend/Pmcs.Modules.Intelligence/Services/ReferenceModelGateway.cs"), "utf8");
+assert.doesNotMatch(referenceGateway, /DbContext|Npgsql|ConnectionString|ExecuteSql|FromSql|SqlCommand/,
+  "INT1 provider adapters must not reach PMCS persistence or SQL.");
+assert.match(referenceGateway, /api\.openai\.com\/v1\/responses/);
+assert.match(referenceGateway, /generativelanguage\.googleapis\.com\/v1beta/);
+assert.match(referenceGateway, /api\.anthropic\.com\/v1\/messages/);
 for (const file of moduleFiles) {
   const contents = readFileSync(file, "utf8");
   const currentModule = file.match(/src\/backend\/(Pmcs\.Modules\.[^/]+)/)?.[1];

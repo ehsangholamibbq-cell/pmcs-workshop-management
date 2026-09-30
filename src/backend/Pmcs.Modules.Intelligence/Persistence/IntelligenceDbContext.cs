@@ -127,6 +127,7 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
             builder.Property(x => x.CompletedAt).HasColumnName("completed_at");
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.HasIndex(x => new { x.TenantId, x.ProjectId, x.RequestedAt });
+            builder.Ignore(x => x.LatencyMilliseconds);
         });
 
         modelBuilder.Entity<InsightGenerationRequest>(builder =>

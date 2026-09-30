@@ -37,7 +37,7 @@ public sealed class IntelligenceModule : IModule
             endpoint,
             TimeSpan.FromSeconds(timeoutSeconds));
         services.AddSingleton(settings);
-        services.AddSingleton(new HttpClient());
+        services.AddSingleton(new HttpClient { Timeout = Timeout.InfiniteTimeSpan });
         services.AddSingleton<IAdvisoryModelClient, OpenAiResponsesClient>();
         services.AddSingleton<IModelProviderProbe>(provider => new OpenAiModelProbe(
             provider.GetRequiredService<HttpClient>(),

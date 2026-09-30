@@ -34,6 +34,8 @@ public sealed class IntelligenceReferenceRunTests
         run.Complete(20, 10, 300, now.AddSeconds(1));
         Assert.Equal(IntelligenceRunStatus.Completed, run.Status);
         Assert.Equal("reporting.catalog.list", run.ToolId);
+        Assert.Equal(1_000L, run.LatencyMilliseconds);
+        Assert.Equal(300L, run.CostMicrounits);
         Assert.Throws<InvalidOperationException>(() => run.Fail("ai.provider.timeout", now));
     }
 

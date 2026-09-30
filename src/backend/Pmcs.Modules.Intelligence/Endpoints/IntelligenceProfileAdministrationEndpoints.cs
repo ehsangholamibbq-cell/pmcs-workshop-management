@@ -7,6 +7,7 @@ using Pmcs.BuildingBlocks.Web;
 using Pmcs.Modules.Intelligence.Domain;
 using Pmcs.Modules.Intelligence.Persistence;
 using Pmcs.Modules.Intelligence.Services;
+using Pmcs.Modules.Projects.Contracts;
 
 namespace Pmcs.Modules.Intelligence.Endpoints;
 
@@ -62,6 +63,7 @@ internal static class IntelligenceProfileAdministrationEndpoints
         profiles.MapGet("", ListAsync);
         profiles.MapPost("", PublishAsync);
         profiles.MapGet("/selection", GetSelectionAsync);
+        profiles.MapGet("/preview", PreviewAsync);
         profiles.MapPost("/selection", SelectAsync);
         profiles.MapPost("/rollback", RollbackAsync);
     }
@@ -92,6 +94,60 @@ internal static class IntelligenceProfileAdministrationEndpoints
         return selection is null
             ? Results.NotFound(new { code = "ai.profile.selection_not_found" })
             : Results.Ok(IntelligenceSelectionResponse.From(selection));
+    }
+
+    private static async Task<IResult> PreviewAsync(
+        Guid tenantId, Guid projectId, Guid? modelId,
+        ICurrentActor actor, IntelligenceAdministrationAccess access,
+        IntelligenceDbContext dbContext, IEnumerable<IReferenceModelAdapter> adapters,
+        IProjectPermissionService permissions, IProjectDirectory projects,
+        CancellationToken cancellationToken)
+    {
+        if (!actor.IsAuthenticated) return Results.Unauthorized();
+        if (!await CanReadTenantAsync(actor, tenantId, access, cancellationToken))
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        if (!await projects.ExistsAsync(tenantId, projectId, cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(tenantId, actor.UserId,
+                projectId, "insights.generate", cancellationToken))
+            return Results.Ok(new { allowed = false, code = "ai.profile.scope_denied" });
+        var selection = await dbContext.ProfileSelections.AsNoTracking().SingleOrDefaultAsync(
+            item => item.TenantId == tenantId && item.UseCase == "int1.reference",
+            cancellationToken);
+        if (selection is null) return Results.NotFound(new { code = "ai.profile.selection_missing" });
+        var version = await dbContext.ProfileVersions.AsNoTracking().SingleOrDefaultAsync(
+            item => item.Id == selection.ProfileVersionId && item.TenantId == tenantId,
+            cancellationToken);
+        if (version is null) return Results.Conflict(new { code = "ai.profile.selection_invalid" });
+        var profile = version.ToPolicy();
+        var requestedId = modelId ?? selection.ModelId;
+        var allowedIds = profile.AllowedModelIds.ToArray();
+        var catalog = (await dbContext.ModelCatalog.AsNoTracking()
+            .Where(item => allowedIds.Contains(item.Id))
+            .ToArrayAsync(cancellationToken)).Select(item => item.ToPolicy()).ToArray();
+        var selected = catalog.SingleOrDefault(item => item.Id == requestedId);
+        if (selected is null)
+            return Results.Ok(new { allowed = false,
+                code = ModelSelectionPolicy.Select(profile, catalog, tenantId, projectId,
+                    IntelligenceDataClass.Confidential, 0, requestedId).Code });
+        if (selected.InputMicrounitsPerToken < 1 ||
+            selected.OutputMicrounitsPerToken < 1)
+            return Results.Ok(new { allowed = false, code = "ai.profile.pricing_unavailable" });
+        var estimatedCost = (long)profile.MaximumInputTokens * selected.InputMicrounitsPerToken +
+            (long)profile.MaximumOutputTokens * selected.OutputMicrounitsPerToken;
+        var decision = ModelSelectionPolicy.Select(profile, catalog, tenantId,
+            projectId, IntelligenceDataClass.Confidential, estimatedCost, requestedId);
+        var configured = adapters.Any(item => item.Provider == selected.Provider &&
+            item.ConfiguredModel == selected.Model && item.IsConfigured);
+        return Results.Ok(new
+        {
+            allowed = decision.Allowed && configured && profile.MaximumOutputTokens >= 64,
+            code = decision.Allowed && !configured ? "ai.provider.not_configured" :
+                decision.Allowed && profile.MaximumOutputTokens < 64
+                    ? "ai.profile.limit_exceeded" : decision.Code,
+            profileVersionId = profile.Id, profileVersion = profile.Version,
+            modelId = requestedId, estimatedCostMicrounits = estimatedCost,
+            maximumCostMicrounits = profile.MaximumCostMicrounits
+        });
     }
 
     private static async Task<IResult> PublishAsync(

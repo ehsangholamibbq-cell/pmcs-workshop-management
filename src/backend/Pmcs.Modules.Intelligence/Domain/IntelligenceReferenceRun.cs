@@ -33,6 +33,8 @@ internal sealed class IntelligenceReferenceRun
     public DateTimeOffset? ValidatedAt { get; private set; }
     public DateTimeOffset? StartedAt { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
+    public long? LatencyMilliseconds => StartedAt.HasValue && CompletedAt.HasValue
+        ? Math.Max(0, (long)(CompletedAt.Value - StartedAt.Value).TotalMilliseconds) : null;
     public long Revision { get; private set; }
 
     private IntelligenceReferenceRun() { }

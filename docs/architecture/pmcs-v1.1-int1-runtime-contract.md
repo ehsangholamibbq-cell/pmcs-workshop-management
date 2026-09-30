@@ -12,6 +12,8 @@
 
 قبل از Run، `insights.generate`، وجود پروژه، انتخاب Profile نسخه‌دار، scope، طبقه‌بندی `Confidential`، قابلیت‌های `StructuredOutput | ToolCalling`، مدل فعال و تأییدشده، پیکربندی adapter و نرخ مصرف بررسی می‌شوند. Tool Registry در هر فراخوانی `insights.generate` و Permission منبع manifest را دوباره می‌سنجد و فقط به Application Contract ماژول مالک می‌رود. خروجی‌های Reporting فقط metadata هستند؛ Collaboration حداکثر هشت پیام، هر متن تا ۵۰۰ نویسه، بدون فایل/ضمیمه برمی‌گرداند. آداپتور هیچ SQL، URL ابزار داخلی یا secret در اختیار مدل نمی‌گذارد.
 
+سطح مدیریت `GET /api/v1/intelligence/admin/profiles/preview` تصمیم مدل، محدودهٔ پروژه، مجوز اجرا، پیکربندی adapter و هزینهٔ سقف را بدون Secret نشان می‌دهد. Preview خود دسترسی اجرای مدل یا ابزار نمی‌دهد. Latency از timestampهای Run مشتق و همراه usage/cost و علت خطا در metadata/Audit ثبت می‌شود.
+
 سه آداپتور OpenAI، Google Gemini و Anthropic Claude تصمیم native function call را به شناسهٔ manifest نگاشت می‌کنند. ورودی ابزار با `projectId` درخواست و schema بسته مقایسه می‌شود. پاسخ نهایی باید یک `answer` محدود و تنها citation همان ابزار داشته باشد؛ پاسخ ناقص، ابزار ناشناخته، تغییر ابزار در fallback و مصرف بالاتر از سقف رد می‌شوند. Fallback فقط برای timeout، unavailable و invalid response به مدل تأییدشدهٔ همان Profile با محدودیت برابر انجام می‌شود.
 
 نرخ‌های `input/output microunits per token` سقف محافظه‌کارانه‌ای هستند که مدیر ارشد هنگام ثبت نسخهٔ مدل اعلام می‌کند؛ هزینهٔ ثبت‌شده برآورد محاسبه‌شده از usage Provider با این نرخ است و صورتحساب Provider نیست. مدل نسخهٔ قدیمی با نرخ صفر برای انتخاب/Run بسته می‌ماند تا نسخهٔ قیمت‌گذاری‌شده منتشر و تأیید شود. قبل از شروع، مصرف بدبینانهٔ سقف token با بودجه سنجیده می‌شود و usage نهایی دوباره بررسی می‌شود.
