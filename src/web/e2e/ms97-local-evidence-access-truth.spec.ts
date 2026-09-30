@@ -60,6 +60,11 @@ test("local evidence stays provisional and revoked project access stops new atta
   }
 
   let readStatus = 200;
+  // This scenario verifies local evidence only. Keep its queued fact out of the
+  // shared demo project's server revision so the independent restart test can sync.
+  await page.route("**/api/pmcs/api/v1/sync/operations", route => route.fulfill({ status: 503 }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/evidence/upload-sessions`,
+    route => route.fulfill({ status: 503 }));
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/command-center`, async route => {
     if (readStatus === 403) return route.fulfill({ status: 403, contentType: "application/problem+json",
       body: JSON.stringify({ status: 403, title: "Sensitive project detail" }) });
