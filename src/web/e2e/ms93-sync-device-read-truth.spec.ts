@@ -28,9 +28,25 @@ test("local sync diagnostics remain distinct from current account devices and re
       return Boolean(box && box.y >= 240 && box.y + box.height <= height - 40);
     }, { timeout: 15_000 }).toBe(true);
     await expect(panel).toHaveAttribute("data-device-read-state", state);
-    const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
+    let bytes: Buffer | null = null;
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await expect(panel).toHaveAttribute("data-device-read-state", state);
+      await page.waitForTimeout(200);
+      const candidate = await page.screenshot({ animations: "disabled", caret: "hide" });
+      const box = await message.boundingBox();
+      if (candidate.length > 10_000 && box && box.y >= 240 &&
+        box.y + box.height <= height - 40 &&
+        await panel.getAttribute("data-device-read-state") === state) {
+        bytes = candidate;
+        break;
+      }
+      await message.evaluate(element => window.scrollTo({
+        top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 360),
+        behavior: "instant",
+      })).catch(() => undefined);
+    }
+    if (!bytes) throw new Error(`Device state ${state} did not paint during ${name}`);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    expect(bytes.length).toBeGreaterThan(10_000);
     expect(bytes.readUInt32BE(16)).toBe(width);
     expect(bytes.readUInt32BE(20)).toBe(height);
     writeFileSync(resolve(output, name), bytes);

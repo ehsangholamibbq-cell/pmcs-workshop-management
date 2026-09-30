@@ -174,6 +174,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [refreshPendingCount]);
 
   const loadCommandCenter = useCallback(async () => {
+    if (projectAccessDenied.current) return;
     const requestId = ++commandReadSequence.current;
     setCommandReadVersion(requestId);
     const cached = readCachedCommandCenter(commandCenterCacheKey);
@@ -342,7 +343,10 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             commandReadState === "forbidden" ? "دسترسی به پروژه تأیید نشد" : "دریافت پروژه کامل نشد"}</h2>
           <p>{commandMessage}</p>
           {(commandReadState === "error" || commandReadState === "forbidden") && isOnline &&
-            <button type="button" onClick={() => setRefreshToken((current) => current + 1)}>تلاش دوباره</button>}
+            <button type="button" onClick={() => {
+              projectAccessDenied.current = false;
+              setRefreshToken((current) => current + 1);
+            }}>تلاش دوباره</button>}
           <Link className="primary-link" href="/">فهرست پروژه‌ها</Link>
         </section>
       </section>
