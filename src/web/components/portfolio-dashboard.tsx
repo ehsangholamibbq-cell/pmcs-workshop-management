@@ -203,7 +203,7 @@ function PortfolioDashboardContent() {
                 </div>
                 <span className="section-note">{projects.length.toLocaleString("fa-IR")} نتیجه</span>
               </div>
-              <div className="portfolio-filters" aria-label="فیلتر و مرتب‌سازی پروژه‌ها">
+              <div className="portfolio-filters" role="group" aria-label="فیلتر و مرتب‌سازی پروژه‌ها">
                 <label>
                   <span>جست‌وجو</span>
                   <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام، کد یا مدیر پروژه" />
