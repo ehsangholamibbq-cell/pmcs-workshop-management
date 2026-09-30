@@ -71,7 +71,8 @@ public sealed class ModelSelectionPolicyTests
         var manager = Guid.NewGuid();
         var first = IntelligenceProfileVersion.Publish(Profile(), manager, now);
         var second = IntelligenceProfileVersion.Publish(
-            Profile() with { Version = 2, DefaultModelId = fallbackId }, manager, now.AddMinutes(1));
+            Profile() with { Version = 2, DefaultModelId = fallbackId,
+                FallbackModelIds = [primaryId] }, manager, now.AddMinutes(1));
         var selection = IntelligenceProfileSelection.Create(first.ToPolicy(), primaryId, manager, now);
 
         selection.Change(second.ToPolicy(), fallbackId, 1, manager, now.AddMinutes(2));
