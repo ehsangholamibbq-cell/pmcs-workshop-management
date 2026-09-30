@@ -76,10 +76,11 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
       if (!props.isCurrentRead(commandVersion)) return;
       props.onChanged();
     } catch (error) {
-      if (!props.isCurrentRead(commandVersion)) return;
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         props.onAccessRevoked();
-      } else setMessage(toUserMessage(error, "ایجاد اقدام ناموفق بود."));
+      } else if (props.isCurrentRead(commandVersion)) {
+        setMessage(toUserMessage(error, "ایجاد اقدام ناموفق بود."));
+      }
     } finally {
       setIsBusy(false);
     }
@@ -106,10 +107,11 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
       if (!props.isCurrentRead(commandVersion)) return;
       props.onChanged();
     } catch (error) {
-      if (!props.isCurrentRead(commandVersion)) return;
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         props.onAccessRevoked();
-      } else setMessage(toUserMessage(error, "ثبت تصمیم ناموفق بود."));
+      } else if (props.isCurrentRead(commandVersion)) {
+        setMessage(toUserMessage(error, "ثبت تصمیم ناموفق بود."));
+      }
     } finally {
       setIsBusy(false);
     }
