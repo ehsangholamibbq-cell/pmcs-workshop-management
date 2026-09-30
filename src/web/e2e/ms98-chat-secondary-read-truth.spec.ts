@@ -102,10 +102,8 @@ test("group message reactions and attachments discard stale reads across event, 
   await expect(page.getByText("old-project.pdf", { exact: false })).toBeHidden();
   releaseRead();
   await expect(page.getByText("پیام گروه با واکنش و پیوست")).toBeVisible();
-  await expect(page.getByRole("button", { name: "واکنش‌ها" })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("button", { name: "واکنش‌ها" })).toHaveAttribute("aria-expanded", "true");
   await page.setViewportSize({ width: 320, height: 720 });
-  await page.getByRole("button", { name: "واکنش‌ها" }).click();
-  await page.getByRole("button", { name: "پیوست‌ها" }).click();
   await expect(page.getByText("دریافت واکنش‌های پیام کامل نشد")).toBeVisible();
   await expect(page.getByText("دریافت پیوست‌های پیام کامل نشد")).toBeVisible();
   await expect(page.getByText("old-project.pdf", { exact: false })).toHaveCount(0);
