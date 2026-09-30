@@ -57,6 +57,10 @@ public sealed class ModelProviderProbeTests
         Assert.Equal(ProviderProbeStatus.Available, result.Status);
         Assert.Equal("ai.provider.tool_call_verified", result.Code);
         Assert.Contains("pmcs_probe", handler.RequestBody);
+        if (provider == "GoogleGemini")
+            Assert.Contains("parametersJsonSchema", handler.RequestBody, StringComparison.Ordinal);
+        if (provider == "AnthropicClaude")
+            Assert.Contains("\"strict\":true", handler.RequestBody, StringComparison.Ordinal);
         Assert.DoesNotContain("private-test-key", handler.RequestBody);
     }
 

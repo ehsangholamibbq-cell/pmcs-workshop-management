@@ -30,6 +30,10 @@ public sealed class ReferenceModelGatewayTests
         Assert.Equal("No available reports.", answer.Answer);
         Assert.Equal(2, handler.Requests.Count);
         Assert.Contains("reporting_catalog_list", handler.Requests[0], StringComparison.Ordinal);
+        if (provider == "GoogleGemini")
+            Assert.Contains("parametersJsonSchema", handler.Requests[0], StringComparison.Ordinal);
+        if (provider == "AnthropicClaude")
+            Assert.Contains("\"strict\":true", handler.Requests[0], StringComparison.Ordinal);
         Assert.DoesNotContain("api-key", handler.Requests[0], StringComparison.OrdinalIgnoreCase);
     }
 

@@ -244,8 +244,7 @@ internal sealed class GeminiModelProbe(HttpClient client, ModelProviderConfigura
                 "Call pmcs_probe with ok=true. No other action is allowed." } } } },
             tools = new[] { new { functionDeclarations = new[] { new { name = "pmcs_probe",
                 description = "Connection compatibility test only.",
-                parameters = new { type = "OBJECT", properties = new { ok = new { type = "BOOLEAN" } },
-                    required = RequiredProbeFields } } } } },
+                parametersJsonSchema = ProbeSchema } } } },
             toolConfig = new { functionCallingConfig = new { mode = "ANY",
                 allowedFunctionNames = ToolProbeNames } },
             generationConfig = new { maxOutputTokens = 96 }
@@ -307,6 +306,7 @@ internal sealed class AnthropicModelProbe(HttpClient client, ModelProviderConfig
             messages = new[] { new { role = "user", content =
                 "Call pmcs_probe with ok=true. No other action is allowed." } },
             tools = new[] { new { name = "pmcs_probe", description = "Connection compatibility test only.",
+                strict = true,
                 input_schema = ProbeSchema } },
             tool_choice = new { type = "tool", name = "pmcs_probe" }
         });

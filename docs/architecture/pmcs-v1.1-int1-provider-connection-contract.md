@@ -28,3 +28,5 @@ Tool Registry، Profile و Reference Run محدود در `pmcs-v1.1-int1-runtime
 [Gemini generateContent](https://ai.google.dev/api/generate-content)،
 [Claude Messages](https://platform.claude.com/docs/en/api/messages/create) و
 [Claude structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
+
+در بازبینی پروتکل، Gemini برای ورودی ابزار از `parametersJsonSchema` با `additionalProperties=false` استفاده می‌کند و Claude ابزار را با `strict=true` تعریف می‌کند؛ schema، نام ابزار و citation پس از دریافت نیز در PMCS مستقل از تضمین Provider اعتبارسنجی می‌شود. مستندات رسمی فقط سازگاری شکل درخواست را پشتیبانی می‌کنند؛ نتیجهٔ اتصال زنده بدون Credential ادعا نمی‌شود.

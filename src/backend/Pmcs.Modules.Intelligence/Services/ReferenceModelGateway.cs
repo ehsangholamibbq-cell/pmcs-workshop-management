@@ -42,9 +42,9 @@ internal abstract class ReferenceModelAdapter(HttpClient client, ModelProviderCo
         additionalProperties = false
     };
     protected static string Alias(string toolId) => toolId.Replace('.', '_');
-    protected static object InputSchema(string toolId, bool gemini = false)
+    protected static object InputSchema(string toolId)
     {
-        var project = new { type = gemini ? "STRING" : "string" };
+        var project = new { type = "string" };
         var itemName = toolId switch
         {
             "reporting.runs.get" => "runId",
@@ -55,7 +55,7 @@ internal abstract class ReferenceModelAdapter(HttpClient client, ModelProviderCo
         if (itemName is not null) properties[itemName] = project;
         return new
         {
-            type = gemini ? "OBJECT" : "object", properties,
+            type = "object", properties,
             required = itemName is null ? new[] { "projectId" } : new[] { "projectId", itemName },
             additionalProperties = false
         };
@@ -261,7 +261,7 @@ internal sealed class GeminiReferenceAdapter(HttpClient client, ModelProviderCon
             tools = new[] { new { functionDeclarations = tools.Select(tool => new
             {
                 name = Alias(tool.Id), description = tool.Description,
-                parameters = InputSchema(tool.Id, gemini: true)
+                parametersJsonSchema = InputSchema(tool.Id)
             }).ToArray() } },
             toolConfig = new { functionCallingConfig = new { mode = "ANY",
                 allowedFunctionNames = tools.Select(tool => Alias(tool.Id)).ToArray() } },
@@ -337,7 +337,7 @@ internal sealed class ClaudeReferenceAdapter(HttpClient client, ModelProviderCon
             messages = new[] { new { role = "user", content = question } },
             tools = tools.Select(tool => new
             {
-                name = Alias(tool.Id), description = tool.Description,
+                name = Alias(tool.Id), description = tool.Description, strict = true,
                 input_schema = InputSchema(tool.Id)
             }).ToArray(), tool_choice = new { type = "any" }
         });
