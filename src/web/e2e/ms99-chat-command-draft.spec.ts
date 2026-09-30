@@ -9,6 +9,7 @@ test("all six conversions keep drafts but reject commands without a current room
   const messageId = "99000000-0000-4000-8000-000000000001";
   const documentId = "99000000-0000-4000-8000-000000000002";
   const reportId = "99000000-0000-4000-8000-000000000003";
+  const alternateReportId = "99000000-0000-4000-8000-000000000005";
   const locationId = "99000000-0000-4000-8000-000000000004";
   let phase: "current" | "waiting" | "error" | "revoked" = "current";
   let reads = 0;
@@ -44,8 +45,10 @@ test("all six conversions keep drafts but reject commands without a current room
     return route.abort("failed");
   });
   const report = { id: reportId, projectId, reportDate: "2099-01-03", locationName: "کارگاه", status: "Draft", revision: 2, facts: [] };
-  await page.route(`**${base}/daily-reports`, route => route.fulfill({ json: [report] }));
+  const alternateReport = { ...report, id: alternateReportId, reportDate: "2099-01-04" };
+  await page.route(`**${base}/daily-reports`, route => route.fulfill({ json: [report, alternateReport] }));
   await page.route(`**${base}/daily-reports/${reportId}`, route => route.fulfill({ json: report }));
+  await page.route(`**${base}/daily-reports/${alternateReportId}`, route => route.fulfill({ json: alternateReport }));
   await page.route(`**${base}/locations`, route => route.fulfill({ json: [{ id: locationId,
     projectId, code: "SITE", name: "کارگاه", status: "Active" }] }));
 
@@ -72,13 +75,14 @@ test("all six conversions keep drafts but reject commands without a current room
     const confirmation = form.getByRole("checkbox", { name: /تأیید می‌کنم/u });
     await confirmation.check();
     if (field) {
-      await form.getByLabel(field, { exact: true }).fill(`پیش‌نویس حفظ‌شدهٔ ${label}`);
+      const input = label === "واقعیت" ? form.locator("textarea").first() : form.getByRole("textbox", { name: field, exact: true });
+      await input.fill(`پیش‌نویس حفظ‌شدهٔ ${label}`);
       await expect(confirmation).not.toBeChecked();
       await confirmation.check();
     } else {
-      await form.getByLabel("گزارش روزانه", { exact: true }).selectOption(reportId);
+      await form.getByRole("combobox", { name: "گزارش روزانه", exact: true }).selectOption(alternateReportId);
       await expect(confirmation).not.toBeChecked();
-      await expect(form.getByLabel("گزارش روزانه", { exact: true })).toHaveValue(reportId);
+      await expect(form.getByRole("combobox", { name: "گزارش روزانه", exact: true })).toHaveValue(alternateReportId);
       await confirmation.check();
     }
     forms.push(form);

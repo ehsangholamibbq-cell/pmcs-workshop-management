@@ -76,14 +76,14 @@ test("project Chat clears stale room and search data during refresh, failure and
 
   await page.getByRole("button", { name: "تازه‌سازی" }).click();
   await expect(page.getByText("در حال دریافت گفت‌وگوی پروژه…")).toBeVisible();
-  await expect(page.getByText("پیام خصوصی همین گروه پروژه")).toHaveCount(0);
-  await expect(page.getByLabel("پیام به گروه همین پروژه")).toHaveCount(0);
+  await expect(page.getByText("پیام خصوصی همین گروه پروژه")).toBeHidden();
+  await expect(page.getByLabel("پیام به گروه همین پروژه")).toBeHidden();
   await page.setViewportSize({ width: 320, height: 720 });
   await capture("chat-320-refreshing.png", 320, 720);
   releaseRefresh();
   await expect(page.getByRole("heading", { name: "دریافت گفت‌وگو کامل نشد" })).toBeVisible();
   await expect(page.locator(".collaboration-state[role='alert']")).not.toContainText("Sensitive upstream error");
-  await expect(page.locator(".collaboration-message")).toHaveCount(0);
+  await expect(page.locator(".collaboration-message")).toBeHidden();
   await capture("chat-320-read-error.png", 320, 720);
 
   await page.getByRole("button", { name: "تلاش دوباره" }).click();
