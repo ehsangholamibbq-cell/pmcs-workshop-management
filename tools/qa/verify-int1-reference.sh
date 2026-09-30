@@ -9,8 +9,14 @@ set -euo pipefail
 : "${PMCS_QA_S3_SECRET_KEY:?Set QA object storage secret.}"
 : "${PMCS_QA_S3_BUCKET:?Set QA object storage bucket.}"
 
-dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj \
-  --configuration Release --no-build --no-launch-profile -- guard >/dev/null
+database_name="$(dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj \
+  --configuration Release --no-build --no-launch-profile -- guard)"
+connected_database="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command 'select current_database();')"
+if [[ "${database_name}" != "${connected_database}" ]]; then
+  echo 'INT1 QA ADO and PostgreSQL connections target different databases.' >&2
+  exit 2
+fi
 psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null <<'SQL'
 insert into intelligence.provider_registrations
     (provider, version, enabled, verified_at, created_by, created_at, revision)
@@ -165,6 +171,12 @@ state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
   --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
 if [[ "${state}" != '4|1|1|3|0' ]]; then
   echo "INT1 reference lineage diverged: ${state}." >&2
+  exit 1
+fi
+side_effects="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command "select (select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunFinished' and resource_id like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'intelligence.reference-run.finished' and payload->'run'->>'Id' like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.idempotency_records where operation like 'intelligence.reference.run:%' and key like 'int1-reference-%')::text || '|' || (select count(*) from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%' and status = 'Completed' and cost_microunits = 112 and session_id <> id and session_expires_at = requested_at + interval '10 minutes')::text;")"
+if [[ "${side_effects}" != '5|5|5|4' ]]; then
+  echo "INT1 metadata, audit, outbox or receipt evidence diverged: ${side_effects}." >&2
   exit 1
 fi
 leaks="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
