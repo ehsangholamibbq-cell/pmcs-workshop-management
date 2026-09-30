@@ -17,7 +17,7 @@ test("local fact keeps its draft but never queues a retired or unverified locati
     await expect(form).toHaveAttribute("data-location-read-state", state);
     await page.evaluate(() => document.fonts.ready);
     const location = form.locator("#fact-location");
-    let bytes = Buffer.alloc(0);
+    let bytes: Buffer = Buffer.alloc(0);
     await expect.poll(async () => {
       await location.evaluate(element => window.scrollTo({
         top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 300), behavior: "instant",
