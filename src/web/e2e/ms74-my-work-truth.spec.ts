@@ -15,7 +15,17 @@ test("work and notifications distinguish current, cached and revoked data", asyn
   mkdirSync(output, { recursive: true });
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
   async function capture(name: string, width: number, height: number) {
-    await page.getByTestId("my-work-center").scrollIntoViewIfNeeded();
+    await expect.poll(async () => {
+      const center = page.getByTestId("my-work-center");
+      if (!await center.isVisible().catch(() => false)) return false;
+      try {
+        await center.scrollIntoViewIfNeeded({ timeout: 1_000 });
+        return true;
+      } catch {
+        // A parent refresh can replace the panel while Playwright scrolls it.
+        return false;
+      }
+    }, { timeout: 15_000 }).toBe(true);
     await page.evaluate(() => document.fonts.ready);
     await expect.poll(async () => {
       const work = await page.getByTestId("my-work-panel").boundingBox();

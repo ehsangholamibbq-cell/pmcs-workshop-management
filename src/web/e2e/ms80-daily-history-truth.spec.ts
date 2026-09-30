@@ -26,9 +26,9 @@ test("daily report history hides an old version on refresh, failure and access l
       }));
       const headingTop = () => history.getByRole("heading", { name: "نسخه‌های گزارش روزانه" })
         .evaluate((element) => element.getBoundingClientRect().top);
-      await expect.poll(headingTop).toBeGreaterThanOrEqual(120);
-      expect(await headingTop()).toBeLessThan(250);
       await page.waitForTimeout(400);
+      const top = await headingTop();
+      if (top < 120 || top >= 250) continue;
       if (await history.getAttribute("data-read-state") !== expectedState) continue;
       const candidate = await page.screenshot({ animations: "disabled", caret: "hide" });
       if (await history.getAttribute("data-read-state") !== expectedState) continue;

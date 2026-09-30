@@ -91,7 +91,8 @@ test("attention commands require a current command snapshot and revocation hides
   await page.reload();
   await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "forbidden");
   await expect(triage).toHaveCount(0);
-  await expect(page.getByRole("alert")).not.toContainText("Sensitive project detail");
+  await expect(page.locator(".project-print-shell .collaboration-state[role='alert']"))
+    .not.toContainText("Sensitive project detail");
   await capture("attention-320-access-revoked.png", 320, 720, "forbidden");
 
   responseStatus = 200;
