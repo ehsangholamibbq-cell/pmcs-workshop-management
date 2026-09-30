@@ -789,15 +789,20 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               </p>
             )}
             {displayCommandCenter && displayCommandCenter.trend.length > 0 && (
-              <div className="trend-strip" aria-label="روند تصاویر اخیر وضعیت">
-                {displayCommandCenter.trend.slice().reverse().map((point) => (
-                  <span
-                    className={`trend-point trend-${point.operationalStatus.toLowerCase()}`}
-                    key={point.snapshotId}
-                    title={`تاریخ ${formatStateDate(point.asOfDate)} · پوشش ${point.coveragePercent.toLocaleString("fa-IR")}٪`}
-                  />
-                ))}
-              </div>
+              <figure className="operational-trend">
+                <figcaption>روند تصاویر اخیر وضعیت</figcaption>
+                <ul className="trend-strip">
+                  {displayCommandCenter.trend.slice().reverse().map((point) => (
+                    <li className="trend-item" key={point.snapshotId}>
+                      <span aria-hidden="true" className={`trend-point trend-${point.operationalStatus.toLowerCase()}`} />
+                      <div><strong>{operationalStatusLabel(point.operationalStatus)}</strong>
+                        <small><time dateTime={point.asOfDate}>{formatStateDate(point.asOfDate)}</time>
+                          {` · پوشش ${point.coveragePercent.toLocaleString("fa-IR")}٪`}</small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </figure>
             )}
           </article>
           <article className="architecture-note">

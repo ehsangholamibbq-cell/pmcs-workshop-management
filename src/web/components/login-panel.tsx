@@ -17,6 +17,12 @@ export function LoginPanel({ experience, initialError = false }: LoginPanelProps
   const { data: session, isPending } = authClient.useSession();
   const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const [isStarting, setIsStarting] = useState(false);
+  const [failedLogoUrls, setFailedLogoUrls] = useState<readonly string[]>([]);
+  const [failedHeroUrl, setFailedHeroUrl] = useState<string | null>(null);
+  const officialLogoUrl = "/brand/bbq-official-symbol.png";
+  const showCustomLogo = experience.logoUrl && !failedLogoUrls.includes(experience.logoUrl);
+  const showCustomHero = experience.heroUrl && experience.heroUrl !== failedHeroUrl;
+  const failLogo = (url: string) => setFailedLogoUrls(current => current.includes(url) ? current : [...current, url]);
   const [message, setMessage] = useState(
     initialError ? "ورود کامل نشد؛ اطلاعات حساب یا اتصال سرویس هویت را بررسی کنید." : "",
   );
@@ -55,35 +61,38 @@ export function LoginPanel({ experience, initialError = false }: LoginPanelProps
       data-motion={experience.motionPolicy}
     >
       <section className="login-brand" aria-label="معرفی سامانه">
-        <div className="login-hero-media" aria-hidden={experience.heroUrl ? undefined : true}>
-          {experience.heroUrl && (
-            <Image src={experience.heroUrl} alt="" fill priority unoptimized sizes="(max-width: 980px) 100vw, 65vw" />
+        <div className="login-hero-media" aria-hidden={showCustomHero ? undefined : true}>
+          {showCustomHero && (
+            <Image src={experience.heroUrl!} alt="" fill priority unoptimized sizes="(max-width: 980px) 100vw, 65vw"
+              onError={() => setFailedHeroUrl(experience.heroUrl)} />
           )}
         </div>
         <BlueprintMotion />
         <div className="login-brand-content">
           <div className="login-brand-lockup">
-            {experience.logoUrl ? (
+            {showCustomLogo ? (
               <Image
                 className="login-brand-logo"
-                src={experience.logoUrl}
+                src={experience.logoUrl!}
                 alt="نشان سازمان"
                 width={176}
                 height={88}
                 priority
                 unoptimized
+                onError={() => failLogo(experience.logoUrl!)}
               />
-            ) : (
+            ) : !failedLogoUrls.includes(officialLogoUrl) ? (
               <Image
                 className="login-brand-logo"
-                src="/brand/bbq-official-symbol.png"
+                src={officialLogoUrl}
                 alt="نشان رسمی بتن بسپار قزوین"
                 width={176}
                 height={91}
                 priority
                 unoptimized
+                onError={() => failLogo(officialLogoUrl)}
               />
-            )}
+            ) : null}
             <span>بتن بسپار قزوین</span>
           </div>
           <p className="eyebrow">{experience.eyebrow}</p>

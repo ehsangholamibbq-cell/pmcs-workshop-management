@@ -3278,12 +3278,45 @@ output {
   background: var(--soft-teal);
 }
 
+.operational-trend {
+  margin: 1.2rem 0 0;
+}
+
+.operational-trend figcaption {
+  font-weight: 600;
+}
+
 .trend-strip {
-  margin-top: 1.2rem;
-  padding-top: 0.9rem;
+  margin: 0.5rem 0 0;
+  padding: 0.9rem 0 0;
   border-top: 1px solid var(--line);
   display: flex;
-  gap: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.trend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.trend-item div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.trend-item .trend-point {
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
+
+.trend-item small {
+  color: var(--muted);
 }
 
 .triage-controls,
@@ -5637,7 +5670,7 @@ output {
 .login-admin-fields textarea { min-height: 6rem; resize: vertical; }
 
 .pmcs-file-input { display: grid; gap: 0.4rem; min-width: 0; }
-.pmcs-file-input-row { display: flex; align-items: stretch; gap: 0.5rem; min-width: 0; }
+.pmcs-file-input-row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0.5rem; min-width: 0; }
 .collaboration-upload .pmcs-file-input-row { flex-wrap: wrap; }
 .collaboration-upload .pmcs-file-input-control { flex-basis: 100%; flex-wrap: wrap; }
 .collaboration-upload .pmcs-file-input-name { flex-basis: 100%; }
@@ -5645,8 +5678,9 @@ output {
   position: relative;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.65rem;
-  flex: 1;
+  flex: 1 1 16rem;
   min-width: 0;
   min-height: 2.9rem;
   padding: 0.4rem;
@@ -5664,7 +5698,7 @@ output {
   background: var(--soft-teal);
   font-weight: 700;
 }
-.pmcs-file-input-name { min-width: 0; overflow-wrap: anywhere; }
+.pmcs-file-input-name { flex: 1 1 10rem; min-width: 0; overflow-wrap: anywhere; }
 .pmcs-file-input-control input {
   position: absolute;
   inset: 0;
