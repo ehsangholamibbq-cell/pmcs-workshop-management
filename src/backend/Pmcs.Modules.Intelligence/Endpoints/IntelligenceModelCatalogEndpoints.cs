@@ -115,14 +115,18 @@ internal static class IntelligenceModelCatalogEndpoints
         if (entry is null) return Results.NotFound(new { code = "ai.model.not_found" });
         if (entry.Revision != request.BaseRevision)
             return Results.Conflict(new { code = "ai.model.revision_conflict" });
-        if ((entry.Capabilities & ModelCapability.ToolCalling) != 0)
-            return Results.Conflict(new { code = "ai.model.tool_capability_unverified" });
         var probe = probes.Single(x => x.Provider == entry.Provider);
         if (probe.Availability.Model != entry.Model)
             return Results.Conflict(new { code = "ai.model.configuration_changed" });
         var result = await probe.ProbeAsync(cancellationToken);
         if (result.Status != ProviderProbeStatus.Available)
             return Results.Json(result, statusCode: StatusCodes.Status503ServiceUnavailable);
+        if ((entry.Capabilities & ModelCapability.ToolCalling) != 0)
+        {
+            var toolResult = await probe.ProbeToolCallingAsync(cancellationToken);
+            if (toolResult.Status != ProviderProbeStatus.Available)
+                return Results.Json(toolResult, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
 
         entry.Verify(result.Provider, result.Model!, clock.UtcNow);
         var response = IntelligenceModelResponse.From(entry);

@@ -17,10 +17,12 @@ Provider را برنمی‌گرداند. Probe فقط متن ثابت بی‌ا�
 از مسیر `POST /api/v1/intelligence/admin/providers/{provider}/probe` فقط با Grant مستقل
 مدیریت Provider مجاز است. Probe محدودیت نرخ دارد و هیچ تغییر داخلی PMCS انجام نمی‌دهد.
 
-Compatibility suite محلی با Handler جعلی، شکل درخواست، مقصد، مصرف، نبود Credential و
-پاسخ ناقص هر سه آداپتور را می‌سنجد. آزمون اتصال زنده با کلیدهای پیکربندی‌شده در محیط
+Compatibility suite محلی با Handler جعلی، شکل درخواست، مقصد، مصرف، نبود Credential،
+پاسخ ناقص و فراخوانی ابزار بومی با نام/آرگومان دقیق هر سه آداپتور را می‌سنجد. فعال‌سازی
+مدل دارای `ToolCalling` مستلزم هر دو آزمون ساختاریافته و ابزار بومی است؛ خطا یا ابزار
+ناشناخته آن را فعال نمی‌کند. آزمون اتصال زنده با کلیدهای پیکربندی‌شده در محیط
 ایزوله و Grant مدیریتیِ صریح باید جدا ثبت شود؛ نبود کلید نتیجهٔ موفقیت نیست. قابلیت
-tool calling، Profile، selection و fallback هنوز در MSهای بعدی INT1 بازند.
+Tool Registry اجرایی، Run، Profile و fallback متصل هنوز در MSهای بعدی INT1 بازند.
 
 مراجع API هنگام طراحی: [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses)،
 [Gemini generateContent](https://ai.google.dev/api/generate-content)،

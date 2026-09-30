@@ -44,6 +44,35 @@ public sealed class ModelProviderProbeTests
     }
 
     [Theory]
+    [InlineData("OpenAI", """{"status":"completed","output":[{"type":"function_call","name":"pmcs_probe","arguments":"{\"ok\":true}"}],"usage":{"input_tokens":3,"output_tokens":2}}""")]
+    [InlineData("GoogleGemini", """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"pmcs_probe","args":{"ok":true}}}]}}],"usageMetadata":{"promptTokenCount":3,"candidatesTokenCount":2}}""")]
+    [InlineData("AnthropicClaude", """{"stop_reason":"tool_use","content":[{"type":"tool_use","name":"pmcs_probe","input":{"ok":true}}],"usage":{"input_tokens":3,"output_tokens":2}}""")]
+    public async Task NativeToolCompatibilityRequiresExactDeclaredCall(string provider, string responseJson)
+    {
+        var handler = new CaptureHandler(responseJson);
+        var probe = Create(provider, new HttpClient(handler), new("test-model", "private-test-key"));
+
+        var result = await probe.ProbeToolCallingAsync(CancellationToken.None);
+
+        Assert.Equal(ProviderProbeStatus.Available, result.Status);
+        Assert.Equal("ai.provider.tool_call_verified", result.Code);
+        Assert.Contains("pmcs_probe", handler.RequestBody);
+        Assert.DoesNotContain("private-test-key", handler.RequestBody);
+    }
+
+    [Theory]
+    [InlineData("OpenAI", """{"status":"completed","output":[{"type":"function_call","name":"unexpected","arguments":"{\"ok\":true}"}]}""")]
+    [InlineData("GoogleGemini", """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"unexpected","args":{"ok":true}}}]}}]}""")]
+    [InlineData("AnthropicClaude", """{"stop_reason":"tool_use","content":[{"type":"tool_use","name":"unexpected","input":{"ok":true}}]}""")]
+    public async Task UndeclaredToolCallFailsClosed(string provider, string responseJson)
+    {
+        var probe = Create(provider, new HttpClient(new CaptureHandler(responseJson)),
+            new("test-model", "private-test-key"));
+        var result = await probe.ProbeToolCallingAsync(CancellationToken.None);
+        Assert.Equal(ProviderProbeStatus.Failed, result.Status);
+    }
+
+    [Theory]
     [InlineData("OpenAI", """{"status":"incomplete","output":[]}""")]
     [InlineData("GoogleGemini", """{"candidates":[{"finishReason":"MAX_TOKENS","content":{"parts":[{"text":"{\"ok\":true}"}]}}]}""")]
     [InlineData("AnthropicClaude", """{"stop_reason":"max_tokens","content":[{"type":"text","text":"{\"ok\":true}"}]}""")]
