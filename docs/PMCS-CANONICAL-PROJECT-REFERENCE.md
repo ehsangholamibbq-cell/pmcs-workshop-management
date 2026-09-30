@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.138.0`
+- نسخه: `1.139.0`
 - آخرین کنترل: ۲۰۲۶-۰۹-۳۰
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS95 Safe, MS96 docs Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS96 Safe, MS97 docs Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,10 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source | MS96 `4961c0866642c2a916237a0b863c36d35e4622e4`؛ tree `1d7713c7eca72fa1c2bcf2d13e5f87b074e353c8`؛ Run 608 (`36721368366`) هشت Job سبز؛ Artifact `11101520753` سه PNG/Index معتبر و بازبینی‌شده |
-| Current evidence-bearing source checkpoint | MS95 Source Run 606 و docs Run 607 هشت Job سبز؛ MS96 Source Run 608 هشت Job سبز و Artifact سه‌قابی معتبر/مرور شده؛ CI مستقل مستندات شرط است |
-| Source lineage | MS96 از MS95 docs `7cdd0204deddd4a23c1d24c2990c8ddfd2fd49d4` ادامه یافت؛ اصلاح‌های Source فقط با Commit/fast-forward، بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS95-C1`؛ Source Run 606 و docs Run 607 هشت Job سبز، شش قاب/Index معتبر و مرورشده؛ MS96 Source/Artifact سبز و مرور شده، CI مستقل مستندات باز |
+| آخرین Source | MS97 final `d46cc91627bc6049700084c6a93e27f566b907c8`؛ tree `a9452b1c36616595215ebd9676e19b287cc2c641`؛ Run 613 (`36729215873`) هشت Job سبز؛ Artifact `11105655617` چهار PNG/Index معتبر و بازبینی‌شده |
+| Current evidence-bearing source checkpoint | MS96 Source Run 608 و docs correction Run 610 هشت Job سبز؛ MS97 Source Run 613 هشت Job سبز و Artifact چهارقابی معتبر/مرور شده؛ CI مستقل مستندات شرط است |
+| Source lineage | MS97 از MS96 docs correction `851625c68c4aadd973d7238d71bb2c1f094f2f75` ادامه یافت؛ اصلاح‌های Source فقط با Commit/fast-forward، بدون Reset/Force Push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS96-C1`؛ Source Run 608 و docs correction Run 610 هشت Job سبز، سه قاب/Index معتبر و مرورشده؛ MS97 Source/Artifact سبز و مرور شده، CI مستقل مستندات باز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS63-C1`؛ Run 469 هشت Job سبز، `VX-G3` فقط در محدودهٔ Contract/Prototype پذیرفته |
@@ -94,9 +94,9 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.178.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.179.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
-| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.59.0` |
+| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.60.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
@@ -1072,7 +1072,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**MS95 Source final Run 606 و docs Run 607 هشت Job سبز و Safe هستند. MS96 حقیقت بازخوانی رویداد Chat را با Source Run 608 هشت Job سبز و Artifact سه‌قابی معتبر/بازبینی‌شده پیش برد؛ Full CI مستقل همین مستندات شرط Checkpoint Safe بعدی است. سپس قطع دسترسی مدرک، واکنش/پیوست/تبدیل‌های Chat و ممیزی کامل `VX-G4`، سپس Qualification مستقل `VX-G5` بازند.**
+**MS96 Source Run 608 و docs correction Run 610 هشت Job سبز و Safe هستند. MS97 قطع دسترسی مدرک محلی را با Source Run 613 هشت Job سبز و Artifact چهارقابی معتبر/بازبینی‌شده پیش برد؛ Full CI مستقل همین مستندات شرط Checkpoint Safe بعدی است. سپس واکنش/پیوست/تبدیل‌های Chat و ممیزی کامل `VX-G4`، سپس Qualification مستقل `VX-G5` بازند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
