@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.64.0`
-- وضعیت: مسیر «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ `VX-G4` با Runهای 623/624 بسته؛ `VX-G5` با Source Run 640 و Artifact معتبر، مشروط به CI مستقل Checkpoint MS100
+- نسخه سند: `1.65.0`
+- وضعیت: مسیر «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ `VX-G4` با Runهای 623/624 بسته؛ `VX-G5` با Runهای 640/642 و Artifact معتبر بسته؛ UX2 کامل
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -181,7 +181,7 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
 | `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | پذیرفته با MS99: ۱۱ Route/۴۱ Component، Source Run 623 و docs Run 624، هر دو هشت Job سبز؛ جزئیات ممیزی در `docs/ux/vx-g4-active-consumer-audit.md` |
-| `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | Source Run 640 هشت Job سبز؛ Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شده مرور شد؛ CI مستقل MS100 شرط نهایی است؛ `docs/checkpoints/v1.1-ux2-ms100-vx-g5-qualification.md` |
+| `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | پذیرفته با MS100: Source Run 640 و docs Run 642 هر دو هشت Job سبز؛ Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شده مرور شد؛ `docs/checkpoints/v1.1-ux2-ms100-vx-g5-qualification.md` |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
 
@@ -260,3 +260,4 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.62.0` | MS98 docs Run 619 هشت Job سبز و Safe؛ MS99 شش تبدیل و پیش‌نویس Chat، قطع مجوز/نسخهٔ پیام و صف فایل را در ۲۲ قاب Source Run 623 هشت Job سبز، Artifact `11114715928` معتبر و مرورشده سنجید؛ ۱۱ Route و ۴۱ Component فعال با دفتر شواهد تطبیق شدند. CI مستقل مستندات شرط تصمیم G4؛ G5 مستقل باز است |
 | `1.63.0` | MS99 docs Run 624 هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component، G4 را بست؛ Qualification مستقل G5 آغاز شد. |
 | `1.64.0` | MS100 چاپ، سه Engine، چهار عرض، axe، عملکرد و Artifact نهایی `11124980874` را به شواهد مستقل پیوند داد؛ اصلاح عکس چاپ در Source Run 640 هشت Job سبز و قاب نهایی معتبر داشت. CI مستقل همین مستندات شرط پذیرش G5 و پایان UX2 است. |
+| `1.65.0` | MS100 با Source Run 640 و docs Run 642، هر دو هشت Job سبز و Artifact نهایی `11124980874` معتبر/مرور شده Safe شد؛ `VX-G5 Visual Qualified` و UX2 بسته‌اند. ارزیابی بومی iOS/Safari، Edge روی Windows و کاربر واقعی در QA1 جدا می‌ماند. |

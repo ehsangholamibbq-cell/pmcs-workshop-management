@@ -4,13 +4,12 @@
 
 ## وضعیت فعلی
 
-Current safe checkpoint: `PMCS-V1.1-UX2-MS99-C1`, source Run 623 and independent
-documentation Run 624 (8/8 each). `VX-G4` covers 11 active routes and 41 components.
-`VX-G5` source `fd13282` passed all eight jobs in Run 640; artifact `11124980874`
-was validated and its corrected print states reviewed. Independent MS100
-documentation CI is the final acceptance gate. Once it passes, UX2 closes;
-INT1/QA1 and V1.1 lock follow in separate gates. Collaboration
-and Reporting/OutputAccess/Worker remain disabled by
+Current safe checkpoint: `PMCS-V1.1-UX2-MS100-C1`. `VX-G4` covers 11 active
+routes and 41 components. `VX-G5` source `fd13282` passed all eight jobs in
+Run 640; artifact `11124980874` and the corrected print states were reviewed.
+Independent documentation Runs 641 (attempt 2) and 642 passed 8/8; UX2 is
+complete. INT1/QA1 and V1.1 lock follow in separate gates. Collaboration and
+Reporting/OutputAccess/Worker remain disabled by
 default, `PdfLicense=Unconfigured`, and PR #2 remains Draft. See the canonical
 reference and active roadmap.
 

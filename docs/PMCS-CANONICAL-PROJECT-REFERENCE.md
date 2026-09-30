@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.142.0`
+- نسخه: `1.143.0`
 - آخرین کنترل: ۲۰۲۶-۰۹-۳۰
-- وضعیت: `Authoritative working reference | V1 locked | G5 Source/Artifact معتبر؛ UX2 پایان مشروط به Full CI مستقل MS100`
+- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1/QA1 باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -22,11 +22,11 @@
 | V1 source baseline | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
-| Stage مؤثر | `V1.1-UX2` تا Full CI مستقل MS100؛ پس از پذیرش G5، `V1.1-INT1` گام بعدی است |
+| Stage مؤثر | `V1.1-UX2` بسته؛ Exact Next، DoR مستقل `V1.1-INT1` است؛ QA1 و قفل V1.1 جدا هستند |
 | آخرین Source | MS100 print evidence correction `fd13282c7e71a77c5192761e127966467045f297`؛ tree `95a79963975b7a5afa783e1a1da7018883cea890`، Run 640 (`36772469486`) هشت Job سبز؛ Artifact `11124980874`، ZIP SHA-256 `f55bdc3d94d37fbe10fd0009131546e404236b7ca0f9f31a5ce6c55376f0040d` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و مرورشده |
-| Current evidence-bearing source checkpoint | MS99 Source Run 623 و docs Run 624 هشت Job سبز و G4 بسته؛ G5 Source Run 640 و Artifact معتبر؛ CI مستقل Checkpoint MS100 شرط پایان UX2 |
-| Source lineage | MS100 از G5 Source `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac` و docs `84f82eed680462dbcfda54204d13fc4a12387b25` با Commit/fast-forward ادامه یافت؛ بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS99-C1`؛ Source Run 623 و docs Run 624 هشت Job سبز؛ `PMCS-V1.1-UX2-MS100-C1` فقط پس از Source/Artifact نهایی و CI مستقل مستندات Safe است |
+| Current evidence-bearing source checkpoint | MS100 Source Run 640 هشت Job سبز؛ Artifact `11124980874` معتبر و مرورشده؛ docs Run 641 Attempt دوم و Run 642 هر دو هشت Job سبز؛ G5 و UX2 بسته |
+| Source lineage | MS100 از Source پایه `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac` به اصلاح شاهد چاپ `fd13282c7e71a77c5192761e127966467045f297` و docs نهایی `c950ec0f495396a9503a40de825f6c6830f73041` با Commit/fast-forward رسید؛ بدون Reset/Force Push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS100-C1`؛ Source `fd13282c7e71a77c5192761e127966467045f297`، Run 640 هشت Job سبز؛ docs `c950ec0f495396a9503a40de825f6c6830f73041`، Run 642 هشت Job سبز؛ G5/UX2 بسته |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS63-C1`؛ Run 469 هشت Job سبز، `VX-G3` فقط در محدودهٔ Contract/Prototype پذیرفته |
@@ -94,13 +94,13 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.183.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.184.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
-| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.64.0` |
+| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
-وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1، PRJ1 و G4 بسته؛ F01–F10 و COL1 متصل؛ G5 با Source/Artifact Run 640 معتبر و پس از CI مستقل MS100 بسته می‌شود. سپس UX2 پایان و INT1/QA1 باز می‌مانند.
+وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1، PRJ1، G4 و G5/UX2 بسته؛ F01–F10 و COL1 متصل؛ INT1/QA1 و قفل V1.1 باز می‌مانند.
 
 ## آخرین تصمیم‌های مؤثر و Supersededها
 
@@ -1072,7 +1072,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**MS99 با Source Run 623 و docs Run 624 هشت Job سبز و Safe، G4 را بست. MS100 با Source `fd13282`، Run 640 هشت Job سبز و Artifact `11124980874` معتبر/مرور شده، تنها در انتظار CI مستقل مستندات است. پس از آن UX2 بسته و Exact Next، DoR مستقل `V1.1-INT1` است.**
+**MS99 با Source Run 623 و docs Run 624 هشت Job سبز و Safe، G4 را بست. MS100 با Source `fd13282` و Run 640 هشت Job سبز، Artifact `11124980874` معتبر/مرور شده و docs `c950ec0`/Run 642 هشت Job سبز، G5 و UX2 را بست. Exact Next، DoR مستقل `V1.1-INT1` است.**
 INT1/QA1، Production و قفل V1.1 Gateهای جدا می‌مانند.
 
 ## Resume Rule

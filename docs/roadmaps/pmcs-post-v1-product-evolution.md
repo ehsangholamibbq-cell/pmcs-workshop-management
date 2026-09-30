@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.183.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5 Source/Artifact Run 640 معتبر؛ UX2 پس از CI مستقل MS100 بسته؛ INT1/QA1 باز
+- نسخه سند: `1.184.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,7 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-UX2 — Final Qualification` تا Full CI مستقل MS100؛ سپس `V1.1-INT1`
+- مرحله فعال: `V1.1-INT1 — DoR بعدی`؛ QA1 و قفل V1.1 جدا هستند
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1904,3 +1904,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 
 | `1.182.0` | MS99 docs Run 624 (`36751285219`) هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component فعال G4 را بست. MS100 آزمون مستقل G5 را در Chromium/Firefox/WebKit، چهار عرض، حالت‌های پرتراکم، RTL/Focus/axe، چاپ A4/A3 و بودجهٔ Build/مسیر انجام داد. Source Run 638 (`36768157030`) هشت Job سبز و Artifact `11123482326` با ۲۹۶ PNG/۱۹۵ axe/۲۰ PDF/۲۵ Index معتبر و مرورشده؛ CI مستقل مستندات شرط `VX-G5 Visual Qualified` و پایان UX2 است. سپس INT1/QA1 و قفل V1.1 جدا هستند |
 | `1.183.0` | مرور دوبارهٔ Artifact Run 638 نشان داد قاب `current` چاپ پیش از تثبیت نام/تصویر پروژه گرفته شده بود، هرچند PDFهای همان حالت معتبر بودند. Source `fd13282` عکس را پس از اعتبارسنجی PDF و کنترل دوبارهٔ DOM ثبت کرد؛ Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شدهٔ مرورشده دارد. CI مستقل مستندات MS100 شرط `VX-G5 Visual Qualified` و پایان UX2 است؛ Exact Next فقط DoR مرحلهٔ INT1، و QA1/قفل V1.1 جدا هستند. |
+| `1.184.0` | MS100 Source Run 640 (`36772469486`) هشت Job سبز، Artifact `11124980874` معتبر و مرورشده؛ docs Run 641 (`36774790248`) Attempt دوم و Run 642 (`36775276181`) هشت Job سبز، Checkpoint `PMCS-V1.1-UX2-MS100-C1` Safe. `VX-G5 Visual Qualified` و UX2 بسته؛ Exact Next، DoR مستقل INT1، سپس QA1 و قفل V1.1 هستند. |
