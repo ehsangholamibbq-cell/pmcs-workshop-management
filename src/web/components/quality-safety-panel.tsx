@@ -1,8 +1,8 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { enqueueOfflineQualitySafetyIntake, syncOfflineQualitySafetyIntakes } from "@/lib/quality-safety-offline";
 import {
   beginIntakeTriage,
@@ -33,8 +33,14 @@ interface QualitySafetyPanelProps {
 
 export function QualitySafetyPanel(props: QualitySafetyPanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
+  const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
   const [state, setState] = useState<QualitySafetyStateModel | null>(null);
   const [message, setMessage] = useState("در حال دریافت وضعیت مستقل کیفیت و ایمنی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "offline" | "unavailable" | "forbidden">("loading");
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const effectiveReadState = visibleScope === readScope ? readState : "loading";
+  const readSequence = useRef(0);
+  const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [kind, setKind] = useState<IntakeKind>("QualityObservation");
   const [location, setLocation] = useState("");
@@ -56,29 +62,72 @@ export function QualitySafetyPanel(props: QualitySafetyPanelProps) {
   const [exposureHours, setExposureHours] = useState("");
   const [exposureSource, setExposureSource] = useState("");
 
-  const load = useCallback(async () => {
-    if (!props.isOnline) { setState(null); setMessage("اطلاعات محرمانه ایمنی روی حافظه مرورگر نگهداری نمی‌شود؛ برای مشاهده به سرور متصل شوید."); return; }
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    currentReadSequence.current = 0;
+    setState(null);
+    setVisibleScope(null);
+    if (!props.isOnline) {
+      setVisibleScope(readScope);
+      setReadState("offline");
+      setMessage("اطلاعات محرمانه ایمنی روی حافظه مرورگر نگهداری نمی‌شود؛ برای مشاهده به سرور متصل شوید.");
+      return false;
+    }
+    setReadState("loading");
+    setMessage("در حال دریافت وضعیت مستقل کیفیت و ایمنی…");
     try {
       let applied = 0;
       let syncFailed = false;
       try { applied = await syncOfflineQualitySafetyIntakes(props.apiBaseUrl, props.projectId); }
       catch { syncFailed = true; }
       const model = await getQualitySafetyState(props.apiBaseUrl, identity, props.projectId);
+      if (requestId !== readSequence.current) return false;
+      currentReadSequence.current = requestId;
+      setVisibleScope(readScope);
+      setReadState("current");
       setState(model); setMessage(syncFailed
         ? "وضعیت رسمی دریافت شد، اما ثبت‌های محلی هنوز روی دستگاه مانده‌اند و بعداً دوباره همگام می‌شوند."
         : applied > 0
           ? `${applied.toLocaleString("fa-IR")} ثبت اولیه محلی توسط سرور پذیرفته و رسمی شد.`
           : "وضعیت از سوابق رسمی و مجاز سرور دریافت شد.");
-    } catch (error) { setState(null); setMessage(toUserMessage(error, "دریافت وضعیت کیفیت و ایمنی ممکن نشد.")); }
-  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
+      return true;
+    } catch (error) {
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setVisibleScope(readScope);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به وضعیت کیفیت و ایمنی تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "دریافت وضعیت کیفیت و ایمنی ممکن نشد."));
+      return false;
+    }
+  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId, readScope]);
 
   useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load, props.refreshToken]);
 
   async function run(key: string, action: () => Promise<unknown>, success: string) {
-    if (!props.isOnline) { setMessage("این عملیات رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return false; }
+    if (!props.isOnline || effectiveReadState !== "current" || !state || busy !== null ||
+      currentReadSequence.current !== readSequence.current) return false;
+    const commandSequence = readSequence.current;
     setBusy(key);
-    try { await action(); setMessage(success); await load(); props.onChanged?.(); return true; }
-    catch (error) { setMessage(toUserMessage(error, "ثبت عملیات ناموفق بود.")); return false; }
+    try {
+      await action();
+      if (commandSequence !== readSequence.current) return false;
+      if (!await load()) return false;
+      setMessage(success);
+      props.onChanged?.();
+      return true;
+    } catch (error) {
+      if (commandSequence !== readSequence.current) return false;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        currentReadSequence.current = 0;
+        setState(null);
+        setVisibleScope(readScope);
+        setReadState("forbidden");
+        setMessage("دسترسی به وضعیت کیفیت و ایمنی تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+      } else setMessage(toUserMessage(error, "ثبت عملیات ناموفق بود."));
+      return false;
+    }
     finally { setBusy(null); }
   }
 
@@ -171,8 +220,21 @@ export function QualitySafetyPanel(props: QualitySafetyPanelProps) {
     if (succeeded) { setExposureHours(""); setExposureSource(""); setEvidence(""); }
   }
 
+  const quickIntake = (
+        <form onSubmit={submitIntake}><h3>ثبت سریع مشاهده</h3><label><span>نوع مشاهده</span><select value={kind} onChange={(event) => setKind(event.target.value as IntakeKind)}>{intakeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label><span>محل</span><input value={location} onChange={(event) => setLocation(event.target.value)} /></label><label><span>واقعیت مشاهده‌شده</span><textarea value={facts} onChange={(event) => setFacts(event.target.value)} /></label><label><span>شدت اولیه</span><select value={severity} onChange={(event) => setSeverity(event.target.value as InitialSeverity)}><option value="Unassessed">ارزیابی نشده</option><option value="Low">کم</option><option value="Medium">متوسط</option><option value="High">زیاد</option><option value="Critical">بحرانی</option></select></label><label><span>اقدام فوری</span><input value={immediateAction} onChange={(event) => setImmediateAction(event.target.value)} /></label><label><span>ارجاع مدرک؛ هر خط یک مورد</span><textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} /></label><button type="submit" disabled={busy !== null || (props.isOnline && effectiveReadState !== "current")}>ثبت اولیه غیررسمی</button></form>
+  );
+
+  if (effectiveReadState !== "current") return (
+    <section className="section-block quality-safety-panel" id="quality-safety" data-testid="quality-safety-panel" data-read-state={effectiveReadState}>
+      <div className="section-title"><div><p className="eyebrow">دو کنترل مستقل</p><h2>کیفیت و ایمنی، بهداشت و محیط‌زیست (HSE)</h2></div><span className="section-note">نبود داده ≠ وضعیت سبز</span></div>
+      <p className="calculation-note" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت وضعیت مستقل کیفیت و ایمنی…" : message}</p>
+      {props.isOnline && effectiveReadState !== "loading" && <button type="button" className="secondary-button" onClick={() => void load()}>تلاش دوباره برای دریافت وضعیت کیفیت و ایمنی</button>}
+      <div className="quality-safety-workspace">{quickIntake}</div>
+    </section>
+  );
+
   return (
-    <section className="section-block quality-safety-panel" id="quality-safety">
+    <section className="section-block quality-safety-panel" id="quality-safety" data-testid="quality-safety-panel" data-read-state={effectiveReadState}>
       <div className="section-title"><div><p className="eyebrow">دو کنترل مستقل</p><h2>کیفیت و ایمنی، بهداشت و محیط‌زیست (HSE)</h2></div><span className="section-note">نبود داده ≠ وضعیت سبز</span></div>
       <p className="calculation-note" aria-live="polite">{message}</p>
       <div className="quality-safety-status-grid">
@@ -185,7 +247,7 @@ export function QualitySafetyPanel(props: QualitySafetyPanelProps) {
       {state?.incidentRateUnavailableReason && <p className="muted">{state.incidentRateUnavailableReason} سامانه عدد صفر یا نرخ ساختگی نمایش نمی‌دهد.</p>}
 
       <div className="quality-safety-workspace">
-        <form onSubmit={submitIntake}><h3>ثبت سریع مشاهده</h3><label><span>نوع مشاهده</span><select value={kind} onChange={(event) => setKind(event.target.value as IntakeKind)}>{intakeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label><span>محل</span><input value={location} onChange={(event) => setLocation(event.target.value)} /></label><label><span>واقعیت مشاهده‌شده</span><textarea value={facts} onChange={(event) => setFacts(event.target.value)} /></label><label><span>شدت اولیه</span><select value={severity} onChange={(event) => setSeverity(event.target.value as InitialSeverity)}><option value="Unassessed">ارزیابی نشده</option><option value="Low">کم</option><option value="Medium">متوسط</option><option value="High">زیاد</option><option value="Critical">بحرانی</option></select></label><label><span>اقدام فوری</span><input value={immediateAction} onChange={(event) => setImmediateAction(event.target.value)} /></label><label><span>ارجاع مدرک؛ هر خط یک مورد</span><textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} /></label><button type="submit" disabled={busy !== null}>ثبت اولیه غیررسمی</button></form>
+        {quickIntake}
         <form onSubmit={submitInspection}><h3>درخواست بازرسی کیفیت</h3><label><span>نوع بازرسی</span><input value={inspectionType} onChange={(event) => setInspectionType(event.target.value)} /></label><label><span>محل</span><input value={inspectionLocation} onChange={(event) => setInspectionLocation(event.target.value)} /></label><label><span>معیار پذیرش</span><textarea value={criteria} onChange={(event) => setCriteria(event.target.value)} /></label><button type="submit" disabled={busy !== null || !isReadyState(state?.qualityState)}>ثبت درخواست مستقل از نتیجه</button></form>
         <form onSubmit={submitPermit}><h3>پیش‌نویس مجوز کار</h3><label><span>شرح کار</span><input value={permitWork} onChange={(event) => setPermitWork(event.target.value)} /></label><label><span>محل کار</span><input value={permitLocation} onChange={(event) => setPermitLocation(event.target.value)} /></label><label><span>خطرها؛ هر خط یک مورد</span><textarea value={hazards} onChange={(event) => setHazards(event.target.value)} /></label><label><span>کنترل‌ها؛ هر خط یک مورد</span><textarea value={controls} onChange={(event) => setControls(event.target.value)} /></label><button type="submit" disabled={busy !== null || !isReadyState(state?.hseState)}>ثبت پیش‌نویس هشت‌ساعته</button></form>
         <form onSubmit={submitToolbox}><h3>جلسه توجیهی ایمنی</h3><label><span>موضوع جلسه</span><input value={toolboxTopic} onChange={(event) => setToolboxTopic(event.target.value)} /></label><label><span>حاضران؛ هر خط یک مورد</span><textarea value={toolboxAttendees} onChange={(event) => setToolboxAttendees(event.target.value)} /></label><p className="muted">محل کار و ارجاع مدرک از فرم‌های همین بخش استفاده می‌شوند.</p><button type="submit" disabled={busy !== null || !isReadyState(state?.hseState)}>ثبت جلسه و حضور</button></form>
