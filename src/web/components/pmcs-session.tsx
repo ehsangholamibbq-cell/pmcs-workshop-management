@@ -26,31 +26,47 @@ export function PmcsSessionBoundary({ children }: { readonly children: ReactNode
 
   useEffect(() => {
     let active = true;
-    void fetch("/api/pmcs/api/v1/session", { cache: "no-store" })
-      .then(async (response) => {
-        if (response.status === 401) {
-          await clearLocalIdentityScope(false);
-          router.replace("/login");
-          return null;
+    async function loadSession() {
+      try {
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+          let response: Response;
+          try {
+            response = await fetch("/api/pmcs/api/v1/session", { cache: "no-store" });
+          } catch (error) {
+            if (attempt === 3) throw error;
+            await new Promise<void>((resolve) => window.setTimeout(resolve, 1000 * 2 ** attempt));
+            if (!active) return;
+            continue;
+          }
+          if (!active) return;
+          if (response.status === 401) {
+            await clearLocalIdentityScope(false);
+            if (active) router.replace("/login");
+            return;
+          }
+          if (response.status === 403) {
+            await clearLocalIdentityScope(false);
+            throw new Error("این حساب در سامانه فعال نیست؛ با مدیر سامانه تماس بگیرید.");
+          }
+          if (!response.ok) {
+            if ([429, 502, 503, 504].includes(response.status) && attempt < 3) {
+              await new Promise<void>((resolve) => window.setTimeout(resolve, 1000 * 2 ** attempt));
+              if (!active) return;
+              continue;
+            }
+            throw new Error("بررسی نشست انجام نشد؛ اتصال سرویس را بررسی کنید.");
+          }
+          const loaded = await response.json() as PmcsSession;
+          if (!active) return;
+          setLocalIdentityScope(loaded.tenantId, loaded.userId);
+          setSession(loaded);
+          return;
         }
-        if (response.status === 403) {
-          await clearLocalIdentityScope(false);
-          throw new Error("این حساب در سامانه فعال نیست؛ با مدیر سامانه تماس بگیرید.");
-        }
-        if (!response.ok) {
-          throw new Error("بررسی نشست انجام نشد؛ اتصال سرویس را بررسی کنید.");
-        }
-        return response.json() as Promise<PmcsSession>;
-      })
-      .then((loaded) => {
-        if (!active || !loaded) return;
-        setLocalIdentityScope(loaded.tenantId, loaded.userId);
-        setSession(loaded);
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        setMessage(error instanceof Error ? error.message : "بررسی نشست ناموفق بود.");
-      });
+      } catch (error) {
+        if (active) setMessage(error instanceof Error ? error.message : "بررسی نشست ناموفق بود.");
+      }
+    }
+    void loadSession();
     return () => {
       active = false;
     };
