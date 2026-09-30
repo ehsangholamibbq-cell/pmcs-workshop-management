@@ -2473,6 +2473,7 @@ output {
 }
 
 .evidence-capture .pmcs-file-input-row { flex-wrap: wrap; }
+.evidence-capture .pmcs-file-input-control { flex-basis: 100%; }
 .evidence-capture > button { justify-self: start; }
 .evidence-feedback--success { color: var(--text-primary); }
 .evidence-feedback--error {
