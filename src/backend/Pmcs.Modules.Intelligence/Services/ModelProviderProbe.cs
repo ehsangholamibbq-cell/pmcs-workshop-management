@@ -24,11 +24,12 @@ internal abstract class ModelProviderProbe(
     HttpClient client, ModelProviderConfiguration configuration) : IModelProviderProbe
 {
     private const int MaximumResponseBytes = 32_768;
+    protected static readonly string[] RequiredProbeFields = ["ok"];
     protected static readonly object ProbeSchema = new
     {
         type = "object",
         properties = new { ok = new { type = "boolean" } },
-        required = new[] { "ok" },
+        required = RequiredProbeFields,
         additionalProperties = false
     };
 
@@ -176,7 +177,7 @@ internal sealed class GeminiModelProbe(HttpClient client, ModelProviderConfigura
             {
                 maxOutputTokens = 64, responseMimeType = "application/json",
                 responseSchema = new { type = "OBJECT", properties = new { ok = new { type = "BOOLEAN" } },
-                    required = new[] { "ok" } }
+                    required = RequiredProbeFields }
             }
         });
         return request;
