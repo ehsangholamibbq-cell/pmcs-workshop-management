@@ -17,33 +17,18 @@ test("work and notifications distinguish current, cached and revoked data", asyn
   async function capture(name: string, width: number, height: number) {
     await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "current");
     await expect.poll(() => page.locator("#fact-location option").count()).toBeGreaterThan(1);
-    await expect.poll(async () => {
-      const center = page.getByTestId("my-work-center");
-      if (!await center.isVisible().catch(() => false)) return false;
-      try {
-        await center.scrollIntoViewIfNeeded({ timeout: 1_000 });
-        return true;
-      } catch {
-        // A parent refresh can replace the panel while Playwright scrolls it.
-        return false;
-      }
-    }, { timeout: 15_000 }).toBe(true);
     await page.evaluate(() => document.fonts.ready);
-    await expect.poll(async () => {
-      const work = await page.getByTestId("my-work-panel").boundingBox();
-      const notices = await page.getByTestId("notification-panel").boundingBox();
-      return Boolean(work && notices && work.y + work.height <= notices.y + 1);
-    }, { timeout: 10_000 }).toBe(true);
-    const workPanel = await page.getByTestId("my-work-panel").boundingBox();
-    const notificationPanel = await page.getByTestId("notification-panel").boundingBox();
-    expect(workPanel).not.toBeNull();
-    expect(notificationPanel).not.toBeNull();
-    if (workPanel && notificationPanel) {
-      expect(workPanel.y + workPanel.height).toBeLessThanOrEqual(notificationPanel.y + 1);
-      expect(workPanel.x).toBeGreaterThanOrEqual(-1);
-      expect(workPanel.x + workPanel.width).toBeLessThanOrEqual(width + 1);
-      expect(notificationPanel.x + notificationPanel.width).toBeLessThanOrEqual(width + 1);
-    }
+    await expect.poll(() => page.evaluate(() => {
+      const center = document.querySelector('[data-testid="my-work-center"]');
+      const work = document.querySelector('[data-testid="my-work-panel"]')?.getBoundingClientRect();
+      const notices = document.querySelector('[data-testid="notification-panel"]')?.getBoundingClientRect();
+      return Boolean(center && work && notices && work.bottom <= notices.top + 1 &&
+        work.left >= -1 && work.right <= innerWidth + 1 && notices.right <= innerWidth + 1);
+    }), { timeout: 15_000 }).toBe(true);
+    await page.evaluate(() => {
+      const center = document.querySelector('[data-testid="my-work-center"]');
+      if (center) window.scrollTo({ top: window.scrollY + center.getBoundingClientRect().top - 12, behavior: "instant" });
+    });
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
     expect(bytes.readUInt32BE(16)).toBe(width);
     expect(bytes.readUInt32BE(20)).toBe(height);

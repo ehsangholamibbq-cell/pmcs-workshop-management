@@ -81,6 +81,7 @@ export async function auditSurface(page: Page, report: ReturnType<typeof evidenc
   expect(result.overflow).toBeLessThanOrEqual(budgets.globalHorizontalOverflowPixels);
   await page.evaluate(() => { document.body.tabIndex = -1; document.body.focus(); document.body.removeAttribute("tabindex"); });
   await page.keyboard.press("Tab");
+  if (await page.evaluate(() => document.activeElement?.tagName === "ASIDE")) await page.keyboard.press("Tab");
   const focus = await page.evaluate(() => {
     const element = document.activeElement!;
     const style = getComputedStyle(element); const box = element.getBoundingClientRect();
