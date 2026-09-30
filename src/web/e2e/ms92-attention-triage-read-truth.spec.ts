@@ -16,10 +16,19 @@ test("attention commands require a current command snapshot and revocation hides
     await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", state);
     await page.evaluate(() => document.fonts.ready);
     if (["current", "cached"].includes(state)) {
-      await page.locator("#attention").evaluate((element) => window.scrollTo({
-        top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150), behavior: "instant",
-      }));
-      await page.waitForTimeout(300);
+      const control = page.locator(state === "current"
+        ? ".command-attention-list .triage-controls"
+        : ".command-attention-list .triage-note").first();
+      await expect(control).toBeVisible();
+      await expect.poll(async () => {
+        await control.evaluate((element) => window.scrollTo({
+          top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 500),
+          behavior: "instant",
+        })).catch(() => undefined);
+        await page.waitForTimeout(150);
+        const box = await control.boundingBox();
+        return Boolean(box && box.y >= 120 && box.y + box.height <= height - 20);
+      }, { timeout: 15_000 }).toBe(true);
     }
     await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", state);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
