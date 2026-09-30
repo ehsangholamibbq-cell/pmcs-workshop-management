@@ -486,6 +486,18 @@ jobs:
           name: pmcs-ms87-governance-read-truth
           path: src/web/artifacts/ms87-governance-read-truth/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms88-today-report-truth
+          path: src/web/artifacts/ms88-today-report-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms88-project-calendar-truth
+          path: src/web/artifacts/ms88-project-calendar-truth/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
