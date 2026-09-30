@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Pmcs.Api.Infrastructure;
 using Pmcs.BuildingBlocks.Application;
@@ -211,6 +212,20 @@ builder.Services.AddOpenApi();
 foreach (var module in modules)
 {
     module.AddServices(builder.Services, builder.Configuration);
+}
+
+if (string.Equals(builder.Configuration["Intelligence:INT1FixtureEnabled"], "true",
+        StringComparison.OrdinalIgnoreCase))
+{
+    if (!qaRuntime.Enabled || !string.Equals(
+            builder.Configuration["Intelligence:INT1ReferenceEnabled"], "true",
+            StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("The INT1 fixture requires an isolated QA gateway and reference flag.");
+    builder.Services.RemoveAll<HttpClient>();
+    builder.Services.AddSingleton(new HttpClient(new Int1QaFixtureHandler())
+    {
+        Timeout = Timeout.InfiniteTimeSpan
+    });
 }
 
 var app = builder.Build();

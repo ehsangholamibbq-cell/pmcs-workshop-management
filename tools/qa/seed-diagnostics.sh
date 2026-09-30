@@ -158,6 +158,9 @@ stop_api
 ./tools/qa/verify-files-database.sh
 ./tools/qa/verify-sync-database.sh
 
+# Run INT1 on the isolated QA database only after the historical baseline assertions.
+./tools/qa/verify-int1-reference.sh
+
 # Conversion fixtures are created after the reporting Golden and baseline
 # database assertions, so new official Action/Issue rows cannot change them.
 start_api false Unconfigured

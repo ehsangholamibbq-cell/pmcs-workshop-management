@@ -26,3 +26,7 @@
 - Audit و telemetry metadata-only و بررسی مستقل هزینه، fallback و عدم نشت payload در log.
 
 در lineage هر Run، مدل و نسخهٔ اولیه همراه Provider و نسخهٔ فعال‌سازی اولیه ثبت می‌شود؛ اگر fallback رخ دهد، مدل/Provider و نسخهٔ مقصد جداگانه در فیلدهای انتخاب نهایی و دلیل خطا ثبت می‌شوند. نسخهٔ Provider پیش از هر ارسال به Provider دوباره کنترل می‌شود تا disable/re-activate میان دو گام، Run را fail-closed کند.
+
+## آزمون متصل ایزوله
+
+`tools/qa/verify-int1-reference.sh` پس از assertionهای baseline در پایگاه `pmcs_qa_*` سه مدل fixture را ثبت می‌کند و API را فقط با QA Gateway احراز‌شده، Feature Flag موقت و `INT1FixtureEnabled` بالا می‌آورد. Handler ساختگی تنها در همین محیط و با این دو Gate وارد DI می‌شود. این آزمون مسیر HTTP، انتخاب هر سه مدل، ابزار مالک با مجوز واقعی، fallback، ابزار ناشناخته، disable، replay و نبود سؤال/پاسخ/کلید در چهار Store را بررسی می‌کند؛ هیچ درخواست بیرونی نمی‌فرستد و معادل آزمون اتصال زنده نیست. در استقرار عادی هر دو Flag خاموش‌اند.
