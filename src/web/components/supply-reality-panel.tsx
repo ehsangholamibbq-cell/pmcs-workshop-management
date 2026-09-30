@@ -399,7 +399,8 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
     </details>
 
     <details open><summary>موجودی و امانت کارگاه</summary>
-      <div className="stock-table" role="table" aria-label="موجودی رسمی به تفکیک قلم و محل">{state?.stockPositions.length ? state.stockPositions.map((position) => <div className="stock-row" role="row" key={`${position.itemId}:${position.locationId}`}><strong>{labelItem(state, position.itemId)}</strong><span>{labelLocation(state, position.locationId)}</span><span>{position.onHandBaseQuantity.toLocaleString("fa-IR")} {position.baseUnit}</span><small>آخرین حرکت: {dateFa(position.lastMovementAt)}</small></div>) : <p className="empty-state">هنوز موجودی پذیرفته‌شده و ثبت‌شده‌ای وجود ندارد.</p>}</div>
+      {state?.stockPositions.length ? <div className="stock-table" role="table" aria-label="موجودی رسمی به تفکیک قلم و محل">{state.stockPositions.map((position) => <div className="stock-row" role="row" key={`${position.itemId}:${position.locationId}`}><strong role="rowheader">{labelItem(state, position.itemId)}</strong><span role="cell">{labelLocation(state, position.locationId)}</span><span role="cell">{position.onHandBaseQuantity.toLocaleString("fa-IR")} {position.baseUnit}</span><small role="cell">آخرین حرکت: {dateFa(position.lastMovementAt)}</small></div>)}</div>
+        : <div className="stock-table"><p className="empty-state">هنوز موجودی پذیرفته‌شده و ثبت‌شده‌ای وجود ندارد.</p></div>}
       <div className="supply-form-grid">
         <form className="capture-form compact-form" onSubmit={(event) => void submitIssue(event)}><h3>تحویل به اکیپ یا محل مصرف</h3>
           <label className="field">قلم<select value={issueItemId} onChange={(event) => setIssueItemId(event.target.value)}><option value="">انتخاب کنید</option>{activeMaterialItems.map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></label>
