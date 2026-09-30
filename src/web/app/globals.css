@@ -5782,3 +5782,24 @@ output {
   border-color: var(--status-danger);
   background: var(--status-danger-surface);
 }
+
+.governance-panel[data-read-state="loading"] > .calculation-note,
+.governance-panel[data-read-state="offline"] > .calculation-note,
+.governance-panel[data-read-state="unavailable"] > .calculation-note,
+.governance-panel[data-read-state="forbidden"] > .calculation-note {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--status-info);
+  border-radius: 0.8rem;
+  background: var(--status-info-surface);
+}
+.governance-panel[data-read-state="offline"] > .calculation-note {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+.governance-panel[data-read-state="unavailable"] > .calculation-note,
+.governance-panel[data-read-state="forbidden"] > .calculation-note {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
