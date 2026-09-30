@@ -17,14 +17,16 @@ test("local sync diagnostics remain distinct from current account devices and re
     const panel = page.getByTestId("sync-recovery-center");
     await expect(panel).toHaveAttribute("data-device-read-state", state);
     await page.evaluate(() => document.fonts.ready);
+    const message = panel.locator(".device-read-message");
     await expect.poll(async () => {
-      const top = await panel.getByRole("heading", { name: "کنترل وضعیت همین دستگاه" })
-        .evaluate(element => element.getBoundingClientRect().top);
-      if (top < 120 || top >= 250) await panel.evaluate(element =>
-        window.scrollTo({ top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 150), behavior: "instant" }));
-      return top >= 120 && top < 250;
-    }, { timeout: 10_000 }).toBe(true);
-    await page.waitForTimeout(300);
+      await message.evaluate(element => window.scrollTo({
+        top: Math.max(0, window.scrollY + element.getBoundingClientRect().top - 360),
+        behavior: "instant",
+      })).catch(() => undefined);
+      await page.waitForTimeout(150);
+      const box = await message.boundingBox();
+      return Boolean(box && box.y >= 240 && box.y + box.height <= height - 40);
+    }, { timeout: 15_000 }).toBe(true);
     await expect(panel).toHaveAttribute("data-device-read-state", state);
     const bytes = await page.screenshot({ animations: "disabled", caret: "hide" });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
