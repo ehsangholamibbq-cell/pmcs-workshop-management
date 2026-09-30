@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { createActionFromAttention, dismissAttention, type ActionPriority } from "@/lib/actions";
 import type { ProjectAttentionItem } from "@/lib/command-center";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { futureProjectDate } from "@/lib/persian-date";
 
 interface AttentionTriageControlsProps {
@@ -14,6 +14,10 @@ interface AttentionTriageControlsProps {
   readonly projectId: string;
   readonly item: ProjectAttentionItem;
   readonly isOnline: boolean;
+  readonly readState: "loading" | "current" | "cached" | "error" | "forbidden";
+  readonly readVersion: number;
+  readonly isCurrentRead: (version: number) => boolean;
+  readonly onAccessRevoked: () => void;
   readonly onChanged: () => void;
 }
 
@@ -26,6 +30,7 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const canCommand = props.isOnline && props.readState === "current";
   const handledLabel = useMemo(() => ({
     ConvertedToAction: "به اقدام تبدیل شد",
     Dismissed: "با دلیل بسته شد",
@@ -41,17 +46,19 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
     );
   }
 
-  if (!props.isOnline) {
-    return <small className="triage-note">تعیین تکلیف مدیریتی هنگام اتصال به سرور انجام می‌شود.</small>;
+  if (!canCommand) {
+    return <small className="triage-note" role="status">تعیین تکلیف مدیریتی پس از دریافت تصویر جاری و مجاز سرور انجام می‌شود؛ نسخهٔ محلی فقط برای مرور است.</small>;
   }
 
   async function createAction() {
+    if (!canCommand || isBusy) return;
     if (!priority) {
       setMessage("اولویت اقدام را مشخص کنید؛ مقدار ارزیابی‌نشده به‌صورت خودکار تبدیل نمی‌شود.");
       return;
     }
 
     setIsBusy(true);
+    const commandVersion = props.readVersion;
     setMessage("در حال ایجاد اقدام رسمی…");
     try {
       await createActionFromAttention(
@@ -66,21 +73,27 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
           title: props.item.description,
         },
       );
+      if (!props.isCurrentRead(commandVersion)) return;
       props.onChanged();
     } catch (error) {
-      setMessage(toUserMessage(error, "ایجاد اقدام ناموفق بود."));
+      if (!props.isCurrentRead(commandVersion)) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        props.onAccessRevoked();
+      } else setMessage(toUserMessage(error, "ایجاد اقدام ناموفق بود."));
     } finally {
       setIsBusy(false);
     }
   }
 
   async function dismiss() {
+    if (!canCommand || isBusy) return;
     if (!reason.trim()) {
       setMessage("ثبت دلیل برای بستن مورد الزامی است.");
       return;
     }
 
     setIsBusy(true);
+    const commandVersion = props.readVersion;
     setMessage("در حال ثبت تصمیم…");
     try {
       await dismissAttention(
@@ -90,9 +103,13 @@ export function AttentionTriageControls(props: AttentionTriageControlsProps) {
         props.item.sourceFactId,
         reason.trim(),
       );
+      if (!props.isCurrentRead(commandVersion)) return;
       props.onChanged();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت تصمیم ناموفق بود."));
+      if (!props.isCurrentRead(commandVersion)) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        props.onAccessRevoked();
+      } else setMessage(toUserMessage(error, "ثبت تصمیم ناموفق بود."));
     } finally {
       setIsBusy(false);
     }

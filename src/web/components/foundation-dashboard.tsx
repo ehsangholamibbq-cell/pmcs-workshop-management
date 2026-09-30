@@ -188,6 +188,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
       return;
     }
 
+    setCommandReadState("loading");
+    setCommandMessage("در حال دریافت آخرین تصویر رسمی وضعیت…");
     try {
       const model = await getCommandCenter(
         apiBaseUrl,
@@ -747,6 +749,21 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                         projectId={projectId}
                         item={item}
                         isOnline={isOnline}
+                        readState={commandReadState}
+                        readVersion={commandReadSequence.current}
+                        isCurrentRead={(version) => version === commandReadSequence.current &&
+                          commandReadState === "current" && !projectAccessDenied.current}
+                        onAccessRevoked={() => {
+                          ++commandReadSequence.current;
+                          projectAccessDenied.current = true;
+                          localStorage.removeItem(commandCenterCacheKey);
+                          localStorage.removeItem(locationCacheKey);
+                          setCommandCenter(null);
+                          setProjectLocations([]);
+                          setMeasurementItems([]);
+                          setCommandReadState("forbidden");
+                          setCommandMessage("دسترسی به پروژه تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود.");
+                        }}
                         onChanged={() => setRefreshToken((current) => current + 1)}
                       />
                     )}
