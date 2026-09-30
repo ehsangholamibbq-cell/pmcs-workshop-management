@@ -20,7 +20,7 @@ test("today report workflow hides an old report and submit action after failed o
     for (let attempt = 0; attempt < 8; attempt += 1) {
       await expect(panel).toHaveAttribute("data-read-state", state);
       await page.evaluate(() => document.fonts.ready);
-      const headingTop = () => panel.getByText("وضعیت گزارش امروز")
+      const headingTop = () => panel.getByText("وضعیت گزارش امروز", { exact: true })
         .evaluate((element) => element.getBoundingClientRect().top);
       await expect.poll(async () => {
         const top = await headingTop();

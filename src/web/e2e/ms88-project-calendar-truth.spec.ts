@@ -80,7 +80,7 @@ test("project calendar hides an old setting and save command after failed or for
   responseStatus = 403;
   await page.reload();
   await expect(panel).toHaveAttribute("data-read-state", "forbidden");
-  await expect(panel.getByRole("alert")).toContainText("دادهٔ قبلی نمایش داده نمی‌شود");
+  await expect(panel.getByRole("alert")).toContainText("تنظیم قبلی نمایش داده نمی‌شود");
   await expect(panel.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("calendar-320-access-revoked.png", 320, 720, "forbidden");
 
