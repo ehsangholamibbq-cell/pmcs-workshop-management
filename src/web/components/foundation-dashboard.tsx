@@ -222,6 +222,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         setCommandCenter(null);
         setProjectLocations([]);
         setMeasurementItems([]);
+        setLastFactId(null);
         setLocationReadState("forbidden");
         setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
         setCommandReadState("forbidden");
@@ -509,6 +510,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               projectId={projectId}
               lastFactId={lastFactId}
               onQueued={handleAttachmentQueued}
+              projectReadState={commandReadState}
+              isProjectAccessRevoked={() => projectAccessDenied.current}
             />
             <TodayReportWorkflow
               apiBaseUrl={apiBaseUrl}
@@ -770,6 +773,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                           setCommandCenter(null);
                           setProjectLocations([]);
                           setMeasurementItems([]);
+                          setLastFactId(null);
                           setCommandReadState("forbidden");
                           setCommandMessage("دسترسی به پروژه تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود.");
                         }}

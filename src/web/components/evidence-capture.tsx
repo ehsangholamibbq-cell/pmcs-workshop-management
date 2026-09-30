@@ -13,6 +13,8 @@ interface EvidenceCaptureProps {
   readonly projectId: string;
   readonly lastFactId: string | null;
   readonly onQueued: () => Promise<void>;
+  readonly projectReadState: "loading" | "current" | "cached" | "error" | "forbidden";
+  readonly isProjectAccessRevoked: () => boolean;
 }
 
 export function EvidenceCapture(props: EvidenceCaptureProps) {
@@ -21,10 +23,22 @@ export function EvidenceCapture(props: EvidenceCaptureProps) {
   const busy = useRef(false);
   const [file, setFile] = useState<File | null>(null);
   const [messageKind, setMessageKind] = useState<"info" | "success" | "error">("info");
+  const accessRevoked = props.projectReadState === "forbidden";
+
+  function ensureProjectAccess() {
+    if (props.isProjectAccessRevoked()) {
+      throw new Error("دسترسی به پروژه تأیید نشد؛ مدرک تازه روی این دستگاه صف نمی‌شود.");
+    }
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file || busy.current) return;
+    if (accessRevoked || props.isProjectAccessRevoked()) {
+      setMessageKind("error");
+      setMessage("دسترسی به پروژه تأیید نشد؛ مدرک تازه روی این دستگاه صف نمی‌شود.");
+      return;
+    }
     busy.current = true;
     setIsBusy(true);
     setMessage("در حال محاسبه اثر انگشت فایل و ذخیره روی دستگاه…");
@@ -42,6 +56,7 @@ export function EvidenceCapture(props: EvidenceCaptureProps) {
         dailyReportId,
         dailyFactId: props.lastFactId,
         file,
+        ensureAllowed: ensureProjectAccess,
       });
       setFile(null);
       setMessageKind("success");
@@ -61,22 +76,27 @@ export function EvidenceCapture(props: EvidenceCaptureProps) {
   }
 
   return (
-    <form className="evidence-capture" data-testid="evidence-capture" aria-busy={isBusy} onSubmit={save}>
+    <form className="evidence-capture" data-testid="evidence-capture"
+      data-project-read-state={props.projectReadState} aria-busy={isBusy} onSubmit={save}>
       <div className="evidence-capture-status">
         <strong>عکس یا مدرک واقعی</strong>
-        <p className={`evidence-feedback evidence-feedback--${messageKind}`}
-          role={messageKind === "error" ? "alert" : "status"}>{message}</p>
+        <p className={`evidence-feedback evidence-feedback--${accessRevoked ? "error" : messageKind}`}
+          role={accessRevoked || messageKind === "error" ? "alert" : "status"}>{accessRevoked
+            ? "دسترسی به پروژه تأیید نشد؛ مدرک تازه روی این دستگاه صف نمی‌شود."
+            : message}</p>
+        {!accessRevoked && props.projectReadState !== "current" &&
+          <small className="field-help" role="status">این مدرک فقط پیش‌نویس محلی است؛ پذیرش سرور و مجوز جاری هنوز تأیید نشده‌اند.</small>}
       </div>
       <PmcsFileInput label="عکس یا سند پی‌دی‌اف" capture="environment"
         accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
-        file={file} disabled={isBusy} onFileChange={(selected) => {
+        file={file} disabled={isBusy || accessRevoked} onFileChange={(selected) => {
           setFile(selected);
           setMessageKind("info");
           setMessage(selected ? "فایل انتخاب شد؛ برای نگهداری در صف محلی، ذخیره را بزنید."
             : "فایلی انتخاب نشده؛ عکس یا سند را برای ذخیرهٔ محلی انتخاب کنید.");
         }} />
-      <button type="submit" disabled={!file || isBusy}>
-        {isBusy ? "در حال ذخیره…" : "ذخیره مدرک روی این دستگاه"}
+      <button type="submit" disabled={!file || isBusy || accessRevoked}>
+        {isBusy ? "در حال ذخیره…" : accessRevoked ? "ذخیره مدرک غیرفعال است" : "ذخیره مدرک روی این دستگاه"}
       </button>
     </form>
   );
