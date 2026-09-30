@@ -18,7 +18,8 @@ internal enum IntelligenceDataClass
 internal sealed record ModelCatalogEntry(
     Guid Id, int Version, string Provider, string Model,
     ModelCapability Capabilities, IntelligenceDataClass MaximumDataClass,
-    bool Enabled, bool ConnectionVerified);
+    bool Enabled, bool ConnectionVerified,
+    long InputMicrounitsPerToken = 0, long OutputMicrounitsPerToken = 0);
 
 internal sealed record ModelExecutionProfile(
     Guid Id, int Version, string UseCase,
@@ -43,6 +44,8 @@ internal static class ModelSelectionPolicy
         var matches = catalog.Where(item => item.Id == modelId).Take(2).ToArray();
         return profile.AllowedModelIds.Contains(modelId) && matches.Length == 1 &&
             matches[0].Enabled && matches[0].ConnectionVerified &&
+            matches[0].InputMicrounitsPerToken > 0 &&
+            matches[0].OutputMicrounitsPerToken > 0 &&
             (matches[0].Capabilities & profile.RequiredCapabilities) == profile.RequiredCapabilities &&
             matches[0].MaximumDataClass >= profile.MaximumDataClass;
     }
@@ -101,6 +104,8 @@ internal static class ModelSelectionPolicy
         if (matches.Length != 1 || !matches[0].Enabled || !matches[0].ConnectionVerified)
             return ModelSelectionDecision.Denied("ai.profile.model_unavailable");
         var model = matches[0];
+        if (model.InputMicrounitsPerToken < 1 || model.OutputMicrounitsPerToken < 1)
+            return ModelSelectionDecision.Denied("ai.profile.pricing_unavailable");
         if ((model.Capabilities & profile.RequiredCapabilities) != profile.RequiredCapabilities)
             return ModelSelectionDecision.Denied("ai.profile.capability_missing");
         if (dataClass > model.MaximumDataClass)

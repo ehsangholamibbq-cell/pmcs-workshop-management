@@ -62,6 +62,9 @@ public sealed class ModelSelectionPolicyTests
         Assert.Equal("ai.profile.data_denied", ModelSelectionPolicy.Select(profile,
             [Catalog()[0] with { MaximumDataClass = IntelligenceDataClass.Internal }],
             tenantId, projectId, IntelligenceDataClass.Confidential, 100).Code);
+        Assert.Equal("ai.profile.pricing_unavailable", ModelSelectionPolicy.Select(profile,
+            [Catalog()[0] with { InputMicrounitsPerToken = 0 }], tenantId, projectId,
+            IntelligenceDataClass.Internal, 100).Code);
     }
 
     [Fact]
@@ -92,7 +95,8 @@ public sealed class ModelSelectionPolicyTests
     {
         var now = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
         var entry = IntelligenceModelCatalog.Create(Guid.NewGuid(), 1, "OpenAI", "configured-model",
-            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, Guid.NewGuid(), now);
+            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, Guid.NewGuid(), now,
+            20, 40);
 
         Assert.False(entry.ToPolicy().ConnectionVerified);
         Assert.False(entry.ToPolicy().Enabled);
@@ -116,8 +120,8 @@ public sealed class ModelSelectionPolicyTests
     private ModelCatalogEntry[] Catalog() =>
     [
         new(primaryId, 1, "OpenAI", "test-primary", ModelCapability.StructuredOutput |
-            ModelCapability.ToolCalling, IntelligenceDataClass.Confidential, true, true),
+            ModelCapability.ToolCalling, IntelligenceDataClass.Confidential, true, true, 2, 4),
         new(fallbackId, 1, "GoogleGemini", "test-fallback", ModelCapability.StructuredOutput |
-            ModelCapability.ToolCalling, IntelligenceDataClass.Confidential, true, true)
+            ModelCapability.ToolCalling, IntelligenceDataClass.Confidential, true, true, 2, 4)
     ];
 }

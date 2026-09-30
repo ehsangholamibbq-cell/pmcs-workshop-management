@@ -44,6 +44,8 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
             builder.Property(x => x.Model).HasColumnName("model").HasMaxLength(160);
             builder.Property(x => x.Capabilities).HasColumnName("capabilities").HasConversion<int>();
             builder.Property(x => x.MaximumDataClass).HasColumnName("maximum_data_class").HasConversion<int>();
+            builder.Property(x => x.InputMicrounitsPerToken).HasColumnName("input_microunits_per_token");
+            builder.Property(x => x.OutputMicrounitsPerToken).HasColumnName("output_microunits_per_token");
             builder.Property(x => x.Enabled).HasColumnName("enabled");
             builder.Property(x => x.VerifiedAt).HasColumnName("verified_at");
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");

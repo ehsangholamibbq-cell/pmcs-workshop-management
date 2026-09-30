@@ -15,7 +15,7 @@ public sealed class IntelligenceReferenceRunTests
             ModelCapability.StructuredOutput, IntelligenceDataClass.Internal,
             1000, 100, 30, 1000, "prompt-v1", "policy-v1");
         var model = new ModelCatalogEntry(modelId, 2, "OpenAI", "configured-model",
-            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, true, true);
+            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, true, true, 2, 4);
         var now = DateTimeOffset.UtcNow;
         var run = IntelligenceReferenceRun.Request(Guid.NewGuid(), tenant, project,
             Guid.NewGuid(), profile, model, new string('a', 64), now);
@@ -46,7 +46,7 @@ public sealed class IntelligenceReferenceRunTests
             ModelCapability.StructuredOutput, IntelligenceDataClass.Internal,
             1000, 100, 30, 1000, "prompt-v1", "policy-v1");
         var model = new ModelCatalogEntry(first, 1, "OpenAI", "a",
-            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, true, true);
+            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, true, true, 2, 4);
         var alternate = model with { Id = second, Provider = "GoogleGemini", Model = "b" };
         var now = DateTimeOffset.UtcNow;
         var run = IntelligenceReferenceRun.Request(Guid.NewGuid(), tenant, Guid.NewGuid(),

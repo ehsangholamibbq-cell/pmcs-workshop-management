@@ -110,7 +110,9 @@ internal static class IntelligenceProfileAdministrationEndpoints
         if (replay.Result is not null) return replay.Result;
         if (request.UseCase != "int1.reference" || request.ProjectIds is null ||
             request.AllowedModelIds is null || request.FallbackModelIds is null ||
-            (request.RequiredCapabilities & ModelCapability.StructuredOutput) == 0)
+            (request.RequiredCapabilities & (ModelCapability.StructuredOutput |
+                ModelCapability.ToolCalling)) !=
+                (ModelCapability.StructuredOutput | ModelCapability.ToolCalling))
             return Results.BadRequest(new { code = "ai.profile.invalid" });
 
         var latest = await dbContext.ProfileVersions.AsNoTracking()

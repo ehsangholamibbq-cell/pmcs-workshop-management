@@ -27,7 +27,7 @@ internal sealed class ProjectChatContextReadService(
         var messages = await db.Messages.AsNoTracking()
             .Where(item => item.TenantId == tenantId && item.ProjectId == projectId &&
                 item.DeletedAt == null && item.RedactedAt == null)
-            .OrderByDescending(item => item.Sequence).Take(20)
+            .OrderByDescending(item => item.Sequence).Take(8)
             .Select(item => new ProjectChatContextMessage(item.Id, item.Sequence,
                 item.AuthorUserId, item.Body, item.CreatedAt))
             .ToArrayAsync(cancellationToken);
@@ -36,6 +36,7 @@ internal sealed class ProjectChatContextReadService(
         return await membership.IsActiveAsync(tenantId, projectId, actorUserId, cancellationToken) &&
             await permissions.HasProjectPermissionAsync(tenantId, actorUserId,
                 projectId, "collaboration.read", cancellationToken)
-            ? messages.Reverse().ToArray() : null;
+            ? messages.Reverse().Select(item => item with
+                { Body = item.Body[..Math.Min(item.Body.Length, 500)] }).ToArray() : null;
     }
 }

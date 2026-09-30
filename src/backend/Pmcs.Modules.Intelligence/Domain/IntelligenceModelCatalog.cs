@@ -8,6 +8,8 @@ internal sealed class IntelligenceModelCatalog
     public string Model { get; private set; } = string.Empty;
     public ModelCapability Capabilities { get; private set; }
     public IntelligenceDataClass MaximumDataClass { get; private set; }
+    public long InputMicrounitsPerToken { get; private set; }
+    public long OutputMicrounitsPerToken { get; private set; }
     public bool Enabled { get; private set; }
     public DateTimeOffset? VerifiedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -18,14 +20,17 @@ internal sealed class IntelligenceModelCatalog
 
     internal static IntelligenceModelCatalog Create(
         Guid id, int version, string provider, string model, ModelCapability capabilities,
-        IntelligenceDataClass maximumDataClass, Guid createdBy, DateTimeOffset now)
+        IntelligenceDataClass maximumDataClass, Guid createdBy, DateTimeOffset now,
+        long inputMicrounitsPerToken, long outputMicrounitsPerToken)
     {
         if (id == Guid.Empty || version < 1 || createdBy == Guid.Empty ||
             provider is not ("OpenAI" or "GoogleGemini" or "AnthropicClaude") ||
             string.IsNullOrWhiteSpace(model) || model.Length > 160 ||
             capabilities == ModelCapability.None ||
             (capabilities & ~(ModelCapability.StructuredOutput | ModelCapability.ToolCalling)) != 0 ||
-            !Enum.IsDefined(maximumDataClass))
+            !Enum.IsDefined(maximumDataClass) ||
+            inputMicrounitsPerToken is < 1 or > 1_000_000 ||
+            outputMicrounitsPerToken is < 1 or > 1_000_000)
         {
             throw new ArgumentException("Invalid INT1 model catalog entry.");
         }
@@ -34,7 +39,9 @@ internal sealed class IntelligenceModelCatalog
         {
             Id = id, Version = version, Provider = provider, Model = model,
             Capabilities = capabilities, MaximumDataClass = maximumDataClass,
-            CreatedBy = createdBy, CreatedAt = now, Revision = 1
+            CreatedBy = createdBy, CreatedAt = now, Revision = 1,
+            InputMicrounitsPerToken = inputMicrounitsPerToken,
+            OutputMicrounitsPerToken = outputMicrounitsPerToken
         };
     }
 
@@ -56,5 +63,6 @@ internal sealed class IntelligenceModelCatalog
     }
 
     internal ModelCatalogEntry ToPolicy() => new(Id, Version, Provider, Model,
-        Capabilities, MaximumDataClass, Enabled, VerifiedAt is not null);
+        Capabilities, MaximumDataClass, Enabled, VerifiedAt is not null,
+        InputMicrounitsPerToken, OutputMicrounitsPerToken);
 }

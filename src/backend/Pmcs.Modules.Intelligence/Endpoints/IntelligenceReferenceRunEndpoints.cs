@@ -101,7 +101,11 @@ internal static class IntelligenceReferenceRunEndpoints
             .Where(item => allowedIds.Contains(item.Id))
             .ToArrayAsync(cancellationToken);
         var catalog = models.Select(item => item.ToPolicy()).ToArray();
-        var estimatedUnits = profile.MaximumInputTokens + profile.MaximumOutputTokens;
+        var selectedModel = catalog.SingleOrDefault(item => item.Id == selection.ModelId);
+        if (selectedModel is null || selectedModel.InputMicrounitsPerToken < 1 ||
+            selectedModel.OutputMicrounitsPerToken < 1)
+            return Results.Conflict(new { code = "ai.profile.pricing_unavailable" });
+        var estimatedUnits = EstimateCost(profile, selectedModel);
         var decision = ModelSelectionPolicy.Select(profile, catalog, actor.TenantId, projectId,
             IntelligenceDataClass.Confidential, estimatedUnits, selection.ModelId);
         if (!decision.Allowed || decision.Model is null)
@@ -135,6 +139,10 @@ internal static class IntelligenceReferenceRunEndpoints
             {
                 try
                 {
+                    if (!await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
+                            item.Id == run.ModelCatalogId && item.Enabled &&
+                            item.VerifiedAt != null, timeout.Token))
+                        throw new ReferenceGatewayException("ai.profile.model_unavailable");
                     var toolDecision = await adapter.DecideToolAsync(question, toolSet, timeout.Token);
                     var invoked = await registry.InvokeAsync(actor.TenantId, actor.UserId,
                         projectId, toolDecision.ToolId, toolDecision.Arguments, timeout.Token);
@@ -147,17 +155,25 @@ internal static class IntelligenceReferenceRunEndpoints
                     else if (run.ToolId != toolDecision.ToolId || run.ToolDecision != "Allowed")
                         throw new ReferenceGatewayException("ai.tool.fallback_changed_tool");
                     await db.SaveChangesAsync(timeout.Token);
+                    if (!await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
+                            item.Id == run.ModelCatalogId && item.Enabled &&
+                            item.VerifiedAt != null, timeout.Token))
+                        throw new ReferenceGatewayException("ai.profile.model_unavailable");
                     var toolJson = JsonSerializer.Serialize(invoked.Data);
                     var reply = await adapter.AnswerAsync(question, toolDecision.ToolId,
                         toolJson, profile.MaximumOutputTokens, timeout.Token);
                     var inputTokens = toolDecision.InputTokens + reply.InputTokens;
                     var outputTokens = toolDecision.OutputTokens + reply.OutputTokens;
-                    if (inputTokens < 0 || outputTokens < 0 ||
+                    var currentModel = catalog.Single(item => item.Id == run.ModelCatalogId);
+                    var cost = (long)inputTokens * currentModel.InputMicrounitsPerToken +
+                        (long)outputTokens * currentModel.OutputMicrounitsPerToken;
+                    if (toolDecision.InputTokens < 0 || toolDecision.OutputTokens < 0 ||
+                        inputTokens < 0 || outputTokens < 0 ||
                         inputTokens > profile.MaximumInputTokens ||
-                        outputTokens > profile.MaximumOutputTokens)
+                        outputTokens > profile.MaximumOutputTokens ||
+                        cost > profile.MaximumCostMicrounits)
                         throw new ReferenceGatewayException("ai.profile.limit_exceeded");
-                    // No catalog price is published yet. Zero means unknown billed cost, never a quoted price.
-                    run.Complete(inputTokens, outputTokens, 0, clock.UtcNow);
+                    run.Complete(inputTokens, outputTokens, cost, clock.UtcNow);
                     answer = reply.Answer;
                     break;
                 }
@@ -166,9 +182,14 @@ internal static class IntelligenceReferenceRunEndpoints
                         "ai.provider.unavailable" or "ai.provider.invalid_response"))
                 {
                     var alternate = profile.FallbackModelIds
-                        .Select(id => ModelSelectionPolicy.Select(profile, catalog, actor.TenantId,
-                            projectId, IntelligenceDataClass.Confidential, estimatedUnits,
-                            id, fallback: true, failureCode: error.Code))
+                        .Select(id => catalog.FirstOrDefault(item => item.Id == id))
+                        .Where(item => item is not null &&
+                            item.InputMicrounitsPerToken > 0 &&
+                            item.OutputMicrounitsPerToken > 0)
+                        .Select(item => ModelSelectionPolicy.Select(profile, catalog,
+                            actor.TenantId, projectId, IntelligenceDataClass.Confidential,
+                            EstimateCost(profile, item!), item!.Id,
+                            fallback: true, failureCode: error.Code))
                         .FirstOrDefault(item => item.Allowed && item.Model is not null);
                     if (alternate?.Model is null) throw;
                     var nextAdapter = adapters.SingleOrDefault(item =>
@@ -235,4 +256,8 @@ internal static class IntelligenceReferenceRunEndpoints
 
     private static bool Enabled(IConfiguration configuration) =>
         bool.TryParse(configuration["Intelligence:INT1ReferenceEnabled"], out var enabled) && enabled;
+
+    private static long EstimateCost(ModelExecutionProfile profile, ModelCatalogEntry model) =>
+        (long)profile.MaximumInputTokens * model.InputMicrounitsPerToken +
+        (long)profile.MaximumOutputTokens * model.OutputMicrounitsPerToken;
 }

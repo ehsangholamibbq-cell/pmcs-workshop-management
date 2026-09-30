@@ -78,16 +78,17 @@ public sealed class ReferenceModelGatewayTests
             var first = Requests.Count == 1;
             var json = (provider, first) switch
             {
-                ("OpenAI", true) => $$"""{"status":"completed","output":[{"type":"function_call","name":"reporting_catalog_list","arguments":"{\"projectId\":\"{{projectId}}\"}"}],"usage":{"input_tokens":12,"output_tokens":9}}""",
+                ("OpenAI", true) => """{"status":"completed","output":[{"type":"function_call","name":"reporting_catalog_list","arguments":"{\"projectId\":\"PROJECT\"}"}],"usage":{"input_tokens":12,"output_tokens":9}}""",
                 ("OpenAI", false) => """{"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":"{\"answer\":\"No available reports.\",\"citations\":[\"reporting.catalog.list\"]}"}]}],"usage":{"input_tokens":10,"output_tokens":8}}""",
-                ("GoogleGemini", true) => $$"""{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"reporting_catalog_list","args":{"projectId":"{{projectId}}"}}}]}}],"usageMetadata":{"promptTokenCount":12,"candidatesTokenCount":9}}""",
+                ("GoogleGemini", true) => """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"reporting_catalog_list","args":{"projectId":"PROJECT"}}}]}}],"usageMetadata":{"promptTokenCount":12,"candidatesTokenCount":9}}""",
                 ("GoogleGemini", false) => """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"text":"{\"answer\":\"No available reports.\",\"citations\":[\"reporting.catalog.list\"]}"}]}}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":8}}""",
-                ("AnthropicClaude", true) => $$"""{"stop_reason":"tool_use","content":[{"type":"tool_use","name":"reporting_catalog_list","input":{"projectId":"{{projectId}}"}}],"usage":{"input_tokens":12,"output_tokens":9}}""",
+                ("AnthropicClaude", true) => """{"stop_reason":"tool_use","content":[{"type":"tool_use","name":"reporting_catalog_list","input":{"projectId":"PROJECT"}}],"usage":{"input_tokens":12,"output_tokens":9}}""",
                 _ => """{"stop_reason":"end_turn","content":[{"type":"text","text":"{\"answer\":\"No available reports.\",\"citations\":[\"reporting.catalog.list\"]}"}],"usage":{"input_tokens":10,"output_tokens":8}}"""
             };
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
+                Content = new StringContent(json.Replace("PROJECT", projectId.ToString(),
+                    StringComparison.Ordinal), Encoding.UTF8, "application/json")
             };
         }
     }

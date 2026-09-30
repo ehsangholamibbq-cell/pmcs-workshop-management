@@ -12,18 +12,20 @@ namespace Pmcs.Modules.Intelligence.Endpoints;
 
 internal sealed record RegisterIntelligenceModelRequest(
     string Provider, string Model, ModelCapability Capabilities,
-    IntelligenceDataClass MaximumDataClass);
+    IntelligenceDataClass MaximumDataClass,
+    long InputMicrounitsPerToken, long OutputMicrounitsPerToken);
 
 internal sealed record ChangeIntelligenceModelRequest(long BaseRevision);
 
 internal sealed record IntelligenceModelResponse(
     Guid Id, int Version, string Provider, string Model, ModelCapability Capabilities,
     IntelligenceDataClass MaximumDataClass, bool Enabled, DateTimeOffset? VerifiedAt,
-    long Revision)
+    long Revision, long InputMicrounitsPerToken, long OutputMicrounitsPerToken)
 {
     internal static IntelligenceModelResponse From(IntelligenceModelCatalog entry) =>
         new(entry.Id, entry.Version, entry.Provider, entry.Model, entry.Capabilities,
-            entry.MaximumDataClass, entry.Enabled, entry.VerifiedAt, entry.Revision);
+            entry.MaximumDataClass, entry.Enabled, entry.VerifiedAt, entry.Revision,
+            entry.InputMicrounitsPerToken, entry.OutputMicrounitsPerToken);
 }
 
 internal static class IntelligenceModelCatalogEndpoints
@@ -79,7 +81,8 @@ internal static class IntelligenceModelCatalogEndpoints
         {
             entry = IntelligenceModelCatalog.Create(Guid.NewGuid(), latest + 1,
                 request.Provider, request.Model, request.Capabilities,
-                request.MaximumDataClass, actor.UserId, clock.UtcNow);
+                request.MaximumDataClass, actor.UserId, clock.UtcNow,
+                request.InputMicrounitsPerToken, request.OutputMicrounitsPerToken);
         }
         catch (ArgumentException)
         {
