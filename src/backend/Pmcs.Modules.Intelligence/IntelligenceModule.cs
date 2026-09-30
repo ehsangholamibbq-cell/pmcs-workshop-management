@@ -51,6 +51,18 @@ public sealed class IntelligenceModule : IModule
             provider.GetRequiredService<HttpClient>(),
             new ModelProviderConfiguration(configuration["Anthropic:Model"] ?? configuration["ANTHROPIC_MODEL"],
                 configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new OpenAiReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["OpenAI:Model"] ?? configuration["OPENAI_MODEL"],
+                configuration["OpenAI:ApiKey"] ?? configuration["OPENAI_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new GeminiReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Gemini:Model"] ?? configuration["GEMINI_MODEL"],
+                configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new ClaudeReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Anthropic:Model"] ?? configuration["ANTHROPIC_MODEL"],
+                configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
         services.AddScoped<IntelligenceAdministrationAccess>();
         services.AddScoped<PermissionAwareContextAssembler>();
         services.AddScoped<IntelligenceToolRegistry>();
@@ -68,5 +80,6 @@ public sealed class IntelligenceModule : IModule
         endpoints.MapIntelligenceGrantEndpoints();
         endpoints.MapIntelligenceModelCatalogEndpoints();
         endpoints.MapIntelligenceProfileAdministrationEndpoints();
+        endpoints.MapIntelligenceReferenceRunEndpoints();
     }
 }

@@ -48,6 +48,8 @@ internal sealed class IntelligenceToolRegistry(
         if (!TryReadArguments(arguments, projectId, itemProperty, out var itemId))
             return IntelligenceToolResult.Denied("ai.tool.arguments_invalid");
         if (!await permissions.HasProjectPermissionAsync(tenantId, actorUserId,
+                projectId, "insights.generate", cancellationToken) ||
+            !await permissions.HasProjectPermissionAsync(tenantId, actorUserId,
                 projectId, tool.Permission, cancellationToken))
             return IntelligenceToolResult.Denied("ai.tool.permission_denied");
 
