@@ -41,7 +41,7 @@ interface SupplyRealityPanelProps {
 
 export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
-  const cacheKey = useMemo(() => scopedStorageKey(`pmcs-supply-state:${props.projectId}`), [props.projectId]);
+  const cacheKey = scopedStorageKey(`pmcs-supply-state:${props.projectId}`);
   const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
   const [state, setState] = useState<SupplyStateModel | null>(null);
   const [cachedState, setCachedState] = useState<SupplyStateModel | null>(null);
