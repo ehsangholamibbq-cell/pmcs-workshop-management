@@ -22,7 +22,7 @@ export function PmcsFileInput({ label, accept, file, disabled = false, capture, 
 
   return (
     <div className="pmcs-file-input">
-      <label htmlFor={inputId}>{label}</label>
+      <span>{label}</span>
       <div className="pmcs-file-input-row">
         <label className="pmcs-file-input-control" htmlFor={inputId}>
           <span className="pmcs-file-input-button" aria-hidden="true">انتخاب فایل</span>

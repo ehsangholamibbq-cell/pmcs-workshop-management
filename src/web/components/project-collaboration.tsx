@@ -1259,7 +1259,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
       onClick={() => { setExpanded((value) => !value); setView(null); setError(""); }}>
       واکنش‌ها
     </button>
-    {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel"
+    {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel" role="group"
       aria-label="واکنش‌های همین پیام">
       {!canCommand && <span role="status">نمایش واکنش‌ها به خواندن جاری پروژه نیاز دارد.</span>}
       {canCommand && !currentView && !currentError && <span role="status">در حال دریافت واکنش‌ها…</span>}
@@ -1348,7 +1348,7 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       onClick={() => { setExpanded((value) => !value); setAttachments(null); setError(""); setNotice(""); }}>
       پیوست‌ها
     </button>
-    {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel"
+    {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel" role="group"
       aria-label="پیوست‌های همین پیام">
       {!canCommand && <span role="status">نمایش پیوست رسمی به خواندن جاری پروژه نیاز دارد.</span>}
       {canCommand && !currentAttachments && !currentError && <span role="status">در حال دریافت پیوست‌ها…</span>}
