@@ -21,6 +21,11 @@
           "id": "visual-baseline-inventory",
           "file": "node",
           "args": ["tools/qa/visual-baseline.mjs", "check-source"]
+        },
+        {
+          "id": "active-consumer-inventory",
+          "file": "node",
+          "args": ["tools/qa/vx-g4-consumers.mjs"]
         }
       ]
     },

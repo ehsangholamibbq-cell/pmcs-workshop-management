@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { CollaborationCommandBoundary, useCollaborationCommandGate } from "@/components/collaboration-command-gate";
+import { PmcsFileInput } from "@/components/pmcs-file-input";
 import { BrandMark } from "@/components/brand-mark";
 import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { PersianDateInput } from "@/components/persian-date-input";
@@ -52,6 +54,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [view, setView] = useState<ProjectConversationView | null>(null);
   const [failure, setFailure] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [roomCurrent, setRoomCurrent] = useState(false);
+  const [eventState, setEventState] = useState<"connecting" | "current" | "retrying">("connecting");
+  const roomIsCurrent = useRef(false);
   const [refresh, setRefresh] = useState(0);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(0);
@@ -90,11 +96,19 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [historyStatus, setHistoryStatus] = useState("");
   const historyController = useRef<AbortController | null>(null);
   const accessRevoked = useRef(false);
+  const isCurrent = useCallback(() => roomIsCurrent.current && navigator.onLine && !accessRevoked.current, []);
+  const isAuthorized = useCallback(() => !accessRevoked.current &&
+    (roomIsCurrent.current || !navigator.onLine), []);
+  const canCommand = view?.kind === "ready" && roomCurrent && online && !isRefreshing && !failure;
+  const canDraft = view?.kind === "ready" && !isRefreshing && !failure && (roomCurrent || !online);
 
-  const requestRefresh = useCallback((clearView = false) => {
+  const requestRefresh = useCallback((explicitRecovery = false) => {
+    if (accessRevoked.current && !explicitRecovery) return;
+    if (explicitRecovery) accessRevoked.current = false;
+    roomIsCurrent.current = false;
+    setRoomCurrent(false);
     searchRequest.current += 1;
     setIsRefreshing(true);
-    if (clearView) setView(null);
     setFailure("");
     setSearchResults(null);
     setSearchStatus("");
@@ -106,10 +120,12 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   const closeRestrictedConversation = useCallback((status: number) => {
     accessRevoked.current = true;
+    roomIsCurrent.current = false;
+    setRoomCurrent(false);
     historyController.current?.abort();
     historyController.current = null;
     searchRequest.current += 1;
-    setView(status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+    setView(status === 401 || status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
     setIsRefreshing(false);
     setFailure("");
     setDraft("");
@@ -133,7 +149,6 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   useEffect(() => {
     let active = true;
-    accessRevoked.current = false;
     historyController.current?.abort();
     historyController.current = null;
     void loadProjectConversation("/api/pmcs", projectId).then((result) => {
@@ -144,32 +159,38 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       setHistoryBusyId(null);
       setHistoryStatus("");
       if (result.kind !== "ready") {
-        setDraft("");
-        setReplyTo(null);
-        setSearchResults(null);
-        setEditing(null);
-        setEditStatus("");
-        setDeleting(null);
-        setDeleteStatus("");
-        setModerating(null);
-        setModerationStatus("");
+        closeRestrictedConversation(result.kind === "forbidden" ? 403 : 404);
+        return;
       }
+      roomIsCurrent.current = navigator.onLine;
+      setRoomCurrent(navigator.onLine);
+      setOnline(navigator.onLine);
       setView(result);
       setIsRefreshing(false);
       setFailure("");
     }).catch(() => {
       if (!active || accessRevoked.current) return;
+      roomIsCurrent.current = false;
+      setRoomCurrent(false);
       setIsRefreshing(false);
       setFailure("دریافت گفت‌وگو انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.");
     });
     return () => { active = false; };
-  }, [projectId, refresh]);
+  }, [projectId, refresh, closeRestrictedConversation]);
+
+  useEffect(() => {
+    const offline = () => { roomIsCurrent.current = false; setRoomCurrent(false); setOnline(false); };
+    const connected = () => { setOnline(true); requestRefresh(); };
+    window.addEventListener("offline", offline);
+    window.addEventListener("online", connected);
+    return () => { window.removeEventListener("offline", offline); window.removeEventListener("online", connected); };
+  }, [requestRefresh]);
 
   useEffect(() => {
     if (view?.kind !== "ready") return undefined;
     const controller = new AbortController();
     void watchCollaborationEvents("/api/pmcs", projectId, view.lastSequence,
-      () => requestRefresh(), controller.signal).catch((error: unknown) => {
+      () => requestRefresh(), controller.signal, setEventState).catch((error: unknown) => {
       if (controller.signal.aborted) return;
       if (error instanceof CollaborationAccessError) {
         closeRestrictedConversation(error.status);
@@ -183,7 +204,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     let active = true;
     const recover = async () => {
       try {
-        if (navigator.onLine) {
+        if (isCurrent()) {
           const result = await syncCollaborationMessages("/api/pmcs", projectId);
           if (active && result.sent > 0) {
             requestRefresh();
@@ -191,18 +212,17 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
           }
         }
         const queue = await listQueuedCollaborationMessages(projectId);
-        if (active) setPending(queue.length);
+        if (active && isAuthorized()) setPending(queue.length);
       } catch {
         if (active) setSendStatus("بررسی صف پیام‌ها کامل نشد؛ دوباره تلاش کنید.");
       }
     };
     void recover();
-    window.addEventListener("online", recover);
-    return () => { active = false; window.removeEventListener("online", recover); };
-  }, [projectId, view?.kind, requestRefresh]);
+    return () => { active = false; };
+  }, [projectId, view?.kind, canCommand, isCurrent, isAuthorized, requestRefresh]);
 
   useEffect(() => {
-    if (view?.kind !== "ready") return undefined;
+    if (view?.kind !== "ready" || !canCommand) return undefined;
     let active = true;
     void loadProjectConversationUnread("/api/pmcs", projectId).then((result) => {
       if (active) setUnread(result);
@@ -212,11 +232,11 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
       }
     });
     return () => { active = false; };
-  }, [projectId, view?.kind, refresh, closeRestrictedConversation]);
+  }, [projectId, view?.kind, refresh, canCommand, closeRestrictedConversation]);
 
   async function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready" || searchBusy) return;
+    if (!isCurrent() || view?.kind !== "ready" || searchBusy) return;
     const request = ++searchRequest.current;
     setSearchResults(null);
     setSearchStatus("");
@@ -241,9 +261,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   }
 
   async function markRead() {
-    if (view?.kind !== "ready") return;
+    if (!isCurrent() || view?.kind !== "ready") return;
     try {
       const cursor = await markProjectConversationRead("/api/pmcs", projectId, view.lastSequence);
+      if (!isCurrent()) return;
       setUnread({ lastReadSequence: cursor, unreadCount: 0 });
     } catch (error) {
       if (error instanceof CollaborationAccessError) {
@@ -256,13 +277,14 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready" || sending) return;
+    if (!isAuthorized() || view?.kind !== "ready" || sending) return;
     setSending(true);
     setSendStatus("");
     try {
       await enqueueCollaborationMessage({
         tenantId: session.tenantId, userId: session.userId, projectId, body: draft,
         replyToMessageId: replyTo?.id ?? null,
+        ensureAllowed: isAuthorized,
       });
       setDraft("");
       setReplyTo(null);
@@ -282,12 +304,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   }
 
   async function togglePin(message: ProjectConversationMessage) {
-    if (view?.kind !== "ready" || !view.canModerate || pinningMessageId) return;
+    if (!isCurrent() || view?.kind !== "ready" || !view.canModerate || pinningMessageId) return;
     setPinningMessageId(message.id);
     setPinStatus("");
     const pin = !message.pinnedAt;
     try {
       const pinnedAt = await setProjectMessagePin("/api/pmcs", projectId, message.id, pin);
+      if (!isCurrent()) return;
       setView((current) => current?.kind === "ready" ? {
         ...current,
         messages: current.messages.map((item) => item.id === message.id ? { ...item, pinnedAt } : item),
@@ -304,12 +327,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   async function submitEdit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready" || !view.canEditOwn || !editing || editing.conflict || editBusy) return;
+    if (!isCurrent() || view?.kind !== "ready" || !view.canEditOwn || !editing || editing.conflict || editBusy) return;
     setEditBusy(true);
     setEditStatus("");
     try {
       const result = await editOwnProjectMessage("/api/pmcs", projectId,
         editing.base, editing.body, editing.key);
+      if (!isCurrent()) return;
       setView((current) => current?.kind === "ready" ? {
         ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
       } : current);
@@ -328,12 +352,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   async function submitDelete(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready" || !view.canEditOwn || !deleting || deleting.conflict || deleteBusy) return;
+    if (!isCurrent() || view?.kind !== "ready" || !view.canEditOwn || !deleting || deleting.conflict || deleteBusy) return;
     setDeleteBusy(true);
     setDeleteStatus("");
     try {
       const result = await deleteOwnProjectMessage("/api/pmcs", projectId,
         deleting.base, deleting.key);
+      if (!isCurrent()) return;
       setView((current) => current?.kind === "ready" ? {
         ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
       } : current);
@@ -358,7 +383,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
 
   async function submitModeration(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (view?.kind !== "ready" || !view.canModerate || !moderating ||
+    if (!isCurrent() || view?.kind !== "ready" || !view.canModerate || !moderating ||
         moderating.conflict || moderationBusy) return;
     setModerationBusy(true);
     setModerationStatus("");
@@ -368,6 +393,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
           moderating.reason, moderating.key)
         : await setProjectMessageLegalHold("/api/pmcs", projectId, moderating.base,
           moderating.enabled, moderating.reason, moderating.key);
+      if (!isCurrent()) return;
       setView((current) => current?.kind === "ready" ? {
         ...current, messages: current.messages.map((item) => item.id === result.id ? result : item),
       } : current);
@@ -390,7 +416,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   }
 
   async function openHistory(message: ProjectConversationMessage) {
-    if (view?.kind !== "ready" ||
+    if (!isCurrent() || view?.kind !== "ready" ||
         !(view.canModerate || message.authorUserId.toLowerCase() === session.userId.toLowerCase())) return;
     historyController.current?.abort();
     if (history?.messageId === message.id) {
@@ -407,7 +433,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
     setHistoryBusyId(message.id);
     try {
       const result = await loadProjectMessageHistory("/api/pmcs", projectId, message.id, controller.signal);
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || !isCurrent()) return;
       setHistory(result);
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -438,34 +464,43 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
             <h1 id="conversation-title">گفت‌وگوی گروهی پروژه</h1>
             <p className="muted">پیام‌ها زمینهٔ همکاری هستند؛ ثبت رسمی فقط با تأیید و مجوز مستقل انجام می‌شود.</p>
           </div>
-          <button className="secondary-button" type="button" disabled={!view || view.kind !== "ready"}
+          <button className="secondary-button" type="button" disabled={isRefreshing}
             onClick={() => requestRefresh(true)}>تازه‌سازی</button>
         </header>
-        {failure ? (
+        {failure && (
           <section className="collaboration-state" role="alert">
             <h2>دریافت گفت‌وگو کامل نشد</h2><p>{failure}</p>
-            <button type="button" onClick={() => requestRefresh()}>تلاش دوباره</button>
+            <button type="button" onClick={() => requestRefresh(true)}>تلاش دوباره</button>
           </section>
-        ) : !view ? (
+        )}
+        {!failure && !view && (
           <p className="collaboration-state" role="status">در حال دریافت گفت‌وگوی پروژه…</p>
-        ) : view.kind === "unavailable" ? (
+        )}
+        {view?.kind === "unavailable" && (
           <section className="collaboration-state" role="status">
             <h2>گفت‌وگو در این پروژه در دسترس نیست</h2>
             <p>پس از فعال‌سازی مجاز، پیام‌های همین پروژه در این بخش نمایش داده می‌شوند.</p>
           </section>
-        ) : view.kind === "forbidden" ? (
+        )}
+        {view?.kind === "forbidden" && (
           <section className="collaboration-state" role="alert">
             <h2>دسترسی به گفت‌وگو ندارید</h2><p>عضویت یا مجوز پروژه را با مدیر بررسی کنید.</p>
           </section>
-        ) : (<>
+        )}
+        {view?.kind === "ready" && <CollaborationCommandBoundary value={{ canCommand, canDraft, isCurrent, isAuthorized }}><>
           {isRefreshing && <p className="collaboration-state" role="status">در حال دریافت گفت‌وگوی پروژه…</p>}
-          <section className="collaboration-room" aria-label="پیام‌های اخیر پروژه" hidden={isRefreshing}>
+          <section className="collaboration-room" aria-label="پیام‌های اخیر پروژه" hidden={isRefreshing || Boolean(failure)}>
+            {!online && <p role="status">اتصال قطع است؛ پیام و فایل فقط در صف دستگاه نگهداری می‌شوند. فرمان رسمی به خواندن تازه نیاز دارد.</p>}
+            {online && <p className="collaboration-event-status" role="status">{eventState === "current"
+              ? "رویدادهای پروژه در اتصال جاری بررسی شده‌اند."
+              : eventState === "retrying" ? "بررسی رویدادها کامل نشد؛ اتصال دوباره بررسی می‌شود."
+                : "در حال برقراری اتصال رویدادهای پروژه…"}</p>}
             <div className="collaboration-room-heading">
               <p className="collaboration-boundary">آخرین پیام‌های همین پروژه</p>
               <div className="collaboration-read-state">
                 <span aria-live="polite">{unread ? `${unread.unreadCount.toLocaleString("fa-IR")} پیام خوانده‌نشده` : ""}</span>
                 <button className="secondary-button" type="button" onClick={() => void markRead()}
-                  disabled={!unread || unread.unreadCount === 0}>تا اینجا خواندم</button>
+                  disabled={!canCommand || !unread || unread.unreadCount === 0}>تا اینجا خواندم</button>
               </div>
             </div>
             {pinStatus && <p role="status">{pinStatus}</p>}
@@ -484,7 +519,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                   setSearchError(false);
                   setSearchBusy(false);
                 }} />
-                <button className="secondary-button" type="submit" disabled={searchBusy || searchQuery.trim().length < 2}>
+                <button className="secondary-button" type="submit" disabled={!canCommand || searchBusy || searchQuery.trim().length < 2}>
                   {searchBusy ? "در حال جست‌وجو…" : "جست‌وجو"}</button></div>
             </form>
             {searchResults && <section className="collaboration-search-results" aria-label="نتیجه‌های جست‌وجوی پروژه">
@@ -520,7 +555,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                             setEditing({ ...editing, base: message, key: crypto.randomUUID(), conflict: false });
                             setEditStatus("");
                           }}>ویرایش دوباره بر پایهٔ نسخهٔ تازه</button>}
-                        <button type="submit" disabled={editBusy || editing.conflict ||
+                        <button type="submit" disabled={!canCommand || editBusy || editing.conflict ||
                           !editing.body.trim() || editing.body.trim() === editing.base.body}>
                           {editBusy ? "در حال ثبت…" : "ثبت ویرایش"}
                         </button>
@@ -538,7 +573,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                               setDeleting({ base: message, key: crypto.randomUUID(), conflict: false });
                               setDeleteStatus("");
                             }}>حذف بر پایهٔ نسخهٔ تازه</button>}
-                          <button type="submit" disabled={deleteBusy || deleting.conflict || message.legalHold}>
+                          <button type="submit" disabled={!canCommand || deleteBusy || deleting.conflict || message.legalHold}>
                             {deleteBusy ? "در حال ثبت…" : "تأیید حذف نمایشی"}
                           </button>
                           <button className="secondary-button" type="button" onClick={() => {
@@ -566,7 +601,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                               setModerating({ ...moderating, base: message, key: crypto.randomUUID(), conflict: false });
                               setModerationStatus("");
                             }}>تعدیل بر پایهٔ نسخهٔ تازه</button>}
-                          <button type="submit" disabled={moderationBusy || moderating.conflict ||
+                          <button type="submit" disabled={!canCommand || moderationBusy || moderating.conflict ||
                             !moderating.reason.trim() || (moderating.action === "redact" &&
                               Boolean(message.deletedAt || message.redactedAt)) ||
                             (moderating.action === "hold" && message.legalHold === moderating.enabled)}>
@@ -592,23 +627,23 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                       </button>
                       {view.canEditOwn && message.revision > 0 &&
                         message.authorUserId.toLowerCase() === session.userId.toLowerCase() &&
-                        <button className="secondary-button" type="button" disabled={editBusy}
+                        <button className="secondary-button" type="button" disabled={!canCommand || editBusy}
                           onClick={() => { setEditing({ base: message, body: message.body,
                             key: crypto.randomUUID(), conflict: false }); setEditStatus(""); }}>
                           ویرایش پیام
                         </button>}
                       {view.canEditOwn && message.revision > 0 && !message.legalHold &&
                         message.authorUserId.toLowerCase() === session.userId.toLowerCase() &&
-                        <button className="secondary-button" type="button" disabled={deleteBusy}
+                        <button className="secondary-button" type="button" disabled={!canCommand || deleteBusy}
                           onClick={() => { setDeleting({ base: message, key: crypto.randomUUID(), conflict: false });
                             setDeleteStatus(""); }}>حذف نمایشی پیام</button>}
                       {view.canModerate && <button className="secondary-button collaboration-pin" type="button"
-                        aria-pressed={Boolean(message.pinnedAt)} disabled={pinningMessageId !== null}
+                        aria-pressed={Boolean(message.pinnedAt)} disabled={!canCommand || pinningMessageId !== null}
                         onClick={() => void togglePin(message)}>
                         {pinningMessageId === message.id ? "در حال ثبت…" : message.pinnedAt ? "برداشتن سنجاق" : "سنجاق پیام"}
                       </button>}
                       {view.canModerate && message.revision > 0 &&
-                        <button className="secondary-button" type="button" disabled={moderationBusy}
+                        <button className="secondary-button" type="button" disabled={!canCommand || moderationBusy}
                           onClick={() => { setModerating({ base: message, action: "redact", enabled: false,
                             reason: "", key: crypto.randomUUID(), conflict: false }); setModerationStatus(""); }}>
                           پنهان‌سازی با دلیل
@@ -625,14 +660,14 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                       </div>}
                     {(view.canModerate || message.authorUserId.toLowerCase() === session.userId.toLowerCase()) &&
                       <div className="collaboration-message-actions">
-                        <button className="secondary-button" type="button" disabled={historyBusyId !== null}
+                        <button className="secondary-button" type="button" disabled={!canCommand || historyBusyId !== null}
                           aria-expanded={history?.messageId === message.id}
                           onClick={() => void openHistory(message)}>
                           {historyBusyId === message.id ? "در حال دریافت تاریخچه…" :
                             history?.messageId === message.id ? "بستن تاریخچه" : "تاریخچهٔ محدود پیام"}
                         </button>
                       </div>}
-                    {history?.messageId === message.id &&
+                    {canCommand && history?.messageId === message.id &&
                       <section className="collaboration-edit" aria-label="تاریخچهٔ محدود پیام">
                         <h3>سوابق نسخه‌های پیام</h3>
                         {history.revisions.length === 0 ? <p>ویرایش یا حذف پیشین ثبت نشده است.</p> :
@@ -656,7 +691,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                             </li>)}</ol>}
                         </>}
                       </section>}
-                    {view.canConvert && <ProjectMessageConversions key={`${message.id}-${refresh}`} projectId={projectId}
+                    {view.canConvert && <ProjectMessageConversions projectId={projectId}
                       messageId={message.id} refreshToken={refresh}
                       onAccessLoss={closeRestrictedConversation} />}
                     {view.canConvertAction && !message.deletedAt && !message.redactedAt &&
@@ -699,14 +734,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                 onChange={(event) => setDraft(event.target.value)} placeholder="پیام کاری خود را بنویسید…" />
               <div className="collaboration-composer-actions">
                 <span aria-live="polite">{pending ? `${pending.toLocaleString("fa-IR")} پیام در صف ارسال` : sendStatus}</span>
-                <button type="submit" disabled={sending || !draft.trim()}>
+                <button type="submit" disabled={!canDraft || sending || !draft.trim()}>
                   {sending ? "در حال ثبت…" : "ارسال به گروه پروژه"}
                 </button>
               </div>
             </form>
           </section>
-          </>
-        )}
+          </></CollaborationCommandBoundary>}
       </section>
     </main>
   );
@@ -722,21 +756,26 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
   readonly actorUserId: string; readonly onAccessLoss: (status: number) => void;
   readonly onChanged: () => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [phase, setPhase] = useState<"closed" | "checking" | "editing" | "sending" |
     "uncertain" | "conflict" | "done" | "exists">("closed");
   const [base, setBase] = useState(message);
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
   const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
-  const [details, setDetails] = useState<ProjectActionConversionDetails>({
+  const [details, setDetailsValue] = useState<ProjectActionConversionDetails>({
     assigneeUserId: actorUserId, dueDate: futureProjectDate(3), priority: "Medium",
     title: message.body.slice(0, 240), description: "",
   });
   const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState("");
+  const setDetails = (update: Parameters<typeof setDetailsValue>[0]) => {
+    setDetailsValue(update); setConfirmed(false);
+  };
+  const stale = (phase === "editing" || phase === "uncertain") && message.revision > base.revision;
 
   async function open() {
-    if (phase !== "closed") return;
+    if (!isCurrent() || phase !== "closed") return;
     setPhase("checking");
     setStatus("");
     try {
@@ -762,6 +801,7 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
   }
 
   async function reconcile() {
+    if (!isCurrent()) return;
     try {
       const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
       if (entries.some((item) => item.destinationType === "Action")) {
@@ -776,7 +816,7 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
   }
 
   async function rebase() {
-    if (phase !== "conflict" || message.revision <= base.revision ||
+    if (!isCurrent() || (phase !== "conflict" && !stale) || message.revision <= base.revision ||
         message.deletedAt || message.redactedAt) return;
     setPhase("checking"); setStatus("");
     try {
@@ -810,7 +850,7 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
+    if (!isCurrent() || stale || !identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
     if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
     setPhase("sending");
     setStatus("در حال ثبت اقدام رسمی…");
@@ -842,14 +882,15 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
   }
 
   return <section className="collaboration-edit" aria-label="تبدیل پیام به اقدام رسمی">
-    {phase === "closed" && <button className="secondary-button" type="button"
+    {phase === "closed" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void open()}>ساخت اقدام رسمی از پیام</button>}
     {phase === "checking" && <p role="status">در حال بررسی تبار پیام…</p>}
     {status && <p role={phase === "conflict" ? "alert" : "status"}>{status}</p>}
-    {phase === "conflict" && <div>
+    {(phase === "conflict" || stale) && <div>
+      {stale && <p role="alert">نسخهٔ پیام تغییر کرده است؛ پیش‌نویس را بر پایهٔ نسخهٔ تازه بررسی و دوباره تأیید کنید.</p>}
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => void rebase()}>
+        <button className="secondary-button" type="button" disabled={!canCommand} onClick={() => void rebase()}>
           تبدیل بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
@@ -886,16 +927,16 @@ function ProjectActionConversion({ projectId, message, actorUserId, onAccessLoss
         </fieldset>
         {selectedIds.length > 0 && <p>هش و نسخهٔ {selectedIds.length.toLocaleString("fa-IR")} فایل انتخاب‌شده در تبار اقدام ثبت می‌شود.</p>}
         <p>مسئول این برش: خود شما. انتخاب مسئول دیگر در مرحلهٔ جدا بررسی می‌شود.</p>
-        <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
+        <label><input type="checkbox" checked={confirmed} disabled={!canCommand || phase !== "editing"}
           onChange={(event) => setConfirmed(event.target.checked)} />
           ایجاد رکورد رسمی با این عنوان، اولویت و مهلت را تأیید می‌کنم.</label>
         <div className="collaboration-message-actions">
-          <button type="submit" disabled={phase === "sending" || !confirmed ||
+          <button type="submit" disabled={!canCommand || stale || phase === "sending" || !confirmed ||
             !details.title.trim() || !details.dueDate}>
             {phase === "uncertain" ? "تلاش مجدد با همان شناسه" : phase === "sending"
               ? "در حال ثبت…" : "تأیید و ساخت اقدام رسمی"}
           </button>
-          {phase === "uncertain" && <button className="secondary-button" type="button"
+          {phase === "uncertain" && <button className="secondary-button" type="button" disabled={!canCommand}
             onClick={() => void reconcile()}>بازبینی نتیجه</button>}
           {phase === "editing" && <button className="secondary-button" type="button"
             onClick={() => { setPhase("closed"); setStatus(""); setIdentity(null); }}>
@@ -910,22 +951,27 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
   readonly actorUserId: string; readonly onAccessLoss: (status: number) => void;
   readonly onChanged: () => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [phase, setPhase] = useState<"closed" | "checking" | "editing" | "sending" |
     "uncertain" | "conflict" | "done" | "exists">("closed");
   const [base, setBase] = useState(message);
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
   const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
-  const [details, setDetails] = useState<ProjectIssueConversionDetails>({
+  const [details, setDetailsValue] = useState<ProjectIssueConversionDetails>({
     ownerUserId: actorUserId, targetResolutionDate: futureProjectDate(3),
     title: message.body.slice(0, 240), observedFact: message.body,
     category: "هماهنگی", severity: "Medium", urgency: "Soon",
   });
   const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState("");
+  const setDetails = (update: Parameters<typeof setDetailsValue>[0]) => {
+    setDetailsValue(update); setConfirmed(false);
+  };
+  const stale = (phase === "editing" || phase === "uncertain") && message.revision > base.revision;
 
   async function open() {
-    if (phase !== "closed") return;
+    if (!isCurrent() || phase !== "closed") return;
     setPhase("checking"); setStatus("");
     try {
       const [entries, attached] = await Promise.all([
@@ -948,6 +994,7 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
   }
 
   async function reconcile() {
+    if (!isCurrent()) return;
     try {
       const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
       if (entries.some((item) => item.destinationType === "Issue")) {
@@ -960,7 +1007,7 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
   }
 
   async function rebase() {
-    if (phase !== "conflict" || message.revision <= base.revision ||
+    if (!isCurrent() || (phase !== "conflict" && !stale) || message.revision <= base.revision ||
         message.deletedAt || message.redactedAt) return;
     setPhase("checking"); setStatus("");
     try {
@@ -993,7 +1040,7 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
+    if (!isCurrent() || stale || !identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
     if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
     setPhase("sending"); setStatus("در حال ثبت مسئلهٔ رسمی…");
     try {
@@ -1023,14 +1070,15 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
   }
 
   return <section className="collaboration-edit" aria-label="تبدیل پیام به مسئلهٔ رسمی">
-    {phase === "closed" && <button className="secondary-button" type="button"
+    {phase === "closed" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void open()}>ساخت مسئلهٔ رسمی از پیام</button>}
     {phase === "checking" && <p role="status">در حال بررسی تبار پیام…</p>}
     {status && <p role={phase === "conflict" ? "alert" : "status"}>{status}</p>}
-    {phase === "conflict" && <div>
+    {(phase === "conflict" || stale) && <div>
+      {stale && <p role="alert">نسخهٔ پیام تغییر کرده است؛ پیش‌نویس را بر پایهٔ نسخهٔ تازه بررسی و دوباره تأیید کنید.</p>}
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => void rebase()}>
+        <button className="secondary-button" type="button" disabled={!canCommand} onClick={() => void rebase()}>
           تبدیل مسئله بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
@@ -1075,17 +1123,17 @@ function ProjectIssueConversion({ projectId, message, actorUserId, onAccessLoss,
           </label>)}
         </fieldset>
         {selectedIds.length > 0 && <p>هش و نسخهٔ {selectedIds.length.toLocaleString("fa-IR")} فایل انتخاب‌شده در شواهد مسئله ثبت می‌شود.</p>}
-        <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
+        <label><input type="checkbox" checked={confirmed} disabled={!canCommand || phase !== "editing"}
           onChange={(event) => setConfirmed(event.target.checked)} />
           ایجاد مسئلهٔ عمومی رسمی با این عنوان، شدت، فوریت و مهلت را تأیید می‌کنم.</label>
         <div className="collaboration-message-actions">
-          <button type="submit" disabled={phase === "sending" || !confirmed ||
+          <button type="submit" disabled={!canCommand || stale || phase === "sending" || !confirmed ||
             !details.title.trim() || !details.observedFact.trim() || !details.category.trim() ||
             !details.targetResolutionDate}>
             {phase === "uncertain" ? "تلاش مجدد مسئله با همان شناسه" : phase === "sending"
               ? "در حال ثبت…" : "تأیید و ساخت مسئلهٔ رسمی"}
           </button>
-          {phase === "uncertain" && <button className="secondary-button" type="button"
+          {phase === "uncertain" && <button className="secondary-button" type="button" disabled={!canCommand}
             onClick={() => void reconcile()}>بازبینی نتیجهٔ مسئله</button>}
           {phase === "editing" && <button className="secondary-button" type="button"
             onClick={() => { setPhase("closed"); setStatus(""); setIdentity(null); }}>انصراف از مسئله</button>}
@@ -1098,23 +1146,31 @@ function ProjectMessageConversions({ projectId, messageId, refreshToken, onAcces
   readonly projectId: string; readonly messageId: string; readonly refreshToken: number;
   readonly onAccessLoss: (status: number) => void;
 }) {
+  const { canCommand } = useCollaborationCommandGate();
   const [expanded, setExpanded] = useState(false);
   const [entries, setEntries] = useState<readonly ProjectMessageConversionLineage[] | null>(null);
+  const [readToken, setReadToken] = useState(-1);
   const [error, setError] = useState("");
+  const [errorToken, setErrorToken] = useState(-1);
+  const currentEntries = canCommand && readToken === refreshToken ? entries : null;
+  const currentError = canCommand && errorToken === refreshToken ? error : "";
 
   useEffect(() => {
-    if (!expanded) return undefined;
+    if (!expanded || !canCommand) return undefined;
     const controller = new AbortController();
     void loadProjectMessageConversions("/api/pmcs", projectId, messageId, controller.signal)
-      .then((result) => { if (!controller.signal.aborted) { setEntries(result); setError(""); } })
+      .then((result) => { if (!controller.signal.aborted) {
+        setEntries(result); setReadToken(refreshToken); setError("");
+      } })
       .catch((failure: unknown) => {
         if (controller.signal.aborted) return;
         setEntries(null);
         if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
-        else setError(failure instanceof Error ? failure.message : "دریافت تبار تبدیل کامل نشد.");
+        else { setError(failure instanceof Error ? failure.message : "دریافت تبار تبدیل کامل نشد.");
+          setErrorToken(refreshToken); }
       });
     return () => controller.abort();
-  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+  }, [expanded, canCommand, projectId, messageId, refreshToken, onAccessLoss]);
 
   return <section className="collaboration-edit" aria-label="تبار تبدیل‌های رسمی پیام">
     <button className="secondary-button" type="button" aria-expanded={expanded}
@@ -1122,10 +1178,11 @@ function ProjectMessageConversions({ projectId, messageId, refreshToken, onAcces
       {expanded ? "بستن تبدیل‌های رسمی" : "تبدیل‌های رسمی پیام"}
     </button>
     {expanded && <div>
-      {error && <p role="alert">{error}</p>}
-      {!error && entries === null && <p role="status">در حال دریافت تبار تبدیل…</p>}
-      {entries?.length === 0 && <p>هنوز رکورد رسمی از این پیام ساخته نشده است.</p>}
-      {entries && entries.length > 0 && <ol>{entries.map((item) => <li key={item.id}>
+      {!canCommand && <p role="status">نمایش تبار رسمی به خواندن جاری پروژه نیاز دارد.</p>}
+      {currentError && <p role="alert">{currentError}</p>}
+      {canCommand && !currentError && currentEntries === null && <p role="status">در حال دریافت تبار تبدیل…</p>}
+      {currentEntries?.length === 0 && <p>هنوز رکورد رسمی از این پیام ساخته نشده است.</p>}
+      {currentEntries && currentEntries.length > 0 && <ol>{currentEntries.map((item) => <li key={item.id}>
         <strong>{conversionLabels[item.destinationType]}: {item.destinationReference}</strong>
         <span> · نسخهٔ پیام {item.messageRevision.toLocaleString("fa-IR")} · </span>
         <time dateTime={item.confirmedAt}>{formatPersianDateTime(item.confirmedAt)}</time>
@@ -1141,6 +1198,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
   readonly refreshToken: number;
   readonly onAccessLoss: (status: number) => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [expanded, setExpanded] = useState(false);
   const [view, setView] = useState<ProjectMessageReactionsView | null>(null);
   const [readToken, setReadToken] = useState(-1);
@@ -1148,13 +1206,13 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
   const [error, setError] = useState("");
   const [errorToken, setErrorToken] = useState(-1);
   const currentRefresh = useRef(refreshToken);
-  const currentView = readToken === refreshToken ? view : null;
-  const currentError = errorToken === refreshToken ? error : "";
+  const currentView = canCommand && readToken === refreshToken ? view : null;
+  const currentError = canCommand && errorToken === refreshToken ? error : "";
 
   useEffect(() => { currentRefresh.current = refreshToken; }, [refreshToken]);
 
   useEffect(() => {
-    if (!expanded) return undefined;
+    if (!expanded || !canCommand) return undefined;
     const controller = new AbortController();
     void loadProjectMessageReactions("/api/pmcs", projectId, messageId, controller.signal)
       .then((result) => { if (!controller.signal.aborted) {
@@ -1168,16 +1226,16 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
           setErrorToken(refreshToken); }
       });
     return () => controller.abort();
-  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+  }, [expanded, canCommand, projectId, messageId, refreshToken, onAccessLoss]);
 
   async function toggle(emoji: ProjectReactionEmoji, reactedByMe: boolean) {
-    if (!currentView?.canReact || busy) return;
+    if (!isCurrent() || !currentView?.canReact || busy) return;
     setBusy(true);
     setError("");
     try {
       await setProjectMessageReaction("/api/pmcs", projectId, messageId, emoji, !reactedByMe);
       const result = await loadProjectMessageReactions("/api/pmcs", projectId, messageId);
-      if (currentRefresh.current !== refreshToken) return;
+      if (!isCurrent() || currentRefresh.current !== refreshToken) return;
       setView(result); setReadToken(refreshToken);
     } catch (failure) {
       if (currentRefresh.current !== refreshToken) return;
@@ -1198,7 +1256,8 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
     </button>
     {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel"
       aria-label="واکنش‌های همین پیام">
-      {!currentView && !currentError && <span role="status">در حال دریافت واکنش‌ها…</span>}
+      {!canCommand && <span role="status">نمایش واکنش‌ها به خواندن جاری پروژه نیاز دارد.</span>}
+      {canCommand && !currentView && !currentError && <span role="status">در حال دریافت واکنش‌ها…</span>}
       {currentView && <>
         {currentView.reactions.map((reaction) => <button key={reaction.emoji} type="button"
           className="collaboration-reaction-button" aria-pressed={reaction.reactedByMe}
@@ -1221,6 +1280,7 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
   readonly refreshToken: number;
   readonly onAccessLoss: (status: number) => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [expanded, setExpanded] = useState(false);
   const [attachments, setAttachments] = useState<readonly ProjectMessageAttachment[] | null>(null);
   const [readToken, setReadToken] = useState(-1);
@@ -1229,13 +1289,13 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
   const [errorToken, setErrorToken] = useState(-1);
   const [notice, setNotice] = useState("");
   const currentRefresh = useRef(refreshToken);
-  const currentAttachments = readToken === refreshToken ? attachments : null;
-  const currentError = errorToken === refreshToken ? error : "";
+  const currentAttachments = canCommand && readToken === refreshToken ? attachments : null;
+  const currentError = canCommand && errorToken === refreshToken ? error : "";
 
   useEffect(() => { currentRefresh.current = refreshToken; }, [refreshToken]);
 
   useEffect(() => {
-    if (!expanded) return undefined;
+    if (!expanded || !canCommand) return undefined;
     const controller = new AbortController();
     void loadProjectMessageAttachments("/api/pmcs", projectId, messageId, controller.signal)
       .then((result) => { if (!controller.signal.aborted) {
@@ -1249,15 +1309,16 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
           setErrorToken(refreshToken); }
       });
     return () => controller.abort();
-  }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
+  }, [expanded, canCommand, projectId, messageId, refreshToken, onAccessLoss]);
 
   async function download(attachment: ProjectMessageAttachment) {
-    if (busyId) return;
+    if (!isCurrent() || !currentAttachments || busyId) return;
     setBusyId(attachment.documentId);
     setError("");
     setNotice("");
     try {
       const blob = await downloadProjectMessageAttachment("/api/pmcs", projectId, messageId, attachment);
+      if (!isCurrent() || currentRefresh.current !== refreshToken) return;
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -1284,7 +1345,8 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
     </button>
     {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel"
       aria-label="پیوست‌های همین پیام">
-      {!currentAttachments && !currentError && <span role="status">در حال دریافت پیوست‌ها…</span>}
+      {!canCommand && <span role="status">نمایش پیوست رسمی به خواندن جاری پروژه نیاز دارد.</span>}
+      {canCommand && !currentAttachments && !currentError && <span role="status">در حال دریافت پیوست‌ها…</span>}
       {currentAttachments?.length === 0 && <span>پیوست تأییدشده‌ای برای این پیام ثبت نشده است.</span>}
       {currentAttachments && currentAttachments.length > 0 && <ul>
         {currentAttachments.map((attachment) => <li key={attachment.documentId}>
@@ -1297,12 +1359,12 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       </ul>}
       {currentAttachments && notice && <span role="status">{notice}</span>}
       {currentError && <span role="alert">{currentError}</span>}
-      {canUpload && currentAttachments && !currentError && <ProjectMessageUpload projectId={projectId} messageId={messageId}
-        attachedDocumentIds={currentAttachments.map((attachment) => attachment.documentId)}
+      {canUpload && <ProjectMessageUpload projectId={projectId} messageId={messageId} refreshToken={refreshToken}
+        attachedDocumentIds={currentAttachments?.map((attachment) => attachment.documentId) ?? []}
         onAccessLoss={onAccessLoss} onAttached={async () => {
           setAttachments(null);
           const result = await loadProjectMessageAttachments("/api/pmcs", projectId, messageId);
-          if (currentRefresh.current !== refreshToken) return;
+          if (!isCurrent() || currentRefresh.current !== refreshToken) return;
           setAttachments(result); setReadToken(refreshToken);
           setNotice("پیوست آزادشده به همین پیام متصل شد.");
         }} />}
@@ -1310,33 +1372,45 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
   </div>;
 }
 
-function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAccessLoss, onAttached }: {
+function ProjectMessageUpload({ projectId, messageId, refreshToken, attachedDocumentIds, onAccessLoss, onAttached }: {
   readonly projectId: string;
   readonly messageId: string;
+  readonly refreshToken: number;
   readonly attachedDocumentIds: readonly string[];
   readonly onAccessLoss: (status: number) => void;
   readonly onAttached: () => Promise<void>;
 }) {
+  const { canCommand, canDraft, isCurrent, isAuthorized } = useCollaborationCommandGate();
   const session = usePmcsSession();
+  const [file, setFile] = useState<File | null>(null);
+  const busyRef = useRef(false);
+  const currentRefresh = useRef(refreshToken);
+  const [statesToken, setStatesToken] = useState(-1);
   const [uploads, setUploads] = useState<readonly QueuedDocumentUpload[]>([]);
   const [states, setStates] = useState<Record<string, ProjectChatUploadState>>({});
   const [busy, setBusy] = useState(false);
   const [attachingId, setAttachingId] = useState("");
   const [notice, setNotice] = useState("");
+  const currentStates = canCommand && statesToken === refreshToken ? states : {};
+  useEffect(() => { currentRefresh.current = refreshToken; }, [refreshToken]);
 
   const refreshUploads = useCallback(async (retry: boolean) => {
     try {
-      if (retry && navigator.onLine) {
+      if (retry && isCurrent()) {
         await recoverInterruptedDocumentUploads(projectId);
         await syncPendingDocumentUploads("/api/pmcs", projectId,
           { ownerType: "ProjectChat", ownerId: messageId });
       }
       const items = await listProjectChatDocumentUploads(projectId, messageId);
+      if (!isAuthorized() || currentRefresh.current !== refreshToken) return;
       setUploads(items);
+      if (!isCurrent()) return;
       const accepted = items.filter((item) => item.status === "quarantined" || item.status === "released");
       const server = await Promise.all(accepted.map((item) =>
         loadProjectChatUploadState("/api/pmcs", projectId, messageId, item)));
+      if (!isCurrent() || currentRefresh.current !== refreshToken) return;
       setStates(Object.fromEntries(server.map((state) => [state.id, state])));
+      setStatesToken(refreshToken);
       setNotice(items.some((item) => item.status === "queued")
         ? "فایل در صف امن دستگاه است؛ پس از اتصال دوباره ارسال می‌شود." : "");
     } catch (failure) {
@@ -1344,20 +1418,18 @@ function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAcc
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
       else setNotice("بررسی وضعیت آپلود کامل نشد؛ دوباره تلاش کنید.");
     }
-  }, [projectId, messageId, onAccessLoss]);
+  }, [projectId, messageId, refreshToken, isCurrent, isAuthorized, onAccessLoss]);
 
   useEffect(() => {
     let active = true;
-    void Promise.resolve().then(() => { if (active) return refreshUploads(navigator.onLine); });
-    const online = () => { void refreshUploads(true); };
-    window.addEventListener("online", online);
-    return () => { active = false; window.removeEventListener("online", online); };
-  }, [refreshUploads]);
+    void Promise.resolve().then(() => { if (active && canDraft) return refreshUploads(canCommand); });
+    return () => { active = false; };
+  }, [refreshUploads, canCommand, canDraft]);
 
-  async function selectFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || busy) return;
+  async function saveFile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!isAuthorized() || !file || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setNotice("در حال ثبت فایل در صف امن و کنترل امنیتی…");
     try {
@@ -1365,15 +1437,19 @@ function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAcc
         tenantId: session.tenantId, userId: session.userId, projectId,
         ownerType: "ProjectChat", ownerId: messageId, file,
         classification: "Internal", retentionPolicy: "Standard",
+        ensureAllowed: isAuthorized,
       });
-      await refreshUploads(navigator.onLine);
+      setFile(null);
+      setNotice("فایل در صف دستگاه نگهداری شد؛ این وضعیت تأیید یا اتصال رسمی نیست.");
+      await refreshUploads(isCurrent());
     } catch (failure) {
       setNotice(failure instanceof Error ? failure.message : "ثبت فایل کامل نشد.");
-    } finally { setBusy(false); }
+    } finally { busyRef.current = false; setBusy(false); }
   }
 
   function uploadLabel(item: QueuedDocumentUpload): string {
-    const state = states[item.assetId];
+    const state = currentStates[item.assetId];
+    if (!canCommand) return "نگهداری محلی؛ وضعیت رسمی تأیید نشده";
     if (attachedDocumentIds.some((id) => id.toLowerCase() === item.assetId.toLowerCase()))
       return "متصل به پیام";
     if (state?.status === "Released") return "آزادشده و آمادهٔ اتصال";
@@ -1384,7 +1460,7 @@ function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAcc
   }
 
   async function attach(item: QueuedDocumentUpload) {
-    if (states[item.assetId]?.status !== "Released" || busy || attachingId) return;
+    if (!isCurrent() || currentStates[item.assetId]?.status !== "Released" || busy || attachingId) return;
     setAttachingId(item.assetId);
     setNotice("");
     try {
@@ -1397,19 +1473,21 @@ function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAcc
   }
 
   return <section className="collaboration-upload" aria-label="آپلود فایل برای همین پیام">
-    <label htmlFor={`chat-upload-${messageId}`}>افزودن فایل به پیام خود</label>
-    <input id={`chat-upload-${messageId}`} type="file" disabled={busy}
-      accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.txt,.log,.csv,.docx,.xlsx,.pptx"
-      onChange={(event) => void selectFile(event)} />
+    <form onSubmit={(event) => void saveFile(event)}>
+      <PmcsFileInput label="افزودن فایل به پیام خود" file={file} disabled={!canDraft || busy}
+        accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.txt,.log,.csv,.docx,.xlsx,.pptx"
+        onFileChange={setFile} />
+      <button type="submit" disabled={!canDraft || busy || !file}>نگهداری فایل در صف دستگاه</button>
+    </form>
     <p>فایل ابتدا اسکن و قرنطینه می‌شود؛ پس از آزادسازی می‌توان آن را به پیام متصل کرد.</p>
-    <button type="button" className="secondary-button" disabled={busy}
-      onClick={() => void refreshUploads(navigator.onLine)}>بررسی وضعیت آپلود</button>
+    <button type="button" className="secondary-button" disabled={!canDraft || busy}
+      onClick={() => void refreshUploads(isCurrent())}>بررسی وضعیت آپلود</button>
     {notice && <span role="status">{notice}</span>}
     {uploads.length > 0 && <ul>{uploads.map((item) => <li key={item.assetId}>
       <span>{item.originalFileName} · {uploadLabel(item)}</span>
-      {states[item.assetId]?.status === "Released" &&
+      {currentStates[item.assetId]?.status === "Released" &&
         !attachedDocumentIds.some((id) => id.toLowerCase() === item.assetId.toLowerCase()) &&
-        <button className="secondary-button" type="button" disabled={busy || Boolean(attachingId)}
+        <button className="secondary-button" type="button" disabled={!canCommand || busy || Boolean(attachingId)}
           onClick={() => void attach(item)}>
           {attachingId === item.assetId ? "در حال اتصال…" : "اتصال پیوست به پیام"}
         </button>}

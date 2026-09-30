@@ -14,13 +14,33 @@ test("poll fallback resumes from durable sequence and stops on permission revoca
       return new Response(null, { status: 403 });
     };
     const observed: number[] = [];
+    const states: string[] = [];
     await assert.rejects(watchCollaborationEvents("/api/pmcs", "project", 7,
-      (event) => { observed.push(event.sequence); }, new AbortController().signal),
+      (event) => { observed.push(event.sequence); }, new AbortController().signal,
+      (state) => { states.push(state); }),
     (error: unknown) => error instanceof CollaborationAccessError && error.status === 403);
     assert.deepEqual(observed, [8]);
+    assert.deepEqual(states, ["connecting", "current"]);
     assert.match(requested[0], /after=7&waitSeconds=20$/u);
     assert.match(requested[1], /after=8&waitSeconds=20$/u);
   } finally {
     globalThis.fetch = previous;
   }
+});
+
+test("an invalid event page cannot announce a current connection or emit a partial event", async () => {
+  const previous = globalThis.fetch;
+  const controller = new AbortController();
+  const states: string[] = [];
+  const observed: number[] = [];
+  try {
+    globalThis.fetch = async () => Response.json({ events: [
+      { projectId: "project", sequence: 8 }, { projectId: "other-project", sequence: 9 },
+    ], nextSequence: 9 });
+    await watchCollaborationEvents("/api/pmcs", "project", 7,
+      (event) => { observed.push(event.sequence); }, controller.signal,
+      (state) => { states.push(state); if (state === "retrying") controller.abort(); });
+    assert.deepEqual(observed, []);
+    assert.deepEqual(states, ["connecting", "retrying"]);
+  } finally { globalThis.fetch = previous; }
 });

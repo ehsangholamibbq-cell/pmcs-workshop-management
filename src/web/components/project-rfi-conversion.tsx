@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useCollaborationCommandGate } from "@/components/collaboration-command-gate";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { CollaborationAccessError } from "@/lib/collaboration-events";
 import { loadProjectMessageAttachments, type ProjectMessageAttachment } from "@/lib/collaboration-attachments";
@@ -23,22 +24,27 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
   readonly actorUserId: string; readonly onAccessLoss: (status: number) => void;
   readonly onChanged: () => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [phase, setPhase] = useState<"closed" | "checking" | "editing" | "sending" |
     "uncertain" | "conflict" | "done" | "exists">("closed");
   const [base, setBase] = useState(message);
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
   const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
-  const [details, setDetails] = useState<ProjectRfiConversionDetails>({
+  const [details, setDetailsValue] = useState<ProjectRfiConversionDetails>({
     title: message.body.slice(0, 240), question: message.body,
     requestedFrom: "", discipline: "", requiredByDate: "",
     potentialImpacts: [], isBlocking: false, proposedSolution: "",
   });
   const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState("");
+  const setDetails = (update: Parameters<typeof setDetailsValue>[0]) => {
+    setDetailsValue(update); setConfirmed(false);
+  };
+  const stale = (phase === "editing" || phase === "uncertain") && message.revision > base.revision;
 
   async function open() {
-    if (phase !== "closed") return;
+    if (!isCurrent() || phase !== "closed") return;
     setPhase("checking"); setStatus("");
     try {
       const [entries, attached] = await Promise.all([
@@ -61,6 +67,7 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
   }
 
   async function reconcile() {
+    if (!isCurrent()) return;
     try {
       const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
       if (entries.some((item) => item.destinationType === "RFI")) {
@@ -73,7 +80,7 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
   }
 
   async function rebase() {
-    if (phase !== "conflict" || message.revision <= base.revision ||
+    if (!isCurrent() || (phase !== "conflict" && !stale) || message.revision <= base.revision ||
         message.deletedAt || message.redactedAt) return;
     setPhase("checking"); setStatus("");
     try {
@@ -106,7 +113,7 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
+    if (!isCurrent() || stale || !identity || !confirmed || (phase !== "editing" && phase !== "uncertain")) return;
     if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
     setPhase("sending"); setStatus("در حال ثبت پیش‌نویس RFI رسمی…");
     try {
@@ -142,14 +149,15 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
   }
 
   return <section className="collaboration-edit" aria-label="تبدیل پیام به RFI رسمی">
-    {phase === "closed" && <button className="secondary-button" type="button"
+    {phase === "closed" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void open()}>ساخت RFI رسمی از پیام</button>}
     {phase === "checking" && <p role="status">در حال بررسی تبار پیام…</p>}
     {status && <p role={phase === "conflict" ? "alert" : "status"}>{status}</p>}
-    {phase === "conflict" && <div>
+    {(phase === "conflict" || stale) && <div>
+      {stale && <p role="alert">نسخهٔ پیام تغییر کرده است؛ پیش‌نویس را بر پایهٔ نسخهٔ تازه بررسی و دوباره تأیید کنید.</p>}
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => void rebase()}>
+        <button className="secondary-button" type="button" disabled={!canCommand} onClick={() => void rebase()}>
           تبدیل RFI بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
@@ -198,16 +206,16 @@ export function ProjectRfiConversion({ projectId, message, actorUserId, onAccess
           </label>)}
         </fieldset>
         {selectedIds.length > 0 && <p>هش و نسخهٔ {selectedIds.length.toLocaleString("fa-IR")} فایل انتخاب‌شده در شواهد RFI ثبت می‌شود.</p>}
-        <label><input type="checkbox" checked={confirmed} disabled={phase !== "editing"}
+        <label><input type="checkbox" checked={confirmed} disabled={!canCommand || phase !== "editing"}
           onChange={(event) => setConfirmed(event.target.checked)} />
           ایجاد پیش‌نویس RFI رسمی با این پرسش، مخاطب و اثر احتمالی را تأیید می‌کنم.</label>
         <div className="collaboration-message-actions">
-          <button type="submit" disabled={phase === "sending" || !confirmed || !details.title.trim() ||
+          <button type="submit" disabled={!canCommand || stale || phase === "sending" || !confirmed || !details.title.trim() ||
             !details.question.trim() || !details.requestedFrom.trim() || !details.discipline.trim()}>
             {phase === "uncertain" ? "تلاش مجدد RFI با همان شناسه" : phase === "sending"
               ? "در حال ثبت…" : "تأیید و ساخت پیش‌نویس RFI"}
           </button>
-          {phase === "uncertain" && <button className="secondary-button" type="button"
+          {phase === "uncertain" && <button className="secondary-button" type="button" disabled={!canCommand}
             onClick={() => void reconcile()}>بازبینی نتیجهٔ RFI</button>}
           {phase === "editing" && <button className="secondary-button" type="button"
             onClick={() => { setPhase("closed"); setStatus(""); setIdentity(null); }}>انصراف از RFI</button>}

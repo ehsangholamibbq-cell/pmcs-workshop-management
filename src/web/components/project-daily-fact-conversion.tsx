@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useCollaborationCommandGate } from "@/components/collaboration-command-gate";
 import { CollaborationAccessError } from "@/lib/collaboration-events";
 import {
   CollaborationDailyFactAlreadyExists, CollaborationDailyFactTargetConflict,
@@ -27,6 +28,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   readonly tenantId: string; readonly actorUserId: string;
   readonly onAccessLoss: (status: number) => void; readonly onChanged: () => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [phase, setPhase] = useState<Phase>("closed");
   const [base, setBase] = useState(message);
   const [reports, setReports] = useState<readonly DailyReportSummary[]>([]);
@@ -37,6 +39,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState("");
+  const stale = (phase === "editing" || phase === "uncertain") && message.revision > base.revision;
   const fields = factFields(draft.kind);
   const report = reports.find((item) => item.id === reportId && item.status === "Draft");
   const location = locations.find((item) => item.id === draft.locationId && item.status === "Active");
@@ -49,6 +52,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   }
 
   async function loadTargets() {
+    if (!isCurrent()) throw new Error("خواندن جاری پروژه لازم است.");
     const identity = { tenantId, userId: actorUserId };
     const [allReports, allLocations] = await Promise.all([
       listDailyReports("/api/pmcs", identity, projectId),
@@ -70,7 +74,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   }
 
   async function open() {
-    if (phase !== "closed") return;
+    if (!isCurrent() || phase !== "closed") return;
     setPhase("checking"); setStatus("");
     try {
       const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
@@ -96,6 +100,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   }
 
   async function refreshReport() {
+    if (!isCurrent()) return;
     setStatus("در حال بازخوانی نسخهٔ گزارش…");
     try {
       const { drafts, active } = await loadTargets();
@@ -110,6 +115,7 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
   }
 
   async function reconcile() {
+    if (!isCurrent()) return;
     try {
       const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
       if (entries.some((item) => item.destinationType === "DailyFact")) {
@@ -118,9 +124,21 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
     } catch (error) { fail(error, "بازبینی نتیجه کامل نشد؛ هویت درخواست حفظ شده است."); }
   }
 
+  async function rebaseMessage() {
+    if (!isCurrent() || message.revision <= base.revision || message.deletedAt || message.redactedAt) return;
+    try {
+      const entries = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
+      if (entries.some(item => item.destinationType === "DailyFact")) {
+        setPhase("exists"); setStatus("واقعیت روزانهٔ رسمی قبلاً در تبار پیام ثبت شده است."); return;
+      }
+      setBase(message); setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+      setConfirmed(false); setStatus(""); setPhase("editing");
+    } catch (error) { fail(error, "بازخوانی تبار انجام نشد؛ پیش‌نویس حفظ شده است."); }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!identity || !confirmed || !report || !location ||
+    if (!isCurrent() || stale || !identity || !confirmed || !report || !location ||
         (phase !== "editing" && phase !== "uncertain")) return;
     if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
     let fact;
@@ -162,19 +180,18 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
 
   const editable = phase === "editing";
   return <section className="collaboration-edit" aria-label="تبدیل پیام به واقعیت روزانهٔ رسمی">
-    {phase === "closed" && <button className="secondary-button" type="button"
+    {phase === "closed" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void open()}>ساخت واقعیت روزانه از پیام</button>}
     {phase === "checking" && <p role="status">در حال بررسی گزارش و تبار پیام…</p>}
     {status && <p role={phase === "message-conflict" || phase === "report-conflict" ? "alert" : "status"}>{status}</p>}
-    {phase === "message-conflict" && <div>
+    {(phase === "message-conflict" || stale) && <div>
+      {stale && <p role="alert">نسخهٔ پیام تغییر کرده است؛ پیش‌نویس را بر پایهٔ نسخهٔ تازه بررسی و دوباره تأیید کنید.</p>}
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => {
-          setBase(message); setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
-          setConfirmed(false); setStatus(""); setPhase("editing");
-        }}>تبدیل واقعیت بر پایهٔ نسخهٔ تازه</button>}
+        <button className="secondary-button" type="button" disabled={!canCommand}
+          onClick={() => void rebaseMessage()}>تبدیل واقعیت بر پایهٔ نسخهٔ تازه</button>}
     </div>}
-    {phase === "report-conflict" && <button className="secondary-button" type="button"
+    {phase === "report-conflict" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void refreshReport()}>بازخوانی گزارش و تأیید دوباره</button>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
       <form onSubmit={(event) => void submit(event)}>
@@ -223,15 +240,15 @@ export function ProjectDailyFactConversion({ projectId, message, tenantId, actor
           <option value="Critical">بحرانی</option>
         </select></label>}
         <p>نسخهٔ پیام: {base.revision} · نسخهٔ گزارش: {report?.revision ?? "—"}؛ منبع در تبار ثبت می‌شود و پیوست خودکار منتقل نمی‌شود.</p>
-        <label><input type="checkbox" checked={confirmed} disabled={!editable}
+        <label><input type="checkbox" checked={confirmed} disabled={!canCommand || !editable}
           onChange={(event) => setConfirmed(event.target.checked)} />
           افزودن این واقعیت به گزارش روزانهٔ پیش‌نویس را تأیید می‌کنم.</label>
         <div className="collaboration-message-actions">
-          <button type="submit" disabled={phase === "sending" || !confirmed || !report || !location || !draft.description.trim()}>
+          <button type="submit" disabled={!canCommand || stale || phase === "sending" || !confirmed || !report || !location || !draft.description.trim()}>
             {phase === "uncertain" ? "تلاش مجدد با همان شناسه" : phase === "sending"
               ? "در حال ثبت…" : "تأیید و ساخت واقعیت رسمی"}
           </button>
-          {phase === "uncertain" && <button className="secondary-button" type="button"
+          {phase === "uncertain" && <button className="secondary-button" type="button" disabled={!canCommand}
             onClick={() => void reconcile()}>بازبینی نتیجهٔ واقعیت</button>}
           {editable && <button className="secondary-button" type="button" onClick={() => {
             setPhase("closed"); setStatus(""); setIdentity(null);

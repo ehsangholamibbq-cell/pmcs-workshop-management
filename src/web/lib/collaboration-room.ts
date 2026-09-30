@@ -32,7 +32,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   const url = `${apiBaseUrl.replace(/\/$/u, "")}/api/v1/projects/${encodeURIComponent(projectId)}/collaboration`;
   const room = await fetch(url, { cache: "no-store" });
   if (room.status === 404) return { kind: "unavailable" };
-  if (room.status === 403) return { kind: "forbidden" };
+  if (room.status === 401 || room.status === 403) return { kind: "forbidden" };
   if (!room.ok) throw new Error("دریافت گفت‌وگوی پروژه انجام نشد.");
   const roomValue = await room.json() as {
     projectId?: string; lastSequence?: number; canModerate?: boolean;
@@ -70,7 +70,7 @@ export async function loadProjectConversation(apiBaseUrl: string, projectId: str
   const after = Math.max(0, lastSequence - 100);
   const response = await fetch(`${url}/messages?after=${after}`, { cache: "no-store" });
   if (response.status === 404) return { kind: "unavailable" };
-  if (response.status === 403) return { kind: "forbidden" };
+  if (response.status === 401 || response.status === 403) return { kind: "forbidden" };
   if (!response.ok) throw new Error("دریافت پیام‌های پروژه انجام نشد.");
   const page = await response.json() as { messages?: ProjectConversationMessage[]; nextSequence?: number };
   const messages = page.messages;

@@ -41,7 +41,7 @@ test("conversation reads the latest bounded project window and denies caching", 
 
 test("disabled or revoked conversation fails closed before any message read", async () => {
   const original = globalThis.fetch;
-  for (const [status, kind] of [[404, "unavailable"], [403, "forbidden"]] as const) {
+  for (const [status, kind] of [[404, "unavailable"], [401, "forbidden"], [403, "forbidden"]] as const) {
     let requests = 0;
     globalThis.fetch = async () => { requests += 1; return new Response(null, { status }); };
     assert.equal((await loadProjectConversation("/api/pmcs", projectId)).kind, kind);

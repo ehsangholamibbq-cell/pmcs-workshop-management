@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useCollaborationCommandGate } from "@/components/collaboration-command-gate";
 import { CollaborationAccessError } from "@/lib/collaboration-events";
 import { loadProjectMessageAttachments, type ProjectMessageAttachment } from "@/lib/collaboration-attachments";
 import {
@@ -30,6 +31,7 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
   readonly actorUserId: string; readonly onAccessLoss: (status: number) => void;
   readonly onChanged: () => void;
 }) {
+  const { canCommand, isCurrent } = useCollaborationCommandGate();
   const [phase, setPhase] = useState<Phase>("closed");
   const [base, setBase] = useState(message);
   const [files, setFiles] = useState<readonly ProjectMessageAttachment[]>([]);
@@ -40,10 +42,11 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
   const [identity, setIdentity] = useState<{ destinationId: string; key: string } | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [status, setStatus] = useState("");
+  const stale = (phase === "editing" || phase === "uncertain") && message.revision > base.revision;
   const attachment = files.find((item) => item.documentId === documentId);
 
   async function open() {
-    if (phase !== "closed") return;
+    if (!isCurrent() || phase !== "closed") return;
     setPhase("checking"); setStatus("");
     try {
       const [lineage, attached] = await Promise.all([
@@ -68,6 +71,7 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
   }
 
   async function reconcile() {
+    if (!isCurrent()) return;
     try {
       const lineage = await loadProjectMessageConversions("/api/pmcs", projectId, message.id);
       if (lineage.some((item) => item.destinationType === "TechnicalDocument" &&
@@ -80,8 +84,32 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
     }
   }
 
+  async function rebaseMessage() {
+    if (!isCurrent() || message.revision <= base.revision || message.deletedAt || message.redactedAt) return;
+    try {
+      const [lineage, currentFiles] = await Promise.all([
+        loadProjectMessageConversions("/api/pmcs", projectId, message.id),
+        loadProjectMessageAttachments("/api/pmcs", projectId, message.id),
+      ]);
+      if (lineage.some(item => item.destinationType === "TechnicalDocument" &&
+          item.documents.some(document => document.id.toLowerCase() === documentId.toLowerCase()))) {
+        setPhase("exists"); setStatus("رکورد رسمی این فایل قبلاً در تبار پیام ثبت شده است."); return;
+      }
+      const retained = currentFiles.find(item => attachment && item.documentId === attachment.documentId &&
+        item.sha256 === attachment.sha256 && item.versionNumber === attachment.versionNumber &&
+        item.originalFileName === attachment.originalFileName && item.contentType === attachment.contentType &&
+        item.sizeBytes === attachment.sizeBytes);
+      setFiles(currentFiles); setDocumentId(retained?.documentId ?? "");
+      setBase(message); setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
+      setConfirmed(false); setPhase("editing");
+      setStatus(retained ? "" : "فایل انتخاب‌شده تغییر کرده یا در دسترس نیست؛ منبع جاری را دوباره انتخاب کنید.");
+    } catch (error) { if (error instanceof CollaborationAccessError) onAccessLoss(error.status);
+      else setStatus("بازخوانی فایل و تبار کامل نشد؛ پیش‌نویس حفظ شده است."); }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isCurrent() || stale) return;
     if (!identity || !confirmed || !attachment || (phase !== "editing" && phase !== "uncertain")) return;
     if (!navigator.onLine) { setStatus("تبدیل رسمی فقط هنگام اتصال به سرور انجام می‌شود."); return; }
     setPhase("sending"); setStatus("در حال ثبت سند فنی و نسخهٔ پیش‌نویس…");
@@ -108,23 +136,23 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
 
   const editable = phase === "editing";
   return <section className="collaboration-edit" aria-label="تبدیل فایل پیام به سند فنی رسمی">
-    {phase === "closed" && <button className="secondary-button" type="button"
+    {phase === "closed" && <button className="secondary-button" type="button" disabled={!canCommand}
       onClick={() => void open()}>ساخت سند فنی رسمی از فایل پیام</button>}
     {phase === "checking" && <p role="status">در حال بررسی فایل آزادشده و تبار پیام…</p>}
     {status && <p role={phase === "conflict" ? "alert" : "status"}>{status}</p>}
-    {phase === "conflict" && <div>
+    {(phase === "conflict" || stale) && <div>
+      {stale && <p role="alert">نسخهٔ پیام تغییر کرده است؛ پیش‌نویس را بر پایهٔ نسخهٔ تازه بررسی و دوباره تأیید کنید.</p>}
       <p>نسخهٔ فعلی پیام: {message.body}</p>
       {message.revision > base.revision && !message.deletedAt && !message.redactedAt &&
-        <button className="secondary-button" type="button" onClick={() => {
-          setBase(message); setIdentity({ destinationId: crypto.randomUUID(), key: crypto.randomUUID() });
-          setConfirmed(false); setStatus(""); setPhase("editing");
-        }}>تبدیل سند فنی بر پایهٔ نسخهٔ تازه</button>}
+        <button className="secondary-button" type="button" disabled={!canCommand}
+          onClick={() => void rebaseMessage()}>تبدیل سند فنی بر پایهٔ نسخهٔ تازه</button>}
     </div>}
     {(phase === "editing" || phase === "sending" || phase === "uncertain") &&
       <form onSubmit={(event) => void submit(event)}>
         <p>سند فنی رسمی با یک نسخهٔ اولیهٔ کاری و تبار یک فایل آزادشده ساخته می‌شود؛ صدور سند مرحلهٔ جداگانه است.</p>
         <label>فایل آزادشده پیام<select required value={documentId} disabled={!editable}
           onChange={(event) => { setDocumentId(event.target.value); setConfirmed(false); }}>
+          <option value="">انتخاب فایل جاری</option>
           {files.map((item) => <option key={item.documentId} value={item.documentId}>
             {item.originalFileName} · نسخهٔ {item.versionNumber}
           </option>)}
@@ -147,16 +175,16 @@ export function ProjectTechnicalDocumentConversion({ projectId, message, actorUs
           onChange={(event) => { setDetails((current) => ({ ...current, revisionCode: event.target.value }));
             setConfirmed(false); }} /></label>
         <p>نسخهٔ پیام: {base.revision}؛ هش و نسخهٔ فایل در تبار سند ثبت می‌شوند.</p>
-        <label><input type="checkbox" checked={confirmed} disabled={!editable}
+        <label><input type="checkbox" checked={confirmed} disabled={!canCommand || !editable}
           onChange={(event) => setConfirmed(event.target.checked)} />
           ساخت سند فنی رسمی و نسخهٔ اولیه از همین فایل را تأیید می‌کنم.</label>
         <div className="collaboration-message-actions">
-          <button type="submit" disabled={phase === "sending" || !confirmed || !attachment ||
+          <button type="submit" disabled={!canCommand || stale || phase === "sending" || !confirmed || !attachment ||
             !details.title.trim() || !details.discipline.trim() || !details.revisionCode.trim()}>
             {phase === "uncertain" ? "تلاش مجدد با همان شناسه" : phase === "sending"
               ? "در حال ثبت…" : "تأیید و ساخت سند فنی رسمی"}
           </button>
-          {phase === "uncertain" && <button className="secondary-button" type="button"
+          {phase === "uncertain" && <button className="secondary-button" type="button" disabled={!canCommand}
             onClick={() => void reconcile()}>بازبینی نتیجهٔ سند فنی</button>}
           {editable && <button className="secondary-button" type="button" onClick={() => {
             setPhase("closed"); setStatus(""); setIdentity(null);

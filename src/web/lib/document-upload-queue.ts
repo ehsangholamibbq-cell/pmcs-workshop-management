@@ -52,6 +52,7 @@ export interface EnqueueDocumentUploadInput {
   readonly retentionPolicy?: DocumentRetentionPolicy;
   readonly retainUntil?: string | null;
   readonly legalHold?: boolean;
+  readonly ensureAllowed?: () => boolean;
 }
 
 export interface DocumentUploadSessionPayload {
@@ -111,6 +112,7 @@ const allowedExtensions = new Map<string, readonly string[]>([
 export async function enqueueDocumentUpload(
   input: EnqueueDocumentUploadInput,
 ): Promise<QueuedDocumentUpload> {
+  if (input.ensureAllowed && !input.ensureAllowed()) throw new Error("دسترسی فعلی برای نگهداری فایل کافی نیست.");
   const identity = currentLocalIdentityScope();
   if (identity.tenantId !== input.tenantId || identity.userId !== input.userId) {
     throw new Error("صف فایل با هویت نشست فعلی هم‌خوان نیست.");
@@ -141,8 +143,10 @@ export async function enqueueDocumentUpload(
     attemptCount: 0,
   };
   const database = await openFieldDatabase();
-  await writeItems(database, [item]);
-  database.close();
+  try {
+    if (input.ensureAllowed && !input.ensureAllowed()) throw new Error("دسترسی فعلی برای نگهداری فایل کافی نیست.");
+    await writeItems(database, [item]);
+  } finally { database.close(); }
   return item;
 }
 

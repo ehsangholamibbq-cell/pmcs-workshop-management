@@ -113,8 +113,10 @@ export async function enqueueAttachment(input: EnqueueAttachmentInput): Promise<
     attemptCount: 0,
   };
   const database = await openFieldDatabase();
-  await writeAttachments(database, [attachment]);
-  database.close();
+  try {
+    input.ensureAllowed?.();
+    await writeAttachments(database, [attachment]);
+  } finally { database.close(); }
   return attachment;
 }
 

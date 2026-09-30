@@ -409,6 +409,7 @@ test("only the message author queues a Chat document and sees quarantine status 
   await page.getByLabel("افزودن فایل به پیام خود").setInputFiles({
     name: "scope.pdf", mimeType: "application/pdf", buffer: bytes,
   });
+  await page.getByRole("button", { name: "نگهداری فایل در صف دستگاه" }).click();
   await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "دریافت پیوست" })).toHaveCount(0);
   await page.reload();

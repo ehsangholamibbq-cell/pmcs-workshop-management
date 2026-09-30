@@ -12,6 +12,8 @@ permissions:
 jobs:
   architecture:
     runs-on: ubuntu-latest
+    env:
+      PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,6 +25,12 @@ jobs:
         with:
           name: qa-regression-architecture
           path: artifacts/qa/regression/architecture.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g4-consumer-inventory
+          path: artifacts/qa/vx-g4-consumers.json
           if-no-files-found: error
 
   backend:
@@ -564,6 +572,13 @@ jobs:
         with:
           name: pmcs-ms98-chat-secondary-read-truth
           path: src/web/artifacts/ms98-chat-secondary-read-truth/
+          if-no-files-found: error
+      - name: Upload Chat command, draft and access evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms99-chat-command-draft
+          path: src/web/artifacts/ms99-chat-command-draft/
           if-no-files-found: error
 
   identity-container:

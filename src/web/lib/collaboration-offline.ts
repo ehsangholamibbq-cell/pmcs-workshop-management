@@ -24,6 +24,7 @@ export interface CollaborationQueueInput {
   readonly body: string;
   readonly replyToMessageId?: string | null;
   readonly mentionedUserIds?: readonly string[];
+  readonly ensureAllowed?: () => boolean;
 }
 
 export interface CollaborationSyncSummary {
@@ -58,10 +59,12 @@ export function createQueuedCollaborationMessage(input: CollaborationQueueInput)
 }
 
 export async function enqueueCollaborationMessage(input: CollaborationQueueInput): Promise<QueuedCollaborationMessage> {
+  if (input.ensureAllowed && !input.ensureAllowed()) throw new Error("دسترسی فعلی برای نگهداری پیام کافی نیست.");
   assertCurrentIdentity(input.tenantId, input.userId);
   const message = createQueuedCollaborationMessage(input);
   const database = await openFieldDatabase();
   try {
+    if (input.ensureAllowed && !input.ensureAllowed()) throw new Error("دسترسی فعلی برای نگهداری پیام کافی نیست.");
     await writeMessage(database, message);
   } finally {
     database.close();
