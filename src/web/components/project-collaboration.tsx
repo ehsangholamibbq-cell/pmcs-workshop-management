@@ -1146,15 +1146,16 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
   const [readToken, setReadToken] = useState(-1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [errorToken, setErrorToken] = useState(-1);
   const currentRefresh = useRef(refreshToken);
-  currentRefresh.current = refreshToken;
   const currentView = readToken === refreshToken ? view : null;
+  const currentError = errorToken === refreshToken ? error : "";
+
+  useEffect(() => { currentRefresh.current = refreshToken; }, [refreshToken]);
 
   useEffect(() => {
     if (!expanded) return undefined;
     const controller = new AbortController();
-    setView(null);
-    setError("");
     void loadProjectMessageReactions("/api/pmcs", projectId, messageId, controller.signal)
       .then((result) => { if (!controller.signal.aborted) {
         setView(result); setReadToken(refreshToken); setError("");
@@ -1163,7 +1164,8 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
         if (controller.signal.aborted) return;
         setView(null);
         if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
-        else setError("دریافت واکنش‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+        else { setError("دریافت واکنش‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+          setErrorToken(refreshToken); }
       });
     return () => controller.abort();
   }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
@@ -1181,7 +1183,8 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
       if (currentRefresh.current !== refreshToken) return;
       setView(null);
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
-      else setError("ثبت واکنش کامل نشد؛ دوباره تلاش کنید.");
+      else { setError("ثبت واکنش کامل نشد؛ دوباره تلاش کنید.");
+        setErrorToken(refreshToken); }
     } finally {
       setBusy(false);
     }
@@ -1195,7 +1198,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
     </button>
     {expanded && <div id={`reactions-${messageId}`} className="collaboration-reaction-panel"
       aria-label="واکنش‌های همین پیام">
-      {!currentView && !error && <span role="status">در حال دریافت واکنش‌ها…</span>}
+      {!currentView && !currentError && <span role="status">در حال دریافت واکنش‌ها…</span>}
       {currentView && <>
         {currentView.reactions.map((reaction) => <button key={reaction.emoji} type="button"
           className="collaboration-reaction-button" aria-pressed={reaction.reactedByMe}
@@ -1206,7 +1209,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
         </button>)}
         {!currentView.canReact && <span>نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.</span>}
       </>}
-      {error && <span role="alert">{error}</span>}
+      {currentError && <span role="alert">{currentError}</span>}
     </div>}
   </div>;
 }
@@ -1223,17 +1226,17 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
   const [readToken, setReadToken] = useState(-1);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
+  const [errorToken, setErrorToken] = useState(-1);
   const [notice, setNotice] = useState("");
   const currentRefresh = useRef(refreshToken);
-  currentRefresh.current = refreshToken;
   const currentAttachments = readToken === refreshToken ? attachments : null;
+  const currentError = errorToken === refreshToken ? error : "";
+
+  useEffect(() => { currentRefresh.current = refreshToken; }, [refreshToken]);
 
   useEffect(() => {
     if (!expanded) return undefined;
     const controller = new AbortController();
-    setAttachments(null);
-    setError("");
-    setNotice("");
     void loadProjectMessageAttachments("/api/pmcs", projectId, messageId, controller.signal)
       .then((result) => { if (!controller.signal.aborted) {
         setAttachments(result); setReadToken(refreshToken); setError("");
@@ -1242,7 +1245,8 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
         if (controller.signal.aborted) return;
         setAttachments(null);
         if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
-        else setError("دریافت پیوست‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+        else { setError("دریافت پیوست‌های پیام کامل نشد؛ دوباره تلاش کنید.");
+          setErrorToken(refreshToken); }
       });
     return () => controller.abort();
   }, [expanded, projectId, messageId, refreshToken, onAccessLoss]);
@@ -1265,7 +1269,8 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       setNotice("پیوست پس از تأیید صحت دریافت شد.");
     } catch (failure) {
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
-      else setError(failure instanceof Error ? failure.message : "دریافت پیوست کامل نشد.");
+      else { setError(failure instanceof Error ? failure.message : "دریافت پیوست کامل نشد.");
+        setErrorToken(refreshToken); }
     } finally {
       setBusyId("");
     }
@@ -1279,7 +1284,7 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
     </button>
     {expanded && <div id={`attachments-${messageId}`} className="collaboration-attachment-panel"
       aria-label="پیوست‌های همین پیام">
-      {!currentAttachments && !error && <span role="status">در حال دریافت پیوست‌ها…</span>}
+      {!currentAttachments && !currentError && <span role="status">در حال دریافت پیوست‌ها…</span>}
       {currentAttachments?.length === 0 && <span>پیوست تأییدشده‌ای برای این پیام ثبت نشده است.</span>}
       {currentAttachments && currentAttachments.length > 0 && <ul>
         {currentAttachments.map((attachment) => <li key={attachment.documentId}>
@@ -1290,9 +1295,9 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
           </button>
         </li>)}
       </ul>}
-      {notice && <span role="status">{notice}</span>}
-      {error && <span role="alert">{error}</span>}
-      {canUpload && currentAttachments && !error && <ProjectMessageUpload projectId={projectId} messageId={messageId}
+      {currentAttachments && notice && <span role="status">{notice}</span>}
+      {currentError && <span role="alert">{currentError}</span>}
+      {canUpload && currentAttachments && !currentError && <ProjectMessageUpload projectId={projectId} messageId={messageId}
         attachedDocumentIds={currentAttachments.map((attachment) => attachment.documentId)}
         onAccessLoss={onAccessLoss} onAttached={async () => {
           setAttachments(null);
