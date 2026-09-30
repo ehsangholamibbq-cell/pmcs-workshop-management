@@ -96,8 +96,13 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
   const [historyStatus, setHistoryStatus] = useState("");
   const historyController = useRef<AbortController | null>(null);
   const accessRevoked = useRef(false);
-  const isCurrent = useCallback(() => roomIsCurrent.current && navigator.onLine && !accessRevoked.current, []);
-  const isAuthorized = useCallback(() => !accessRevoked.current &&
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  const isCurrent = useCallback(() => mounted.current && roomIsCurrent.current && navigator.onLine && !accessRevoked.current, []);
+  const isAuthorized = useCallback(() => mounted.current && !accessRevoked.current &&
     (roomIsCurrent.current || !navigator.onLine), []);
   const canCommand = view?.kind === "ready" && roomCurrent && online && !isRefreshing && !failure;
   const canDraft = view?.kind === "ready" && !isRefreshing && !failure && (roomCurrent || !online);
@@ -651,7 +656,7 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                     </div>}
                     {view.canModerate && message.revision > 0 &&
                       <div className="collaboration-message-actions">
-                        <button className="secondary-button" type="button" disabled={moderationBusy}
+                        <button className="secondary-button" type="button" disabled={!canCommand || moderationBusy}
                           onClick={() => { setModerating({ base: message, action: "hold",
                             enabled: !message.legalHold, reason: "", key: crypto.randomUUID(),
                             conflict: false }); setModerationStatus(""); }}>
