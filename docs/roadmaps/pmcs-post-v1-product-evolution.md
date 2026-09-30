@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.171.0`
+- نسخه سند: `1.172.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1885,3 +1885,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.169.0` | UX2-MS86 docs Run 556 هشت Job سبز و Safe؛ MS87 دفتر حاکمیت را در Refresh، خطا و لغو مجوز از ریسک/مسئله/تصمیم و فرمان کهنه جدا کرد. Source Run 558 هشت Job سبز/Artifact `11074073157` پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، گردش امروز/تقویم و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.170.0` | UX2-MS87 docs Run 559 هشت Job سبز و Safe؛ MS88 گردش امروز و تقویم پروژه را در Refresh، خطا و قطع مجوز از داده/فرمان قبلی جدا و شناسهٔ گزارش محلی ۴۰۴ را تأییدنشده نگه داشت. Source Run 572 هشت Job سبز؛ Artifactهای `11079382844` و `11079367890` با ۱۱ قاب و Index معتبر/مرور شده‌اند. CI مستقل مستندات شرط Checkpoint، مکان‌ها و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.171.0` | UX2-MS88 docs Run 573 هشت Job سبز و Safe؛ MS89 فهرست مکان‌ها را با تفکیک Current/Loading/Cached/Unavailable/Forbidden، قفل فرمان روی خواندن جاری و حفظ ورودی پس از خطا مهاجرت داد. Source نهایی Run 579 هشت Job سبز؛ Artifact `11081424194` با هفت قاب/Index معتبر و بازبینی‌شده، ZIP SHA-256 `c0ee54280bc906fa55466263188c49bf926ac04917bdfed5e9ca37bb039db6bc`. CI مستقل مستندات شرط Checkpoint، توجه و سایر مصرف‌کنندگان فعال G4، سپس G5 و INT1/QA1 بازند |
+| `1.172.0` | UX2-MS89 docs correction Run 581 هشت Job سبز و Safe؛ MS90 پنل کیفیت/ایمنی را با وضعیت Current/Loading/Offline/Unavailable/Forbidden، پاک‌سازی آمار رسمی در Refresh/خطا/قطع مجوز و گیت فرمان به پاسخ جاری مهاجرت داد. ثبت سریع آفلاین مستقل باقی می‌ماند. Source Run 582 (`36684224832`) هشت Job سبز و Artifact `11082989569` با شش PNG/Index معتبر و بازبینی‌شده، ZIP SHA-256 `de01d9713e013a8939c86f59b3c592dece27603c01283e6539654bf2fbd3fddf` دارد. CI مستقل مستندات شرط Checkpoint؛ تحلیل مشورتی، همگام‌سازی، ورودی محلی/تبدیل Chat و ممیزی کامل G4، سپس G5 و INT1/QA1 بازند |
