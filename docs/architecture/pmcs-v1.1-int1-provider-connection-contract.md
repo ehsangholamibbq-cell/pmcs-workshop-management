@@ -30,3 +30,5 @@ Tool Registry، Profile و Reference Run محدود در `pmcs-v1.1-int1-runtime
 [Claude structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
 
 در بازبینی پروتکل، Gemini برای ورودی ابزار از `parametersJsonSchema` با `additionalProperties=false` استفاده می‌کند و Claude ابزار را با `strict=true` تعریف می‌کند؛ schema، نام ابزار و citation پس از دریافت نیز در PMCS مستقل از تضمین Provider اعتبارسنجی می‌شود. مستندات رسمی فقط سازگاری شکل درخواست را پشتیبانی می‌کنند؛ نتیجهٔ اتصال زنده بدون Credential ادعا نمی‌شود.
+
+`dotnet run --project src/backend/Pmcs.TestHarness -- probe-int1-providers` مسیر اتصال زندهٔ مستقل را با `OPENAI_MODEL/OPENAI_API_KEY`، `GEMINI_MODEL/GEMINI_API_KEY` و `ANTHROPIC_MODEL/ANTHROPIC_API_KEY` ارزیابی می‌کند. خروجی فقط کد وضعیت، مصرف Probe و `allAvailable` را ثبت می‌کند؛ در نبود تنظیم، هر خانواده `Unavailable` و `allAvailable=false` گزارش می‌شود و هیچ HTTP ارسال نمی‌شود. اگر Provider پیکربندی شده باشد ولی structured output یا tool calling تأیید نشود، فرمان با exit code غیرصفر Gate را می‌بندد. اجرای CI بدون Secret هرگز به‌عنوان اتصال زندهٔ موفق ثبت نمی‌شود.

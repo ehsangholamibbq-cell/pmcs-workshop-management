@@ -28,7 +28,7 @@ internal sealed class Int1QaFixtureHandler : HttpMessageHandler
             ("api.openai.com", false) =>
                 """{"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":ANSWER}]}],"usage":{"input_tokens":10,"output_tokens":8}}""",
             ("generativelanguage.googleapis.com", true) =>
-                """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"TOOL","args":{"projectId":"PROJECT"}}]}}],"usageMetadata":{"promptTokenCount":12,"candidatesTokenCount":9}}""",
+                """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"functionCall":{"name":"TOOL","args":{"projectId":"PROJECT"}}}]}}],"usageMetadata":{"promptTokenCount":12,"candidatesTokenCount":9}}""",
             ("generativelanguage.googleapis.com", false) =>
                 """{"candidates":[{"finishReason":"STOP","content":{"parts":[{"text":ANSWER}]}}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":8}}""",
             ("api.anthropic.com", true) =>

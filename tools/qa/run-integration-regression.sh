@@ -31,6 +31,8 @@ curl --fail --silent "${PMCS_TEST_S3_ENDPOINT:?Set PMCS_TEST_S3_ENDPOINT.}/minio
 
 dotnet restore PMCS.slnx
 dotnet build PMCS.slnx --configuration Release --no-restore
+dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj \
+  --configuration Release --no-build --no-launch-profile -- probe-int1-providers
 ./tools/integration-smoke.sh
 
 for verifier in \
@@ -92,5 +94,12 @@ docker run --rm --network host \
   --env "PMCS_RESTORE_BACKUP_FILE=/backup/$(basename "${backup_file}")" \
   postgres:17-alpine sh -c \
   'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-restore-drill.sh'
+
+int1_restored="$(psql "${PMCS_RESTORE_TARGET_CONNECTION_STRING}" --no-psqlrc \
+  --set ON_ERROR_STOP=1 --tuples-only --no-align --command "select (select count(*) from foundation.schema_migrations where module = 'intelligence' and version = '20261001-007')::text || '|' || (select count(*) from information_schema.columns where table_schema = 'intelligence' and table_name = 'reference_runs' and column_name in ('initial_model_catalog_id','initial_model_version','initial_provider','initial_provider_version','provider_version'))::text || '|' || (to_regclass('intelligence.provider_registrations') is not null)::text;")"
+if [[ "${int1_restored}" != '1|5|true' ]]; then
+  echo "INT1 migration and lineage were not restored: ${int1_restored}." >&2
+  exit 1
+fi
 
 echo '{"status":"passed","stage":"connected-integration-regression"}'

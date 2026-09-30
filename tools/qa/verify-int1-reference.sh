@@ -121,6 +121,15 @@ if [[ "${ready}" != true ]]; then
 fi
 
 run_url="http://127.0.0.1:${port}/api/v1/projects/33333333-3333-3333-3333-333333333333/intelligence/reference-runs"
+admin_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --header "X-Pmcs-QA-Key: ${PMCS_QA_AUTH_KEY}" \
+  --header 'X-Tenant-Id: 11111111-1111-1111-1111-111111111111' \
+  --header 'X-User-Id: 22222222-2222-2222-2222-222222222222' \
+  "http://127.0.0.1:${port}/api/v1/intelligence/admin/providers")"
+if [[ "${admin_status}" != '403' ]]; then
+  echo "QA tenant administrator gained implicit INT1 provider access: HTTP ${admin_status}." >&2
+  exit 1
+fi
 post_run() {
   local id="$1" question="$2" expected="$3" actual
   actual="$(curl --silent --output "${response_file}" --write-out '%{http_code}' \
@@ -144,6 +153,15 @@ select_model() {
 
 post_run 1 'fixture-openai' 200
 grep -q 'Fixture catalog result' "${response_file}"
+observer_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  --header "X-Pmcs-QA-Key: ${PMCS_QA_AUTH_KEY}" \
+  --header 'X-Tenant-Id: 11111111-1111-1111-1111-111111111111' \
+  --header 'X-User-Id: 50000000-0000-4000-8000-000000000001' \
+  "${run_url}/a3000000-0000-4000-8000-000000000001")"
+if [[ "${observer_status}" != '403' ]]; then
+  echo "QA observer gained INT1 Run access: HTTP ${observer_status}." >&2
+  exit 1
+fi
 post_run 1 'fixture-openai' 200
 if grep -q 'Fixture catalog result' "${response_file}"; then
   echo 'INT1 idempotent replay exposed transient answer.' >&2

@@ -56,6 +56,7 @@ internal static partial class Program
                 "guard" => GuardDatabase(),
                 "manifest" => WriteManifest(),
                 "probe" => await ProbeAsync(),
+                "probe-int1-providers" => await ProbeInt1ProvidersAsync(),
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
                 "verify-reporting" => await VerifyReportingAsync(),
