@@ -8,6 +8,9 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
     public DbSet<InsightGenerationRequest> GenerationRequests => Set<InsightGenerationRequest>();
     public DbSet<AdvisoryInsight> AdvisoryInsights => Set<AdvisoryInsight>();
     public DbSet<IntelligenceAdministrationGrant> AdministrationGrants => Set<IntelligenceAdministrationGrant>();
+    public DbSet<IntelligenceModelCatalog> ModelCatalog => Set<IntelligenceModelCatalog>();
+    public DbSet<IntelligenceProfileVersion> ProfileVersions => Set<IntelligenceProfileVersion>();
+    public DbSet<IntelligenceProfileSelection> ProfileSelections => Set<IntelligenceProfileSelection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +31,63 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
             builder.Property(x => x.RevokedAt).HasColumnName("revoked_at");
             builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.HasIndex(x => new { x.ActorTenantId, x.ActorId, x.Permission, x.ScopeTenantId });
+        });
+
+        modelBuilder.Entity<IntelligenceModelCatalog>(builder =>
+        {
+            builder.ToTable("model_catalog");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.Version).HasColumnName("version");
+            builder.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(40);
+            builder.Property(x => x.Model).HasColumnName("model").HasMaxLength(160);
+            builder.Property(x => x.Capabilities).HasColumnName("capabilities").HasConversion<int>();
+            builder.Property(x => x.MaximumDataClass).HasColumnName("maximum_data_class").HasConversion<int>();
+            builder.Property(x => x.Enabled).HasColumnName("enabled");
+            builder.Property(x => x.VerifiedAt).HasColumnName("verified_at");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.CreatedBy).HasColumnName("created_by");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.HasIndex(x => new { x.Provider, x.Model, x.Version }).IsUnique();
+        });
+
+        modelBuilder.Entity<IntelligenceProfileVersion>(builder =>
+        {
+            builder.ToTable("profile_versions");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.Version).HasColumnName("version");
+            builder.Property(x => x.UseCase).HasColumnName("use_case").HasMaxLength(100);
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.ProjectIdsJson).HasColumnName("project_ids_json").HasColumnType("jsonb");
+            builder.Property(x => x.DefaultModelId).HasColumnName("default_model_id");
+            builder.Property(x => x.AllowedModelIdsJson).HasColumnName("allowed_model_ids_json").HasColumnType("jsonb");
+            builder.Property(x => x.FallbackModelIdsJson).HasColumnName("fallback_model_ids_json").HasColumnType("jsonb");
+            builder.Property(x => x.AllowFallback).HasColumnName("allow_fallback");
+            builder.Property(x => x.RequiredCapabilities).HasColumnName("required_capabilities").HasConversion<int>();
+            builder.Property(x => x.MaximumDataClass).HasColumnName("maximum_data_class").HasConversion<int>();
+            builder.Property(x => x.MaximumInputTokens).HasColumnName("maximum_input_tokens");
+            builder.Property(x => x.MaximumOutputTokens).HasColumnName("maximum_output_tokens");
+            builder.Property(x => x.TimeoutSeconds).HasColumnName("timeout_seconds");
+            builder.Property(x => x.MaximumCostMicrounits).HasColumnName("maximum_cost_microunits");
+            builder.Property(x => x.PromptVersion).HasColumnName("prompt_version").HasMaxLength(100);
+            builder.Property(x => x.PolicyVersion).HasColumnName("policy_version").HasMaxLength(100);
+            builder.Property(x => x.PublishedBy).HasColumnName("published_by");
+            builder.Property(x => x.PublishedAt).HasColumnName("published_at");
+            builder.HasIndex(x => new { x.TenantId, x.UseCase, x.Version }).IsUnique();
+        });
+
+        modelBuilder.Entity<IntelligenceProfileSelection>(builder =>
+        {
+            builder.ToTable("profile_selections");
+            builder.HasKey(x => new { x.TenantId, x.UseCase });
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.UseCase).HasColumnName("use_case").HasMaxLength(100);
+            builder.Property(x => x.ProfileVersionId).HasColumnName("profile_version_id");
+            builder.Property(x => x.ModelId).HasColumnName("model_id");
+            builder.Property(x => x.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
         });
 
         modelBuilder.Entity<InsightGenerationRequest>(builder =>
