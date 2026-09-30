@@ -87,7 +87,6 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
     expect(await page.locator("button,input,select,textarea,a").evaluateAll(elements => elements.filter(element => {
       const box = element.getBoundingClientRect(); return box.width > 0 && box.height > 0;
     }).length)).toBe(0);
-    await report.capture(page, `${state}-print-media-1440.png`);
     for (const paper of ["A4", "A3"] as const) for (const landscape of [false, true]) {
       let bytes: Buffer | null = null;
       let attempts = 0;
@@ -116,6 +115,17 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
         { state, paper, orientation: landscape ? "landscape" : "portrait",
           expectedProjectName: state === "denied" ? null : projectName });
     }
+    // Capture after the validated PDFs: startup sync can refresh the command center
+    // between the first DOM assertion and the screenshot on a newly opened route.
+    if (state !== "denied") {
+      await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state",
+        state === "cached" ? "cached" : "current");
+      await expect(sheet.locator(".project-print-heading h1")).toHaveText(expectedProjectName);
+      if (state === "no-snapshot") await expect(page.locator(".project-print-absence")).toBeVisible();
+      else await expect(sheet.locator(".project-print-snapshot")).toContainText(snapshotId);
+    } else await expect(sheet).toHaveCount(0);
+    await report.capture(page, `${state}-print-media-1440.png`);
+    if (state !== "denied") await expect(sheet.locator(".project-print-heading h1")).toHaveText(expectedProjectName);
   }
   await context.setOffline(false);
 });
