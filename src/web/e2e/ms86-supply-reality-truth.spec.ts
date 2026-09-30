@@ -98,6 +98,10 @@ test("supply reality hides an old server state and commands after failed or forb
   await expect(panel.getByRole("alert")).toContainText("دادهٔ قبلی نمایش داده نمی‌شود");
   await expect(panel.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("supply-320-access-revoked.png", 320, 720, "forbidden");
+  await page.context().setOffline(true);
+  await expect(panel).toHaveAttribute("data-read-state", "offline");
+  await expect(panel.getByLabel("نمای ذخیره‌شدهٔ تأییدنشده")).toHaveCount(0);
+  await page.context().setOffline(false);
 
   responseStatus = 200;
   await page.reload();
