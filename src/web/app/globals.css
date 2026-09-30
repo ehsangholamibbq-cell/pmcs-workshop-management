@@ -5681,6 +5681,7 @@ output {
   background: #fff;
   cursor: pointer;
 }
+.pmcs-file-input-clear:not(:disabled):hover { background: var(--soft-teal); }
 
 .login-admin-preview {
   position: relative;
