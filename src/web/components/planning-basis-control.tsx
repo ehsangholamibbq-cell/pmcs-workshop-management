@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import {
   amendMilestoneProgressUpdate,
@@ -29,7 +29,7 @@ import {
   getProject,
   type ProjectModel,
 } from "@/lib/projects";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate } from "@/lib/persian-date";
 
 interface PlanningBasisControlProps {
@@ -57,6 +57,8 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   const [baselines, setBaselines] = useState<readonly PlanningBaselineModel[]>([]);
   const [updates, setUpdates] = useState<readonly MilestoneProgressUpdateModel[]>([]);
   const [message, setMessage] = useState("در حال دریافت مبنای رسمی برنامه…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const [busy, setBusy] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
 
@@ -83,26 +85,41 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   const [milestoneEvidence, setMilestoneEvidence] = useState("");
   const [milestoneNote, setMilestoneNote] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    setProject(null);
+    setBaselines([]);
+    setUpdates([]);
     if (!props.isOnline) {
+      setReadState("offline");
       setMessage("مبنای رسمی فقط هنگام اتصال به سرور به‌روز می‌شود.");
-      return;
+      return false;
     }
 
+    setReadState("loading");
+    setMessage("در حال دریافت مبنای رسمی برنامه…");
     try {
       const [nextProject, nextBaselines, nextUpdates] = await Promise.all([
         getProject(props.apiBaseUrl, identity, props.projectId),
         listPlanningBaselines(props.apiBaseUrl, identity, props.projectId),
         listMilestoneProgressUpdates(props.apiBaseUrl, identity, props.projectId),
       ]);
+      if (requestId !== readSequence.current) return false;
       setProject(nextProject);
       setMode(nextProject.planningMode);
       setEntryKind((current) => compatibleEntryKind(nextProject.planningMode, current));
       setBaselines(nextBaselines);
       setUpdates(nextUpdates);
+      setReadState("current");
       setMessage(basisMessage(props.ledger));
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "مبنای برنامه دریافت نشد یا دسترسی این کاربر محدود است."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به مبنای برنامه این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "مبنای برنامه دریافت نشد."));
+      return false;
     }
   }, [identity, props.apiBaseUrl, props.isOnline, props.ledger, props.projectId]);
 
@@ -111,6 +128,17 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
     return () => window.clearTimeout(timeoutId);
   }, [load, props.refreshToken]);
 
+  function handleCommandError(error: unknown, fallback: string) {
+    if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+      readSequence.current += 1;
+      setProject(null);
+      setBaselines([]);
+      setUpdates([]);
+      setReadState("forbidden");
+      setMessage("دسترسی به مبنای برنامه این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+    } else setMessage(toUserMessage(error, fallback));
+  }
+
   const approvedBaseline = baselines.find((item) => item.status === "Approved") ?? null;
   const milestoneEntries = approvedBaseline?.entries.filter((item) => item.kind === "Milestone") ?? [];
   const summaryEntries = entries.filter((item) => item.kind === "Summary");
@@ -118,7 +146,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   const scheduleMode = mode === "Milestones" || mode === "WbsBaseline" || mode === "ExternalSchedule";
 
   async function saveMode() {
-    if (!project || !props.isOnline) return;
+    if (!project || !props.isOnline || readState !== "current" || busy) return;
     setBusy(true);
     setMessage("در حال ثبت حالت برنامه‌ریزی…");
     try {
@@ -136,7 +164,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
         : "حالت برنامه‌ریزی ثبت شد؛ برای تولید شاخص رسمی باید مبنای همان حالت تصویب شود.");
       props.onChanged?.();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت حالت برنامه‌ریزی ناموفق بود."));
+      handleCommandError(error, "ثبت حالت برنامه‌ریزی ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -152,7 +180,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   }
 
   function addEntry() {
-    if (!baselineKind) return;
+    if (!baselineKind || readState !== "current") return;
     const resolvedKind = entryKindForMode(mode, entryKind);
     const weight = resolvedKind === "Summary" ? null : Number(entryWeight);
     const method = resolvedKind === "Summary"
@@ -205,7 +233,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
 
   async function saveBaseline(event: FormEvent) {
     event.preventDefault();
-    if (!baselineKind || !project) return;
+    if (!baselineKind || !project || !props.isOnline || readState !== "current" || busy) return;
     const weightTotal = entries.reduce((sum, item) => sum + (item.weightPercent ?? 0), 0);
     if (!versionCode.trim() || !baselineTitle.trim() || entries.length === 0 || Math.abs(weightTotal - 100) > 0.0001) {
       setMessage("نسخه، عنوان و حداقل یک ردیف لازم است و جمع وزن ردیف‌های پیشرفت باید دقیقاً ۱۰۰٪ باشد.");
@@ -242,11 +270,11 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
         });
       }
       clearBaselineEditor();
-      await load();
+      const refreshed = await load();
       props.onChanged?.();
-      setMessage("پیش‌نویس مبنا ذخیره شد؛ برای رسمی‌شدن باید ارسال و تأیید شود.");
+      if (refreshed) setMessage("پیش‌نویس مبنا ذخیره شد؛ برای رسمی‌شدن باید ارسال و تأیید شود.");
     } catch (error) {
-      setMessage(toUserMessage(error, "ذخیره مبنای برنامه ناموفق بود."));
+      handleCommandError(error, "ذخیره مبنای برنامه ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -276,6 +304,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   }
 
   async function baselineAction(baseline: PlanningBaselineModel, action: BaselineAction) {
+    if (!props.isOnline || readState !== "current" || busy) return;
     if (action === "return" && !reviewComment.trim()) {
       setMessage("برای بازگرداندن مبنا، دلیل اصلاح را بنویسید.");
       return;
@@ -286,11 +315,11 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
       if (action === "approve") await approvePlanningBaseline(props.apiBaseUrl, identity, props.projectId, baseline, reviewComment);
       if (action === "return") await returnPlanningBaseline(props.apiBaseUrl, identity, props.projectId, baseline, reviewComment);
       setReviewComment("");
-      await load();
+      const refreshed = await load();
       props.onChanged?.();
-      setMessage(action === "approve" ? "مبنای جدید تصویب و نسخه مصوب قبلی بدون حذف تاریخچه جایگزین شد." : "گردش بررسی مبنا ثبت شد.");
+      if (refreshed) setMessage(action === "approve" ? "مبنای جدید تصویب و نسخه مصوب قبلی بدون حذف تاریخچه جایگزین شد." : "گردش بررسی مبنا ثبت شد.");
     } catch (error) {
-      setMessage(toUserMessage(error, "تغییر وضعیت مبنای برنامه ناموفق بود."));
+      handleCommandError(error, "تغییر وضعیت مبنای برنامه ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -298,6 +327,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
 
   async function saveMilestone(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busy) return;
     if (!approvedBaseline || !milestoneEntryId || !milestoneDate || !milestoneEvidence.trim()) {
       setMessage("نقطه عطف، تاریخ وضعیت و مرجع مدرک الزامی است.");
       return;
@@ -327,11 +357,11 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
         });
       }
       clearMilestoneEditor();
-      await load();
+      const refreshed = await load();
       props.onChanged?.();
-      setMessage("گزارش نقطه عطف به‌صورت پیش‌نویس ثبت شد؛ هنوز در پیشرفت رسمی وارد نشده است.");
+      if (refreshed) setMessage("گزارش نقطه عطف به‌صورت پیش‌نویس ثبت شد؛ هنوز در پیشرفت رسمی وارد نشده است.");
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت وضعیت نقطه عطف ناموفق بود."));
+      handleCommandError(error, "ثبت وضعیت نقطه عطف ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -348,6 +378,7 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
   }
 
   async function milestoneAction(update: MilestoneProgressUpdateModel, action: MilestoneAction) {
+    if (!props.isOnline || readState !== "current" || busy) return;
     if (action === "return" && !reviewComment.trim()) {
       setMessage("برای بازگرداندن گزارش نقطه عطف، دلیل اصلاح را بنویسید.");
       return;
@@ -358,11 +389,11 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
       if (action === "approve") await approveMilestoneProgressUpdate(props.apiBaseUrl, identity, props.projectId, update, reviewComment);
       if (action === "return") await returnMilestoneProgressUpdate(props.apiBaseUrl, identity, props.projectId, update, reviewComment);
       setReviewComment("");
-      await load();
+      const refreshed = await load();
       props.onChanged?.();
-      setMessage(action === "approve" ? "وضعیت نقطه عطف با تأیید انسانی وارد محاسبه رسمی شد." : "گردش بررسی نقطه عطف ثبت شد.");
+      if (refreshed) setMessage(action === "approve" ? "وضعیت نقطه عطف با تأیید انسانی وارد محاسبه رسمی شد." : "گردش بررسی نقطه عطف ثبت شد.");
     } catch (error) {
-      setMessage(toUserMessage(error, "تغییر وضعیت گزارش نقطه عطف ناموفق بود."));
+      handleCommandError(error, "تغییر وضعیت گزارش نقطه عطف ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -398,8 +429,16 @@ export function PlanningBasisControl(props: PlanningBasisControlProps) {
     setMilestoneNote("");
   }
 
+  if (readState !== "current") return (
+    <div className="planning-basis-control" data-testid="planning-basis" data-read-state={readState}>
+      <p className="calculation-note" role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {props.isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت مبنای برنامه</button>}
+    </div>
+  );
+
   return (
-    <div className="planning-basis-control">
+    <div className="planning-basis-control" data-testid="planning-basis" data-read-state={readState}>
       <div className="planning-mode-control">
         <label>
           <span>حالت برنامه‌ریزی پروژه</span>
