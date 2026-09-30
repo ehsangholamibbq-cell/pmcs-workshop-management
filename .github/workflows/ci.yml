@@ -559,6 +559,13 @@ jobs:
           path: src/web/artifacts/ms97-local-evidence-access-truth/
           if-no-files-found: error
 
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms98-chat-secondary-read-truth
+          path: src/web/artifacts/ms98-chat-secondary-read-truth/
+          if-no-files-found: error
+
   identity-container:
     runs-on: ubuntu-latest
     env:

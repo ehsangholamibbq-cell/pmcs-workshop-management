@@ -580,10 +580,10 @@ function ConversationContent({ projectId }: { readonly projectId: string }) {
                         </div>
                       </form>}
                     {!message.deletedAt && !message.redactedAt &&
-                      <ProjectMessageReactions projectId={projectId} messageId={message.id}
+                      <ProjectMessageReactions key={`${message.id}-${refresh}`} projectId={projectId} messageId={message.id}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt &&
-                      <ProjectMessageAttachments projectId={projectId} messageId={message.id}
+                      <ProjectMessageAttachments key={`${message.id}-${refresh}`} projectId={projectId} messageId={message.id}
                         canUpload={view.canUpload && message.authorUserId.toLowerCase() === session.userId.toLowerCase()}
                         refreshToken={refresh} onAccessLoss={closeRestrictedConversation} />}
                     {!message.deletedAt && !message.redactedAt && <div className="collaboration-message-actions">
@@ -1153,6 +1153,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
       .then((result) => { if (!controller.signal.aborted) { setView(result); setError(""); } })
       .catch((failure: unknown) => {
         if (controller.signal.aborted) return;
+        setView(null);
         if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
         else setError("دریافت واکنش‌های پیام کامل نشد؛ دوباره تلاش کنید.");
       });
@@ -1167,6 +1168,7 @@ function ProjectMessageReactions({ projectId, messageId, refreshToken, onAccessL
       await setProjectMessageReaction("/api/pmcs", projectId, messageId, emoji, !reactedByMe);
       setView(await loadProjectMessageReactions("/api/pmcs", projectId, messageId));
     } catch (failure) {
+      setView(null);
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
       else setError("ثبت واکنش کامل نشد؛ دوباره تلاش کنید.");
     } finally {
@@ -1218,6 +1220,7 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       .then((result) => { if (!controller.signal.aborted) { setAttachments(result); setError(""); } })
       .catch((failure: unknown) => {
         if (controller.signal.aborted) return;
+        setAttachments(null);
         if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
         else setError("دریافت پیوست‌های پیام کامل نشد؛ دوباره تلاش کنید.");
       });
@@ -1269,9 +1272,10 @@ function ProjectMessageAttachments({ projectId, messageId, canUpload, refreshTok
       </ul>}
       {notice && <span role="status">{notice}</span>}
       {error && <span role="alert">{error}</span>}
-      {canUpload && <ProjectMessageUpload projectId={projectId} messageId={messageId}
+      {canUpload && attachments && !error && <ProjectMessageUpload projectId={projectId} messageId={messageId}
         attachedDocumentIds={attachments?.map((attachment) => attachment.documentId) ?? []}
         onAccessLoss={onAccessLoss} onAttached={async () => {
+          setAttachments(null);
           setAttachments(await loadProjectMessageAttachments("/api/pmcs", projectId, messageId));
           setNotice("پیوست آزادشده به همین پیام متصل شد.");
         }} />}
@@ -1309,6 +1313,7 @@ function ProjectMessageUpload({ projectId, messageId, attachedDocumentIds, onAcc
       setNotice(items.some((item) => item.status === "queued")
         ? "فایل در صف امن دستگاه است؛ پس از اتصال دوباره ارسال می‌شود." : "");
     } catch (failure) {
+      setStates({});
       if (failure instanceof CollaborationAccessError) onAccessLoss(failure.status);
       else setNotice("بررسی وضعیت آپلود کامل نشد؛ دوباره تلاش کنید.");
     }
