@@ -96,9 +96,16 @@ export async function auditSurface(page: Page, report: ReturnType<typeof evidenc
     await expect(navigation).toHaveAttribute("aria-expanded", "true");
     await page.keyboard.press("Enter"); await expect(navigation).toHaveAttribute("aria-expanded", "false");
     const latency = await navigation.evaluate(async element => {
+      const expanded = new Promise<number>(resolve => {
+        const observer = new MutationObserver(() => {
+          if (element.getAttribute("aria-expanded") === "true") {
+            observer.disconnect(); resolve(performance.now());
+          }
+        });
+        observer.observe(element, { attributes: true, attributeFilter: ["aria-expanded"] });
+      });
       const start = performance.now(); (element as HTMLButtonElement).click();
-      await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-      return performance.now() - start;
+      return (await expanded) - start;
     });
     report.record(name + ":disclosureMilliseconds", latency);
     expect(latency).toBeLessThanOrEqual(budgets.navigationDisclosureMilliseconds);

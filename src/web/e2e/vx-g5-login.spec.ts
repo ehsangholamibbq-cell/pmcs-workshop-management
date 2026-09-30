@@ -19,7 +19,7 @@ test("guest Login meets independent RTL, keyboard, reduced-motion and accessibil
   }
 });
 
-test("identity error preserves a working login and missing official image retains the organization name", async ({ page }, testInfo) => {
+test("identity error preserves a working login and missing official image retains the organization name", async ({ page, browser }, testInfo) => {
   const report = evidence(testInfo, "login");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 320, height: 900 });
@@ -28,10 +28,15 @@ test("identity error preserves a working login and missing official image retain
   await expect(page.getByRole("button", { name: "ورود امن", exact: true })).toBeEnabled();
   await auditSurface(page, report, "identity-error-320");
   await report.capture(page, "identity-error-320.png");
-  await page.route("**/brand/bbq-official-symbol.png", route => route.abort("failed"));
-  await page.goto("/login");
-  await expect(page.locator(".login-brand-lockup")).toContainText("بتن بسپار قزوین");
-  await expect(page.getByRole("button", { name: "ورود امن", exact: true })).toBeEnabled();
-  await expect(page.getByRole("img", { name: "نشان رسمی بتن بسپار قزوین", exact: true })).toHaveCount(0);
-  await report.capture(page, "official-brand-missing-320.png");
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] },
+    viewport: { width: 320, height: 900 }, reducedMotion: "reduce" });
+  try {
+    await context.route("**/brand/bbq-official-symbol.png", route => route.abort("failed"));
+    const missing = await context.newPage();
+    await missing.goto("/login");
+    await expect(missing.locator(".login-brand-lockup")).toContainText("بتن بسپار قزوین");
+    await expect(missing.getByRole("button", { name: "ورود امن", exact: true })).toBeEnabled();
+    await expect(missing.getByRole("img", { name: "نشان رسمی بتن بسپار قزوین", exact: true })).toHaveCount(0);
+    await report.capture(missing, "official-brand-missing-320.png");
+  } finally { await context.close(); }
 });

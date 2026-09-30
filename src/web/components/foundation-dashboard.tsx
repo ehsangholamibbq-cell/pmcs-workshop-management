@@ -64,6 +64,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [isSyncing, setIsSyncing] = useState(false);
   const [nextRetryAt, setNextRetryAt] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState("صف محلی آماده است");
+  const [captureMessage, setCaptureMessage] = useState("صف محلی آماده است");
   const [refreshToken, setRefreshToken] = useState(0);
   const [commandCenter, setCommandCenter] = useState<CommandCenterModel | null>(null);
   const [commandMessage, setCommandMessage] = useState("در حال دریافت آخرین تصویر رسمی وضعیت…");
@@ -165,7 +166,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const handleQueued = useCallback(async (factId: string) => {
     setLastFactId(factId);
     await refreshPendingCount();
-    setStorageMessage("روی این دستگاه ذخیره شد؛ پس از پذیرش سرور رسمی می‌شود");
+    setCaptureMessage("روی این دستگاه ذخیره شد؛ پس از پذیرش سرور رسمی می‌شود");
   }, [refreshPendingCount]);
 
   const handleAttachmentQueued = useCallback(async () => {
@@ -497,13 +498,14 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               tenantId={tenantId}
               userId={userId}
               projectId={projectId}
-              statusMessage={storageMessage}
-              onStatus={setStorageMessage}
+              statusMessage={captureMessage}
+              onStatus={setCaptureMessage}
               onQueued={handleQueued}
               measurementItems={measurementItems}
               locations={projectLocations}
               locationReadState={locationReadState}
             />
+            <p className="field-help" role="status">وضعیت همگام‌سازی: {storageMessage}</p>
             <EvidenceCapture
               tenantId={tenantId}
               userId={userId}

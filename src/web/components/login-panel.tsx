@@ -98,7 +98,7 @@ export function LoginPanel({ experience, initialError = false }: LoginPanelProps
           <p className="eyebrow">{experience.eyebrow}</p>
           <h1>{experience.headline}</h1>
           <p>{experience.supportingText}</p>
-          <div className="login-trust-strip" aria-label="ویژگی‌های امنیتی ورود">
+          <div className="login-trust-strip" role="group" aria-label="ویژگی‌های امنیتی ورود">
             <span>نشست امن سازمانی</span>
             <span>دسترسی محدوده‌محور</span>
             <span>ردیابی کامل تصمیم‌ها</span>

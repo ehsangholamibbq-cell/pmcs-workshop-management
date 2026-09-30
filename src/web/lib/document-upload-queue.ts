@@ -403,18 +403,25 @@ function readByScope(
         return;
       }
 
-      items.push(cursor.value as QueuedDocumentUpload);
+      const stored = cursor.value as QueuedDocumentUpload;
+      // Older queues may contain a Blob. New entries use ArrayBuffer because
+      // WebKit can abort IndexedDB transactions when serializing Blob values.
+      items.push({ ...stored, blob: stored.blob instanceof Blob
+        ? stored.blob : new Blob([stored.blob as unknown as ArrayBuffer], { type: stored.contentType }) });
       cursor.continue();
     };
     request.onerror = () => reject(request.error ?? new Error("خواندن صف فایل‌ها ممکن نشد."));
   });
 }
 
-function writeItems(database: IDBDatabase, items: readonly QueuedDocumentUpload[]): Promise<void> {
+async function writeItems(database: IDBDatabase, items: readonly QueuedDocumentUpload[]): Promise<void> {
+  // Read bytes before opening the transaction; awaiting inside it closes the
+  // transaction on Safari/WebKit. ArrayBuffer is structured-clone safe there.
+  const stored = await Promise.all(items.map(async item => ({ ...item, blob: await item.blob.arrayBuffer() })));
   return new Promise((resolve, reject) => {
     const transaction = database.transaction(documentUploadStoreName, "readwrite");
     const store = transaction.objectStore(documentUploadStoreName);
-    items.forEach((item) => store.put(item));
+    stored.forEach((item) => store.put(item));
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error ?? new Error("ثبت صف فایل‌ها ناموفق بود."));
     transaction.onabort = () => reject(transaction.error ?? new Error("ثبت صف فایل‌ها متوقف شد."));
