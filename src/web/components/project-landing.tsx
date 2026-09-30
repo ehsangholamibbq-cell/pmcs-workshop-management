@@ -233,7 +233,7 @@ function ProjectLandingContent() {
                 <div><dt>ایمنی</dt><dd>{capabilityLabel(project.hseMode)}</dd></div>
               </dl>
               {project.status === "Draft" && readiness[project.id] && (
-                <div className="project-readiness" aria-label="چک‌لیست آمادگی فعال‌سازی">
+                <div className="project-readiness" role="group" aria-label="چک‌لیست آمادگی فعال‌سازی">
                   <div className="project-readiness-summary">
                     <strong>آمادگی {readiness[project.id].completionPercent.toLocaleString("fa-IR")}٪</strong>
                     <span>{readiness[project.id].isReady ? "آمادهٔ فعال‌سازی" : "نیازمند تکمیل"}</span>

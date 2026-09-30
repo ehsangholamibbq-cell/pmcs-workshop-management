@@ -331,7 +331,7 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
     data-testid="supply-reality" data-read-state={effectiveReadState}>
     <div className="card-heading"><div><p className="eyebrow">واقعیت تدارکات و موجودی</p><h2>از دریافت فیزیکی تا مصرف مستند</h2></div></div>
     <p className="microcopy" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت واقعیت تدارکات و موجودی…" : message}</p>
-    {effectiveReadState === "cached" && cachedState && <div className="finance-metrics supply-metrics" aria-label="نمای ذخیره‌شدهٔ تأییدنشده">
+    {effectiveReadState === "cached" && cachedState && <div className="finance-metrics supply-metrics" role="group" aria-label="نمای ذخیره‌شدهٔ تأییدنشده">
       <Metric label="در انتظار بازرسی (ذخیره‌شده)" value={cachedState.pendingInspectionCount} />
       <Metric label="امانت تسویه‌نشده (ذخیره‌شده)" value={cachedState.unreconciledMaterialIssueCount} />
     </div>}
