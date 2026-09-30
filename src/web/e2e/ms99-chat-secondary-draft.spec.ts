@@ -55,6 +55,9 @@ test("secondary snapshots never survive a failed refresh and file selection surv
   await expect(page.getByText("نامعتبر.exe", { exact: true })).toBeVisible();
   expect(uploadSessions).toBe(0);
   await selection.setInputFiles({ name: "انتخاب-حفظ‌شده.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\n%%EOF") });
+  const selectedName = page.locator(".collaboration-upload .pmcs-file-input-name");
+  await expect.poll(async () => (await selectedName.boundingBox())?.width ?? 0).toBeGreaterThan(100);
+  await expect.poll(async () => (await selectedName.boundingBox())?.height ?? 999).toBeLessThan(80);
   await capture("chat-320-secondary-current.png", page.getByText("انتخاب-حفظ‌شده.pdf", { exact: true }));
   const previousReads = reads;
   waiting = true;
