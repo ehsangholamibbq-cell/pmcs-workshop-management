@@ -64,15 +64,14 @@ test("today report workflow hides an old report and submit action after failed o
   });
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`/projects/${projectId}`);
-  await page.evaluate(({ projectId, tenantId, userId, reportId }) => {
+  await page.addInitScript(({ projectId, tenantId, userId, reportId }) => {
     const parts = new Intl.DateTimeFormat("en-CA-u-ca-gregory-nu-latn", { timeZone: "Asia/Tehran",
       year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
     const read = (type: Intl.DateTimeFormatPartTypes) => parts.find(part => part.type === type)?.value;
     const date = `${read("year")}-${read("month")}-${read("day")}`;
     localStorage.setItem(`pmcs-daily-report:${projectId}:${date}:${tenantId}:${userId}`, reportId);
   }, { projectId, tenantId, userId, reportId });
-  await page.reload();
+  await page.goto(`/projects/${projectId}`);
   const panel = page.getByTestId("today-report-workflow");
   await expect(panel).toHaveAttribute("data-read-state", "current");
   await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toContainText("ارسال برای تأیید");
