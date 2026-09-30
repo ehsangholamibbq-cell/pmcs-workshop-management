@@ -1,8 +1,8 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.143.0`
-- آخرین کنترل: ۲۰۲۶-۰۹-۳۰
+- نسخه: `1.144.0`
+- آخرین کنترل: ۲۰۲۶-۱۰-۰۱
 - وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1/QA1 باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
@@ -94,13 +94,18 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.184.0` |
-| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.185.0` |
+| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.1.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
 وضعیت فعلی: G0، UX1، EXT1، DOC1، IAM1، PRJ1، G4 و G5/UX2 بسته؛ F01–F10 و COL1 متصل؛ INT1/QA1 و قفل V1.1 باز می‌مانند.
+
+تصمیم مالک محصول برای INT1: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و
+Anthropic/Claude با Profile نسخه‌دار، Permission مستقل مدیر ارشد و تفویض صریح محدود،
+سقف مصرف/داده، fallback هم‌سطح و audit lineage طبق `docs/adr/0032-int1-controlled-multi-provider-selection.md`
+مصوب است. ثبت تصمیم، اجرای Runtime یا بسته‌شدن Gate INT1 محسوب نمی‌شود.
 
 ## آخرین تصمیم‌های مؤثر و Supersededها
 

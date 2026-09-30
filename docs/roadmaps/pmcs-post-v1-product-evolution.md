@@ -1,9 +1,10 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.184.0`
+- نسخه سند: `1.185.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
+- آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - وضعیت V1: `Qualified | Final | Baseline Locked`
@@ -56,6 +57,7 @@ Commit شروع Repository برای شاخهٔ V1.1 باید هنگام ایجا
 | `D-PV1-15` | ایجاد پروژه از روی پروژهٔ موجود با Preview و انتخاب اقلام Setup/Member مجاز است؛ دادهٔ عملیاتی، مالی، پیام، فایل، Audit و سابقه هرگز ضمنی کپی نمی‌شود. | مصوب |
 | `D-PV1-16` | هر ده خانوادهٔ استاندارد کاتالوگ RPT1 در Scope باقی می‌مانند؛ خانواده‌های ۲ تا ۱۰ باید با Micro-Slice و Qualification مستقل تکمیل شوند و RPT1 پیش از آن بسته نمی‌شود. | مصوب؛ ADR 0031 |
 | `D-PV1-17` | فونت فارسی باید در آینده برای تمام صفحات فعال، Login، Offline و PDF/Print از قرارداد مرکزی نسخه‌دار قابل تعویض باشد؛ انتخاب قلم نهایی باز است و Gate تعویض سراسری/Visual QA در UX2 الزامی است. | مصوب؛ `PMCS-DS-001` |
+| `D-PV1-18` | انتخاب کنترل‌شدهٔ GPT/OpenAI، Gemini/Google، Claude/Anthropic و Providerهای بعدی در INT1 با Profile نسخه‌دار و Permission مدیریت سطح بالا؛ جابه‌جایی مدل نباید محدودهٔ ابزار، داده یا مجوز را افزایش دهد. | مصوب؛ ADR 0032 |
 
 ## ۴. نقشهٔ نسخه‌های محصول
 
@@ -1534,6 +1536,9 @@ Scope:
 
 - تثبیت Bounded Context مستقل `PMCS.Intelligence`؛
 - Provider-independent Model Gateway و Provider abstraction؛
+- آداپتورهای قابل انتخاب OpenAI/GPT، Google/Gemini و Anthropic/Claude با کاتالوگ قابلیت و Profile اجرای نسخه‌دار؛
+- سطح مدیریت محدود با Permission مستقل مدیر ارشد برای ثبت/انتخاب/انتشار/rollback، و تفویض صریح انتخاب از allowlist به مدیر سازمان؛
+- قیود per-profile برای نوع داده، Tenant/Project، بودجه/زمان و fallback فقط به مدل از پیش تأییدشده و هم‌سطح؛
 - Session/Request/Run lifecycle و Structured Output contract؛
 - Permission-aware Tool Registry و Risk Classification؛
 - Tool invocation pipeline با Permission evaluation در هر فراخوانی؛
@@ -1544,7 +1549,7 @@ Scope:
 
 **Non-Scope V1.1:** Stage 2 Read-only Agent، RAG، Executive Intelligence UI تولیدی، Draft Action، Controlled Write و `@PMCS` عمومی در Chat. این قابلیت‌ها فقط با Gateهای Stageهای بعدی فعال می‌شوند.
 
-**Gate خروج:** Provider swap contract، Tool/Permission isolation، Audit lineage، safe failure و منع DB/SQL مستقیم به‌طور مستقل اثبات شوند.
+**Gate خروج:** Provider swap و مسیر اتصال هر سه آداپتور، منع انتخاب بدون Permission، عدم گسترش Tool/Permission/Data در swap/fallback، Profile/Model/Policy lineage، rollback، safe failure و منع DB/SQL مستقیم به‌طور مستقل اثبات شوند. قرارداد الزام‌آور در `docs/adr/0032-int1-controlled-multi-provider-selection.md` است.
 
 ### `V1.1-QA1` — Qualification and Baseline Lock
 
@@ -1905,3 +1910,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.182.0` | MS99 docs Run 624 (`36751285219`) هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component فعال G4 را بست. MS100 آزمون مستقل G5 را در Chromium/Firefox/WebKit، چهار عرض، حالت‌های پرتراکم، RTL/Focus/axe، چاپ A4/A3 و بودجهٔ Build/مسیر انجام داد. Source Run 638 (`36768157030`) هشت Job سبز و Artifact `11123482326` با ۲۹۶ PNG/۱۹۵ axe/۲۰ PDF/۲۵ Index معتبر و مرورشده؛ CI مستقل مستندات شرط `VX-G5 Visual Qualified` و پایان UX2 است. سپس INT1/QA1 و قفل V1.1 جدا هستند |
 | `1.183.0` | مرور دوبارهٔ Artifact Run 638 نشان داد قاب `current` چاپ پیش از تثبیت نام/تصویر پروژه گرفته شده بود، هرچند PDFهای همان حالت معتبر بودند. Source `fd13282` عکس را پس از اعتبارسنجی PDF و کنترل دوبارهٔ DOM ثبت کرد؛ Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شدهٔ مرورشده دارد. CI مستقل مستندات MS100 شرط `VX-G5 Visual Qualified` و پایان UX2 است؛ Exact Next فقط DoR مرحلهٔ INT1، و QA1/قفل V1.1 جدا هستند. |
 | `1.184.0` | MS100 Source Run 640 (`36772469486`) هشت Job سبز، Artifact `11124980874` معتبر و مرورشده؛ docs Run 641 (`36774790248`) Attempt دوم و Run 642 (`36775276181`) هشت Job سبز، Checkpoint `PMCS-V1.1-UX2-MS100-C1` Safe. `VX-G5 Visual Qualified` و UX2 بسته؛ Exact Next، DoR مستقل INT1، سپس QA1 و قفل V1.1 هستند. |
+| `1.185.0` | تصمیم مالک محصول `V1.1-INT1-MODEL-SELECTION` در ADR 0032: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و Anthropic/Claude، Profile نسخه‌دار، مدیریت سطح بالا، تفویض محدود، قیود داده/مصرف، fallback امن و Gate آزمون سه آداپتور. این نسخه فقط مصوبهٔ Roadmap است؛ INT1 Runtime آغاز یا بسته نشده است. |

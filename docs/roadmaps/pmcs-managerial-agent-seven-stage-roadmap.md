@@ -1,11 +1,12 @@
 # Roadmap هفت‌مرحله‌ای Agent مدیریتی PMCS
 
 - شناسه سند: `PMCS-RM-AGENT-001`
-- نسخه سند: `1.0.0`
+- نسخه سند: `1.1.0`
 - وضعیت: مصوب و لازم‌الاجرا؛ پیاده‌سازی Stageهای جدید هنوز آغاز نشده است
 - تاریخ بازیابی و ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Parent roadmap: `pmcs-post-v1-product-evolution.md`
+- تصمیم تکمیلی INT1: `docs/adr/0032-int1-controlled-multi-provider-selection.md` (۲۰۲۶-۱۰-۰۱)
 
 ## ۱. قاعده حاکم
 
@@ -34,6 +35,9 @@ V1 دارای یک پایهٔ Advisory/Permission-aware محدود است، ام
 - Bounded Context مستقل `PMCS.Intelligence`؛
 - Model Gateway و Provider abstraction؛
 - Model/Prompt/Policy registry و versioning؛
+- آداپتورهای قابل انتخاب OpenAI/GPT، Google/Gemini و Anthropic/Claude با contract مشترک و کاتالوگ قابلیت نسخه‌دار؛ توسعه‌پذیر برای Provider بعدی/محلی؛
+- Profile اجرای نسخه‌دار برای مورد استفاده، allowlist مدل، نیازمندی قابلیت، محدودهٔ داده/Tenant، سقف مصرف و fallback؛
+- انتخاب و انتشار Profile فقط با Permission مستقل مدیر ارشد سامانه، و تفویض صریح و محدود به مدیر سازمان؛ سطح مدیریت مجوزدار و امکان rollback؛
 - Session، Conversation Context، Request و Run lifecycle؛
 - Permission-aware Tool Registry؛
 - Tool schema، Risk Class و read/draft/write classification؛
@@ -47,6 +51,8 @@ V1 دارای یک پایهٔ Advisory/Permission-aware محدود است، ام
 ### Gate خروج
 
 - تعویض Provider بدون تغییر Business Logic اثبات شود؛
+- مسیر انتخاب و آزمون اتصال هر سه آداپتور اثبات شود؛ نبود Credential یا Capability وضعیت `Unavailable` صریح بدهد؛
+- تغییر مدل و fallback، Permission ابزار و طبقه‌بندی داده را گسترش ندهند؛ مدیریت/تفویض/rollback آزمون منفی داشته باشند؛
 - Tool بدون Permission اجرا نشود؛
 - cross-tenant/project و privilege escalation تست منفی داشته باشند؛
 - Run/Audit/Model/Policy lineage کامل باشد؛
@@ -243,4 +249,3 @@ V1 دارای یک پایهٔ Advisory/Permission-aware محدود است، ام
 هر Stage باید Checkpoint Snapshot جداگانه داشته باشد و حداقل شامل Parent commit، start/end commit، Tool/Prompt/Policy/Model versions، Permission matrix، evaluation dataset version، test report، known risks و artifact digest باشد.
 
 Stageهای 1 تا 6 Feature/Capability Checkpoint هستند. فقط Stage 7 مجاز است Qualification نهایی Agent و Baseline Lock را صادر کند.
-

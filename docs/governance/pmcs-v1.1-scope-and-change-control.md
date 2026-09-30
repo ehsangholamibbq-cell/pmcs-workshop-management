@@ -1,7 +1,7 @@
 # PMCS V1.1 — Scope، Non-Scope و Change Control
 
 - شناسه: `PMCS-GOV-V1.1-SCOPE-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0`
 - Parent baseline: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
 ## ۱. هدف نسخه
@@ -21,7 +21,7 @@ V1.1 باید PMCS را بدون شکستن حقیقت‌ها و Workflowهای 
 | `V1.1-RPT1` | Reporting Phase 1 | گزارش استاندارد و Certified در PDF/Excel |
 | `V1.1-COL1` | Project Collaboration | گروه رسمی هر پروژه با فایل، Offline، Search و Audit |
 | `V1.1-UX2` | UI Migration | مهاجرت موجی تمام مسیرهای فعال به Design System |
-| `V1.1-INT1` | Agent Stage 1 | Provider gateway، Tool registry، Permission/Audit و safe failure |
+| `V1.1-INT1` | Agent Stage 1 | Gateway و انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini، Anthropic/Claude؛ Profile/Permission مدیریت سطح بالا، Tool registry، Audit و safe failure طبق ADR 0032 |
 | `V1.1-QA1` | Qualification | Migration، Regression، Security، UI و Lock evidence |
 
 ## ۳. Non-Scope قطعی V1.1
@@ -71,4 +71,3 @@ V1.1 باید PMCS را بدون شکستن حقیقت‌ها و Workflowهای 
 - Permission/Tenant/Project boundary منفی اثبات شود؛
 - Design System در تمام صفحه‌های فعال یکپارچه باشد؛
 - V1.1 فقط پس از گزارش ماشینی و انسانی `Qualified` قفل شود.
-
