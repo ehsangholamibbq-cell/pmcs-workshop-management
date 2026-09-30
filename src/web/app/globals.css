@@ -2455,21 +2455,32 @@ output {
   border: 1px dashed rgba(23, 107, 98, 0.35);
   border-radius: 1rem;
   background: rgba(220, 238, 232, 0.38);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  min-width: 0;
   gap: 0.8rem;
 }
 
-.evidence-capture > div {
+.evidence-capture-status {
   display: grid;
   gap: 0.25rem;
 }
 
-.evidence-capture span {
+.evidence-feedback {
+  margin: 0;
   color: var(--muted);
   font-size: 0.7rem;
   line-height: 1.7;
+}
+
+.evidence-capture .pmcs-file-input-row { flex-wrap: wrap; }
+.evidence-capture > button { justify-self: start; }
+.evidence-feedback--success { color: var(--text-primary); }
+.evidence-feedback--error {
+  padding: 0.65rem;
+  border: 1px solid var(--status-danger);
+  border-radius: 0.7rem;
+  color: var(--text-primary);
+  background: var(--status-danger-surface);
 }
 
 .file-button {
@@ -5625,7 +5636,7 @@ output {
 
 .pmcs-file-input { display: grid; gap: 0.4rem; min-width: 0; }
 .pmcs-file-input-row { display: flex; align-items: stretch; gap: 0.5rem; min-width: 0; }
-.login-admin-fields .pmcs-file-input-control {
+.pmcs-file-input-control {
   position: relative;
   display: flex;
   align-items: center;
@@ -5649,7 +5660,7 @@ output {
   font-weight: 700;
 }
 .pmcs-file-input-name { min-width: 0; overflow-wrap: anywhere; }
-.login-admin-fields .pmcs-file-input-control input {
+.pmcs-file-input-control input {
   position: absolute;
   inset: 0;
   width: 100%;

@@ -7,10 +7,11 @@ interface PmcsFileInputProps {
   readonly accept: string;
   readonly file: File | null;
   readonly disabled?: boolean;
+  readonly capture?: "user" | "environment";
   readonly onFileChange: (file: File | null) => void;
 }
 
-export function PmcsFileInput({ label, accept, file, disabled = false, onFileChange }: PmcsFileInputProps) {
+export function PmcsFileInput({ label, accept, file, disabled = false, capture, onFileChange }: PmcsFileInputProps) {
   const inputId = useId();
   const statusId = useId();
   const input = useRef<HTMLInputElement>(null);
@@ -26,7 +27,7 @@ export function PmcsFileInput({ label, accept, file, disabled = false, onFileCha
         <label className="pmcs-file-input-control" htmlFor={inputId}>
           <span className="pmcs-file-input-button" aria-hidden="true">انتخاب فایل</span>
           <span className="pmcs-file-input-name" id={statusId} aria-live="polite">{file?.name ?? "فایلی انتخاب نشده"}</span>
-          <input id={inputId} ref={input} type="file" accept={accept} disabled={disabled}
+          <input id={inputId} ref={input} type="file" accept={accept} capture={capture} disabled={disabled}
             aria-label={label} aria-describedby={statusId}
             onChange={(event) => onFileChange(event.target.files?.[0] ?? null)} />
         </label>
