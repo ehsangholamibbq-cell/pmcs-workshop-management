@@ -37,6 +37,16 @@ internal sealed record ModelSelectionDecision(
 
 internal static class ModelSelectionPolicy
 {
+    internal static bool IsApprovedModel(ModelExecutionProfile profile,
+        IReadOnlyCollection<ModelCatalogEntry> catalog, Guid modelId)
+    {
+        var matches = catalog.Where(item => item.Id == modelId).Take(2).ToArray();
+        return profile.AllowedModelIds.Contains(modelId) && matches.Length == 1 &&
+            matches[0].Enabled && matches[0].ConnectionVerified &&
+            (matches[0].Capabilities & profile.RequiredCapabilities) == profile.RequiredCapabilities &&
+            matches[0].MaximumDataClass >= profile.MaximumDataClass;
+    }
+
     internal static void ValidateProfile(ModelExecutionProfile profile)
     {
         if (profile.Id == Guid.Empty || profile.Version < 1 || profile.TenantId == Guid.Empty ||

@@ -87,6 +87,25 @@ public sealed class ModelSelectionPolicyTests
         Assert.Equal(first.Id, first.ToPolicy().Id);
     }
 
+    [Fact]
+    public void CatalogRequiresMatchingVerificationAndCanBeDisabled()
+    {
+        var now = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+        var entry = IntelligenceModelCatalog.Create(Guid.NewGuid(), 1, "OpenAI", "configured-model",
+            ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, Guid.NewGuid(), now);
+
+        Assert.False(entry.ToPolicy().ConnectionVerified);
+        Assert.False(entry.ToPolicy().Enabled);
+        Assert.Throws<InvalidOperationException>(() => entry.Verify("GoogleGemini", "configured-model", now));
+        Assert.Throws<InvalidOperationException>(() => entry.Verify("OpenAI", "different-model", now));
+
+        entry.Verify("OpenAI", "configured-model", now.AddMinutes(1));
+        Assert.True(entry.ToPolicy().ConnectionVerified);
+        Assert.True(entry.ToPolicy().Enabled);
+        entry.Disable();
+        Assert.False(entry.ToPolicy().Enabled);
+    }
+
     private ModelExecutionProfile Profile() => new(
         Guid.NewGuid(), 1, "reference-read", tenantId, new HashSet<Guid> { projectId },
         primaryId, [primaryId, fallbackId], [fallbackId], true,
