@@ -170,6 +170,8 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
+    env:
+      PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -182,10 +184,16 @@ jobs:
           name: qa-regression-web
           path: artifacts/qa/regression/web.json
           if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g5-build-budget
+          path: artifacts/qa/vx-g5-build-budget.json
+          if-no-files-found: error
 
   ui-e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       CI: "true"
       PMCS_DEMO_USER_PASSWORD: Pmcs-E2E-only-2026!
@@ -201,11 +209,11 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: src/web/package-lock.json
-      - name: Install Web and Chromium dependencies
+      - name: Install Web and browser dependencies
         working-directory: src/web
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox webkit
       - name: Start isolated full application stack
         run: docker compose up --detach --build
       - name: Wait for OIDC, API and Web readiness
@@ -579,6 +587,13 @@ jobs:
         with:
           name: pmcs-ms99-chat-command-draft
           path: src/web/artifacts/ms99-chat-command-draft/
+          if-no-files-found: error
+      - name: Upload independent G5 browser qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g5-browser-qualification
+          path: src/web/artifacts/vx-g5/
           if-no-files-found: error
 
   identity-container:

@@ -1,0 +1,13 @@
+{
+  "contractVersion": 1,
+  "scope": "Production assets and isolated browser measurements; not field Core Web Vitals or a production load SLA.",
+  "build": { "allJavaScriptGzipBytes": 512000, "allCssGzipBytes": 32768, "fontBytes": 262144 },
+  "browser": {
+    "routeReadyMilliseconds": 10000,
+    "navigationDisclosureMilliseconds": 250,
+    "globalHorizontalOverflowPixels": 1,
+    "reducedMotionDurationMilliseconds": 1,
+    "persistentAnimationCount": 0
+  },
+  "baseline": { "allJavaScriptGzipBytes": 441119, "allCssGzipBytes": 18613, "reference": "MS99 tree 39ed6b2a5a1e6f306b1f07ef6ce88a9e2c05087e local production build" }
+}
