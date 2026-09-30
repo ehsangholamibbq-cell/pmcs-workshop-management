@@ -79,7 +79,9 @@ test("today report workflow hides an old report and submit action after failed o
   await capture("today-390-current.png", 390, 844, "current");
 
   responseStatus = 503;
-  await page.reload();
+  await page.context().setOffline(true);
+  await expect(panel).toHaveAttribute("data-read-state", "offline");
+  await page.context().setOffline(false);
   await expect(panel).toHaveAttribute("data-read-state", "loading");
   await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toHaveCount(0);
   await page.setViewportSize({ width: 320, height: 720 });
@@ -92,7 +94,7 @@ test("today report workflow hides an old report and submit action after failed o
   await capture("today-320-read-error.png", 320, 720, "unavailable");
 
   responseStatus = 404;
-  await page.reload();
+  await panel.getByRole("button", { name: "تلاش دوباره برای دریافت وضعیت گزارش امروز" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "unavailable");
   await expect(panel.getByRole("alert")).toContainText("هنوز با پاسخ رسمی سرور تأیید نشد");
   await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toHaveCount(0);
@@ -100,14 +102,14 @@ test("today report workflow hides an old report and submit action after failed o
   await capture("today-320-unconfirmed.png", 320, 720, "unavailable");
 
   responseStatus = 403;
-  await page.reload();
+  await panel.getByRole("button", { name: "تلاش دوباره برای دریافت وضعیت گزارش امروز" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "forbidden");
   await expect(panel.getByRole("alert")).toContainText("دادهٔ قبلی نمایش داده نمی‌شود");
   await expect(panel.getByRole("alert")).toHaveCSS("background-color", "rgb(255, 240, 237)");
   await capture("today-320-access-revoked.png", 320, 720, "forbidden");
 
   responseStatus = 200;
-  await page.reload();
+  await panel.getByRole("button", { name: "تلاش دوباره برای دریافت وضعیت گزارش امروز" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "current");
   await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toContainText("ارسال برای تأیید");
   await capture("today-320-restored.png", 320, 720, "current");
