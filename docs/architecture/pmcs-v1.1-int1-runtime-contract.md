@@ -24,3 +24,5 @@
 - تست اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable`؛ credential در مخزن/CI عمومی نگهداری نمی‌شود.
 - بررسی مستقل timeout/cancellation، بازیابی Runهای `Running` رهاشده، انقضای Session و اعتبارسنجی عملیاتی migration/restore.
 - Audit و telemetry metadata-only و بررسی مستقل هزینه، fallback و عدم نشت payload در log.
+
+در lineage هر Run، مدل و نسخهٔ اولیه همراه Provider و نسخهٔ فعال‌سازی اولیه ثبت می‌شود؛ اگر fallback رخ دهد، مدل/Provider و نسخهٔ مقصد جداگانه در فیلدهای انتخاب نهایی و دلیل خطا ثبت می‌شوند. نسخهٔ Provider پیش از هر ارسال به Provider دوباره کنترل می‌شود تا disable/re-activate میان دو گام، Run را fail-closed کند.

@@ -20,6 +20,8 @@ internal sealed record ReferenceRunMetadata(Guid Id, Guid SessionId,
     DateTimeOffset SessionExpiresAt, Guid ProjectId,
     IntelligenceRunStatus Status, Guid ProfileVersionId, int ProfileVersion,
     Guid ModelCatalogId, int ModelVersion, string Provider, string Model,
+    Guid InitialModelCatalogId, int InitialModelVersion, string InitialProvider,
+    int InitialProviderVersion, int ProviderVersion,
     string PromptVersion, string PolicyVersion, string? ToolId, string? ToolDecision,
     bool Fallback, string? FallbackReason, int InputTokens, int OutputTokens,
     long CostMicrounits, long? LatencyMilliseconds, string? ErrorCode,
@@ -30,6 +32,8 @@ internal sealed record ReferenceRunMetadata(Guid Id, Guid SessionId,
         run.Id, run.SessionId, run.SessionExpiresAt, run.ProjectId,
         run.Status, run.ProfileVersionId, run.ProfileVersion,
         run.ModelCatalogId, run.ModelVersion, run.Provider, run.Model,
+        run.InitialModelCatalogId, run.InitialModelVersion, run.InitialProvider,
+        run.InitialProviderVersion, run.ProviderVersion,
         run.PromptVersion, run.PolicyVersion, run.ToolId, run.ToolDecision,
         run.Fallback, run.FallbackReason, run.InputTokens, run.OutputTokens,
         run.CostMicrounits, run.LatencyMilliseconds, run.ErrorCode,
@@ -114,8 +118,9 @@ internal static class IntelligenceReferenceRunEndpoints
             IntelligenceDataClass.Confidential, estimatedUnits, selection.ModelId);
         if (!decision.Allowed || decision.Model is null)
             return Results.Conflict(new { code = decision.Code });
-        if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
-                item.Provider == decision.Model.Provider && item.Enabled, cancellationToken))
+        var registration = await db.ProviderRegistrations.AsNoTracking().SingleOrDefaultAsync(item =>
+            item.Provider == decision.Model.Provider && item.Enabled, cancellationToken);
+        if (registration is null)
             return Results.Conflict(new { code = "ai.provider.disabled" });
         if (profile.MaximumOutputTokens < 64)
             return Results.Conflict(new { code = "ai.profile.limit_exceeded" });
@@ -126,7 +131,7 @@ internal static class IntelligenceReferenceRunEndpoints
                 statusCode: StatusCodes.Status503ServiceUnavailable);
 
         var run = IntelligenceReferenceRun.Request(request.RequestId, actor.TenantId,
-            projectId, actor.UserId, profile, decision.Model,
+            projectId, actor.UserId, profile, decision.Model, registration.Version,
             RequestHash.Create(JsonSerializer.Serialize(new { projectId, question })), clock.UtcNow);
         db.ReferenceRuns.Add(run);
         await db.SaveChangesAsync(cancellationToken);
@@ -147,7 +152,8 @@ internal static class IntelligenceReferenceRunEndpoints
                 try
                 {
                     if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
-                            item.Provider == run.Provider && item.Enabled, timeout.Token) ||
+                            item.Provider == run.Provider && item.Enabled &&
+                            item.Version == run.ProviderVersion, timeout.Token) ||
                         !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
                             item.VerifiedAt != null, timeout.Token))
@@ -165,7 +171,8 @@ internal static class IntelligenceReferenceRunEndpoints
                         throw new ReferenceGatewayException("ai.tool.fallback_changed_tool");
                     await db.SaveChangesAsync(timeout.Token);
                     if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
-                            item.Provider == run.Provider && item.Enabled, timeout.Token) ||
+                            item.Provider == run.Provider && item.Enabled &&
+                            item.Version == run.ProviderVersion, timeout.Token) ||
                         !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
                             item.VerifiedAt != null, timeout.Token))
@@ -193,12 +200,12 @@ internal static class IntelligenceReferenceRunEndpoints
                         "ai.provider.unavailable" or "ai.provider.invalid_response"))
                 {
                     var enabledProviders = (await db.ProviderRegistrations.AsNoTracking()
-                        .Where(item => item.Enabled).Select(item => item.Provider)
-                        .ToArrayAsync(timeout.Token)).ToHashSet(StringComparer.Ordinal);
+                        .Where(item => item.Enabled).ToArrayAsync(timeout.Token))
+                        .ToDictionary(item => item.Provider, StringComparer.Ordinal);
                     var alternate = profile.FallbackModelIds
                         .Select(id => catalog.FirstOrDefault(item => item.Id == id))
                         .Where(item => item is not null &&
-                            enabledProviders.Contains(item.Provider) &&
+                            enabledProviders.ContainsKey(item.Provider) &&
                             item.InputMicrounitsPerToken > 0 &&
                             item.OutputMicrounitsPerToken > 0)
                         .Select(item => ModelSelectionPolicy.Select(profile, catalog,
@@ -211,7 +218,8 @@ internal static class IntelligenceReferenceRunEndpoints
                         item.Provider == alternate.Model.Provider &&
                         item.ConfiguredModel == alternate.Model.Model && item.IsConfigured);
                     if (nextAdapter is null) throw;
-                    run.SelectFallback(alternate.Model, error.Code);
+                    run.SelectFallback(alternate.Model,
+                        enabledProviders[alternate.Model.Provider].Version, error.Code);
                     await db.SaveChangesAsync(timeout.Token);
                     adapter = nextAdapter;
                 }
@@ -249,6 +257,9 @@ internal static class IntelligenceReferenceRunEndpoints
                 {
                     ["profileVersionId"] = run.ProfileVersionId,
                     ["modelCatalogId"] = run.ModelCatalogId,
+                    ["initialModelCatalogId"] = run.InitialModelCatalogId,
+                    ["initialProviderVersion"] = run.InitialProviderVersion,
+                    ["providerVersion"] = run.ProviderVersion,
                     ["status"] = run.Status.ToString(),
                     ["toolId"] = run.ToolId, ["toolDecision"] = run.ToolDecision,
                     ["fallbackReason"] = run.FallbackReason,

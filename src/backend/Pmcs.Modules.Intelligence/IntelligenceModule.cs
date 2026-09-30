@@ -73,6 +73,7 @@ public sealed class IntelligenceModule : IModule
         services.AddSingleton<IDatabaseMigration, IntelligenceModelPriceMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceReferenceSessionMigration>();
         services.AddSingleton<IDatabaseMigration, IntelligenceProviderRegistrationMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceReferenceLineageMigration>();
         services.AddHostedService<AdvisoryGenerationWorker>();
         services.AddHostedService<ReferenceRunRecoveryWorker>();
     }

@@ -18,7 +18,7 @@ public sealed class IntelligenceReferenceRunTests
             ModelCapability.StructuredOutput, IntelligenceDataClass.Internal, true, true, 2, 4);
         var now = DateTimeOffset.UtcNow;
         var run = IntelligenceReferenceRun.Request(Guid.NewGuid(), tenant, project,
-            Guid.NewGuid(), profile, model, new string('a', 64), now);
+            Guid.NewGuid(), profile, model, 2, new string('a', 64), now);
 
         Assert.Equal(IntelligenceRunStatus.Requested, run.Status);
         Assert.NotEqual(Guid.Empty, run.SessionId);
@@ -26,6 +26,8 @@ public sealed class IntelligenceReferenceRunTests
         Assert.Equal(profile.Id, run.ProfileVersionId);
         Assert.Equal(3, run.ProfileVersion);
         Assert.Equal(2, run.ModelVersion);
+        Assert.Equal(2, run.ProviderVersion);
+        Assert.Equal(model.Id, run.InitialModelCatalogId);
         Assert.Equal("prompt-v1", run.PromptVersion);
         Assert.Throws<InvalidOperationException>(() => run.Start(now));
         run.Validate(now);
@@ -54,17 +56,21 @@ public sealed class IntelligenceReferenceRunTests
         var alternate = model with { Id = second, Provider = "GoogleGemini", Model = "b" };
         var now = DateTimeOffset.UtcNow;
         var run = IntelligenceReferenceRun.Request(Guid.NewGuid(), tenant, Guid.NewGuid(),
-            Guid.NewGuid(), profile, model, new string('b', 64), now);
+            Guid.NewGuid(), profile, model, 2, new string('b', 64), now);
         Assert.Throws<InvalidOperationException>(() =>
-            run.SelectFallback(alternate, "ai.provider.timeout"));
+            run.SelectFallback(alternate, 3, "ai.provider.timeout"));
         run.Validate(now);
         run.Start(now);
         Assert.Throws<InvalidOperationException>(() =>
-            run.SelectFallback(alternate, "ai.provider.rejected"));
-        run.SelectFallback(alternate, "ai.provider.timeout");
+            run.SelectFallback(alternate, 3, "ai.provider.rejected"));
+        run.SelectFallback(alternate, 3, "ai.provider.timeout");
         Assert.Equal("GoogleGemini", run.Provider);
+        Assert.Equal(3, run.ProviderVersion);
+        Assert.Equal(first, run.InitialModelCatalogId);
+        Assert.Equal("OpenAI", run.InitialProvider);
+        Assert.Equal(2, run.InitialProviderVersion);
         Assert.Equal("ai.provider.timeout", run.FallbackReason);
         Assert.Throws<InvalidOperationException>(() =>
-            run.SelectFallback(model, "ai.provider.timeout"));
+            run.SelectFallback(model, 2, "ai.provider.timeout"));
     }
 }

@@ -15,7 +15,12 @@ internal sealed class IntelligenceReferenceRun
     public int ProfileVersion { get; private set; }
     public Guid ModelCatalogId { get; private set; }
     public int ModelVersion { get; private set; }
+    public Guid InitialModelCatalogId { get; private set; }
+    public int InitialModelVersion { get; private set; }
+    public string InitialProvider { get; private set; } = string.Empty;
+    public int InitialProviderVersion { get; private set; }
     public string Provider { get; private set; } = string.Empty;
+    public int ProviderVersion { get; private set; }
     public string Model { get; private set; } = string.Empty;
     public string PromptVersion { get; private set; } = string.Empty;
     public string PolicyVersion { get; private set; } = string.Empty;
@@ -40,11 +45,11 @@ internal sealed class IntelligenceReferenceRun
     private IntelligenceReferenceRun() { }
 
     internal static IntelligenceReferenceRun Request(Guid id, Guid tenantId, Guid projectId,
-        Guid actorId, ModelExecutionProfile profile, ModelCatalogEntry model,
+        Guid actorId, ModelExecutionProfile profile, ModelCatalogEntry model, int providerVersion,
         string requestHash, DateTimeOffset now)
     {
         if (id == Guid.Empty || tenantId == Guid.Empty || projectId == Guid.Empty ||
-            actorId == Guid.Empty || profile.TenantId != tenantId ||
+            actorId == Guid.Empty || profile.TenantId != tenantId || providerVersion < 1 ||
             requestHash.Length != 64 || !requestHash.All(Uri.IsHexDigit) ||
             !profile.AllowedModelIds.Contains(model.Id) ||
             profile.ProjectIds.Count > 0 && !profile.ProjectIds.Contains(projectId))
@@ -55,7 +60,9 @@ internal sealed class IntelligenceReferenceRun
             TenantId = tenantId, ProjectId = projectId, RequestedBy = actorId,
             ProfileVersionId = profile.Id, ProfileVersion = profile.Version,
             ModelCatalogId = model.Id, ModelVersion = model.Version,
-            Provider = model.Provider, Model = model.Model,
+            InitialModelCatalogId = model.Id, InitialModelVersion = model.Version,
+            InitialProvider = model.Provider, InitialProviderVersion = providerVersion,
+            Provider = model.Provider, ProviderVersion = providerVersion, Model = model.Model,
             PromptVersion = profile.PromptVersion, PolicyVersion = profile.PolicyVersion,
             RequestHash = requestHash, Status = IntelligenceRunStatus.Requested,
             RequestedAt = now, Revision = 1
@@ -85,15 +92,16 @@ internal sealed class IntelligenceReferenceRun
         Revision++;
     }
 
-    internal void SelectFallback(ModelCatalogEntry model, string reason)
+    internal void SelectFallback(ModelCatalogEntry model, int providerVersion, string reason)
     {
-        if (Status != IntelligenceRunStatus.Running || Fallback ||
+        if (Status != IntelligenceRunStatus.Running || Fallback || providerVersion < 1 ||
             reason is not ("ai.provider.timeout" or "ai.provider.unavailable" or
                 "ai.provider.invalid_response"))
             throw new InvalidOperationException("Invalid fallback transition.");
         ModelCatalogId = model.Id;
         ModelVersion = model.Version;
         Provider = model.Provider;
+        ProviderVersion = providerVersion;
         Model = model.Model;
         Fallback = true;
         FallbackReason = reason;

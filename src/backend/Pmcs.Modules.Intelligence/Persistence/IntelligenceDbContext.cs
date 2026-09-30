@@ -121,7 +121,12 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
             builder.Property(x => x.ProfileVersion).HasColumnName("profile_version");
             builder.Property(x => x.ModelCatalogId).HasColumnName("model_catalog_id");
             builder.Property(x => x.ModelVersion).HasColumnName("model_version");
+            builder.Property(x => x.InitialModelCatalogId).HasColumnName("initial_model_catalog_id");
+            builder.Property(x => x.InitialModelVersion).HasColumnName("initial_model_version");
+            builder.Property(x => x.InitialProvider).HasColumnName("initial_provider").HasMaxLength(40);
+            builder.Property(x => x.InitialProviderVersion).HasColumnName("initial_provider_version");
             builder.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(40);
+            builder.Property(x => x.ProviderVersion).HasColumnName("provider_version");
             builder.Property(x => x.Model).HasColumnName("model").HasMaxLength(160);
             builder.Property(x => x.PromptVersion).HasColumnName("prompt_version").HasMaxLength(100);
             builder.Property(x => x.PolicyVersion).HasColumnName("policy_version").HasMaxLength(100);
