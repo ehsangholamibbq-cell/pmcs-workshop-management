@@ -88,7 +88,17 @@ fi
 expect_equal \
   "canonical migration ledger size" \
   "63" \
-  "select count(*) from foundation.schema_migrations;"
+  "select count(*) from foundation.schema_migrations where not (module = 'intelligence' and version = '20261001-001');"
+
+expect_equal \
+  "INT1 administration grant migration identity" \
+  "1" \
+  "select count(*) from foundation.schema_migrations where module = 'intelligence' and version = '20261001-001';"
+
+expect_equal \
+  "INT1 grants default deny" \
+  "0" \
+  "select count(*) from intelligence.administration_grants;"
 
 expect_equal \
   "collaboration default room migration identity" \

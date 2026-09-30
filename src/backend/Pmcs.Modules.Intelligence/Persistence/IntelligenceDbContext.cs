@@ -7,10 +7,28 @@ internal sealed class IntelligenceDbContext(DbContextOptions<IntelligenceDbConte
 {
     public DbSet<InsightGenerationRequest> GenerationRequests => Set<InsightGenerationRequest>();
     public DbSet<AdvisoryInsight> AdvisoryInsights => Set<AdvisoryInsight>();
+    public DbSet<IntelligenceAdministrationGrant> AdministrationGrants => Set<IntelligenceAdministrationGrant>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("intelligence");
+
+        modelBuilder.Entity<IntelligenceAdministrationGrant>(builder =>
+        {
+            builder.ToTable("administration_grants");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.ActorTenantId).HasColumnName("actor_tenant_id");
+            builder.Property(x => x.ActorId).HasColumnName("actor_id");
+            builder.Property(x => x.ScopeTenantId).HasColumnName("scope_tenant_id");
+            builder.Property(x => x.Permission).HasColumnName("permission").HasMaxLength(100);
+            builder.Property(x => x.IssuedBy).HasColumnName("issued_by");
+            builder.Property(x => x.StartsAt).HasColumnName("starts_at");
+            builder.Property(x => x.ExpiresAt).HasColumnName("expires_at");
+            builder.Property(x => x.RevokedAt).HasColumnName("revoked_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.HasIndex(x => new { x.ActorTenantId, x.ActorId, x.Permission, x.ScopeTenantId });
+        });
 
         modelBuilder.Entity<InsightGenerationRequest>(builder =>
         {

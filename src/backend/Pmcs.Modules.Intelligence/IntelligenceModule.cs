@@ -39,8 +39,10 @@ public sealed class IntelligenceModule : IModule
         services.AddSingleton(settings);
         services.AddSingleton(new HttpClient());
         services.AddSingleton<IAdvisoryModelClient, OpenAiResponsesClient>();
+        services.AddScoped<IntelligenceAdministrationAccess>();
         services.AddScoped<PermissionAwareContextAssembler>();
         services.AddSingleton<IDatabaseMigration, IntelligenceInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceAdministrationGrantMigration>();
         services.AddHostedService<AdvisoryGenerationWorker>();
     }
 
