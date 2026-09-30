@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import { projectId, projectPath } from "./support";
 import { evidence } from "./vx-g5-support";
 
@@ -80,8 +81,28 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
     }).length)).toBe(0);
     await report.capture(page, `${state}-print-media-1440.png`);
     for (const paper of ["A4", "A3"] as const) for (const landscape of [false, true]) {
-      const bytes = await page.pdf({ format: paper, landscape, printBackground: true,
-        margin: { top: "12mm", right: "12mm", bottom: "12mm", left: "12mm" } });
+      let bytes: Buffer | null = null;
+      let attempts = 0;
+      for (; attempts < 3; attempts++) {
+        if (state !== "denied") {
+          await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state",
+            state === "cached" ? "cached" : "current");
+          await expect(sheet).toContainText(projectName);
+          if (state === "no-snapshot") await expect(page.locator(".project-print-absence")).toBeVisible();
+          else await expect(sheet).toContainText(snapshotId);
+        }
+        const candidate = await page.pdf({ format: paper, landscape, printBackground: true,
+          margin: { top: "12mm", right: "12mm", bottom: "12mm", left: "12mm" } });
+        const extracted = execFileSync("pdftotext", ["-layout", "-", "-"],
+          { input: candidate, encoding: "utf8" });
+        const valid = state === "denied" ? extracted.trim() === "" :
+          !extracted.includes("مشخصات پروژه هنوز دریافت نشده است") &&
+          (state === "no-snapshot" ? !extracted.includes(snapshotId) : extracted.includes(snapshotId));
+        if (valid) { bytes = candidate; break; }
+      }
+      expect(bytes, `print content for ${state}/${paper}/${landscape ? "landscape" : "portrait"}`).not.toBeNull();
+      report.record(`${state}-${paper}-${landscape ? "landscape" : "portrait"}:attempts`, attempts + 1);
+      if (!bytes) throw new Error("Print content did not match the selected state.");
       expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
       report.file(`${state}-${paper}-${landscape ? "landscape" : "portrait"}.pdf`, bytes,
         { state, paper, orientation: landscape ? "landscape" : "portrait",

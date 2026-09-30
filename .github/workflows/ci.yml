@@ -214,6 +214,10 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium firefox webkit
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
       - name: Start isolated full application stack
         run: docker compose up --detach --build
       - name: Wait for OIDC, API and Web readiness
