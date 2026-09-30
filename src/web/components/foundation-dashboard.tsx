@@ -70,6 +70,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [commandReadState, setCommandReadState] = useState<"loading" | "current" | "cached" | "error" | "forbidden">("loading");
   const projectAccessDenied = useRef(false);
   const commandReadSequence = useRef(0);
+  const [commandReadVersion, setCommandReadVersion] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
   const [measurementItems, setMeasurementItems] = useState<readonly MeasurementItemModel[]>([]);
   const [projectLocations, setProjectLocations] = useState<readonly ProjectLocationModel[]>([]);
@@ -174,6 +175,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
 
   const loadCommandCenter = useCallback(async () => {
     const requestId = ++commandReadSequence.current;
+    setCommandReadVersion(requestId);
     const cached = readCachedCommandCenter(commandCenterCacheKey);
     if (!isOnline) {
       if (cached) {
@@ -750,11 +752,11 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                         item={item}
                         isOnline={isOnline}
                         readState={commandReadState}
-                        readVersion={commandReadSequence.current}
+                        readVersion={commandReadVersion}
                         isCurrentRead={(version) => version === commandReadSequence.current &&
                           commandReadState === "current" && !projectAccessDenied.current}
                         onAccessRevoked={() => {
-                          ++commandReadSequence.current;
+                          setCommandReadVersion(++commandReadSequence.current);
                           projectAccessDenied.current = true;
                           localStorage.removeItem(commandCenterCacheKey);
                           localStorage.removeItem(locationCacheKey);
