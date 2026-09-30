@@ -35,8 +35,11 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
   const canCommand = props.isOnline && props.readState === "current";
 
   useEffect(() => {
-    setMessage("محل‌ها مرجع مشترک ثبت واقعیت و گزارش‌گیری هستند.");
-    setMessageKind("info");
+    const timeoutId = window.setTimeout(() => {
+      setMessage("محل‌ها مرجع مشترک ثبت واقعیت و گزارش‌گیری هستند.");
+      setMessageKind("info");
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [props.readVersion]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
