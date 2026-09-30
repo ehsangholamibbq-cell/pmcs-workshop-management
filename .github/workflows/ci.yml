@@ -512,6 +512,13 @@ jobs:
           path: src/web/artifacts/ms90-quality-safety-truth/
           if-no-files-found: error
 
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms91-advisory-read-truth
+          path: src/web/artifacts/ms91-advisory-read-truth/
+          if-no-files-found: error
+
   identity-container:
     runs-on: ubuntu-latest
     env:
