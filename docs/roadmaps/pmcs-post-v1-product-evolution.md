@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.185.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1/QA1 باز
+- نسخه سند: `1.186.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1 DoR در جریان، QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -11,7 +11,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-INT1 — DoR بعدی`؛ QA1 و قفل V1.1 جدا هستند
+- مرحله فعال: `V1.1-INT1 — DoR`؛ QA1 و قفل V1.1 جدا هستند
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1532,6 +1532,8 @@ Scope:
 
 **هدف:** اجرای Stage 1 از برنامهٔ هفت‌مرحله‌ای Agent مدیریتی، بدون ادعای Read-only Agent کامل.
 
+DoR مستقل و Gap Analysis پایه در `docs/architecture/pmcs-v1.1-int1-foundation-dor.md` تعریف شده‌اند؛ ثبت DoR اجرای Runtime یا Gate خروج نیست.
+
 Scope:
 
 - تثبیت Bounded Context مستقل `PMCS.Intelligence`؛
@@ -1911,3 +1913,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.183.0` | مرور دوبارهٔ Artifact Run 638 نشان داد قاب `current` چاپ پیش از تثبیت نام/تصویر پروژه گرفته شده بود، هرچند PDFهای همان حالت معتبر بودند. Source `fd13282` عکس را پس از اعتبارسنجی PDF و کنترل دوبارهٔ DOM ثبت کرد؛ Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شدهٔ مرورشده دارد. CI مستقل مستندات MS100 شرط `VX-G5 Visual Qualified` و پایان UX2 است؛ Exact Next فقط DoR مرحلهٔ INT1، و QA1/قفل V1.1 جدا هستند. |
 | `1.184.0` | MS100 Source Run 640 (`36772469486`) هشت Job سبز، Artifact `11124980874` معتبر و مرورشده؛ docs Run 641 (`36774790248`) Attempt دوم و Run 642 (`36775276181`) هشت Job سبز، Checkpoint `PMCS-V1.1-UX2-MS100-C1` Safe. `VX-G5 Visual Qualified` و UX2 بسته؛ Exact Next، DoR مستقل INT1، سپس QA1 و قفل V1.1 هستند. |
 | `1.185.0` | تصمیم مالک محصول `V1.1-INT1-MODEL-SELECTION` در ADR 0032: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و Anthropic/Claude، Profile نسخه‌دار، مدیریت سطح بالا، تفویض محدود، قیود داده/مصرف، fallback امن و Gate آزمون سه آداپتور. این نسخه فقط مصوبهٔ Roadmap است؛ INT1 Runtime آغاز یا بسته نشده است. |
+| `1.186.0` | INT1-MS01: DoR و Gap Analysis پایهٔ Advisory V1، قرارداد مجوز مستقل Global/Tenant، مدل داده و توالی Gateها در `PMCS-V1.1-INT1-DOR-001` ثبت شد. Runtime، انتخاب مدل و Gate خروج INT1 هنوز بازند؛ QA1 جدا می‌ماند. |

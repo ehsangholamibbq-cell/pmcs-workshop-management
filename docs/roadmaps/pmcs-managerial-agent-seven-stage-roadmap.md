@@ -1,12 +1,13 @@
 # Roadmap هفت‌مرحله‌ای Agent مدیریتی PMCS
 
 - شناسه سند: `PMCS-RM-AGENT-001`
-- نسخه سند: `1.1.0`
-- وضعیت: مصوب و لازم‌الاجرا؛ پیاده‌سازی Stageهای جدید هنوز آغاز نشده است
+- نسخه سند: `1.2.0`
+- وضعیت: مصوب و لازم‌الاجرا؛ DoR مرحلهٔ ۱ ثبت شد، Runtime هنوز آغاز نشده است
 - تاریخ بازیابی و ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Parent roadmap: `pmcs-post-v1-product-evolution.md`
 - تصمیم تکمیلی INT1: `docs/adr/0032-int1-controlled-multi-provider-selection.md` (۲۰۲۶-۱۰-۰۱)
+- DoR و Gap Analysis: `docs/architecture/pmcs-v1.1-int1-foundation-dor.md`
 
 ## ۱. قاعده حاکم
 
