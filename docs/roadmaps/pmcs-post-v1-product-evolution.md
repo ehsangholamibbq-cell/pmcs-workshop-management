@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.166.0`
+- نسخه سند: `1.167.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -1880,3 +1880,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.164.0` | UX2-MS81 docs Run 540 هشت Job سبز و Safe؛ MS82 مبنای برنامه را در Refresh، خطا و قطع مجوز از نسخه/فرمان کهنه جدا و پیام موفقیت را به Refresh معتبر مشروط کرد. Source Run 541 هشت Job سبز/Artifact `11070325003` با پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، مالی و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.165.0` | UX2-MS82 docs Run 542 هشت Job سبز و Safe؛ MS83 کنترل مالی پایه را در Refresh، خطا و لغو مجوز از سند/بودجه/فرمان کهنه جدا کرد. Source Run 544 هشت Job سبز/Artifact `11070393951` پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، مالی تکمیلی و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
 | `1.166.0` | UX2-MS83 docs Run 545 هشت Job سبز و Safe؛ MS84 کنترل مالی تکمیلی را در Refresh، خطا و لغو مجوز از تعهد/تنخواه/کارمزد و فرمان کهنه جدا کرد. Source Run 546 هشت Job سبز/Artifact `11070819091` پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، قرارداد/تدارکات و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
+| `1.167.0` | UX2-MS84 docs Run 547 هشت Job سبز و Safe؛ MS85 رجیستر قرارداد و خرید را در Refresh، خطا و لغو مجوز از فهرست/فرمان کهنه جدا کرد. Source Run 548 هشت Job سبز/Artifact `11072765941` پنج قاب و Index معتبر/مرور شده؛ CI مستقل مستندات شرط Checkpoint، واقعیت تدارکات و سایر مصرف‌کنندگان G4، سپس G5 و INT1/QA1 بازند |
