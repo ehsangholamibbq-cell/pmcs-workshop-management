@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import {
   createProjectLocation,
   retireProjectLocation,
@@ -33,6 +33,11 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
   const [messageKind, setMessageKind] = useState<"info" | "success" | "error">("info");
   const activeLocations = props.locations.filter((location) => location.status === "Active");
   const canCommand = props.isOnline && props.readState === "current";
+
+  useEffect(() => {
+    setMessage("محل‌ها مرجع مشترک ثبت واقعیت و گزارش‌گیری هستند.");
+    setMessageKind("info");
+  }, [props.readVersion]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -157,8 +162,9 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
           {busyId === "create" ? "در حال ثبت…" : "افزودن محل"}
         </button>
       </form>
-      <p className="calculation-note location-command-message" data-kind={messageKind}
-        role={messageKind === "error" ? "alert" : "status"}>{message}</p>
+      {props.readState === "current" &&
+        <p className="calculation-note location-command-message" data-kind={messageKind}
+          role={messageKind === "error" ? "alert" : "status"}>{message}</p>}
     </section>
   );
 }

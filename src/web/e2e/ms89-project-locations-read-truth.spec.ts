@@ -107,7 +107,7 @@ test("location cache is labeled local and cannot authorize create or retire", as
   responseStatus = 403;
   await panel.getByRole("button", { name: "تلاش دوباره برای دریافت مکان‌ها" }).click();
   await expect(panel).toHaveAttribute("data-read-state", "forbidden");
-  await expect(panel.getByRole("alert")).not.toContainText("Sensitive location detail");
+  await expect(panel.locator(".location-read-message")).not.toContainText("Sensitive location detail");
   await expect(panel.getByText("SITE · کارگاه")).toHaveCount(0);
   await capture("locations-320-access-revoked.png", 320, 720, "forbidden");
 
