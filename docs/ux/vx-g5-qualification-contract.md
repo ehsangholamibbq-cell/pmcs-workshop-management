@@ -1,6 +1,6 @@
 # VX-G5 — Independent qualification contract
 
-- نسخه: `1.0.0`؛ وضعیت: Qualified در `PMCS-V1.1-UX2-MS100-C1` پس از Source Run 640 (`36772469486`)، Artifact `11124980874` و Full CI مستقل مستندات. معیارهای زیر پیش از اجرا Candidate بودند و تغییر داده نشدند.
+- نسخه: `1.1.0`؛ وضعیت: Qualification نهایی `PMCS-V1.1-UX2-MS100-C1` با Source Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` معتبر/مرور شده؛ Full CI مستقل مستندات شرط نهایی. معیارهای زیر پیش از اجرا Candidate بودند و تغییر داده نشدند.
 - پیش‌نیاز: پایان G4 با Full CI Source، Artifact معتبر و CI مستقل مستندات. این فایل بدون Checkpoint و CI مستقل مستندات به‌تنهایی پایان G5 را اعلام نمی‌کند.
 
 ## ماتریس مستقل
@@ -22,3 +22,5 @@ Login خطای هویت، نبود نشان رسمی، انتشار واقعی �
 ## مرز پذیرش
 
 پذیرش فقط با هشت Job سبز Source، کنترل تمام Index/Hash/ابعاد، بررسی بصری قاب‌ها، رسیدگی به نتایج Accessibility و بازبینی PDFهای مرورگر و Goldenهای رسمی و سپس CI مستقل Checkpoint مستندات انجام می‌شود. PDF مرورگر خروجی رسمی Reporting نیست؛ Goldens رسمی PDF/XLSX و Font در همان CI Backend مستقل‌اند. مجوز PDF همچنان Unconfigured و Feature Flagهای عملیاتی خاموش‌اند. این آزمون Engineهای Linux را پوشش می‌دهد؛ اجرای بومی iOS/Safari یا Edge روی Windows و آزمون کاربر واقعی در محیط شرکت در QA1 بعدی قرار دارد. INT1/QA1 و قفل V1.1 با پایان UX2 بسته نمی‌شوند.
+
+بازبینی Artifact Run 638 با وجود PDFهای درست، قاب `current` چاپ را به‌دلیل ثبت زودهنگام رد کرد. Source `fd13282` قاب را پس از PDFهای اعتبارسنجی‌شده و کنترل دوبارهٔ نام پروژه/شناسه ثبت کرد؛ Artifact Run 640 با ZIP SHA-256 `f55bdc3d94d37fbe10fd0009131546e404236b7ca0f9f31a5ce6c55376f0040d` و پنج قاب چاپ درست در Checkpoint MS100 ثبت است.

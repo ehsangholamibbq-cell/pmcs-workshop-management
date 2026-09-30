@@ -1,8 +1,8 @@
 # PMCS Visual Excellence Program
 
 - شناسه سند: `PMCS-RM-VISUAL-001`
-- نسخه سند: `1.62.0`
-- وضعیت: مسیر بصری «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ مهاجرت مرحله‌ای مصرف‌کنندگان فعال تا MS99 در `VX-G4`، ممیزی مهاجرت کامل و پذیرش در انتظار CI مستقل مستندات؛ Qualification باز
+- نسخه سند: `1.64.0`
+- وضعیت: مسیر «مدیریت ممتاز» مصوب؛ `VX-G3` در Contract/Prototype پذیرفته؛ `VX-G4` با Runهای 623/624 بسته؛ `VX-G5` با Source Run 640 و Artifact معتبر، مشروط به CI مستقل Checkpoint MS100
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -180,8 +180,8 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `VX-G1 Audit Complete` | inventory و screenshot baseline کامل | پذیرفته‌شده با Run 401: ۱۱ Route، ۳۰ State، ۴۳ تصویر و PDF با Gap ledger در `docs/ux/pmcs-v1.1-vx-g1-audit-review.md`؛ MS40 سپس Capture 44 را افزود |
 | `VX-G2 Direction Approved` | یک Art Direction روی سناریوهای نماینده تصویب شده | **مصوب: مدیریت ممتاز** |
 | `VX-G3 System Ready` | Token/component contract و prototype تمام stateهای قراردادی کامل | پذیرفته در محدودهٔ Contract/Prototype با MS63 Run 469؛ UI فعال در G4/G5 مستقل است |
-| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | در جریان؛ Navigation شش Shell در MS64–66، Feedback/Form Loading پروفایل/هویت در MS67–68، پیش‌نمایش مجوز MS69، ظاهر ورود MS70، حقیقت داده/فرمان Wizard در MS71–72، بازخورد گزارش در MS73، حقیقت کارتابل/اعلان‌ها در MS74، خواندن Chat گروه پروژه در MS75 و تجمیع سبد در MS76 و حقیقت دسترسی مرکز فرمان پروژه در MS77 و فهرست پروژه در MS78، دفتر فنی در MS79 و تاریخچه گزارش روزانه در MS80 و دفتر پیشرفت در MS81 و مبنای برنامه در MS82 و کنترل مالی پایه در MS83 و مالی تکمیلی در MS84 و قرارداد/خرید در MS85 و واقعیت تدارکات در MS86 و حاکمیت در MS87 و گردش امروز/تقویم پروژه در MS88 و مکان‌های پروژه در MS89 و کیفیت/ایمنی در MS90 و تحلیل مشورتی در MS91 و فرمان توجه مدیریتی در MS92 و همگام‌سازی/دستگاه‌ها در MS93 و ثبت واقعیت محلی در MS94 و بازخورد مدرک محلی در MS95 و بازخوانی رویداد Chat در MS96 و قطع دسترسی مدرک محلی در MS97 و واکنش/پیوست Chat در MS98 و شش تبدیل/گیت فرمان در MS99؛ ممیزی ۱۱ Route/۴۱ Component ثبت شده، CI مستقل شرط پایان |
-| `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | باز |
+| `VX-G4 Migration Complete` | تمام صفحات فعال به سیستم جدید منتقل شده‌اند | پذیرفته با MS99: ۱۱ Route/۴۱ Component، Source Run 623 و docs Run 624، هر دو هشت Job سبز؛ جزئیات ممیزی در `docs/ux/vx-g4-active-consumer-audit.md` |
+| `VX-G5 Visual Qualified` | visual/accessibility/responsive/print/performance suites پاس شده‌اند | Source Run 640 هشت Job سبز؛ Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شده مرور شد؛ CI مستقل MS100 شرط نهایی است؛ `docs/checkpoints/v1.1-ux2-ms100-vx-g5-qualification.md` |
 
 هیچ UI تولیدی جدید پیش از `VX-G2` آغاز نمی‌شود و V1.1 پیش از `VX-G5` Qualified اعلام نمی‌شود.
 
@@ -258,3 +258,5 @@ Program باید همهٔ این سطوح را پوشش دهد:
 | `1.61.0` | MS97 docs Run 614 هشت Job سبز و Safe؛ MS98 چهار قاب واکنش/پیوست Chat در ۳۹۰/۳۲۰ پیکسل را با Source Run 618 هشت Job سبز و Artifact `11109236123` معتبر/مرور شده سنجید. CI مستقل مستندات شرط Checkpoint؛ تبدیل‌های Chat و ممیزی نهایی G4، سپس G5 بازند |
 
 | `1.62.0` | MS98 docs Run 619 هشت Job سبز و Safe؛ MS99 شش تبدیل و پیش‌نویس Chat، قطع مجوز/نسخهٔ پیام و صف فایل را در ۲۲ قاب Source Run 623 هشت Job سبز، Artifact `11114715928` معتبر و مرورشده سنجید؛ ۱۱ Route و ۴۱ Component فعال با دفتر شواهد تطبیق شدند. CI مستقل مستندات شرط تصمیم G4؛ G5 مستقل باز است |
+| `1.63.0` | MS99 docs Run 624 هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component، G4 را بست؛ Qualification مستقل G5 آغاز شد. |
+| `1.64.0` | MS100 چاپ، سه Engine، چهار عرض، axe، عملکرد و Artifact نهایی `11124980874` را به شواهد مستقل پیوند داد؛ اصلاح عکس چاپ در Source Run 640 هشت Job سبز و قاب نهایی معتبر داشت. CI مستقل همین مستندات شرط پذیرش G5 و پایان UX2 است. |

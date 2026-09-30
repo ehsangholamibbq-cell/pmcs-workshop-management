@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.181.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، UX2 فعال، INT1/QA1 باز
+- نسخه سند: `1.183.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5 Source/Artifact Run 640 معتبر؛ UX2 پس از CI مستقل MS100 بسته؛ INT1/QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
 - Baseline منبع V1: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -10,7 +10,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-UX2 — Product UI Implementation and Migration`
+- مرحله فعال: `V1.1-UX2 — Final Qualification` تا Full CI مستقل MS100؛ سپس `V1.1-INT1`
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1902,4 +1902,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 
 | `1.181.0` | MS98 docs Run 619 (`36740158404`) هشت Job سبز و Safe؛ MS99 فرمان‌های Chat و شش تبدیل را به خواندن جاری/نسخهٔ پیام و تأیید دوباره گره زد، پیش‌نویس/صف را در خطا و آفلاین حفظ کرد و ممیزی ۱۱ Route/۴۱ Component فعال را ثبت کرد. Source Run 623 (`36749090129`) هشت Job سبز؛ Artifact `11114715928` با ۲۲ PNG/سه Index معتبر و مرورشده، ZIP SHA-256 `ddfbc27d11ed5179cce1409c30fcd99c6976de7eb95bc621d31067baff2a3125`. CI مستقل مستندات شرط Checkpoint و پایان G4؛ Qualification G5 و INT1/QA1 بازند |
 
-| `1.182.0` | MS99 docs Run 624 (`36751285219`) هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component فعال G4 را بست. MS100 آزمون مستقل G5 را در Chromium/Firefox/WebKit، چهار عرض، حالت‌های پرتراکم، RTL/Focus/axe، چاپ A4/A3 و بودجهٔ Build/مسیر انجام داد. Source Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` با ۲۹۶ PNG/۱۹۵ axe/۲۰ PDF/۲۵ Index معتبر و مرورشده؛ CI مستقل مستندات شرط `VX-G5 Visual Qualified` و پایان UX2 است. سپس INT1/QA1 و قفل V1.1 جدا هستند |
+| `1.182.0` | MS99 docs Run 624 (`36751285219`) هشت Job سبز و Safe؛ ممیزی ۱۱ Route/۴۱ Component فعال G4 را بست. MS100 آزمون مستقل G5 را در Chromium/Firefox/WebKit، چهار عرض، حالت‌های پرتراکم، RTL/Focus/axe، چاپ A4/A3 و بودجهٔ Build/مسیر انجام داد. Source Run 638 (`36768157030`) هشت Job سبز و Artifact `11123482326` با ۲۹۶ PNG/۱۹۵ axe/۲۰ PDF/۲۵ Index معتبر و مرورشده؛ CI مستقل مستندات شرط `VX-G5 Visual Qualified` و پایان UX2 است. سپس INT1/QA1 و قفل V1.1 جدا هستند |
+| `1.183.0` | مرور دوبارهٔ Artifact Run 638 نشان داد قاب `current` چاپ پیش از تثبیت نام/تصویر پروژه گرفته شده بود، هرچند PDFهای همان حالت معتبر بودند. Source `fd13282` عکس را پس از اعتبارسنجی PDF و کنترل دوبارهٔ DOM ثبت کرد؛ Run 640 (`36772469486`) هشت Job سبز و Artifact `11124980874` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و قاب چاپ اصلاح‌شدهٔ مرورشده دارد. CI مستقل مستندات MS100 شرط `VX-G5 Visual Qualified` و پایان UX2 است؛ Exact Next فقط DoR مرحلهٔ INT1، و QA1/قفل V1.1 جدا هستند. |

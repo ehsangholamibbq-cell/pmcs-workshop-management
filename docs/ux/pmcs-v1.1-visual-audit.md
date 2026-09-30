@@ -1,7 +1,7 @@
 # PMCS V1.1 — Visual and UX Audit
 
 - شناسه: `PMCS-UX-AUDIT-001`
-- وضعیت زنده: `VX-G1 Audit Complete؛ VX-G3 Contract/Prototype؛ VX-G4 Migration Complete در MS99؛ VX-G5 Qualified در MS100 پس از Source/Docs CI مستقل`
+- وضعیت زنده: `VX-G1 Audit Complete؛ VX-G3 Contract/Prototype؛ VX-G4 Migration Complete در MS99؛ VX-G5 Source/Artifact Run 640 معتبر، مشروط به CI مستقل MS100`
 - خط محصول: `PMCS V1.1`
 - Baseline بررسی: `4e401ab9e2bfab5bd197e9789d7a87e91e8a5784`
 - تاریخ: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
@@ -443,3 +443,14 @@ correction Run 494 هشت Job سبز و Artifact `11049002783` چهار قاب �
 فارسی نقش/وضعیت عضو در Wizard فعال در Run 497 با هشت Job سبز و Artifact
 `11050303281` سه‌قابی معتبر و بازبینی‌شده بررسی شدند. سایر مصرف‌کنندگان G4 و Qualification مستقل
 G5 بازند.
+
+## پیوست UX2-MS100 — Qualification مستقل VX-G5
+
+Source پایهٔ G5 در Run 638 هشت Job سبز و ۲۵ Index، ۲۹۶ PNG، ۱۹۵ گزارش axe
+بدون violation و ۲۰ PDF با متن/فونت/صفحهٔ معتبر داشت. بازبینی قاب چاپ،
+ثبت زودهنگام عنوان حالت `current` را یافت؛ PDF درست بود اما تصویر شاهد
+نبود. Source `fd13282` ثبت قاب را پس از PDF معتبر و کنترل دوبارهٔ عنوان/
+شناسه انجام داد. Run 640 هشت Job سبز و Artifact `11124980874` با قاب
+چاپ درست، ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر دارد؛ CI مستقل Checkpoint
+`docs/checkpoints/v1.1-ux2-ms100-vx-g5-qualification.md` شرط پذیرش G5 و
+پایان UX2 هستند. بخش‌های تاریخی بالا وضعیت امروز Gateها نیستند.
