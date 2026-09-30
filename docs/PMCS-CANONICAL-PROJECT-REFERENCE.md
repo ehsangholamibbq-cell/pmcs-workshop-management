@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.134.0`
+- نسخه: `1.135.0`
 - آخرین کنترل: ۲۰۲۶-۰۹-۳۰
-- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS91 Safe, MS92 docs Candidate`
+- وضعیت: `Authoritative working reference | V1 locked | V1.1 UX2 / MS92 Safe, MS93 docs Candidate`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -23,10 +23,10 @@
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | Stage فعال | `V1.1-UX2 — Product UI Implementation and Migration` |
-| آخرین Source | MS92 final `f53d29a30af2bf2cea93d2e8393f8901a15d42cc`؛ tree `1287d99acbf85a4e05bd04265579fc317bf7331f`؛ Run 592 (`36696198710`) هشت Job سبز؛ Artifact `11088278375` با شش PNG/Index معتبر و بازبینی‌شده |
-| Current evidence-bearing source checkpoint | MS91 Source correction Run 585 و docs Run 586 هر دو هشت Job سبز؛ MS92 Source final Run 592 هشت Job سبز و Artifact شش‌قابی معتبر/مرور شده؛ CI مستقل مستندات شرط است |
-| Source lineage | MS92 از MS91 docs `4ed044f2d50f033641d69f9916babe9ac87db665` ادامه یافت؛ source و correction تنها با Commit/fast-forward، بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS91-C1`؛ Source correction Run 585 و docs Run 586 هر دو هشت Job سبز، پنج قاب/Index معتبر و مرورشده؛ MS92 Source/Artifact سبز و مرور شده، CI مستقل مستندات باز |
+| آخرین Source | MS93 final `fa0c8c8c1b7aa9813d8996e7d27792f94db3866a`؛ tree `4067ca804f3828f3f49ce3cd6651397636de8a12`؛ Run 597 (`36702332215`) هشت Job سبز؛ Artifact `11090354259` با هفت PNG/Index معتبر و بازبینی‌شده |
+| Current evidence-bearing source checkpoint | MS92 Source final Run 592 و docs Run 593 هر دو هشت Job سبز؛ MS93 Source final Run 597 هشت Job سبز و Artifact هفت‌قابی معتبر/مرور شده؛ CI مستقل مستندات شرط است |
+| Source lineage | MS93 از MS92 docs `a0d1fb099715eb42efea8f60349f3bfd4688f34e` ادامه یافت؛ source و correction تنها با Commit/fast-forward، بدون Reset/Force Push |
+| Current safe checkpoint | `PMCS-V1.1-UX2-MS92-C1`؛ Source final Run 592 و docs Run 593 هر دو هشت Job سبز، شش قاب/Index معتبر و مرورشده؛ MS93 Source/Artifact سبز و مرور شده، CI مستقل مستندات باز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS63-C1`؛ Run 469 هشت Job سبز، `VX-G3` فقط در محدودهٔ Contract/Prototype پذیرفته |
@@ -94,9 +94,9 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.174.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.175.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.0.0` |
-| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.55.0` |
+| Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.56.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 → QA1 → V1.1 Locked`.
@@ -1072,7 +1072,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**MS91 Source correction Run 585 و docs Run 586 هشت Job سبز و Safe هستند. MS92 فرمان توجه مدیریتی را با Source final Run 592 هشت Job سبز و Artifact شش‌قابی معتبر/بازبینی‌شده پیش برد؛ Full CI مستقل همین مستندات شرط Checkpoint Safe بعدی است. سپس همگام‌سازی، ثبت واقعیت/مدرک، تبدیل‌های Chat و ممیزی کامل `VX-G4`، سپس Qualification مستقل `VX-G5` بازند.**
+**MS92 Source final Run 592 و docs Run 593 هشت Job سبز و Safe هستند. MS93 همگام‌سازی و دستگاه‌ها را با Source final Run 597 هشت Job سبز و Artifact هفت‌قابی معتبر/بازبینی‌شده پیش برد؛ Full CI مستقل همین مستندات شرط Checkpoint Safe بعدی است. سپس ثبت واقعیت/مدرک، تبدیل‌های Chat و ممیزی کامل `VX-G4`، سپس Qualification مستقل `VX-G5` بازند.**
 مهاجرت بصری UX2، INT1/QA1 و Production بازند.
 
 ## Resume Rule
