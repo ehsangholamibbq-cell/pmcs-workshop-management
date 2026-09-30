@@ -1,9 +1,9 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listPurchaseOrders, type PurchaseOrderModel } from "@/lib/commercial";
 import { scopedStorageKey } from "@/lib/field-database";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDateTime, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 import {
   acknowledgeMaterialIssue,
@@ -42,7 +42,10 @@ interface SupplyRealityPanelProps {
 export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
   const cacheKey = useMemo(() => scopedStorageKey(`pmcs-supply-state:${props.projectId}`), [props.projectId]);
-  const [state, setState] = useState<SupplyStateModel | null>(() => readCache(cacheKey));
+  const [state, setState] = useState<SupplyStateModel | null>(null);
+  const [cachedState, setCachedState] = useState<SupplyStateModel | null>(null);
+  const [readState, setReadState] = useState<"loading" | "current" | "cached" | "offline" | "unavailable" | "forbidden">("loading");
+  const readSequence = useRef(0);
   const [orders, setOrders] = useState<readonly PurchaseOrderModel[]>([]);
   const [message, setMessage] = useState("در حال دریافت واقعیت تدارکات و موجودی…");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -111,22 +114,40 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   const [serviceEvidence, setServiceEvidence] = useState("");
   const [serviceComment, setServiceComment] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    setState(null);
+    setOrders([]);
+    setCachedState(null);
     if (!props.isOnline) {
-      setMessage(readCache(cacheKey) ? "نمای ذخیره‌شده نمایش داده می‌شود؛ اقدام رسمی تا اتصال مجدد غیرفعال است." : "برای دریافت واقعیت تدارکات، اتصال به سرور لازم است.");
-      return;
+      const cached = readCache(cacheKey);
+      setCachedState(cached);
+      setReadState(cached ? "cached" : "offline");
+      setMessage(cached ? "نمای ذخیره‌شدهٔ این دستگاه، تأییدنشده و فقط خواندنی است؛ برای فرمان رسمی به پاسخ تازهٔ سرور نیاز است."
+        : "برای دریافت واقعیت تدارکات، اتصال به سرور لازم است.");
+      return false;
     }
+    setReadState("loading");
+    setMessage("در حال دریافت واقعیت تدارکات و موجودی…");
     try {
       const [nextState, nextOrders] = await Promise.all([
         getSupplyState(props.apiBaseUrl, identity, props.projectId),
         listPurchaseOrders(props.apiBaseUrl, identity, props.projectId),
       ]);
+      if (requestId !== readSequence.current) return false;
       setState(nextState);
       setOrders(nextOrders);
       window.localStorage.setItem(cacheKey, JSON.stringify(nextState));
+      setReadState("current");
       setMessage(supplyStateMessage(nextState));
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "دریافت واقعیت تدارکات و موجودی ناموفق بود."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به واقعیت تدارکات این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "واقعیت تدارکات و موجودی دریافت نشد."));
+      return false;
     }
   }, [cacheKey, identity, props.apiBaseUrl, props.isOnline, props.projectId]);
 
@@ -136,18 +157,22 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   }, [load, props.refreshToken]);
 
   async function run(id: string, action: () => Promise<unknown>, success: string) {
-    if (!props.isOnline) {
-      setMessage("ثبت رسمی در حالت آفلاین مجاز نیست؛ داده موجود روی سرور تغییری نکرد.");
-      return false;
-    }
+    if (!props.isOnline || readState !== "current" || busyId !== null) return false;
     setBusyId(id);
     try {
       await action();
+      if (!await load()) return false;
       setMessage(success);
-      await load();
       props.onChanged?.();
       return true;
     } catch (error) {
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        setState(null); setOrders([]); setCachedState(null);
+        setReadState("forbidden");
+        setMessage("دسترسی به واقعیت تدارکات این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+        return false;
+      }
       setMessage(toUserMessage(error, "عملیات تدارکات و موجودی ناموفق بود."));
       return false;
     } finally {
@@ -289,10 +314,22 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
     }), "پذیرش خدمت ثبت شد و هیچ موجودی کالایی ایجاد نکرد.");
   }
 
-  return <article className="operational-card supply-reality" id="supply">
+  if (readState !== "current") return <article className="operational-card supply-reality" id="supply"
+    data-testid="supply-reality" data-read-state={readState}>
+    <div className="card-heading"><div><p className="eyebrow">واقعیت تدارکات و موجودی</p><h2>از دریافت فیزیکی تا مصرف مستند</h2></div></div>
+    <p className="microcopy" role={readState === "unavailable" || readState === "forbidden" ? "alert" : "status"}>{message}</p>
+    {readState === "cached" && cachedState && <div className="finance-metrics supply-metrics" aria-label="نمای ذخیره‌شدهٔ تأییدنشده">
+      <Metric label="در انتظار بازرسی (ذخیره‌شده)" value={cachedState.pendingInspectionCount} />
+      <Metric label="امانت تسویه‌نشده (ذخیره‌شده)" value={cachedState.unreconciledMaterialIssueCount} />
+    </div>}
+    {props.isOnline && readState !== "loading" &&
+      <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت واقعیت تدارکات</button>}
+  </article>;
+
+  return <article className="operational-card supply-reality" id="supply" data-testid="supply-reality" data-read-state={readState}>
     <div className="card-heading"><div><p className="eyebrow">واقعیت تدارکات و موجودی</p><h2>از دریافت فیزیکی تا مصرف مستند</h2></div><span className={props.isOnline ? "status-chip positive" : "status-chip warning"}>{props.isOnline ? "برخط و رسمی" : "نمای ذخیره‌شده"}</span></div>
     <p className="microcopy" aria-live="polite">{message}</p>
-    <div className="finance-metrics supply-metrics">
+    <div className="finance-metrics supply-metrics" data-testid="supply-current-metrics">
       <Metric label="در انتظار بازرسی" value={state?.pendingInspectionCount} warning={(state?.pendingInspectionCount ?? 0) > 0} />
       <Metric label="قرنطینه یا مردود" value={(state?.quarantinedReceiptCount ?? 0) + (state?.rejectedReceiptCount ?? 0)} warning={(state?.quarantinedReceiptCount ?? 0) + (state?.rejectedReceiptCount ?? 0) > 0} />
       <Metric label="امانت تسویه‌نشده" value={state?.unreconciledMaterialIssueCount} warning={(state?.unreconciledMaterialIssueCount ?? 0) > 0} />
