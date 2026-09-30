@@ -2160,6 +2160,27 @@ button.sync-pill:disabled {
   background: var(--status-danger-surface);
 }
 
+.finance-completion[data-read-state="loading"] > .microcopy,
+.finance-completion[data-read-state="offline"] > .microcopy,
+.finance-completion[data-read-state="unavailable"] > .microcopy,
+.finance-completion[data-read-state="forbidden"] > .microcopy {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--status-info);
+  border-radius: 0.8rem;
+  background: var(--status-info-surface);
+}
+.finance-completion[data-read-state="offline"] > .microcopy {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+.finance-completion[data-read-state="unavailable"] > .microcopy,
+.finance-completion[data-read-state="forbidden"] > .microcopy {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
+
 .metric-row {
   margin-top: 3rem;
   padding-top: 1.4rem;

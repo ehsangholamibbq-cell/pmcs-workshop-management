@@ -462,6 +462,12 @@ jobs:
           name: pmcs-ms83-finance-control-truth
           path: src/web/artifacts/ms83-finance-control-truth/
           if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms84-finance-completion-truth
+          path: src/web/artifacts/ms84-finance-completion-truth/
+          if-no-files-found: error
 
   identity-container:
     runs-on: ubuntu-latest
