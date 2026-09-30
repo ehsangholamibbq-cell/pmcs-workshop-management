@@ -147,20 +147,50 @@ internal static class IntelligenceReferenceRunEndpoints
             var adapter = available;
             var toolSet = registry.RegisteredTools();
             if (toolSet.Count == 0) throw new ReferenceGatewayException("ai.tool.registry_unavailable");
+            async Task<bool> TryFallbackAsync(string failureCode)
+            {
+                var enabledProviders = (await db.ProviderRegistrations.AsNoTracking()
+                    .Where(item => item.Enabled).ToArrayAsync(timeout.Token))
+                    .ToDictionary(item => item.Provider, StringComparer.Ordinal);
+                var alternate = profile.FallbackModelIds
+                    .Select(id => catalog.FirstOrDefault(item => item.Id == id))
+                    .Where(item => item is not null &&
+                        enabledProviders.ContainsKey(item.Provider) &&
+                        item.InputMicrounitsPerToken > 0 &&
+                        item.OutputMicrounitsPerToken > 0)
+                    .Select(item => ModelSelectionPolicy.Select(profile, catalog,
+                        actor.TenantId, projectId, IntelligenceDataClass.Confidential,
+                        EstimateCost(profile, item!), item!.Id,
+                        fallback: true, failureCode: failureCode))
+                    .FirstOrDefault(item => item.Allowed && item.Model is not null);
+                if (alternate?.Model is null) return false;
+                var nextAdapter = adapters.SingleOrDefault(item =>
+                    item.Provider == alternate.Model.Provider &&
+                    item.ConfiguredModel == alternate.Model.Model && item.IsConfigured);
+                if (nextAdapter is null) return false;
+                run.SelectFallback(alternate.Model,
+                    enabledProviders[alternate.Model.Provider].Version, failureCode);
+                await db.SaveChangesAsync(timeout.Token);
+                adapter = nextAdapter;
+                return true;
+            }
             for (var attempt = 0; attempt < 2; attempt++)
             {
+                using var attemptTimeout = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+                if (attempt == 0 && profile.AllowFallback)
+                    attemptTimeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, profile.TimeoutSeconds / 2)));
                 try
                 {
                     if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
                             item.Provider == run.Provider && item.Enabled &&
-                            item.Version == run.ProviderVersion, timeout.Token) ||
+                            item.Version == run.ProviderVersion, attemptTimeout.Token) ||
                         !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
-                            item.VerifiedAt != null, timeout.Token))
+                            item.VerifiedAt != null, attemptTimeout.Token))
                         throw new ReferenceGatewayException("ai.profile.model_unavailable");
-                    var toolDecision = await adapter.DecideToolAsync(question, toolSet, timeout.Token);
+                    var toolDecision = await adapter.DecideToolAsync(question, toolSet, attemptTimeout.Token);
                     var invoked = await registry.InvokeAsync(actor.TenantId, actor.UserId,
-                        projectId, toolDecision.ToolId, toolDecision.Arguments, timeout.Token);
+                        projectId, toolDecision.ToolId, toolDecision.Arguments, attemptTimeout.Token);
                     if (!invoked.Allowed)
                     {
                         if (run.ToolId is null) run.RecordTool(toolDecision.ToolId, "Denied");
@@ -169,17 +199,17 @@ internal static class IntelligenceReferenceRunEndpoints
                     if (run.ToolId is null) run.RecordTool(toolDecision.ToolId, "Allowed");
                     else if (run.ToolId != toolDecision.ToolId || run.ToolDecision != "Allowed")
                         throw new ReferenceGatewayException("ai.tool.fallback_changed_tool");
-                    await db.SaveChangesAsync(timeout.Token);
+                    await db.SaveChangesAsync(attemptTimeout.Token);
                     if (!await db.ProviderRegistrations.AsNoTracking().AnyAsync(item =>
                             item.Provider == run.Provider && item.Enabled &&
-                            item.Version == run.ProviderVersion, timeout.Token) ||
+                            item.Version == run.ProviderVersion, attemptTimeout.Token) ||
                         !await db.ModelCatalog.AsNoTracking().AnyAsync(item =>
                             item.Id == run.ModelCatalogId && item.Enabled &&
-                            item.VerifiedAt != null, timeout.Token))
+                            item.VerifiedAt != null, attemptTimeout.Token))
                         throw new ReferenceGatewayException("ai.profile.model_unavailable");
                     var toolJson = JsonSerializer.Serialize(invoked.Data);
                     var reply = await adapter.AnswerAsync(question, toolDecision.ToolId,
-                        toolJson, profile.MaximumOutputTokens, timeout.Token);
+                        toolJson, profile.MaximumOutputTokens, attemptTimeout.Token);
                     var inputTokens = toolDecision.InputTokens + reply.InputTokens;
                     var outputTokens = toolDecision.OutputTokens + reply.OutputTokens;
                     var currentModel = catalog.Single(item => item.Id == run.ModelCatalogId);
@@ -195,33 +225,18 @@ internal static class IntelligenceReferenceRunEndpoints
                     answer = reply.Answer;
                     break;
                 }
+                catch (OperationCanceledException) when (attempt == 0 &&
+                    profile.AllowFallback && !cancellationToken.IsCancellationRequested &&
+                    !timeout.IsCancellationRequested)
+                {
+                    if (!await TryFallbackAsync("ai.provider.timeout"))
+                        throw new ReferenceGatewayException("ai.provider.timeout");
+                }
                 catch (ReferenceGatewayException error) when (attempt == 0 &&
                     profile.AllowFallback && error.Code is ("ai.provider.timeout" or
                         "ai.provider.unavailable" or "ai.provider.invalid_response"))
                 {
-                    var enabledProviders = (await db.ProviderRegistrations.AsNoTracking()
-                        .Where(item => item.Enabled).ToArrayAsync(timeout.Token))
-                        .ToDictionary(item => item.Provider, StringComparer.Ordinal);
-                    var alternate = profile.FallbackModelIds
-                        .Select(id => catalog.FirstOrDefault(item => item.Id == id))
-                        .Where(item => item is not null &&
-                            enabledProviders.ContainsKey(item.Provider) &&
-                            item.InputMicrounitsPerToken > 0 &&
-                            item.OutputMicrounitsPerToken > 0)
-                        .Select(item => ModelSelectionPolicy.Select(profile, catalog,
-                            actor.TenantId, projectId, IntelligenceDataClass.Confidential,
-                            EstimateCost(profile, item!), item!.Id,
-                            fallback: true, failureCode: error.Code))
-                        .FirstOrDefault(item => item.Allowed && item.Model is not null);
-                    if (alternate?.Model is null) throw;
-                    var nextAdapter = adapters.SingleOrDefault(item =>
-                        item.Provider == alternate.Model.Provider &&
-                        item.ConfiguredModel == alternate.Model.Model && item.IsConfigured);
-                    if (nextAdapter is null) throw;
-                    run.SelectFallback(alternate.Model,
-                        enabledProviders[alternate.Model.Provider].Version, error.Code);
-                    await db.SaveChangesAsync(timeout.Token);
-                    adapter = nextAdapter;
+                    if (!await TryFallbackAsync(error.Code)) throw;
                 }
             }
         }

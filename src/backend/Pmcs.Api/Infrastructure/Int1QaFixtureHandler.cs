@@ -8,6 +8,7 @@ namespace Pmcs.Api.Infrastructure;
 internal sealed class Int1QaFixtureHandler : HttpMessageHandler
 {
     private const string ProjectId = "33333333-3333-3333-3333-333333333333";
+    private const string ForeignProjectId = "44444444-4444-4444-8444-444444444444";
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)
@@ -16,9 +17,13 @@ internal sealed class Int1QaFixtureHandler : HttpMessageHandler
         using var payload = JsonDocument.Parse(body);
         var tool = payload.RootElement.TryGetProperty("tools", out _);
         var unavailable = body.Contains("int1-fixture-unavailable", StringComparison.Ordinal);
+        if (tool && request.RequestUri?.Host == "api.openai.com" &&
+            body.Contains("int1-fixture-timeout", StringComparison.Ordinal))
+            await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
         if (unavailable && request.RequestUri?.Host == "api.openai.com")
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
         var unknown = body.Contains("int1-fixture-unknown-tool", StringComparison.Ordinal);
+        var crossProject = body.Contains("int1-fixture-cross-project", StringComparison.Ordinal);
         var toolName = unknown ? "unregistered_tool" : "reporting_catalog_list";
         var answer = "{\"answer\":\"Fixture catalog result.\",\"citations\":[\"reporting.catalog.list\"]}";
         var result = ((request.RequestUri?.Host, tool) switch
@@ -36,7 +41,7 @@ internal sealed class Int1QaFixtureHandler : HttpMessageHandler
             ("api.anthropic.com", false) =>
                 """{"stop_reason":"end_turn","content":[{"type":"text","text":ANSWER}],"usage":{"input_tokens":10,"output_tokens":8}}""",
             _ => throw new InvalidOperationException("Unexpected INT1 QA provider request.")
-        }).Replace("PROJECT", ProjectId, StringComparison.Ordinal)
+        }).Replace("PROJECT", crossProject ? ForeignProjectId : ProjectId, StringComparison.Ordinal)
             .Replace("TOOL", toolName, StringComparison.Ordinal)
             .Replace("ANSWER", JsonSerializer.Serialize(answer), StringComparison.Ordinal);
         return new HttpResponseMessage(HttpStatusCode.OK)

@@ -165,6 +165,28 @@ if [[ "${admin_status}" != '403' ]]; then
   echo "QA tenant administrator gained implicit INT1 provider access: HTTP ${admin_status}." >&2
   exit 1
 fi
+for scope in tenant project; do
+  if [[ "${scope}" == tenant ]]; then
+    tenant_id='99999999-9999-4999-8999-999999999999'
+    scoped_url="${run_url}"
+  else
+    tenant_id='11111111-1111-1111-1111-111111111111'
+    scoped_url="http://127.0.0.1:${port}/api/v1/projects/44444444-4444-4444-8444-444444444444/intelligence/reference-runs"
+  fi
+  scoped_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+    --request POST --header "X-Pmcs-QA-Key: ${PMCS_QA_AUTH_KEY}" \
+    --header "X-Tenant-Id: ${tenant_id}" \
+    --header 'X-User-Id: 22222222-2222-2222-2222-222222222222' \
+    --header "Idempotency-Key: int1-scope-${scope}" \
+    --header 'Content-Type: application/json' \
+    --data '{"requestId":"a3000000-0000-4000-8000-000000000009","question":"scope test"}' \
+    "${scoped_url}")"
+  if [[ "${scoped_status}" != '401' && "${scoped_status}" != '403' &&
+        "${scoped_status}" != '404' ]]; then
+    echo "INT1 cross-${scope} request was not denied safely: HTTP ${scoped_status}." >&2
+    exit 1
+  fi
+done
 post_run() {
   local id="$1" question="$2" expected="$3" actual
   actual="$(curl --silent --output "${response_file}" --write-out '%{http_code}' \
@@ -216,19 +238,41 @@ post_run 5 'int1-fixture-unavailable' 200
 grep -q 'ai.provider.unavailable' "${response_file}"
 
 psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null \
+  --command "insert into intelligence.profile_versions
+    (id, version, use_case, tenant_id, project_ids_json, default_model_id,
+     allowed_model_ids_json, fallback_model_ids_json, allow_fallback,
+     required_capabilities, maximum_data_class, maximum_input_tokens,
+     maximum_output_tokens, timeout_seconds, maximum_cost_microunits,
+     prompt_version, policy_version, published_by, published_at)
+    select 'a2000000-0000-4000-8000-000000000003', 3, use_case, tenant_id,
+      project_ids_json, default_model_id, allowed_model_ids_json,
+      fallback_model_ids_json, allow_fallback, required_capabilities,
+      maximum_data_class, maximum_input_tokens, maximum_output_tokens, 5,
+      maximum_cost_microunits, prompt_version, policy_version, published_by, now()
+    from intelligence.profile_versions where id = 'a2000000-0000-4000-8000-000000000002';
+    update intelligence.profile_selections
+    set profile_version_id = 'a2000000-0000-4000-8000-000000000003',
+      revision = revision + 1, updated_at = now()
+    where use_case = 'int1.reference';"
+post_run 8 'int1-fixture-timeout' 200
+grep -q 'ai.provider.timeout' "${response_file}"
+post_run 9 'int1-fixture-cross-project' 502
+grep -q 'ai.tool.arguments_invalid' "${response_file}"
+
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null \
   --command "update intelligence.provider_registrations set enabled = false, version = version + 1, revision = revision + 1 where provider = 'OpenAI';"
 post_run 6 'fixture-disabled' 409
 grep -q 'ai.provider.disabled' "${response_file}"
 
 state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
-  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
-if [[ "${state}" != '4|1|1|3|0' ]]; then
+  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.arguments_invalid')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(*) filter (where fallback and fallback_reason = 'ai.provider.timeout' and provider = 'GoogleGemini')::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
+if [[ "${state}" != '5|1|1|1|1|3|0' ]]; then
   echo "INT1 reference lineage diverged: ${state}." >&2
   exit 1
 fi
 side_effects="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
   --tuples-only --no-align --command "select (select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunFinished' and resource_id like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'intelligence.reference-run.finished' and payload->'run'->>'Id' like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.idempotency_records where operation like 'intelligence.reference.run:%' and key like 'int1-reference-%')::text || '|' || (select count(*) from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%' and status = 'Completed' and cost_microunits = 112 and session_id <> id and session_expires_at = requested_at + interval '10 minutes')::text;")"
-if [[ "${side_effects}" != '5|5|5|4' ]]; then
+if [[ "${side_effects}" != '7|7|7|5' ]]; then
   echo "INT1 metadata, audit, outbox or receipt evidence diverged: ${side_effects}." >&2
   exit 1
 fi
@@ -244,4 +288,4 @@ if [[ "${leaks}" != '0' ]]; then
   echo 'INT1 reference persisted request, answer or fixture credential.' >&2
   exit 1
 fi
-echo 'INT1 reference QA DB, three adapters, fallback, disable, replay and metadata-only checks passed.'
+echo 'INT1 reference QA DB, three adapters, fallback including timeout, disable, replay and metadata-only checks passed.'
