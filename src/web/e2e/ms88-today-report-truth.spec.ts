@@ -91,6 +91,14 @@ test("today report workflow hides an old report and submit action after failed o
   await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toHaveCount(0);
   await capture("today-320-read-error.png", 320, 720, "unavailable");
 
+  responseStatus = 404;
+  await page.reload();
+  await expect(panel).toHaveAttribute("data-read-state", "unavailable");
+  await expect(panel.getByRole("alert")).toContainText("هنوز با پاسخ رسمی سرور تأیید نشد");
+  await expect(panel.getByRole("button", { name: "ارسال برای تأیید" })).toHaveCount(0);
+  await expect(panel.getByRole("button", { name: "تلاش دوباره برای دریافت وضعیت گزارش امروز" })).toBeVisible();
+  await capture("today-320-unconfirmed.png", 320, 720, "unavailable");
+
   responseStatus = 403;
   await page.reload();
   await expect(panel).toHaveAttribute("data-read-state", "forbidden");

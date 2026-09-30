@@ -64,8 +64,8 @@ export function TodayReportWorkflow(props: TodayReportWorkflowProps) {
       setReport(loaded);
       currentReadSequence.current = loaded ? requestId : 0;
       setVisibleScope(readScope);
-      setReadState(loaded ? "current" : "empty");
-      setMessage(loaded ? statusDescription(loaded) : "پیش‌نویس هنوز توسط سرور پذیرفته نشده است.");
+      setReadState(loaded ? "current" : "unavailable");
+      setMessage(loaded ? statusDescription(loaded) : "شناسهٔ محلی گزارش امروز هنوز با پاسخ رسمی سرور تأیید نشد؛ دوباره تلاش کنید.");
     } catch (error) {
       if (requestId !== readSequence.current) return;
       const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
