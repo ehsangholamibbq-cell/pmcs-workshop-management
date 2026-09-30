@@ -67,7 +67,7 @@ test("finance control hides an old record and commands after failed or forbidden
   await page.goto(`/projects/${projectId}`);
   const panel = page.getByTestId("finance-control");
   await expect(panel).toHaveAttribute("data-read-state", "current");
-  await expect(panel.locator(".finance-list")).toContainText(record.description);
+  await expect(panel.locator(".finance-list").first()).toContainText(record.description);
   await capture("finance-390-current.png", 390, 844, "current");
 
   responseStatus = 503;
@@ -94,7 +94,7 @@ test("finance control hides an old record and commands after failed or forbidden
   responseStatus = 200;
   await page.reload();
   await expect(panel).toHaveAttribute("data-read-state", "current");
-  await expect(panel.locator(".finance-list")).toContainText(record.description);
+  await expect(panel.locator(".finance-list").first()).toContainText(record.description);
   await capture("finance-320-restored.png", 320, 720, "current");
 
   writeFileSync(resolve(output, "index.json"), JSON.stringify({
