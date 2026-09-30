@@ -79,7 +79,8 @@ test("attention commands require a current command snapshot and revocation hides
   responseStatus = 503;
   await page.context().setOffline(false);
   await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "loading");
-  await expect(triage).toHaveCount(0);
+  await expect(triage).toBeHidden();
+  await expect(triage.getByRole("button", { name: "تبدیل به اقدام" })).toHaveCount(0);
   await capture("attention-320-refreshing.png", 320, 720, "loading");
   releaseFailure();
   await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "cached");
@@ -98,22 +99,9 @@ test("attention commands require a current command snapshot and revocation hides
   responseStatus = 200;
   await page.reload();
   await expect(triage.getByRole("button", { name: "بستن با دلیل" })).toBeVisible();
-  await expect.poll(async () => {
-    if (commands > 0) return commands;
-    const open = triage.getByRole("button", { name: "بستن با دلیل" });
-    if (await open.isVisible().catch(() => false)) {
-      await open.click({ timeout: 1_000 }).catch(() => undefined);
-    }
-    const reason = triage.getByLabel("دلیل بستن");
-    if (await reason.isVisible().catch(() => false)) {
-      await reason.fill("نیازمند بررسی", { timeout: 1_000 }).catch(() => undefined);
-    }
-    const submit = triage.getByRole("button", { name: "ثبت تصمیم" });
-    if (await submit.isVisible().catch(() => false)) {
-      await submit.evaluate((element: HTMLButtonElement) => element.click()).catch(() => undefined);
-    }
-    return commands;
-  }, { timeout: 30_000 }).toBe(1);
+  await triage.getByRole("button", { name: "بستن با دلیل" }).click();
+  await triage.getByLabel("دلیل بستن").fill("نیازمند بررسی");
+  await triage.getByRole("button", { name: "ثبت تصمیم" }).click();
   await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "forbidden");
   expect(commands).toBe(1);
   await capture("attention-320-command-revoked.png", 320, 720, "forbidden");

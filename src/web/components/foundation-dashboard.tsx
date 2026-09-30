@@ -325,14 +325,15 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
     }
   }
 
-  const snapshot = commandCenter?.snapshot ?? null;
-  const capabilityViews = commandCenter
-    ? commandCenter.capabilities.map(toCapabilityView)
+  const displayCommandCenter = commandReadState === "loading" ? null : commandCenter;
+  const snapshot = displayCommandCenter?.snapshot ?? null;
+  const capabilityViews = displayCommandCenter
+    ? displayCommandCenter.capabilities.map(toCapabilityView)
     : initialCapabilities;
-  const attentionItems = snapshot?.attentionItems ?? [];
+  const attentionItems = commandCenter?.snapshot?.attentionItems ?? [];
   const untriagedAttentionItems = attentionItems.filter((item) => item.disposition === "NeedsTriage");
 
-  if (commandReadState === "loading" || commandReadState === "error" || commandReadState === "forbidden") {
+  if ((commandReadState === "loading" && !commandCenter) || commandReadState === "error" || commandReadState === "forbidden") {
     return <main className="app-shell project-print-shell" data-command-read-state={commandReadState}>
       <section className="workspace" data-command-read-state={commandReadState}>
         <header className="topbar"><h1>مرکز فرمان پروژه</h1></header>
@@ -387,8 +388,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <header className="project-print-heading">
           <div>
             <p className="eyebrow">مرکز فرمان پروژه · نمای چاپ مرورگر</p>
-            <h1>{commandCenter?.projectName ?? "مشخصات پروژه هنوز دریافت نشده است"}</h1>
-            <p>{commandCenter?.projectCode ?? projectId} · {today}</p>
+            <h1>{displayCommandCenter?.projectName ?? "مشخصات پروژه هنوز دریافت نشده است"}</h1>
+            <p>{displayCommandCenter?.projectCode ?? projectId} · {today}</p>
           </div>
           <Image className="project-print-logo" src="/brand/bbq-official-symbol.png"
             alt="نشان رسمی بتن بسپار قزوین" width={52} height={27} priority unoptimized />
@@ -397,7 +398,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <p className="eyebrow">ارزیابی عملیاتی محدود</p>
           <h2 id="project-print-status-title">{operationalStatusLabel(snapshot?.operationalStatus)}</h2>
           <p>{operationalStatusDescription(snapshot, commandMessage)}</p>
-          {commandCenter?.isOutdated && <p className="project-print-warning">تصویر وضعیت قدیمی است؛ محاسبهٔ مجدد لازم است.</p>}
+          {displayCommandCenter?.isOutdated && <p className="project-print-warning">تصویر وضعیت قدیمی است؛ محاسبهٔ مجدد لازم است.</p>}
           <p className="project-print-source">{commandMessage}</p>
         </section>
         {snapshot ? (
@@ -419,8 +420,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <header className="topbar">
           <div>
             <p className="eyebrow">
-              {commandCenter
-                ? `${commandCenter.projectName} · ${commandCenter.projectCode}`
+              {displayCommandCenter
+                ? `${displayCommandCenter.projectName} · ${displayCommandCenter.projectCode}`
                 : "در حال دریافت مشخصات پروژه…"}
             </p>
             <h1>مرکز فرمان پروژه</h1>
@@ -452,8 +453,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             <p className="muted">{operationalStatusDescription(snapshot, commandMessage)}</p>
             <div className="state-controls">
               <span className="scope-badge">ارزیابی عملیاتی · محدود</span>
-              {commandCenter?.isOutdated && <span className="stale-badge">تصویر وضعیت قدیمی است</span>}
-              {commandCenter?.canRecalculate && (
+              {displayCommandCenter?.isOutdated && <span className="stale-badge">تصویر وضعیت قدیمی است</span>}
+              {displayCommandCenter?.canRecalculate && (
                 <button
                   className="secondary-button"
                   type="button"
@@ -561,48 +562,48 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           onChanged={() => setRefreshToken((current) => current + 1)}
         />
 
-        {commandCenter?.canReadFinance && (
+        {displayCommandCenter?.canReadFinance && (
           <section className="financial-summary" aria-label="خلاصه وضعیت مالی مستقل">
             <div>
               <p className="eyebrow">وضعیت مالی مستقل</p>
-              <h2>{financialStateTitle(commandCenter.financialState)}</h2>
+              <h2>{financialStateTitle(displayCommandCenter.financialState)}</h2>
               <p className="muted">این بخش در رنگ وضعیت عملیاتی بالا ادغام نمی‌شود.</p>
             </div>
             <div className="financial-summary-metrics">
               <span>
-                <strong>{formatFinancialAmount(commandCenter.financialState?.totalReceipts, commandCenter.financialState?.currencyCode)}</strong>
+                <strong>{formatFinancialAmount(displayCommandCenter.financialState?.totalReceipts, displayCommandCenter.financialState?.currencyCode)}</strong>
                 دریافت قطعی
               </span>
               <span>
-                <strong>{formatFinancialAmount(commandCenter.financialState?.recognizedSpend, commandCenter.financialState?.currencyCode)}</strong>
+                <strong>{formatFinancialAmount(displayCommandCenter.financialState?.recognizedSpend, displayCommandCenter.financialState?.currencyCode)}</strong>
                 هزینه شناسایی‌شده
               </span>
               <span>
-                <strong>{budgetComparisonLabel(commandCenter.financialState?.budgetComparisonState)}</strong>
+                <strong>{budgetComparisonLabel(displayCommandCenter.financialState?.budgetComparisonState)}</strong>
                 مقایسه بودجه
               </span>
             </div>
           </section>
         )}
 
-        {commandCenter?.canReadCommercial && (
+        {displayCommandCenter?.canReadCommercial && (
           <section className="financial-summary commercial-summary" aria-label="خلاصه مستقل قرارداد و تدارکات">
             <div>
               <p className="eyebrow">وضعیت مستقل قرارداد و خرید</p>
-              <h2>{commercialStateTitle(commandCenter.commercialState)}</h2>
+              <h2>{commercialStateTitle(displayCommandCenter.commercialState)}</h2>
               <p className="muted">این بخش در رنگ وضعیت عملیاتی یا مالی ادغام نمی‌شود.</p>
             </div>
             <div className="financial-summary-metrics">
               <span>
-                <strong>{commandCenter.commercialState?.activeContractCount.toLocaleString("fa-IR") ?? "—"}</strong>
+                <strong>{displayCommandCenter.commercialState?.activeContractCount.toLocaleString("fa-IR") ?? "—"}</strong>
                 قرارداد فعال
               </span>
               <span>
-                <strong>{formatCommercialCeiling(commandCenter.commercialState)}</strong>
+                <strong>{formatCommercialCeiling(displayCommandCenter.commercialState)}</strong>
                 سقف مصوبِ معلوم
               </span>
               <span>
-                <strong>{commandCenter.commercialState?.openCommitmentCount.toLocaleString("fa-IR") ?? "—"}</strong>
+                <strong>{displayCommandCenter.commercialState?.openCommitmentCount.toLocaleString("fa-IR") ?? "—"}</strong>
                 تعهد خرید باز
               </span>
             </div>
@@ -640,7 +641,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
           <SyncIssuesPanel apiBaseUrl={apiBaseUrl} projectId={projectId} refreshToken={refreshToken} />
-          {commandCenter?.canReadCommercial && (
+          {displayCommandCenter?.canReadCommercial && (
             <>
               <CommercialControl
                 apiBaseUrl={apiBaseUrl}
@@ -728,9 +729,10 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <section className="section-block split" id="attention">
           <article>
             <p className="eyebrow">نیازمند رسیدگی</p>
-            <h2>{attentionItems.length > 0 ? "مشاهدات تأییدشده و تعیین تکلیف مدیریتی" : "مورد رسمی نیازمند بررسی ثبت نشده است"}</h2>
+            <h2>{commandReadState === "loading" ? "در حال دریافت موارد تأییدشده…" :
+              attentionItems.length > 0 ? "مشاهدات تأییدشده و تعیین تکلیف مدیریتی" : "مورد رسمی نیازمند بررسی ثبت نشده است"}</h2>
             {attentionItems.length > 0 ? (
-              <div className="command-attention-list">
+              <div className="command-attention-list" hidden={commandReadState === "loading"}>
                 {attentionItems.slice(0, 6).map((item) => (
                   <div className="command-attention-item" key={item.sourceFactId}>
                     <div>
@@ -777,9 +779,9 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                 نبود مورد در این بخش فقط درباره پنجره ۳۰روزه واقعیت‌های تأییدشده است و به‌معنای سلامت کامل مالی، زمانی یا ایمنی، بهداشت و محیط‌زیست (HSE) نیست.
               </p>
             )}
-            {commandCenter && commandCenter.trend.length > 0 && (
+            {displayCommandCenter && displayCommandCenter.trend.length > 0 && (
               <div className="trend-strip" aria-label="روند تصاویر اخیر وضعیت">
-                {commandCenter.trend.slice().reverse().map((point) => (
+                {displayCommandCenter.trend.slice().reverse().map((point) => (
                   <span
                     className={`trend-point trend-${point.operationalStatus.toLowerCase()}`}
                     key={point.snapshotId}
