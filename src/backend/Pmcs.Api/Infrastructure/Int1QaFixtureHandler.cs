@@ -22,6 +22,9 @@ internal sealed class Int1QaFixtureHandler : HttpMessageHandler
             await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
         if (unavailable && request.RequestUri?.Host == "api.openai.com")
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        if (request.RequestUri?.Host == "generativelanguage.googleapis.com" &&
+            body.Contains("int1-fixture-gemini-unavailable", StringComparison.Ordinal))
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
         var unknown = body.Contains("int1-fixture-unknown-tool", StringComparison.Ordinal);
         var crossProject = body.Contains("int1-fixture-cross-project", StringComparison.Ordinal);
         var toolName = unknown ? "unregistered_tool" : "reporting_catalog_list";

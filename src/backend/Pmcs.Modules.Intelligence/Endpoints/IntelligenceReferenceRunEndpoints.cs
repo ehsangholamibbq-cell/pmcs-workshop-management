@@ -154,7 +154,7 @@ internal static class IntelligenceReferenceRunEndpoints
                     .ToDictionary(item => item.Provider, StringComparer.Ordinal);
                 var alternate = profile.FallbackModelIds
                     .Select(id => catalog.FirstOrDefault(item => item.Id == id))
-                    .Where(item => item is not null &&
+                    .Where(item => item is not null && item.Id != run.ModelCatalogId &&
                         enabledProviders.ContainsKey(item.Provider) &&
                         item.InputMicrounitsPerToken > 0 &&
                         item.OutputMicrounitsPerToken > 0)
