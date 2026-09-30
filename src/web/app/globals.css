@@ -5846,6 +5846,24 @@ output {
   background: var(--status-danger-surface);
 }
 
+.project-location-settings .location-read-message {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--status-info);
+  border-radius: 0.7rem;
+  background: var(--status-info-surface);
+}
+.project-location-settings[data-read-state="cached"] .location-read-message {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+  background: var(--status-warning-surface);
+}
+.project-location-settings[data-read-state="unavailable"] .location-read-message,
+.project-location-settings[data-read-state="forbidden"] .location-read-message {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  background: var(--status-danger-surface);
+}
+
 /* Keep the project calendar readable in the narrow project command center. */
 @media (max-width: 520px) {
   .calendar-settings .card-heading,

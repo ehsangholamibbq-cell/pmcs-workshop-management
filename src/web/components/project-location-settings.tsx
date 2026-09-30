@@ -6,7 +6,7 @@ import {
   retireProjectLocation,
   type ProjectLocationModel,
 } from "@/lib/projects";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 
 interface ProjectLocationSettingsProps {
   readonly apiBaseUrl: string;
@@ -15,6 +15,12 @@ interface ProjectLocationSettingsProps {
   readonly projectId: string;
   readonly isOnline: boolean;
   readonly locations: readonly ProjectLocationModel[];
+  readonly readState: "loading" | "current" | "cached" | "unavailable" | "forbidden";
+  readonly readVersion: number;
+  readonly isCurrentRead: (version: number) => boolean;
+  readonly readMessage: string;
+  readonly onRetry: () => void;
+  readonly onAccessRevoked: () => void;
   readonly onChanged: () => void;
 }
 
@@ -25,15 +31,18 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState("محل‌ها مرجع مشترک ثبت واقعیت و گزارش‌گیری هستند.");
   const activeLocations = props.locations.filter((location) => location.status === "Active");
+  const canCommand = props.isOnline && props.readState === "current";
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!canCommand || busyId !== null) return;
     const effectiveParentId = parentLocationId || activeLocations[0]?.id;
     if (!effectiveParentId) {
       setMessage("محل ریشه پروژه در دسترس نیست؛ ابتدا فهرست را تازه‌سازی کنید.");
       return;
     }
     setBusyId("create");
+    const commandVersion = props.readVersion;
     setMessage("در حال ثبت محل پروژه…");
     try {
       await createProjectLocation(
@@ -42,20 +51,27 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
         props.projectId,
         { code, name, parentLocationId: effectiveParentId },
       );
+      if (!props.isCurrentRead(commandVersion)) return;
       setCode("");
       setName("");
       setParentLocationId("");
       setMessage("محل ثبت شد و در ورودی‌های عملیاتی قابل انتخاب است.");
       props.onChanged();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت محل پروژه انجام نشد."));
+      if (!props.isCurrentRead(commandVersion)) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        props.onAccessRevoked();
+        setMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ ورودی شما برای تلاش بعدی محفوظ است.");
+      } else setMessage(toUserMessage(error, "ثبت محل پروژه انجام نشد."));
     } finally {
       setBusyId(null);
     }
   }
 
   async function retire(location: ProjectLocationModel) {
+    if (!canCommand || busyId !== null) return;
     setBusyId(location.id);
+    const commandVersion = props.readVersion;
     setMessage(`در حال غیرفعال‌کردن محل ${location.name}…`);
     try {
       await retireProjectLocation(
@@ -64,21 +80,30 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
         props.projectId,
         location,
       );
+      if (!props.isCurrentRead(commandVersion)) return;
       setMessage("محل غیرفعال شد؛ سوابق قبلی با شناسه همان محل حفظ می‌شوند.");
       props.onChanged();
     } catch (error) {
-      setMessage(toUserMessage(error, "غیرفعال‌کردن محل انجام نشد."));
+      if (!props.isCurrentRead(commandVersion)) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        props.onAccessRevoked();
+        setMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی کنار گذاشته شد.");
+      } else setMessage(toUserMessage(error, "غیرفعال‌کردن محل انجام نشد."));
     } finally {
       setBusyId(null);
     }
   }
 
   return (
-    <section className="project-location-settings" aria-labelledby="project-location-title">
+    <section className="project-location-settings" aria-labelledby="project-location-title" data-testid="project-location-settings" data-read-state={props.readState}>
       <div>
         <h3 id="project-location-title">ساختار مکان پروژه</h3>
         <p className="muted">هر محل می‌تواند زیرمجموعهٔ محل دیگر باشد؛ محل غیرفعال از ثبت جدید حذف می‌شود ولی تاریخچه پاک نمی‌شود.</p>
       </div>
+
+      <p className="location-read-message" role={props.readState === "forbidden" || props.readState === "unavailable" ? "alert" : "status"}>{props.readMessage}</p>
+      {props.isOnline && ["cached", "unavailable", "forbidden"].includes(props.readState) &&
+        <button type="button" className="secondary-button" onClick={props.onRetry}>تلاش دوباره برای دریافت مکان‌ها</button>}
 
       <div className="project-location-list">
         {props.locations.map((location) => (
@@ -87,12 +112,12 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
               <strong>{location.code} · {location.name}</strong>
               <small>{location.parentLocationId ? `زیرمجموعه ${parentLabel(props.locations, location.parentLocationId)}` : "سطح اصلی پروژه"}</small>
             </div>
-            <span>{location.status === "Active" ? "فعال" : "غیرفعال"}</span>
-            {location.status === "Active" && location.code !== "ROOT" && (
+            <span>{props.readState === "cached" ? "نسخهٔ محلی · " : ""}{location.status === "Active" ? "فعال" : "غیرفعال"}</span>
+            {canCommand && location.status === "Active" && location.code !== "ROOT" && (
               <button
                 type="button"
                 className="secondary-button"
-                disabled={!props.isOnline || busyId !== null}
+                disabled={!canCommand || busyId !== null}
                 onClick={() => void retire(location)}
               >
                 {busyId === location.id ? "در حال ثبت…" : "غیرفعال‌کردن"}
@@ -120,7 +145,7 @@ export function ProjectLocationSettings(props: ProjectLocationSettingsProps) {
             ))}
           </select>
         </label>
-        <button type="submit" disabled={!props.isOnline || busyId !== null || activeLocations.length === 0}>
+        <button type="submit" disabled={!canCommand || busyId !== null || activeLocations.length === 0}>
           {busyId === "create" ? "در حال ثبت…" : "افزودن محل"}
         </button>
       </form>

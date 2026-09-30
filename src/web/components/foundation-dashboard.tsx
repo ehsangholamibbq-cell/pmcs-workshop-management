@@ -69,9 +69,14 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [commandMessage, setCommandMessage] = useState("در حال دریافت آخرین تصویر رسمی وضعیت…");
   const [commandReadState, setCommandReadState] = useState<"loading" | "current" | "cached" | "error" | "forbidden">("loading");
   const projectAccessDenied = useRef(false);
+  const commandReadSequence = useRef(0);
   const [isCalculating, setIsCalculating] = useState(false);
   const [measurementItems, setMeasurementItems] = useState<readonly MeasurementItemModel[]>([]);
   const [projectLocations, setProjectLocations] = useState<readonly ProjectLocationModel[]>([]);
+  const [locationReadState, setLocationReadState] = useState<"loading" | "current" | "cached" | "unavailable" | "forbidden">("loading");
+  const [locationMessage, setLocationMessage] = useState("در حال دریافت مکان‌های پروژه…");
+  const locationReadSequence = useRef(0);
+  const [locationVersion, setLocationVersion] = useState(0);
   const isOnline = useSyncExternalStore(subscribeToOnlineState, readOnlineState, () => true);
   const commandCenterCacheKey = useMemo(
     () => scopedStorageKey(`pmcs-command-center:${projectId}`),
@@ -168,6 +173,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [refreshPendingCount]);
 
   const loadCommandCenter = useCallback(async () => {
+    const requestId = ++commandReadSequence.current;
     const cached = readCachedCommandCenter(commandCenterCacheKey);
     if (!isOnline) {
       if (cached) {
@@ -188,7 +194,9 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         { tenantId, userId },
         projectId,
       );
-      if (projectAccessDenied.current) return;
+      if (requestId !== commandReadSequence.current) return;
+      const previouslyDenied = projectAccessDenied.current;
+      projectAccessDenied.current = false;
       setCommandCenter(model);
       setCommandReadState("current");
       localStorage.setItem(commandCenterCacheKey, JSON.stringify(model));
@@ -197,14 +205,20 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         : model.snapshot
           ? "تصویر رسمی و قابل ردیابی وضعیت از سرور دریافت شد."
           : "مشخصات پروژه دریافت شد؛ تصویر رسمی وضعیت هنوز ساخته نشده است.");
+      if (previouslyDenied) setRefreshToken((current) => current + 1);
     } catch (error) {
+      if (requestId !== commandReadSequence.current) return;
       if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
         projectAccessDenied.current = true;
+        ++locationReadSequence.current;
+        setLocationVersion(locationReadSequence.current);
         localStorage.removeItem(commandCenterCacheKey);
         localStorage.removeItem(locationCacheKey);
         setCommandCenter(null);
         setProjectLocations([]);
         setMeasurementItems([]);
+        setLocationReadState("forbidden");
+        setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
         setCommandReadState("forbidden");
         setCommandMessage("دسترسی به این پروژه در حال حاضر تأیید نشد؛ دادهٔ ذخیره‌شده نمایش داده نمی‌شود.");
         return;
@@ -229,23 +243,52 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [loadCommandCenter, refreshToken]);
 
   const loadProjectLocations = useCallback(async () => {
+    const requestId = ++locationReadSequence.current;
+    setLocationVersion(requestId);
     const cached = readCachedProjectLocations(locationCacheKey);
+    if (projectAccessDenied.current) {
+      setProjectLocations([]);
+      setLocationReadState("forbidden");
+      setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+      return;
+    }
     if (!isOnline) {
       setProjectLocations(cached);
+      setLocationReadState(cached.length ? "cached" : "unavailable");
+      setLocationMessage(cached.length
+        ? "نسخهٔ ذخیره‌شدهٔ مکان‌ها فقط برای ارجاع محلی است؛ فرمان رسمی نیازمند خواندن تازه از سرور است."
+        : "بدون اتصال، فهرست مکان‌ها روی این دستگاه موجود نیست.");
       return;
     }
 
+    setProjectLocations([]);
+    setLocationReadState("loading");
+    setLocationMessage("در حال دریافت مکان‌های پروژه…");
     try {
       const locations = await listProjectLocations(
         apiBaseUrl,
         { tenantId, userId },
         projectId,
       );
-      if (projectAccessDenied.current) return;
+      if (requestId !== locationReadSequence.current || projectAccessDenied.current) return;
       setProjectLocations(locations);
+      setLocationReadState("current");
+      setLocationMessage("فهرست مکان‌ها با پاسخ جاری سرور تأیید شده است.");
       localStorage.setItem(locationCacheKey, JSON.stringify(locations));
-    } catch {
-      if (!projectAccessDenied.current) setProjectLocations(cached);
+    } catch (error) {
+      if (requestId !== locationReadSequence.current || projectAccessDenied.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        localStorage.removeItem(locationCacheKey);
+        setProjectLocations([]);
+        setLocationReadState("forbidden");
+        setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+      } else {
+        setProjectLocations(cached);
+        setLocationReadState(cached.length ? "cached" : "unavailable");
+        setLocationMessage(cached.length
+          ? "دریافت تازه ناموفق بود؛ این فهرست نسخهٔ ذخیره‌شده و تأییدنشدهٔ فعلی است."
+          : "مکان‌های پروژه از سرور دریافت نشد؛ دوباره تلاش کنید.");
+      }
     }
   }, [isOnline, locationCacheKey, projectId, tenantId, userId]);
 
@@ -293,7 +336,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <h2>{commandReadState === "loading" ? "در حال دریافت پروژه…" :
             commandReadState === "forbidden" ? "دسترسی به پروژه تأیید نشد" : "دریافت پروژه کامل نشد"}</h2>
           <p>{commandMessage}</p>
-          {commandReadState === "error" && isOnline &&
+          {(commandReadState === "error" || commandReadState === "forbidden") && isOnline &&
             <button type="button" onClick={() => setRefreshToken((current) => current + 1)}>تلاش دوباره</button>}
           <Link className="primary-link" href="/">فهرست پروژه‌ها</Link>
         </section>
@@ -650,6 +693,19 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             projectId={projectId}
             isOnline={isOnline}
             locations={projectLocations}
+            readState={locationReadState}
+            readVersion={locationVersion}
+            isCurrentRead={(version) => version === locationReadSequence.current && !projectAccessDenied.current}
+            readMessage={locationMessage}
+            onRetry={() => void loadProjectLocations()}
+            onAccessRevoked={() => {
+              ++locationReadSequence.current;
+              setLocationVersion(locationReadSequence.current);
+              localStorage.removeItem(locationCacheKey);
+              setProjectLocations([]);
+              setLocationReadState("forbidden");
+              setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+            }}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
           <div className="capability-grid">
