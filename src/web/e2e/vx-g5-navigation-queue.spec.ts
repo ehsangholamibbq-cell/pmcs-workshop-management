@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import { projectId, projectPath, tenantId, userId } from "./support";
 import { evidence } from "./vx-g5-support";
 
+test.use({ serviceWorkers: "block" });
+
 test("leaving Chat while file hashing is pending cannot create a late local upload", async ({ page }, testInfo) => {
   const report = evidence(testInfo, "navigation-queue");
   const messageId = "a5000000-0000-4000-8000-000000000040";
@@ -18,15 +20,18 @@ test("leaving Chat while file hashing is pending cannot create a late local uplo
   await page.goto(`${projectPath}/collaboration`);
   await page.getByRole("button", { name: "پیوست‌ها", exact: true }).click();
   await expect(page.getByLabel("افزودن فایل به پیام خود")).toBeVisible();
-  await page.evaluate(() => {
+  const fileBytes = Buffer.from(`%PDF-1.7\n${"a".repeat(4096)}\n%%EOF`);
+  await page.evaluate(expectedFileBytes => {
     const state = { started: false, opened: false, released: false, release: () => {} };
     (window as unknown as { g5PendingHash: typeof state }).g5PendingHash = state;
     const originalDigest = crypto.subtle.digest.bind(crypto.subtle);
     Object.defineProperty(crypto.subtle, "digest", { configurable: true,
       value: async (algorithm: AlgorithmIdentifier, data: BufferSource) => {
         const result = await originalDigest(algorithm, data);
-        state.started = true;
-        await new Promise<void>(resolve => { state.release = resolve; });
+        if (data.byteLength === expectedFileBytes && !state.started) {
+          state.started = true;
+          await new Promise<void>(resolve => { state.release = resolve; });
+        }
         return result;
       } });
     const originalOpen = IDBFactory.prototype.open;
@@ -35,9 +40,9 @@ test("leaving Chat while file hashing is pending cannot create a late local uplo
       if (state.released && args[0].startsWith("pmcs-field-v3-")) request.addEventListener("success", () => { state.opened = true; });
       return request;
     };
-  });
+  }, fileBytes.length);
   await page.getByLabel("افزودن فایل به پیام خود").setInputFiles({ name: "late-navigation.pdf",
-    mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\n%%EOF") });
+    mimeType: "application/pdf", buffer: fileBytes });
   await page.getByRole("button", { name: "نگهداری فایل در صف دستگاه", exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { g5PendingHash: { started: boolean } }).g5PendingHash.started)).toBe(true);
   await page.getByRole("link", { name: "مرکز فرمان پروژه", exact: true }).click();

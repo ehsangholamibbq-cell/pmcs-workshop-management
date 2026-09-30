@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import { projectId, projectPath, userId } from "./support";
 import { auditSurface, evidence, viewports } from "./vx-g5-support";
 
+test.use({ serviceWorkers: "block" });
+
 test("enabled Chat retains six readable conversion forms and truthful loading, error, offline and denied states in every engine", async ({ page, context }, testInfo) => {
   test.setTimeout(600_000);
   await page.emulateMedia({ reducedMotion: "reduce" });

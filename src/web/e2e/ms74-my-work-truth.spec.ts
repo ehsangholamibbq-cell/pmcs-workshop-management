@@ -15,6 +15,8 @@ test("work and notifications distinguish current, cached and revoked data", asyn
   mkdirSync(output, { recursive: true });
   const files: Array<{ name: string; sha256: string; bytes: number; width: number; height: number }> = [];
   async function capture(name: string, width: number, height: number) {
+    await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "current");
+    await expect.poll(() => page.locator("#fact-location option").count()).toBeGreaterThan(1);
     await expect.poll(async () => {
       const center = page.getByTestId("my-work-center");
       if (!await center.isVisible().catch(() => false)) return false;

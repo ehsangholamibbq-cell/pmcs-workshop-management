@@ -5521,7 +5521,7 @@ output {
   background: rgba(255, 255, 255, 0.8);
 }
 
-.profile-form-grid input:disabled { color: #747c79; background: #f1f2ee; }
+.profile-form-grid input:disabled { color: #59635f; background: #f1f2ee; }
 
 .profile-photo-controls {
   display: flex;

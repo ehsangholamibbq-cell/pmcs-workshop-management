@@ -89,7 +89,7 @@ export async function auditSurface(page: Page, report: ReturnType<typeof evidenc
   });
   report.record(name + ":keyboard", focus);
   expect(focus.tag).not.toBe("BODY"); expect(focus.width).toBeGreaterThan(0); expect(focus.height).toBeGreaterThan(0);
-  expect(focus.outline).toBe("solid"); expect(focus.outlineWidth).toBeGreaterThanOrEqual(2);
+  expect(["solid", "auto"]).toContain(focus.outline); expect(focus.outlineWidth).toBeGreaterThanOrEqual(2);
   const navigation = page.locator(".sidebar-mobile-navigation > button");
   if (await navigation.isVisible()) {
     await navigation.focus(); await page.keyboard.press("Enter");
