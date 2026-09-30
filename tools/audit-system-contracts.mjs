@@ -31,6 +31,7 @@ const protocolManagedMutations = new Map([
   ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Pin is a repeatable desired state; events emit only on transition."],
   ["DELETE /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Unpin is a repeatable desired state; events emit only on transition."],
   ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/attachments/{documentId:guid}", "A released owner-scoped document has one unique natural association; repeated PUT emits no event."],
+  ["POST /api/v1/intelligence/admin/providers/{provider}/probe", "A rate-limited, permission-gated connection probe carries no PMCS user payload and changes no PMCS state; the result is not treated as an idempotent provider operation."],
 ]);
 
 const missingIdempotency = mutations.filter((endpoint) =>

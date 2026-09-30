@@ -39,6 +39,18 @@ public sealed class IntelligenceModule : IModule
         services.AddSingleton(settings);
         services.AddSingleton(new HttpClient());
         services.AddSingleton<IAdvisoryModelClient, OpenAiResponsesClient>();
+        services.AddSingleton<IModelProviderProbe>(provider => new OpenAiModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["OpenAI:Model"] ?? configuration["OPENAI_MODEL"],
+                configuration["OpenAI:ApiKey"] ?? configuration["OPENAI_API_KEY"])));
+        services.AddSingleton<IModelProviderProbe>(provider => new GeminiModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Gemini:Model"] ?? configuration["GEMINI_MODEL"],
+                configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"])));
+        services.AddSingleton<IModelProviderProbe>(provider => new AnthropicModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Anthropic:Model"] ?? configuration["ANTHROPIC_MODEL"],
+                configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
         services.AddScoped<IntelligenceAdministrationAccess>();
         services.AddScoped<PermissionAwareContextAssembler>();
         services.AddSingleton<IDatabaseMigration, IntelligenceInitialMigration>();
@@ -46,5 +58,9 @@ public sealed class IntelligenceModule : IModule
         services.AddHostedService<AdvisoryGenerationWorker>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapIntelligenceEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapIntelligenceEndpoints();
+        endpoints.MapModelProviderAdministration();
+    }
 }
