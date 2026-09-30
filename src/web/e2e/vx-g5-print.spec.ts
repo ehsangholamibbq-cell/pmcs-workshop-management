@@ -3,6 +3,8 @@ import { execFileSync } from "node:child_process";
 import { projectId, projectPath } from "./support";
 import { evidence } from "./vx-g5-support";
 
+test.use({ serviceWorkers: "block" });
+
 test("every browser hides interactive workspace controls in print media", async ({ page }, testInfo) => {
   const report = evidence(testInfo, "print-media");
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -11,6 +13,7 @@ test("every browser hides interactive workspace controls in print media", async 
   await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state", "current");
   await page.emulateMedia({ media: "print", reducedMotion: "reduce" });
   await expect(page.locator(".project-print-sheet")).toBeVisible();
+  await expect(page.locator(".project-print-sheet")).toContainText("پروژه نمونه ساختمان اداری–تجاری");
   await expect(page.locator(".sidebar")).toBeHidden();
   await expect(page.locator(".workspace")).toBeHidden();
   expect(await page.locator("button,input,select,textarea,a").evaluateAll(elements => elements.filter(element => {
@@ -26,6 +29,7 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
   await page.setViewportSize({ width: 1440, height: 900 });
   let state = "no-snapshot";
   const snapshotId = "a5000000-0000-4000-8000-000000000001";
+  const expectedProjectName = "پروژه نمونه ساختمان اداری–تجاری";
   let projectName = "";
   await page.route(`**/api/pmcs/api/v1/projects/${projectId}/command-center`, async route => {
     if (state === "denied") return route.fulfill({ status: 403 });
@@ -68,11 +72,15 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
       await expect(page.getByText(projectName, { exact: true })).toHaveCount(0);
     } else {
       await expect(sheet).toBeVisible();
+      await expect(sheet).toContainText(expectedProjectName);
       await expect(sheet).toContainText("گزارش رسمی امضاشده یا خروجی مرکز گزارش‌ها نیست");
       if (state === "no-snapshot") {
         await expect(page.locator(".project-print-absence")).toBeVisible();
         await expect(page.locator(".project-print-facts")).toHaveCount(0);
-      } else await expect(sheet).toContainText(snapshotId);
+      } else {
+        await expect(sheet).toContainText(snapshotId);
+        await expect(page.locator(".project-print-absence")).toHaveCount(0);
+      }
       if (state === "outdated" || state === "cached") await expect(page.locator(".project-print-warning")).toBeVisible();
       if (state === "cached") await expect(page.locator(".project-print-source")).toContainText("نسخه ذخیره‌شده روی دستگاه");
     }
@@ -87,7 +95,7 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
         if (state !== "denied") {
           await expect(page.locator(".project-print-shell")).toHaveAttribute("data-command-read-state",
             state === "cached" ? "cached" : "current");
-          await expect(sheet).toContainText(projectName);
+          await expect(sheet).toContainText(expectedProjectName);
           if (state === "no-snapshot") await expect(page.locator(".project-print-absence")).toBeVisible();
           else await expect(sheet).toContainText(snapshotId);
         }
@@ -96,7 +104,7 @@ test("independent no-snapshot, current, outdated, cached and denied A4/A3 print 
         const extracted = execFileSync("pdftotext", ["-layout", "-", "-"],
           { input: candidate, encoding: "utf8" });
         const valid = state === "denied" ? extracted.trim() === "" :
-          !extracted.includes("مشخصات پروژه هنوز دریافت نشده است") &&
+          extracted.includes(expectedProjectName) &&
           (state === "no-snapshot" ? !extracted.includes(snapshotId) : extracted.includes(snapshotId));
         if (valid) { bytes = candidate; break; }
       }
