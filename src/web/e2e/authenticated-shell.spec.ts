@@ -55,9 +55,13 @@ test("authenticated cold start keeps the Persian RTL tenant and project boundary
   const calendarTrigger = page.locator("#technical-office").getByRole("button", { name: "باز کردن تقویم شمسی" }).first();
   const calendar = page.getByRole("dialog", { name: "انتخاب تاریخ شمسی" });
   await calendarTrigger.click();
-  await expect(calendar).toBeVisible();
-  await expect(calendar.getByRole("gridcell")).toHaveCount(42);
-  await expect(calendar.getByRole("button", { name: "امروز" })).toBeVisible();
+  // A fresh owner read can replace the current panel after reload and close the transient popover.
+  await expect.poll(async () => {
+    await expect(page.locator("#technical-office")).toHaveAttribute("data-read-state", "current");
+    if (!(await calendar.isVisible())) await calendarTrigger.click();
+    return (await calendar.getByRole("gridcell").count()) === 42 &&
+      (await calendar.getByRole("button", { name: "امروز" }).isVisible());
+  }, { timeout: 30_000 }).toBe(true);
   await captureVisualBaseline(page, "29-calendar-dialog");
   await page.mouse.click(5, 5);
   await expect(calendar).toBeHidden();
