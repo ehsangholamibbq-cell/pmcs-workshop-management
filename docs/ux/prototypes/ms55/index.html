@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — تصویر و حریم خصوصی نمایه</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.7 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --green: #11643b; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; }
+    button, select, input { font: inherit; }
+    button { cursor: pointer; min-height: 44px; }
+    :is(a, button, select, input):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1180px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 86px; height: 58px; object-fit: contain; flex: none; padding: .2rem; background: #fbf8f1; border-radius: 9px; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { width: min(1180px, 100%); margin: auto; padding: 1rem 1rem 3rem; }
+    .note { border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; padding: .65rem .8rem; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; padding: .35rem .6rem; background: white; color: inherit; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr); gap: 1rem; }
+    .card { min-width: 0; border: 1px solid #e9dfcf; border-radius: 14px; background: white; padding: 1rem; }
+    h2 { margin: 0 0 .35rem; font-size: 1.1rem; color: var(--navy); }
+    p { margin: .25rem 0 .8rem; }
+    .muted { color: var(--muted); font-size: .85rem; }
+    .profile { display: flex; align-items: center; gap: 1rem; border: 1px solid #d5e0db; border-radius: 12px; background: #f8faf8; padding: 1rem; }
+    .avatar { width: 112px; height: 112px; flex: none; display: grid; place-items: center; overflow: hidden; border: 4px solid white; border-radius: 22px 7px 22px 7px; box-shadow: 0 8px 20px #0c203622; background: linear-gradient(145deg, #0c2036, #176b62); color: white; font-weight: 800; font-size: 2rem; }
+    .avatar[data-kind="sample"] { background: #d8e7e0; }
+    .sample-art { width: 138px; height: 138px; flex: none; display: grid; place-items: center; position: relative; background: radial-gradient(circle at 56% 35%, #ce947b 0 17%, transparent 18%), radial-gradient(ellipse at 55% 88%, #176b62 0 36%, transparent 37%), linear-gradient(140deg, #cddbd5, #f0e7d8); color: transparent; transform: translate(var(--crop-x, 0px), var(--crop-y, 0px)); }
+    .profile strong { display: block; font-size: 1.1rem; }
+    .profile small { color: var(--muted); }
+    .privacy { display: inline-block; margin-top: .45rem; padding: .2rem .6rem; border-radius: 99px; color: #254c3b; background: #e0eee5; font-size: .78rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .primary, .secondary { border-radius: 8px; padding: .4rem .8rem; font-weight: 700; }
+    .primary { border: 1px solid var(--green); color: white; background: var(--green); }
+    .secondary { border: 1px solid #7b8c94; color: var(--navy); background: white; }
+    button:disabled { cursor: not-allowed; border-color: #aeb8b8; color: #46555b; background: #e4e9e6; }
+    .status { min-height: 76px; margin-top: 1rem; padding: .65rem .8rem; border-right: 4px solid #235c99; border-radius: 8px; background: #f1f6f8; }
+    .status[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .status[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .status strong { display: block; }
+    .status p { margin: 0; }
+    .skeleton { height: 20px; width: 70%; border-radius: 5px; background: #dce5e2; margin-top: .4rem; }
+    .facts { margin: 0; }
+    .facts div { padding: .65rem 0; border-bottom: 1px solid #e9dfcf; }
+    .facts dt { font-weight: 700; }
+    .facts dd { margin: .1rem 0 0; color: var(--muted); }
+    dialog { width: min(480px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; border: 1px solid #d5e0db; border-radius: 14px; padding: 1rem; color: inherit; background: white; box-shadow: 0 20px 60px #0c203655; }
+    dialog::backdrop { background: #0c2036aa; }
+    dialog h2 { margin-bottom: .25rem; }
+    .crop-preview { display: grid; place-items: center; width: 130px; height: 130px; overflow: hidden; margin: .8rem auto; border: 3px solid #d5e0db; border-radius: 22px 7px 22px 7px; }
+    .crop-field { display: grid; gap: .15rem; margin: .65rem 0; font-weight: 700; }
+    .crop-field input { width: 100%; min-height: 44px; }
+    .dialog-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .foot { margin-top: 1rem; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } .card { padding: .8rem; } .profile { padding: .7rem; } .avatar { width: 88px; height: 88px; } .avatar .sample-art { transform: scale(.8) translate(var(--crop-x, 0px), var(--crop-y, 0px)); } }
+    @media (max-width: 360px) { .brand { width: 68px; height: 50px; } h1 { font-size: 1.05rem; } .profile { gap: .65rem; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { color: var(--navy); background: white; } header p { color: var(--muted); } .controls, .actions, dialog { display: none !important; } .layout { display: block; } .card { break-inside: avoid; margin-bottom: .8rem; } }
+  </style>
+</head>
+<body data-state="fallback">
+  <a class="skip" href="#main">رفتن به نمونهٔ نمایه</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>تصویر و حریم خصوصی نمایه</h1><p>PMCS · UX2-MS55 · نمونهٔ مستقل</p></div></div></header>
+  <main id="main">
+    <p class="note"><strong>نمونهٔ طراحی:</strong> نام و تصویر زیر ساختگی‌اند. انتخاب فایل، بارگذاری، ذخیره و درخواست شبکه در این صفحه انجام نمی‌شود.</p>
+    <div class="controls"><label for="state">وضعیت نمونه</label><select id="state"><option value="fallback">بدون تصویر</option><option value="default">تصویر موجود</option><option value="loading">در حال بررسی تصویر</option><option value="error">خطای اعتبارسنجی</option><option value="offline">آفلاین</option><option value="permission">بدون مجوز</option><option value="conflict">تعارض نسخه</option><option value="success">پیش‌نمایش تأییدشده</option></select></div>
+    <div class="layout">
+      <section class="card" aria-labelledby="profile-title"><h2 id="profile-title">نمایهٔ عضو نمونه</h2><p class="muted">پیش‌نمایش رفتار تصویر؛ هیچ دادهٔ واقعی نمایش داده نمی‌شود.</p>
+        <div class="profile"><div class="avatar" id="avatar" aria-label="تصویر موجود نیست؛ حروف جایگزین عضو نمونه"><span id="initials">م ن</span><div class="sample-art" id="photo" hidden aria-hidden="true">نمونه</div></div><div><strong>عضو نمونه</strong><small>هماهنگ‌کنندهٔ پروژهٔ فرضی</small><br><span class="privacy" id="privacy">فقط در محدودهٔ مجاز</span></div></div>
+        <div class="actions"><button class="primary" id="crop-button" type="button" disabled>بازبینی قاب تصویر نمونه</button><button class="secondary" id="remove-button" type="button" disabled>نمایش حالت بدون تصویر</button></div>
+        <div class="status" id="status" role="status" aria-live="polite"><strong id="status-title">بدون تصویر</strong><p id="status-detail">حروف جایگزین دیده می‌شوند؛ تصویر ساختگی یا قبلی نشان داده نمی‌شود.</p><div class="skeleton" id="skeleton" hidden aria-hidden="true"></div></div>
+      </section>
+      <aside class="card" aria-labelledby="privacy-title"><h2 id="privacy-title">مرز حریم خصوصی</h2><dl class="facts"><div><dt>منبع تصویر</dt><dd>در محصول، فقط فایل امن پس از کنترل امنیتی و انتشار مجاز است؛ اینجا تصویر ترسیمی نمونه است.</dd></div><div><dt>دامنهٔ نمایش</dt><dd>نمایهٔ شخصی مشترک است، اما نقش و دسترسی هر پروژه مستقل می‌ماند.</dd></div><div><dt>برداشتن تصویر</dt><dd>قطع ارتباط تصویر به معنی حذف فوری فایل از سیاست نگهداری نیست.</dd></div></dl></aside>
+    </div>
+    <p class="foot">این نمونه قرارداد دیداری و تعاملی را نشان می‌دهد؛ انتشار تصویر و ذخیرهٔ برش باید با نسخه، مجوز و سیاست فایل در محصول واقعی سنجیده شوند.</p>
+  </main>
+  <dialog id="crop-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-help"><h2 id="dialog-title">بازبینی قاب نمونه</h2><p id="dialog-help">تنظیم افقی و عمودی فقط پیش‌نمایش محلی را تغییر می‌دهد. برای ثبت در محصول، نسخه و مجوز باید دوباره بررسی شوند.</p><div class="crop-preview"><div class="sample-art" id="dialog-photo" aria-hidden="true">نمونه</div></div><label class="crop-field" for="crop-x">جابه‌جایی افقی <input id="crop-x" type="range" min="0" max="20" value="0"></label><label class="crop-field" for="crop-y">جابه‌جایی عمودی <input id="crop-y" type="range" min="0" max="20" value="0"></label><div class="dialog-actions"><button class="primary" id="confirm" type="button">تأیید پیش‌نمایش محلی</button><button class="secondary" id="cancel" type="button">انصراف</button></div></dialog>
+  <script>
+    const state = document.querySelector('#state'), avatar = document.querySelector('#avatar'), photo = document.querySelector('#photo'), initials = document.querySelector('#initials');
+    const title = document.querySelector('#status-title'), detail = document.querySelector('#status-detail'), status = document.querySelector('#status'), skeleton = document.querySelector('#skeleton');
+    const cropButton = document.querySelector('#crop-button'), removeButton = document.querySelector('#remove-button'), dialog = document.querySelector('#crop-dialog');
+    const x = document.querySelector('#crop-x'), y = document.querySelector('#crop-y'), dialogPhoto = document.querySelector('#dialog-photo');
+    const messages = {
+      fallback: ['بدون تصویر', 'حروف جایگزین دیده می‌شوند؛ تصویر ساختگی یا قبلی نشان داده نمی‌شود.', 'normal'],
+      default: ['تصویر نمونه', 'تصویر ترسیمی فقط برای بررسی قاب و خوانایی است.', 'normal'],
+      loading: ['در حال بررسی تصویر', 'تا پایان بررسی، تصویر جدید یا نتیجهٔ تأییدشده نشان داده نمی‌شود.', 'normal'],
+      error: ['تصویر پذیرفته نشد', 'قالب یا اندازهٔ فایل باید اصلاح شود؛ تصویر جدید نشان داده نمی‌شود.', 'error'],
+      offline: ['اتصال برقرار نیست', 'پیش‌نمایش موجود محلی است؛ هیچ بارگذاری یا ذخیره‌ای انجام نمی‌شود.', 'warning'],
+      permission: ['اجازهٔ ویرایش تصویر ندارید', 'کنترل ویرایش قفل است و تصویری که مجاز نیست نمایش داده نمی‌شود.', 'warning'],
+      conflict: ['نسخهٔ نمایه تغییر کرده است', 'پیش‌نویس برش را نگه دارید و پیش از ثبت، نسخهٔ فعلی را بررسی کنید.', 'error'],
+      success: ['پیش‌نمایش محلی تأیید شد', 'قاب نمونه تغییر کرد؛ این تأیید به معنی ذخیره در محصول نیست.', 'normal'],
+    };
+    function render() {
+      const key = state.value, [heading, description, tone] = messages[key];
+      document.body.dataset.state = key; title.textContent = heading; detail.textContent = description; status.dataset.tone = tone;
+      if (tone === 'error') status.setAttribute('role', 'alert'); else status.setAttribute('role', 'status');
+      const visible = ['default', 'offline', 'conflict', 'success'].includes(key);
+      photo.hidden = !visible; initials.hidden = visible; avatar.dataset.kind = visible ? 'sample' : 'fallback';
+      avatar.setAttribute('aria-label', visible ? 'تصویر ترسیمی عضو نمونه، فقط پیش‌نمایش محلی' : 'تصویر موجود نیست؛ حروف جایگزین عضو نمونه');
+      skeleton.hidden = key !== 'loading'; cropButton.disabled = !['default', 'success'].includes(key); removeButton.disabled = !['default', 'success'].includes(key);
+      document.querySelector('#privacy').textContent = key === 'permission' ? 'نمایش تصویر محدود شده' : 'فقط در محدودهٔ مجاز';
+    }
+    function move() { const shiftX = Number(x.value) - 10, shiftY = Number(y.value) - 10; dialogPhoto.style.setProperty('--crop-x', `${shiftX}px`); dialogPhoto.style.setProperty('--crop-y', `${shiftY}px`); }
+    state.addEventListener('change', render);
+    cropButton.addEventListener('click', () => { move(); dialog.showModal(); x.focus(); });
+    x.addEventListener('input', move); y.addEventListener('input', move);
+    document.querySelector('#confirm').addEventListener('click', () => { photo.style.setProperty('--crop-x', dialogPhoto.style.getPropertyValue('--crop-x')); photo.style.setProperty('--crop-y', dialogPhoto.style.getPropertyValue('--crop-y')); dialog.close(); state.value = 'success'; render(); cropButton.focus(); });
+    document.querySelector('#cancel').addEventListener('click', () => { dialog.close(); cropButton.focus(); });
+    dialog.addEventListener('close', () => cropButton.focus());
+    removeButton.addEventListener('click', () => { state.value = 'fallback'; render(); });
+    render();
+  </script>
+</body>
+</html>

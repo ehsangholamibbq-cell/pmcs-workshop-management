@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "product": "PMCS",
+  "releaseLine": "V1.1",
+  "checkpoint": "PMCS-V1.1-DOC1-RC1",
+  "status": "verified",
+  "parentBranch": "v1.1-development",
+  "parentCommit": "ce4beb3a5a4aff6368c2719f0dc6ca1a170fbca5",
+  "candidateSourceCommit": "3fb9f3cb9d14cef5ecbc3de1a3f1f266e88e0e11",
+  "validationRunId": "35338895848",
+  "validationRunNumber": 83,
+  "validationConclusion": "success",
+  "validationUrl": "https://github.com/ehsangholamibbq-cell/pmcs-workshop-management/actions/runs/35338895848",
+  "qualificationArtifactId": "10544242838",
+  "qualificationArtifactDigest": "sha256:538047e696681e528ad35ea5f278c26a9f89cc6a7446109d2632a3832535cd97",
+  "runtimeBaselineCommit": "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
+  "moduleId": "documents.shared",
+  "migration": {
+    "module": "documents",
+    "version": "20260918-001",
+    "expectedLedgerSize": 39
+  },
+  "security": {
+    "privateObjectStorage": true,
+    "sha256Verified": true,
+    "signatureVerified": true,
+    "quarantineRequired": true,
+    "criticalReleasePermission": "documents.quarantine.release",
+    "tenantAndProjectIsolation": true,
+    "crossModulePersistenceAllowed": false,
+    "publicEventContainsBinaryOrStorageKey": false
+  },
+  "gates": {
+    "domainTests": "passed",
+    "webOfflineQueueTests": "passed",
+    "postgresMinioRoundtrip": "passed",
+    "permissionAndQuarantineNegativeTests": "passed",
+    "fullCi": "passed"
+  },
+  "validation": {
+    "ciJobsPassed": 8,
+    "dotnetWarnings": 0,
+    "dotnetErrors": 0,
+    "csharpTestsPassed": 274,
+    "webTestsPassed": 130,
+    "browserScenariosPassed": 4,
+    "csharpModuleFilesChecked": 293,
+    "apiEndpointsAudited": 248,
+    "apiMutationsAudited": 192,
+    "restoreMigrationsVerified": 39
+  },
+  "knownProductionBoundary": "Replace the deterministic scanner adapter with an operational malware scanning service before production deployment.",
+  "nextStage": "V1.1-IAM1"
+}

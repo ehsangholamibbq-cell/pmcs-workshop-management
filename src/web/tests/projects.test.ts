@@ -1,15 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  activateProjectBootstrap,
   activateProject,
   configureProjectCalendar,
   configureProjectSetup,
   configureProjectPlanningMode,
+  createProjectBootstrap,
   createProject,
   createProjectLocation,
+  executeProjectBootstrap,
+  getProjectBootstrapResult,
   getProjectReadiness,
   listProjects,
   listProjectLocations,
+  refreshProjectBootstrapPreview,
   retireProjectLocation,
 } from "../lib/projects.ts";
 
@@ -214,6 +219,90 @@ test("planning mode change is revision-controlled and idempotent", async () => {
     assert.equal(capturedUrl, "https://pmcs.test/api/v1/projects/project-id/planning-mode");
     assert.deepEqual(JSON.parse(String(capturedInit?.body)), { baseRevision: 3, mode: "Milestones" });
     assert.ok(headers.get("Idempotency-Key"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("controlled bootstrap preserves preview digest through execute and independent activation", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  globalThis.fetch = async (input, init) => {
+    calls.push({ url: String(input), init });
+    if (calls.length <= 2) return Response.json({
+      planId: "plan-id",
+      planRevision: calls.length + 1,
+      previewDigest: "digest-one",
+      targetProject: { id: "target-id", revision: 1 },
+    });
+    return Response.json({
+      planId: "plan-id",
+      planRevision: 4,
+      previewDigest: "digest-one",
+      targetProject: { id: "target-id", revision: 2 },
+      status: calls.length === 4 ? "Activated" : "Completed",
+    });
+  };
+
+  try {
+    const identity = { tenantId: "tenant-id", userId: "user-id" };
+    const preview = await createProjectBootstrap("https://pmcs.test", identity, {
+      sourceProjectId: "source-id",
+      target: {
+        code: "NEXT-01", name: "پروژه مقصد", projectType: "Building", executionPhase: "PreConstruction",
+        countryCode: "IR", region: "قزوین", startDate: "2026-09-01", plannedFinishDate: "2027-09-01",
+        shortDescription: "پروژه مستقل", timeZone: "Asia/Tehran", baseCurrencyCode: "IRR",
+        unitSystem: "Metric", offlinePolicyAccepted: true,
+      },
+      categories: ["BaseSettings", "Locations", "Members"],
+      members: [{ userId: "member-id", roleCode: "ProjectManager", accessScope: "Project" }],
+      conflictPolicy: "FailOnConflict",
+    });
+    const refreshed = await refreshProjectBootstrapPreview(
+      "https://pmcs.test", identity, "plan-id", preview.planRevision,
+    );
+    const executed = await executeProjectBootstrap("https://pmcs.test", identity, refreshed);
+    await activateProjectBootstrap("https://pmcs.test", identity, executed);
+
+    const createBody = JSON.parse(String(calls[0]?.init?.body));
+    assert.equal(calls[0]?.url, "https://pmcs.test/api/v1/project-bootstraps");
+    assert.equal(createBody.target.startDate, "2026-09-01");
+    assert.deepEqual(createBody.categories, ["BaseSettings", "Locations", "Members"]);
+    assert.ok(new Headers(calls[0]?.init?.headers).get("Idempotency-Key"));
+
+    assert.equal(calls[1]?.url, "https://pmcs.test/api/v1/project-bootstraps/plan-id/preview");
+    assert.deepEqual(JSON.parse(String(calls[1]?.init?.body)), { baseRevision: 2 });
+    assert.deepEqual(JSON.parse(String(calls[2]?.init?.body)), {
+      baseRevision: 3,
+      previewDigest: "digest-one",
+    });
+    assert.deepEqual(JSON.parse(String(calls[3]?.init?.body)), {
+      baseRevision: 4,
+      targetBaseRevision: 2,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("bootstrap result is a no-cache downloadable read model", async () => {
+  const originalFetch = globalThis.fetch;
+  let capturedUrl = "";
+  let capturedInit: RequestInit | undefined;
+  globalThis.fetch = async (input, init) => {
+    capturedUrl = String(input);
+    capturedInit = init;
+    return Response.json({ planId: "plan-id", status: "Completed" });
+  };
+
+  try {
+    await getProjectBootstrapResult(
+      "https://pmcs.test/",
+      { tenantId: "tenant-id", userId: "user-id" },
+      "plan-id",
+    );
+    assert.equal(capturedUrl, "https://pmcs.test/api/v1/project-bootstraps/plan-id/result");
+    assert.equal(capturedInit?.cache, "no-store");
   } finally {
     globalThis.fetch = originalFetch;
   }

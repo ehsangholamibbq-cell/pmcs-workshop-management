@@ -1,0 +1,196 @@
+# ADR 0031 — حفظ و تکمیل کاتالوگ ده‌گانه RPT1
+
+- شناسه تصمیم: `PMCS-RPT1-CATALOG-DECISION-001`
+- وضعیت: Accepted
+- تاریخ: ۱۴۰۵/۰۶/۲۸ (۲۰۲۶-۰۹-۱۹)
+- Parent checkpoint: `PMCS-V1.1-RPT1-S06-MS06-C1`
+- تصمیم‌گیر: Product owner؛ انتخاب صریح «حفظ هر ۱۰ خانواده»
+- تصمیم جایگزین‌شده: ابهام باز میان تکمیل ۹ خانواده یا کاهش Scope نسخه‌دار
+
+## Context
+
+Roadmap مؤثر RPT1 از ابتدا ده خانواده گزارش استاندارد را داخل Scope قرار داده است. Runtime و Evidence
+فعلی فقط خانواده اول، یعنی `daily-report-certified/1.0.0`، را پیاده و با XLSX/PDF Golden، visual،
+performance، permission، snapshot و audit qualify کرده‌اند. زیرساخت مشترک Reporting به‌تنهایی به‌معنی
+پیاده‌شدن نه خانواده دیگر نیست و RPT1 نمی‌تواند با ادعای کاتالوگ کامل بسته شود.
+
+Canonical Reference و Checkpoint `S06-MS06` این اختلاف را عمداً به یک تصمیم صریح مالک محصول موکول
+کردند و استنتاج آن از code یا Conversation را ممنوع دانستند.
+
+## Decision
+
+### ۱. Scope ده‌گانه بدون کاهش حفظ می‌شود
+
+هر ده خانوادهٔ استاندارد زیر داخل Gate خروج `V1.1-RPT1` باقی می‌مانند. نه خانوادهٔ باقی‌مانده به
+V1.2 یا Stage دیگری منتقل نمی‌شوند و RPT1 تا Qualification مستقل همه آن‌ها بسته نخواهد شد.
+
+| شناسه خانواده | خانواده مصوب | وضعیت در زمان تصمیم |
+| --- | --- | --- |
+| `RPT1-F01` | گزارش روزانه رسمی و زنجیره اصلاحات | Qualified؛ `daily-report-certified/1.0.0` |
+| `RPT1-F02` | گزارش هفتگی و ماهانه پروژه | Required؛ Not Implemented |
+| `RPT1-F03` | گزارش مدیریتی / Executive Project State | Required؛ Not Implemented |
+| `RPT1-F04` | پیشرفت، Planned/Actual/Variance و S-Curve با Baseline معتبر | Required؛ Not Implemented |
+| `RPT1-F05` | مالی، Cash Position، تعهدات، Aging و بودجه در صورت پیکربندی | Required؛ Not Implemented |
+| `RPT1-F06` | قرارداد، اصلاحیه، خرید و تأمین | Required؛ Not Implemented |
+| `RPT1-F07` | دفتر فنی شامل Document/RFI/Submittal/Transmittal | Required؛ Not Implemented |
+| `RPT1-F08` | Quality و HSE با رعایت Classification | Required؛ Not Implemented |
+| `RPT1-F09` | Issue، Risk، Decision، Escalation و Action | Required؛ Not Implemented |
+| `RPT1-F10` | Portfolio Summary با تفکیک دسترسی و ارز و بدون تبدیل پنهان | Required؛ Not Implemented |
+
+### وضعیت اجرای تصمیم در Safe Checkpoint جاری
+
+این ستون تاریخی «وضعیت در زمان تصمیم» را بازنویسی نمی‌کند. تا Safe Checkpoint
+`PMCS-V1.1-RPT1-S07-MS21-C1`، خانواده‌های `RPT1-F01` تا `RPT1-F06` قرارداد معنایی، Runtime،
+Renderer/Golden، Catalog/API/Worker و Qualification End-to-End مستقل دارند. `RPT1-F07` تا
+`RPT1-F10` همچنان `Required / Not Implemented` هستند؛ بنابراین Gate خروج RPT1 طبق همین ADR باز است.
+این Snapshot تاریخی MS21 باقی می‌ماند. در Checkpoint `PMCS-V1.1-RPT1-S07-MS22-C1`
+DoR و قرارداد مستقل `PMCS-RPT1-F07-SEMANTIC-001 v1.0.0` با Evidence سبز Run 205
+برای Document/RFI/Submittal/Transmittal بسته شد. F07 اکنون
+`Contract Ready / Runtime Not Implemented` است؛ F08 تا F10 هنوز
+`Required / Not Implemented` و Gate خروج RPT1 بازند. گام بعد فقط Runtime Core محدود F07 است.
+
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS23-C1`، Runtime Core محدود F07 با Run 211
+(`36296626010`) و تمام هشت Job سبز شد. چهار دفتر در Application Contract نسخه‌دار قرار گرفتند؛
+RFI/Submittal با history میانی ناقص صریحاً `InsufficientData` هستند. F07 هنوز Renderer/Golden،
+historical producer کامل و Catalog/API/Worker ندارد و End-to-End یا Qualified نیست. F08 تا F10
+بازند؛ تصمیم ده‌گانه و Gate خروج این ADR تغییر نکرده است. گام بعد فقط Renderer/Golden F07 است.
+
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS24-C1`، PDF/XLSX Renderer محدود F07 و Goldenهای
+binary/visual با Run 215 (`36301524177`) و تمام هشت Job سبز شدند. RFI/Submittal legacy با
+history ناقص همچنان `InsufficientData` و count نامعلوم‌اند. Historical transition producer
+و Catalog/API/Worker متصل باقی مانده‌اند؛ F07 End-to-End یا Qualified نیست و Gate خروج ده‌گانه
+باز است. گام بعد `S07-MS25` فقط producer تاریخی در مالک TechnicalOffice است.
+
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS25-C1`، producer تاریخچهٔ transitionهای RFI/Submittal
+برای رکوردهای تازه با Migration 49 و بدون backfill قدیمی افزوده شد. Run 219 هشت Job را سبز
+کرد؛ F07 هنوز Catalog/API/Worker و Qualification متصل ندارد. Scope ده‌گانه و defaultهای خاموش
+تغییر نکرده‌اند؛ MS26 گام اتصال مستقل F07 است.
+
+در Checkpoint `PMCS-V1.1-RPT1-S07-MS26-C1`، Definition/Template و مسیر
+Catalog/API/Worker F07 با Migration 50، هر دو مجوز Technical read، Source مالک و
+Rendererهای پین‌شده متصل شد. Run 222 (`36305583760`) هر هشت Job و آزمون متصل F07
+`17/17` را سبز کرد؛ نقش فاقد `technical.confidential.read` دسترسی ندارد و defaultهای
+Production خاموش‌اند. بنابراین F01 تا F07 End-to-End checkpointed و F08 تا F10 بازند؛
+Gate خروج ده‌گانه همچنان باز و گام بعد DoR/قرارداد معنایی مستقل F08 است.
+
+در `PMCS-V1.1-RPT1-S07-MS27-C1`، قرارداد معنایی مستقل F08 با Run 224 و هشت Job سبز شد.
+این Checkpoint صرفاً DoR/Source/Classifications/Golden Matrix را می‌بندد؛ Runtime، Renderer
+و wiring F08 هنوز بازند. F01–F07 متصل، F09/F10 باز، Gate ده‌گانه و defaults خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS28-C1`، Source مالک QualitySafety و Runtime/Snapshot محدود
+F08 با Run 231 و هشت Job سبز شدند. Renderer/Golden و wiring هنوز بازند؛ F01–F07
+متصل، F09/F10 و Gate ده‌گانه باز و همهٔ defaults خاموش‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS29-C1`، Renderer/Golden مستقل Quality/HSE با PDF/XLSX
+و status/count/classification دو section در Run 235 واجد Evidence شدند؛
+Catalog/API/Worker و Qualification متصل F08 در MS30 باز می‌مانند.
+
+در `PMCS-V1.1-RPT1-S07-MS30-C1`، Migration 51 و Catalog/API/Worker خانواده F08
+با سه مجوز whole-definition و Qualification متصل `20/20` در Run 237 بسته شدند.
+F01–F08 End-to-End واجد Evidence هستند؛ F09/F10، UI/Production و Gate ده‌گانه
+باز، defaultها خاموش باقی می‌مانند. MS31 فقط DoR/قرارداد معنایی مستقل F09 است.
+
+در `PMCS-V1.1-RPT1-S07-MS31-C1`، قرارداد مستقل F09 با ۲۷ سناریو و سه تست
+متمرکز در Run 239 (`36318261047`) و هشت Job سبز بسته شد. این فقط DoR است؛
+F09 هنوز Runtime/Renderer/wiring ندارد، F10 باز است و Gate ده‌گانه و defaults
+خاموش تغییر نکرده‌اند. MS32 Source مالک و Runtime Core محدود F09 است.
+
+در `PMCS-V1.1-RPT1-S07-MS32-C1`، Source مالک ActionControl و Snapshot Core
+محدود F09 در Run 242 (`36321908108`) با هشت Job سبز آماده شدند. تاریخچهٔ
+اثبات‌ناپذیر legacy با count نامعلوم باقی می‌ماند؛ Renderer/producer/wiring F09
+و F10 بازند، Scope ده خانواده و defaultهای خاموش تغییر نکرده‌اند. MS33 فقط
+Renderer/Golden مستقل F09 است.
+
+در `PMCS-V1.1-RPT1-S07-MS33-C1`، PDF/XLSX و Golden مستقل پنج‌بخشی F09 در Run 245
+(`36324102914`) هشت Job سبز گرفتند. Producer تاریخچه و wiring هنوز باز است؛ F10،
+Gate ده‌گانه و defaults خاموش تغییری ندارند. MS34 فقط producer مالک است.
+
+در `PMCS-V1.1-RPT1-S07-MS34-C1`، تاریخچهٔ تازهٔ شش Aggregate مالک با
+Migration nullable شمارهٔ ۵۲ و بدون backfill در Run 248 (`36327282876`)
+هشت Job سبز گرفت. Source selector/wiring و F10 بازند؛ Scope ده‌گانه و
+defaultهای خاموش ثابت‌اند. MS35 فقط مصرف تاریخچهٔ cutoff-aware است.
+
+در `PMCS-V1.1-RPT1-S07-MS35-C1`، selector تاریخچهٔ شش دفتر F09 در Run 250
+(`36329655993`) با هشت Job سبز شد. Wiring F09، F10 و Gate ده‌گانه باز و
+defaultها خاموش باقی ماندند. MS36 فقط اتصال/Qualification مستقل F09 است.
+
+### ۲. اجرا فقط به‌صورت Micro-Slice مستقل
+
+- هر خانواده DoR، semantic/source contract، permission/classification، وضعیت‌های
+  `NoData/NotConfigured/InsufficientData`، Template Version و Golden مخصوص خود را پیش از Done شدن
+  دریافت می‌کند.
+- هر خانواده جداگانه `Implement → Test → Fix → Retest → Verify → Checkpoint → Atomic Commit`
+  می‌شود؛ اجرای یک‌جای نه خانواده یا اعلام Done گروهی ممنوع است.
+- زیرساخت مشترک موجود reuse می‌شود، اما تعمیم speculative یا اتصال مستقیم به Persistence ماژول دیگر
+  ممنوع می‌ماند.
+- Definition/Template خانواده‌ای که Runtime معتبر ندارد صرفاً برای پرکردن Catalog seed نمی‌شود.
+- ترتیب شروع مطابق کاتالوگ است؛ Micro-Slice بعدی `RPT1-F02`، گزارش هفتگی و ماهانه پروژه است. هر تغییر
+  ترتیب فقط با dependency ثبت‌شده در Checkpoint مجاز است.
+
+### ۳. Gate خروج RPT1
+
+RPT1 فقط زمانی قابل بسته‌شدن است که برای هر ده خانواده حداقل این Evidence ثبت شده باشد:
+
+1. قرارداد معنایی و source lineage نسخه‌دار؛
+2. permission، tenant/project isolation و classification fail-closed؛
+3. snapshot/as-of، determinism، audit و idempotency؛
+4. خروجی‌های مصوب همان خانواده با Golden و parse مستقل؛
+5. visual/RTL/Jalali و performance/size budget متناسب؛
+6. Full CI سبز و Checkpoint قابل Resume.
+
+وجود Foundation مشترک، Qualification خانواده اول یا نمایش placeholder در UI هیچ خانواده دیگری را
+Done نمی‌کند. `RPT1-F01` نیز دوباره طراحی نمی‌شود و Evidence معتبر MS05/MS06 آن حفظ می‌شود.
+
+### ۴. مرز این تصمیم
+
+- هیچ API، Migration، Renderer، feature flag یا Production setting در این ADR تغییر نمی‌کند.
+- Baseline قفل‌شده V1، معماری Reporting و ترتیب کلان Roadmap تغییر نمی‌کنند.
+- UI اختصاصی Reporting همچنان طبق Roadmap در UX2 اجرا می‌شود؛ این ADR مالکیت آن Gate را تعیین نمی‌کند.
+- شناسه Runtime و Template Version خانواده‌های F02 تا F10 فقط در DoR همان خانواده قطعی می‌شود.
+
+## Alternatives Rejected
+
+| گزینه | دلیل رد |
+| --- | --- |
+| محدودکردن RPT1 به Foundation و گزارش روزانه | انتخاب صریح مالک محصول حفظ Scope مصوب است |
+| انتقال ضمنی ۹ خانواده به V1.2 | تغییر بدون Change Record و مغایر کاتالوگ مؤثر |
+| اعلام Done براساس زیرساخت مشترک | فاقد semantic contract، renderer و Golden خانواده‌ای |
+| پیاده‌سازی هم‌زمان ۹ خانواده | غیرقابل Resume، پرریسک و ناسازگار با روش Micro-Step |
+| seed کردن placeholder برای نمایش کاتالوگ | ایجاد ادعای قابلیت بدون Runtime و Evidence |
+
+## Consequences
+
+- اختلاف Scope رسماً حل می‌شود، اما نه خانواده همچنان کار باز و قابل‌اندازه‌گیری RPT1 هستند.
+- زمان بسته‌شدن RPT1 به تکمیل واقعی F02 تا F10 وابسته است؛ Scope برای کوتاه‌کردن زمان کاهش نمی‌یابد.
+- Micro-Step بعدی فقط DoR و قرارداد معنایی `RPT1-F02` را تثبیت می‌کند و پیش از آن هیچ Runtime جدیدی
+  Done ادعا نمی‌شود.
+- هر تصمیم آینده برای کاهش یا انتقال خانواده‌ها باید این ADR را با Change Record نسخه‌دار و تأیید صریح
+  مالک محصول supersede کند.
+
+در `PMCS-V1.1-RPT1-S07-MS36-C1`، F09 با Catalog/API/Worker و Qualification
+متصل Run 252 (`36331528136`) بسته شد؛ F01 تا F09 End-to-End هستند. F10 طبق
+همین تصمیم با DoR مستقل در MS37 آغاز می‌شود و RPT1 هنوز فعال است.
+
+در `PMCS-V1.1-RPT1-S07-MS37-C1`، DoR و قرارداد مستقل F10 با ۳۰ Gate پذیرش
+در Run 254 (`36333343004`) هشت Job سبز گرفت. F10 فقط Contract Ready است؛
+Tenant-scope infrastructure، Runtime، Renderer و wiring در Micro-Stepهای بعدی
+بازند. Scope ده‌گانه و defaultهای خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS38-C1`، زیرساخت Tenant-scope با ProjectId تهی و
+owner سند Tenant در Run 256 (`36335141253`) هشت Job و Restore ۵۵ را سبز کرد.
+F10 هنوز Source/Renderer/wiring و Qualification متصل ندارد؛ Scope ده‌گانه و
+defaultهای خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS39-C1`، Source/Runtime Core محدود F10 با
+Run 261 (`36338179481`) هشت Job سبز گرفت. Renderer/Golden و wiring/
+Qualification هنوز بازند؛ Scope ده‌گانه و defaults خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS40-C1`، PDF/XLSX و Golden قطعی F10 در Run 264
+(`36340600926`) هشت Job سبز گرفت. Renderer فقط Snapshot/Manifest immutable را
+مصرف می‌کند؛ Catalog/Tenant API و Worker/OutputAccess هنوز بازند. Scope ده‌گانه،
+PR Draft و defaults خاموش ثابت‌اند.
+
+در `PMCS-V1.1-RPT1-S07-MS41-C1`، Catalog/Template Portfolio و Tenant API
+F10 با cohort/mask پین‌شده در Run 266 (`36343299949`) هشت Job سبز گرفت.
+Worker/OutputAccess و qualification متصل F10 هنوز بازند؛ PR Draft و defaults
+خاموش باقی ماندند.

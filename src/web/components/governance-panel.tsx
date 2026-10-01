@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   acknowledgeEscalation, activateRisk, assessRisk, beginDecision, closeRisk, createDecisionRequest,
   createIssue, createRiskMatrix, createSlaRule, evaluateGovernance, getGovernanceState,
@@ -9,7 +9,7 @@ import {
   type Confidentiality, type DecisionRequestModel, type GovernanceStateModel,
   type IssueModel, type RiskModel, type Severity,
 } from "@/lib/governance";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, formatPersianDateTime, futureProjectDate } from "@/lib/persian-date";
 
 interface GovernancePanelProps {
@@ -24,8 +24,14 @@ interface GovernancePanelProps {
 
 export function GovernancePanel(props: GovernancePanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
+  const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
   const [state, setState] = useState<GovernanceStateModel | null>(null);
   const [message, setMessage] = useState("در حال دریافت دفتر کنترل مدیریتی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const effectiveReadState = visibleScope === readScope ? readState : "loading";
+  const readSequence = useRef(0);
+  const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [evidence, setEvidence] = useState("");
   const [confidentiality, setConfidentiality] = useState<Confidentiality>("GeneralProject");
@@ -52,13 +58,25 @@ export function GovernancePanel(props: GovernancePanelProps) {
   const [verificationEvidence, setVerificationEvidence] = useState("");
   const futureDate = useMemo(() => futureProjectDate(7), []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    currentReadSequence.current = 0;
+    setState(null);
+    setVisibleScope(null);
+    setSelectedRisk(null);
+    setMaterializingRisk(null);
+    setSelectedDecision(null);
     if (!props.isOnline) {
+      setVisibleScope(readScope);
+      setReadState("offline");
       setMessage("دفتر ریسک و تصمیم شامل اطلاعات حساس است و روی مرورگر ذخیره نمی‌شود؛ برای مشاهده به سرور متصل شوید.");
-      return;
+      return false;
     }
+    setReadState("loading");
+    setMessage("در حال دریافت دفتر کنترل مدیریتی…");
     try {
       const next = await getGovernanceState(props.apiBaseUrl, identity, props.projectId);
+      if (requestId !== readSequence.current) return false;
       setState(next);
       setOwnerUserId((current) => next.assignablePeople.some((item) => item.userId === current)
         ? current : next.assignablePeople[0]?.userId ?? "");
@@ -67,19 +85,47 @@ export function GovernancePanel(props: GovernancePanelProps) {
       setMessage(next.setupState === "SetupRequired"
         ? "برای امتیازدهی و پایش مهلت‌ها، ماتریس ریسک و قواعد توافق سطح خدمت باید نسخه‌گذاری شوند."
         : "دفتر کنترل مدیریتی از سوابق رسمی و قابل ردیابی دریافت شد.");
+      currentReadSequence.current = requestId;
+      setVisibleScope(readScope);
+      setReadState("current");
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "دفتر کنترل مدیریتی دریافت نشد."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setVisibleScope(readScope);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به دفتر ریسک و تصمیم این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "دفتر کنترل مدیریتی دریافت نشد."));
+      return false;
     }
-  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
+  }, [identity, props.apiBaseUrl, props.isOnline, props.projectId, readScope]);
 
   useEffect(() => { const id = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(id); }, [load, props.refreshToken]);
 
   async function run(key: string, command: () => Promise<unknown>, success: string) {
-    if (!props.isOnline) { setMessage("ثبت و تصمیم رسمی فقط هنگام اتصال به سرور مجاز است."); return false; }
+    if (!props.isOnline || effectiveReadState !== "current" || !state || busy !== null ||
+      currentReadSequence.current !== readSequence.current) return false;
+    const commandSequence = readSequence.current;
     setBusy(key);
-    try { await command(); setMessage(success); await load(); props.onChanged(); return true; }
+    try {
+      await command();
+      if (commandSequence !== readSequence.current) return false;
+      if (!await load()) return false;
+      setMessage(success);
+      props.onChanged();
+      return true;
+    }
     catch (error) {
-      await load().catch(() => undefined);
+      if (commandSequence !== readSequence.current) return false;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        currentReadSequence.current = 0;
+        setState(null); setSelectedRisk(null); setMaterializingRisk(null); setSelectedDecision(null);
+        setVisibleScope(readScope);
+        setReadState("forbidden");
+        setMessage("دسترسی به دفتر ریسک و تصمیم این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+        return false;
+      }
       setMessage(toUserMessage(error, "عملیات کنترل مدیریتی انجام نشد."));
       return false;
     }
@@ -184,11 +230,19 @@ export function GovernancePanel(props: GovernancePanelProps) {
       ? "مسئله پس از راستی‌آزمایی بسته شد." : "وضعیت مسئله بدون حذف سابقه به مرحله بعد رفت.");
   }
 
+  if (effectiveReadState !== "current") return <section className="section-block governance-panel" id="governance"
+    data-testid="governance-panel" data-read-state={effectiveReadState}>
+    <div className="section-title"><div><p className="eyebrow">کنترل مبتنی بر شواهد</p><h2>ریسک، مسئله، تصمیم و توافق سطح خدمت</h2></div></div>
+    <p className="calculation-note" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت دفتر کنترل مدیریتی…" : message}</p>
+    {props.isOnline && effectiveReadState !== "loading" &&
+      <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دفتر کنترل مدیریتی</button>}
+  </section>;
+
   return (
-    <section className="section-block governance-panel" id="governance">
+    <section className="section-block governance-panel" id="governance" data-testid="governance-panel" data-read-state={readState}>
       <div className="section-title"><div><p className="eyebrow">کنترل مبتنی بر شواهد</p><h2>ریسک، مسئله، تصمیم و توافق سطح خدمت</h2></div><span className="section-note">بدون امتیاز سلامت کلی</span></div>
       <p className="calculation-note" aria-live="polite">{message}</p>
-      <div className="governance-summary">
+      <div className="governance-summary" data-testid="governance-current-summary">
         <Summary label="مسئله باز" value={state?.counts.openIssues} />
         <Summary label="ریسک باز" value={state?.counts.activeRisks} detail={state ? `${state.counts.criticalRisks.toLocaleString("fa-IR")} بحرانی` : undefined} />
         <Summary label="تصمیم معطل" value={state?.counts.pendingDecisions} />

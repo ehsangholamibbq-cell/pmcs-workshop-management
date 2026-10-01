@@ -1,0 +1,36 @@
+# INT1 — قرارداد مسیر اتصال Provider
+
+- شناسه: `PMCS-V1.1-INT1-PROVIDER-001`
+- وضعیت: Probe، فعال‌سازی مستقل Provider و compatibility fixture؛ اتصال زنده هنوز شواهد جدا می‌خواهد.
+- Parent: `PMCS-V1.1-INT1-DOR-001` و ADR 0032
+- زمان‌بندی: ADR 0033، Gate `AGENT-S1-LIVE` پس از Baseline V1.1 و پیش از Stage 2؛
+  Probe ساختگی و Unavailable در V1.1 ادعای اتصال زنده نیستند.
+
+سه آداپتور مستقل `OpenAI`، `GoogleGemini` و `AnthropicClaude` از تنظیمات `OpenAI:*`،
+`Gemini:*` و `Anthropic:*` یا متغیر محیطی هم‌نام با حروف بزرگ استفاده می‌کنند. Model ID
+پیکربندی است و کلید فقط در Header درخواست خارجی قرار می‌گیرد. API هیچ کلید یا پاسخ خام
+Provider را برنمی‌گرداند. Probe فقط متن ثابت بی‌ارتباط با دادهٔ PMCS می‌فرستد و خروجی
+بستهٔ `{"ok":true}`، پایان کامل پاسخ و سقف ۳۲ KiB را بررسی می‌کند.
+
+`Unavailable` برای نبود کلید/مدل، `Unverified` برای تنظیم بدون آزمون، `Available` فقط
+پس از پاسخ معتبر همان آزمون، و `Failed` برای خطای واقعی برگردانده می‌شود. این وضعیت
+موقتی Probe هنوز فعال‌سازی Model Catalog یا مجوز اجرای Run نیست. فهرست وضعیت از مسیر
+`GET /api/v1/intelligence/admin/providers` فقط با Grant مستقل خواندن Catalog و Probe
+از مسیر `POST /api/v1/intelligence/admin/providers/{provider}/probe` فقط با Grant مستقل
+مدیریت Provider مجاز است. Probe محدودیت نرخ دارد و هیچ تغییر داخلی PMCS انجام نمی‌دهد.
+
+Compatibility suite محلی با Handler جعلی، شکل درخواست، مقصد، مصرف، نبود Credential،
+پاسخ ناقص و فراخوانی ابزار بومی با نام/آرگومان دقیق هر سه آداپتور را می‌سنجد. فعال‌سازی
+مدل دارای `ToolCalling` مستلزم هر دو آزمون ساختاریافته و ابزار بومی است؛ خطا یا ابزار
+ناشناخته آن را فعال نمی‌کند. آزمون اتصال زنده با کلیدهای پیکربندی‌شده در محیط
+ایزوله و Grant مدیریتیِ صریح باید جدا ثبت شود؛ نبود کلید نتیجهٔ موفقیت نیست. قابلیت
+Tool Registry، Profile و Reference Run محدود در `pmcs-v1.1-int1-runtime-contract.md` دنبال می‌شوند. Provider در Store مستقل به‌صورت پیش‌فرض غیرفعال است؛ فقط Grant مدیر ارشد می‌تواند آن را ثبت، پس از آزمون ساختاریافته و tool calling فعال یا با revision/idempotency/audit غیرفعال کند. نبود Credential، Provider غیرفعال یا Model تأییدنشده انتخاب و Run را می‌بندد. کلید فقط از پیکربندی استقرار خوانده می‌شود و در Store و log ذخیره نمی‌شود.
+
+مراجع API هنگام طراحی: [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses)،
+[Gemini generateContent](https://ai.google.dev/api/generate-content)،
+[Claude Messages](https://platform.claude.com/docs/en/api/messages/create) و
+[Claude structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
+
+در بازبینی پروتکل، Gemini برای ورودی ابزار از `parametersJsonSchema` با `additionalProperties=false` استفاده می‌کند و Claude ابزار را با `strict=true` تعریف می‌کند؛ schema، نام ابزار و citation پس از دریافت نیز در PMCS مستقل از تضمین Provider اعتبارسنجی می‌شود. مستندات رسمی فقط سازگاری شکل درخواست را پشتیبانی می‌کنند؛ نتیجهٔ اتصال زنده بدون Credential ادعا نمی‌شود.
+
+`dotnet run --project src/backend/Pmcs.TestHarness -- probe-int1-providers` مسیر اتصال زندهٔ مستقل را با `OPENAI_MODEL/OPENAI_API_KEY`، `GEMINI_MODEL/GEMINI_API_KEY` و `ANTHROPIC_MODEL/ANTHROPIC_API_KEY` ارزیابی می‌کند. خروجی فقط کد وضعیت، مصرف Probe و `allAvailable` را ثبت می‌کند؛ در نبود تنظیم، هر خانواده `Unavailable` و `allAvailable=false` گزارش می‌شود و هیچ HTTP ارسال نمی‌شود. اگر Provider پیکربندی شده باشد ولی structured output یا tool calling تأیید نشود، فرمان با exit code غیرصفر Gate را می‌بندد. اجرای CI بدون Secret هرگز به‌عنوان اتصال زندهٔ موفق ثبت نمی‌شود.

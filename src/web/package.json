@@ -15,7 +15,7 @@
     "audit:calendar": "node tools/audit-persian-calendar.mjs",
     "test:unit": "node --test tests/*.test.ts tests/*.test.mjs",
     "test:e2e": "playwright test",
-    "check": "npm run test:unit && npm run lint && npm run audit:fa && npm run audit:calendar && npm run build"
+    "check": "npm run test:unit && npm run lint && npm run audit:fa && npm run audit:calendar && npm run build && node ../../tools/qa/vx-g5-build-budget.mjs"
   },
   "dependencies": {
     "better-auth": "1.7.4",
@@ -30,6 +30,7 @@
     "@types/pg": "8.15.5",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
+    "axe-core": "4.13.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.3",
     "typescript": "5.9.3"

@@ -25,6 +25,13 @@ const protocolManagedMutations = new Map([
   ["POST /api/v1/sync/checkpoints", "Checkpoint offers are single-use and replay-safe by offer identity."],
   ["POST /api/v1/sync/conflicts/{conflictId:guid}/resolve", "Conflict resolution is revision-controlled and creates an immutable resolution."],
   ["POST /api/v1/sync/devices/{registrationId:guid}/revoke", "Device revocation is revision-controlled and monotonic."],
+  ["PUT /api/v1/projects/{projectId:guid}/collaboration/read-cursor", "The cursor is a monotonic greatest-value upsert bounded by the room sequence."],
+  ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/reactions/{emoji}", "Actor/message/emoji has a unique natural key and conflict-safe insert."],
+  ["DELETE /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/reactions/{emoji}", "Deleting an actor's reaction is repeatable and has no side effect after the first delete."],
+  ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Pin is a repeatable desired state; events emit only on transition."],
+  ["DELETE /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/pin", "Unpin is a repeatable desired state; events emit only on transition."],
+  ["PUT /api/v1/projects/{projectId:guid}/collaboration/messages/{messageId:guid}/attachments/{documentId:guid}", "A released owner-scoped document has one unique natural association; repeated PUT emits no event."],
+  ["POST /api/v1/intelligence/admin/providers/{provider}/probe", "A rate-limited, permission-gated connection probe carries no PMCS user payload and changes no PMCS state; the result is not treated as an idempotent provider operation."],
 ]);
 
 const missingIdempotency = mutations.filter((endpoint) =>
@@ -120,6 +127,34 @@ const transactionalEffects = readFileSync(
 assert.match(platformStore, /record\.ExpiresAt <= clock\.UtcNow/);
 assert.match(platformStore, /on conflict \(tenant_id, key, operation\) do update/);
 assert.match(transactionalEffects, /on conflict \(tenant_id, key, operation\) do update/);
+
+const bootstrapEndpoints = readFileSync(
+  join(backendRoot, "Pmcs.Modules.Projects/Endpoints/ProjectBootstrapEndpoints.cs"),
+  "utf8",
+);
+const bootstrapCatalog = readFileSync(
+  join(backendRoot, "Pmcs.Modules.Projects/Services/ProjectBootstrapContributorCatalog.cs"),
+  "utf8",
+);
+const membershipBootstrap = readFileSync(
+  join(backendRoot, "Pmcs.Modules.IdentityAccess/Services/ProjectMembershipBootstrapService.cs"),
+  "utf8",
+);
+const bootstrapWizard = readFileSync(
+  join(root, "src/web/components/project-bootstrap-wizard.tsx"),
+  "utf8",
+);
+assert.match(bootstrapEndpoints, /projects\.bootstrap\.completed\.v1/);
+assert.match(bootstrapEndpoints, /EnsurePreviewUsable\(request\.PreviewDigest/);
+assert.match(bootstrapEndpoints, /target\.Status != ProjectStatus\.Draft/);
+assert.match(bootstrapEndpoints, /operational-data-excluded/);
+assert.match(bootstrapCatalog, /AlwaysExcluded/);
+assert.match(bootstrapCatalog, /identity\.project-memberships/);
+assert.match(membershipBootstrap, /ProjectMembership\.Assign/);
+assert.doesNotMatch(membershipBootstrap, /UserAccount\.Create/);
+assert.match(bootstrapWizard, /window\.localStorage/);
+assert.match(bootstrapWizard, /window\.navigator\.onLine/);
+assert.match(bootstrapWizard, /preview\.summary\.blocked/);
 
 const operationStore = readFileSync(join(root, "src/web/lib/operation-store.ts"), "utf8");
 const syncClient = readFileSync(join(root, "src/web/lib/sync-client.ts"), "utf8");

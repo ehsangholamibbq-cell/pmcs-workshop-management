@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — مرور جدول پُرداده و چاپ</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.65 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --muted: #5c6971; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; min-height: 44px; color: #17242e; border: 1px solid #87969e; border-radius: 8px; background: white; padding: .35rem .8rem; }
+    button:not(:disabled) { cursor: pointer; }
+    button:not(:disabled):hover { background: #e4f2e9; }
+    button:disabled { color: #5c6971; background: #edf0ee; border-color: #c6ceca; }
+    :focus-visible { outline: 3px solid #11643b; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; padding: .5rem; background: white; z-index: 2; }
+    .skip:focus { top: 1rem; }
+    .masthead { background: #0c2036; color: white; padding: .8rem max(1rem, calc((100vw - 1200px)/2)); display: flex; align-items: center; gap: .8rem; }
+    .brand { width: 82px; height: 58px; flex: none; object-fit: contain; background: #fbf8f1; border-radius: 8px; padding: .2rem; }
+    h1 { font-size: 1.25rem; margin: 0; }
+    .masthead p { margin: 0; font-size: .85rem; color: #d7e1e2; }
+    main { max-width: 1200px; margin: auto; padding: 1rem; }
+    .notice { background: #fff8e8; color: #51390e; border: 1px solid #b48b49; border-radius: 8px; padding: .6rem .8rem; margin: 0 0 1rem; }
+    .toolbar, .pagination { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; margin: .8rem 0; }
+    .toolbar label { display: flex; align-items: center; gap: .5rem; }
+    .toolbar p { margin: 0; color: var(--muted); font-size: .85rem; }
+    .pagination { justify-content: center; }
+    #range { min-width: 12rem; text-align: center; font-variant-numeric: tabular-nums; }
+    .sheet { background: white; border: 1px solid #e9dfcf; border-radius: 10px; padding: 1rem; }
+    .sheet-heading { display: flex; align-items: start; gap: 1rem; justify-content: space-between; padding-bottom: .8rem; border-bottom: 2px solid #0c2036; }
+    h2 { font-size: 1.12rem; margin: 0; }
+    .sheet-heading p { color: var(--muted); margin: .3rem 0 0; font-size: .85rem; }
+    .print-context, .print-logo { display: none; }
+    .sheet-heading .count { flex: none; text-align: left; color: #17242e; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: .8rem; }
+    caption { text-align: right; padding: 0 0 .5rem; color: var(--muted); font-size: .85rem; }
+    col.number { width: 6%; } col.subject { width: 35%; } col.state { width: 15%; } col.owner { width: 12%; } col.money { width: 16%; } col.date { width: 16%; }
+    th, td { padding: .6rem .45rem; text-align: right; vertical-align: top; border-bottom: 1px solid #d9dfdc; overflow-wrap: anywhere; }
+    thead th { color: #0c2036; background: #f0f4f2; font-size: .86rem; overflow-wrap: normal; }
+    tbody th { font-weight: 400; }
+    .item-title { display: block; font-weight: 700; font-size: .93rem; }
+    .description { margin: .3rem 0 0; font-size: .84rem; color: var(--muted); }
+    .row-number, .amount, .date-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .amount, .date-value { direction: ltr; unicode-bidi: isolate; display: inline-block; font-size: .9rem; }
+    .badge { display: inline-block; padding: .1rem .35rem; border-radius: 5px; font-size: .8rem; font-weight: 700; }
+    .pending { color: #235c99; background: #edf4fc; } .warning { color: #996017; background: #fff6e8; }
+    .success { color: #17684c; background: #e9f5ed; } .conflict { color: #aa3740; background: #fff0f1; }
+    .missing, .stale { color: #5c6971; background: #f0f2f3; }
+    .cell-label { display: none; }
+    tr[data-page-hidden="true"] { display: none; }
+    .total { margin-top: 1rem; padding: .7rem; border: 1px solid #b9cabe; border-radius: 6px; background: #f2f7f3; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    .total small { display: block; color: var(--muted); }
+    .sheet-foot { font-size: .8rem; color: var(--muted); margin: .8rem 0 0; }
+    @media screen and (min-width: 761px) and (max-width: 1000px) {
+      col.number { width: 8%; } col.subject { width: 33%; }
+    }
+    @media screen and (max-width: 760px) {
+      main { padding: .75rem; } .sheet { padding: .65rem; } .masthead { padding: .7rem; gap: .6rem; }
+      .brand { width: 65px; height: 50px; } h1 { font-size: 1.05rem; }
+      .sheet-heading { display: block; } .sheet-heading .count { text-align: right; }
+      table, tbody { display: block; } colgroup { display: none; }
+      caption { display: block; width: 100%; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      tr { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem .7rem; border: 1px solid #d9dfdc; border-radius: 7px; padding: .65rem; margin-bottom: .65rem; }
+      td, tbody th { display: block; border: 0; padding: 0; min-width: 0; }
+      td:first-child, tbody th { grid-column: 1 / -1; }
+      .cell-label { display: block; font-size: .76rem; color: var(--muted); margin-bottom: .1rem; }
+      td:first-child .cell-label { display: inline; margin-left: .35rem; }
+      .description { font-size: .82rem; } .amount { font-size: .88rem; }
+      .pagination { gap: .5rem; } #range { order: -1; width: 100%; }
+      .total { display: block; } .total strong { display: block; margin-top: .3rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { margin: 15mm 12mm 17mm; }
+    @media print {
+      :root { font-size: 10pt; line-height: 1.6; background: white; color: #17242e; }
+      body { min-width: 0; } .screen, .skip { display: none !important; }
+      main { max-width: none; margin: 0; padding: 0; } .sheet { padding: 0; border: 0; border-radius: 0; }
+      h2 { font-size: 13pt; } .sheet-heading { break-inside: avoid; }
+      .print-logo { display: block; width: 20mm; height: 15mm; object-fit: contain; }
+      .sheet-heading p { font-size: 9pt; } table { font-size: 9pt; }
+      caption { font-size: 9pt; } thead { display: table-header-group; } tbody { display: table-row-group; }
+      tr, tr[data-page-hidden="true"] { display: table-row; break-inside: avoid; page-break-inside: avoid; }
+      tr.print-context { display: table-row; } .print-context th { background: white; color: #5c6971; font-size: 8.5pt; font-weight: 400; }
+      th, td { padding: 2mm 1.2mm; } .item-title { font-size: 9.5pt; } .description { font-size: 9pt; }
+      .badge, thead th { font-size: 9pt; } .total { break-inside: avoid; font-size: 10pt; }
+      .sheet-foot { font-size: 9pt; break-inside: avoid; } .cell-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">رفتن به جدول نمونه</a>
+  <header class="masthead screen"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>مرور جدول پُرداده و چاپ</h1><p>PMCS · UX2-MS62 · نمونهٔ مستقل طراحی</p></div></header>
+  <main id="main">
+    <p class="notice screen">داده‌ها ساختگی‌اند. این صفحه فقط برای بررسی خوانایی و صفحه‌بندی است؛ گزارش رسمی یا اقدام پروژه ایجاد نمی‌کند.</p>
+    <div class="toolbar screen"><label for="page-size">ردیف در هر صفحه <select id="page-size"><option value="6">۶</option><option value="12" selected>۱۲</option><option value="24">۲۴</option></select></label><button id="print" type="button">چاپ نمونه</button><p>چاپ شامل همهٔ ۴۸ ردیف است؛ صفحه‌بندی نمایش آن را محدود نمی‌کند.</p></div>
+    <section class="sheet" aria-labelledby="sheet-title">
+      <div class="sheet-heading"><img class="print-logo" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h2 id="sheet-title">مرور پیگیری‌های پروژهٔ نمونه</h2><p>منبع: مجموعهٔ ساختگی بازبینی · تاریخ نمونه: ۱۴۰۵/۰۷/۰۷</p><p>غیررسمی؛ فاقد امضا، وضعیت واقعی و مجوز انتشار گزارش</p></div><p class="count">۴۸ ردیف ساختگی<br>واحد مبلغ: ریال</p></div>
+      <table role="table" aria-label="پیگیری‌های ساختگی پروژه">
+        <caption>شرح، وضعیت، مسئول و مبلغ هر ردیف در موبایل و چاپ حفظ می‌شود.</caption>
+        <colgroup><col class="number"><col class="subject"><col class="state"><col class="owner"><col class="money"><col class="date"></colgroup>
+        <thead role="rowgroup"><tr class="print-context"><th colspan="6">پروژهٔ نمونه · منبع ساختگی · ۱۴۰۵/۰۷/۰۷ · غیررسمی · واحد مبلغ: ریال</th></tr><tr role="row"><th scope="col" role="columnheader">ردیف</th><th scope="col" role="columnheader">موضوع و شرح</th><th scope="col" role="columnheader">وضعیت نمونه</th><th scope="col" role="columnheader">مسئول نمونه</th><th scope="col" role="columnheader">مبلغ نمونه (ریال)</th><th scope="col" role="columnheader">تاریخ نمونه</th></tr></thead>
+        <tbody id="rows" role="rowgroup"></tbody>
+      </table>
+      <nav class="pagination screen" aria-label="صفحه‌بندی ردیف‌های نمونه"><button id="previous" type="button">صفحهٔ قبل</button><span id="range" role="status" aria-live="polite"></span><button id="next" type="button">صفحهٔ بعد</button></nav>
+      <div class="total"><div>جمع تمام ۴۸ ردیف نمونه<small>این مبلغ تعهد مالی یا مبلغ تأییدشده نیست.</small></div><strong><bdi id="grand-total" class="amount"></bdi> ریال</strong></div>
+      <p class="sheet-foot">وضعیت‌های این جدول صرفاً نمایشی‌اند. تأیید نمونه، دادهٔ قدیمی یا نبود مدرک هیچ مجوز عملیاتی ایجاد نمی‌کند.</p>
+    </section>
+  </main>
+  <script src="fixture.js"></script>
+  <script>
+    const rows = window.pmcsDenseFixture;
+    const fa = value => new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(value);
+    const money = value => new Intl.NumberFormat("fa-IR").format(value);
+    const body = document.querySelector("#rows");
+    function cell(label, value, className = "") {
+      const td = document.createElement("td"); td.setAttribute("role", "cell");
+      const title = document.createElement("span"); title.className = "cell-label"; title.setAttribute("aria-hidden", "true"); title.textContent = label;
+      const content = document.createElement("span"); content.className = className; content.textContent = value;
+      td.append(title, content); return td;
+    }
+    for (const row of rows) {
+      const tr = document.createElement("tr"); tr.dataset.number = String(row.number); tr.setAttribute("role", "row");
+      tr.append(cell("ردیف", fa(row.number).padStart(3, "۰"), "row-number"));
+      const subject = document.createElement("th"); subject.scope = "row"; subject.setAttribute("role", "rowheader");
+      const title = document.createElement("span"); title.className = "item-title"; title.textContent = row.title.replace(/\d/g, d => fa(Number(d)));
+      const detail = document.createElement("p"); detail.className = "description"; detail.textContent = row.description;
+      subject.append(title, detail); tr.append(subject, cell("وضعیت", row.status, `badge ${row.statusKey}`), cell("مسئول", row.owner), cell("مبلغ (ریال)", money(row.amountRial), "amount"), cell("تاریخ", row.date, "date-value"));
+      body.append(tr);
+    }
+    const total = rows.reduce((sum, row) => sum + row.amountRial, 0);
+    document.querySelector("#grand-total").textContent = money(total);
+    document.querySelector("#grand-total").dataset.rial = String(total);
+    let page = 0;
+    function render() {
+      const size = Number(document.querySelector("#page-size").value), start = page * size;
+      [...body.children].forEach((row, index) => { row.dataset.pageHidden = String(index < start || index >= start + size); });
+      document.querySelector("#range").textContent = `ردیف ${fa(start + 1)} تا ${fa(Math.min(start + size, rows.length))} از ${fa(rows.length)}`;
+      document.querySelector("#previous").disabled = page === 0;
+      document.querySelector("#next").disabled = start + size >= rows.length;
+    }
+    document.querySelector("#page-size").addEventListener("change", () => { page = 0; render(); });
+    document.querySelector("#previous").addEventListener("click", () => { if (page > 0) page--; render(); if (page === 0) document.querySelector("#next").focus(); });
+    document.querySelector("#next").addEventListener("click", () => { const size = Number(document.querySelector("#page-size").value); if ((page + 1) * size < rows.length) page++; render(); if ((page + 1) * size >= rows.length) document.querySelector("#previous").focus(); });
+    document.querySelector("#print").addEventListener("click", () => window.print());
+    render();
+  </script>
+</body>
+</html>

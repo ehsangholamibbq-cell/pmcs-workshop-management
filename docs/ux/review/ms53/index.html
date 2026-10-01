@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — مرور تصمیم VX-G3</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Vazirmatn, Tahoma, sans-serif; line-height: 1.7; color: #17242e; background: #fbf8f1; --navy: #0c2036; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    a { color: #0b6542; text-underline-offset: .18em; }
+    a:focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; right: 1rem; top: -5rem; z-index: 5; background: white; padding: .4rem .7rem; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: 1rem max(1rem, calc((100vw - 1200px)/2)); }
+    .head { display: flex; gap: .9rem; align-items: center; }
+    .brand { width: 94px; height: 62px; object-fit: contain; padding: .3rem; background: #fbf8f1; border-radius: 10px; flex: none; }
+    h1 { margin: 0; font-size: 1.4rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .82rem; }
+    main { max-width: 1200px; margin: auto; padding: 1rem 1rem 3rem; }
+    h2 { margin: 0 0 .3rem; color: var(--navy); font-size: 1.18rem; }
+    h3 { margin: .1rem 0; color: var(--navy); font-size: 1rem; }
+    p { margin: .2rem 0 .7rem; }
+    ul, ol { margin: .3rem 0; padding-right: 1.35rem; }
+    li { margin: .25rem 0; }
+    .notice, .panel { border-radius: 12px; padding: .8rem 1rem; }
+    .notice { border: 1px solid #b48b49; background: #fff8e8; color: #51390e; }
+    .panel { border: 1px solid #e4dcd0; background: white; min-width: 0; }
+    .intro { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; margin: 1rem 0; }
+    .links { display: flex; flex-wrap: wrap; gap: .4rem .7rem; }
+    .links a { display: inline-block; min-height: 44px; padding: .35rem .55rem; border-radius: 8px; background: #eaf3ed; }
+    section.gallery { margin-top: 1.5rem; }
+    .context { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+    figure { margin: 0; min-width: 0; overflow: hidden; border: 1px solid #e4dcd0; border-radius: 12px; background: white; }
+    .image-link { display: block; padding: .5rem; background: #f3f4f1; }
+    .image-link img { display: block; width: 100%; height: 245px; object-fit: contain; object-position: top center; }
+    figure.mobile .image-link img { height: 290px; }
+    figcaption { padding: .55rem .8rem; }
+    figcaption p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .tag { display: inline-block; color: #09522e; background: #e8f2eb; border-radius: 99px; padding: .05rem .5rem; font-size: .74rem; font-weight: 700; }
+    .tag.prototype { color: #235c99; background: #e9f2fa; }
+    .criteria { margin-top: 1.5rem; }
+    .foot { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 760px) { .intro, .grid { grid-template-columns: 1fr; } .brand { width: 70px; height: 50px; } h1 { font-size: 1.05rem; } .image-link img { height: 210px; } figure.mobile .image-link img { height: 285px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { background: white; color: var(--navy); } header p { color: var(--muted); } .grid { grid-template-columns: 1fr 1fr; } figure { break-inside: avoid; } .image-link img, figure.mobile .image-link img { height: 155px; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">رفتن به مرور تصمیم</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>مرور تصمیم VX-G3</h1><p>PMCS · UX2-MS53 · مسیر مصوب «مدیریت ممتاز»</p></div></div></header>
+  <main id="main">
+    <div class="notice"><strong>وضعیت: آمادهٔ بازبینی، نه Gate پذیرفته‌شده.</strong> تصاویر Prototype دادهٔ فرضی دارند. این بسته تصمیم مالک را ثبت نمی‌کند و مجوز مهاجرت <code>VX-G4</code> یا Qualification <code>VX-G5</code> نیست.</div>
+    <div class="intro">
+      <section class="panel" aria-labelledby="read-title"><h2 id="read-title">ترتیب مرور</h2><ol><li>چهار شاهد UI فعال را در <a href="../ms50/index.html">میز MS50</a> با طرح‌ها مقایسه کنید.</li><li>قاب‌های همین صفحه را در اندازهٔ اصلی باز کنید؛ تعامل را در Prototypeها بیازمایید.</li><li>هر معیار پایین را با «تأیید / اصلاح / نیاز به شاهد» و مورد دقیق پاسخ دهید.</li></ol></section>
+      <section class="panel" aria-labelledby="links-title"><h2 id="links-title">نمونه‌های تعاملی و قرارداد</h2><div class="links"><a href="../../prototypes/ms44/index.html">سناریوها / وزیرمتن</a><a href="../../prototypes/ms47/index.html">اجزای پایه</a><a href="../../prototypes/ms49/index.html">ناوبری / Dialog</a><a href="../../prototypes/ms51/index.html">Overlay / ردیف</a><a href="../../prototypes/ms52/index.html">Login / Shell / Chart</a><a href="../../pmcs-v1.1-component-state-matrix.md">ماتریس State</a></div></section>
+    </div>
+    <section class="gallery" aria-labelledby="active-title"><h2 id="active-title">وضعیت فعال و Foundation</h2><p class="context">ده تصویر منبع‌دار MS50 در مخزن، بدون تکثیر یا ویرایش؛ چهار قاب کلیدی اینجا کنار نمونه‌های جدید آمده‌اند. سایر قاب‌ها و سند منشأ در میز MS50 هستند.</p><div class="grid">
+      <figure><a class="image-link" href="../ms50/images/active-login.png"><img src="../ms50/images/active-login.png" alt="ورود فعال و هویت برند" loading="lazy"></a><figcaption><span class="tag">UI فعال</span><h3>ورود فعلی</h3><p>مرجع واقعی برای مقایسه با ترکیب پیشنهادی.</p></figcaption></figure>
+      <figure class="mobile"><a class="image-link" href="../ms50/images/active-project-mobile.png"><img src="../ms50/images/active-project-mobile.png" alt="مرکز فرمان فعال با ناوبری موبایل فعلی" loading="lazy"></a><figcaption><span class="tag">UI فعال</span><h3>ناوبری فعلی موبایل</h3><p>جایگزین هنوز در محصول مهاجرت نکرده است.</p></figcaption></figure>
+      <figure><a class="image-link" href="../ms50/images/active-reporting.png"><img src="../ms50/images/active-reporting.png" alt="مرکز گزارش فعال با وضعیت مجاز" loading="lazy"></a><figcaption><span class="tag">UI فعال</span><h3>گزارش فعلی</h3><p>Permission و وضعیت درخواست را با Prototype بسنجید.</p></figcaption></figure>
+      <figure class="mobile"><a class="image-link" href="../ms50/images/system-dialog-mobile.png"><img src="../ms50/images/system-dialog-mobile.png" alt="نمونهٔ Dialog نسخه در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype MS49</span><h3>تأیید نسخه</h3><p>Focus، Escape و قفل Action را تعاملی بررسی کنید.</p></figcaption></figure>
+    </div></section>
+    <section class="gallery" aria-labelledby="overlay-title"><h2 id="overlay-title">Overlay و ردیف موبایل</h2><p class="context">دو قاب دست‌نخورده از Artifact MS51؛ حالت‌های دیگر و رفتار Keyboard در نمونهٔ تعاملی.</p><div class="grid">
+      <figure class="mobile"><a class="image-link" href="images/overlay-default-mobile.png"><img src="images/overlay-default-mobile.png" alt="ردیف و اقدام مجاز در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype MS51</span><h3>ردیف پیش‌فرض</h3><p>Action و متن وضعیت در عرض محدود.</p></figcaption></figure>
+      <figure class="mobile"><a class="image-link" href="images/overlay-drawer-mobile.png"><img src="images/overlay-drawer-mobile.png" alt="Drawer باز در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype MS51</span><h3>Drawer</h3><p>تمرکز، خروج و برگشت به محرک.</p></figcaption></figure>
+    </div></section>
+    <section class="gallery" aria-labelledby="composition-title"><h2 id="composition-title">ترکیب Login / Shell / Chart</h2><p class="context">دو قاب و <a href="composition-a4.pdf">PDF A4 یک‌صفحه‌ای</a> از Artifact MS52؛ Chart فقط دادهٔ فرضی و جدول جایگزین همان شش مقدار دارد.</p><div class="grid">
+      <figure><a class="image-link" href="images/composition-default-desktop.png"><img src="images/composition-default-desktop.png" alt="ترکیب Login، Shell و Chart در دسکتاپ" loading="lazy"></a><figcaption><span class="tag prototype">Prototype MS52</span><h3>ترکیب دسکتاپ</h3><p>هویت، سلسله‌مراتب و جدول جایگزین نمودار.</p></figcaption></figure>
+      <figure class="mobile"><a class="image-link" href="images/composition-permission-mobile.png"><img src="images/composition-permission-mobile.png" alt="حالت بدون مجوز و حذف دادهٔ Chart در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype MS52</span><h3>مرز مجوز موبایل</h3><p>نمودار و جدول هر دو در نبود مجوز پنهان‌اند.</p></figcaption></figure>
+    </div></section>
+    <section class="panel criteria" aria-labelledby="criteria-title"><h2 id="criteria-title">معیار تصمیم مالک</h2><ol><li><strong>هویت و خوانایی:</strong> آیا ترکیب Login، Shell و خانواده‌های سناریو با برند تأییدشده، جهت «مدیریت ممتاز» و وزیرمتن <code>2.0.0</code> در RTL/موبایل سازگارند؟</li><li><strong>حقیقت State:</strong> آیا NoData، Loading، Error، Permission، Offline و Conflict داده یا امکان اقدامِ ساختگی نشان نمی‌دهند؟ Chart باید جدول جایگزین هم‌ارز داشته باشد.</li><li><strong>تعامل:</strong> آیا ناوبری موبایل، Dialog، Popover، Drawer و Toast برای Focus/Keyboard/بازگشت و اقدام مسدود قابل فهم‌اند؟</li><li><strong>چاپ و تراکم:</strong> آیا PDF A4، گزارش و مرکز فرمان در خوانایی و تمایز دادهٔ واقعی از نمونه قابل قبول‌اند؟ Golden/Qualification چاپ تولیدی جدا می‌ماند.</li></ol><p>برای هر مورد، نتیجهٔ «تأیید»، «اصلاح با مثال دقیق» یا «شاهد بیشتر» و اولویت را ثبت کنید. وضعیت ماتریس Component همچنان <code>S/P/G</code> دارد؛ اگر برای <code>VX-G3</code> شاهد یا اصلاح تکمیلی لازم است، Gate باز می‌ماند. فقط پس از تصمیم صریح مالک و بستن شکاف‌های شرط Gate، مهاجرت فعال <code>VX-G4</code> آغاز می‌شود؛ <code>VX-G5</code> Accessibility/Responsive/cross-browser/Print/Performance مستقل است.</p></section>
+    <p class="foot">منشأ و SHA/حجم/ابعاد: <a href="manifest.json">manifest MS53</a> و <a href="../ms50/images.json">manifest MS50</a>. Chat فقط گروه پروژه؛ بدون دادهٔ عملیاتی، UAT یا مجوز انتشار.</p>
+  </main>
+</body>
+</html>

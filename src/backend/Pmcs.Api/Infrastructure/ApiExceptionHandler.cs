@@ -22,6 +22,10 @@ internal sealed partial class ApiExceptionHandler(
             IdempotencyKeyInvalidException => (StatusCodes.Status400BadRequest, exception.Message, "idempotency.key.invalid"),
             IdempotencyKeyReusedException => (StatusCodes.Status409Conflict, exception.Message, "idempotency.key.reused"),
             IdempotencyOperationInProgressException => (StatusCodes.Status409Conflict, exception.Message, "idempotency.operation.in_progress"),
+            ProjectMembershipBootstrapPermissionException =>
+                (StatusCodes.Status403Forbidden, exception.Message, "project.bootstrap.members.permission_denied"),
+            ProjectMembershipBootstrapChangedException =>
+                (StatusCodes.Status409Conflict, exception.Message, "project.bootstrap.members.changed"),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The record changed before this operation was applied.", "record.revision.conflict"),
             DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } } =>
                 (StatusCodes.Status409Conflict, "A record with the same protected identity already exists.", "record.unique.conflict"),

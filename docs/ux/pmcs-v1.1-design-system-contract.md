@@ -1,0 +1,321 @@
+# PMCS V1.1 — Design System Contract
+
+- شناسه: `PMCS-DS-001`
+- نسخه Candidate: `1.0.0-rc.23`
+- مسیر بصری: `مدیریت ممتاز`
+- وضعیت: `Four Owner Criteria Accepted at Design/Prototype Scope | VX-G3 CI Pending`
+- Runtime change: ندارد
+- تأیید مالک محصول در ۲۰۲۶-۰۹-۲۸: نشان کامل و برش شفاف نماد از
+  `assets/brand/official-mark.pdf` برای مبنای فعلی PMCS تأیید شدند؛ منشأ و Hash در
+  `docs/ux/pmcs-v1.1-brand-source.md` ثبت است. این تأیید، Gate مهاجرت و Visual QA را نمی‌بندد.
+
+## ۱. اصول غیرقابل مذاکره
+
+- رابط فارسی و RTL اصیل است؛
+- تمام تاریخ‌های ورودی، خروجی، گزارش و Print شمسی باقی می‌مانند؛
+- UI حق تغییر Fact، Permission، Workflow یا State Truth را ندارد؛
+- نشان PMCS همان نشان رسمی بتن بسپار قزوین است و بازطراحی مستقل آن ممنوع است؛
+- سرمه‌ای پایه، سبز و نقره‌ای Accent محدود و Surfaceها گرم و کم‌خستگی هستند؛
+- رنگ‌های وضعیت از Branding مستقل‌اند؛
+- جلوه‌های متحرک کوتاه، هدفمند، غیرتکراری و قابل حذف با Reduced Motion هستند؛
+- Dark Theme در V1.1 Scope خودکار نیست.
+
+## ۲. Brand و Color Tokens
+
+### Brand
+
+| Token | Candidate | کاربرد |
+| --- | --- | --- |
+| `brand.navy.950` | `#071525` | Shell و Login architecture |
+| `brand.navy.900` | `#0C2036` | Navigation و Heading |
+| `brand.navy.800` | `#15334D` | Selected/secondary structure |
+| `brand.green.700` | `#11643B` | Primary action محدود |
+| `brand.green.600` | `#187A49` | Focus/active accent |
+| `brand.silver.400` | `#9BA4A8` | Architectural accent |
+
+### Warm Surface
+
+| Token | Candidate | کاربرد |
+| --- | --- | --- |
+| `surface.canvas` | `#FBF8F1` | Canvas اصلی |
+| `surface.subtle` | `#F5EFE4` | Secondary surface |
+| `surface.card` | `#FFFFFF` | Card و Form |
+| `border.default` | `#E9DFCF` | Border گرم |
+| `text.primary` | `#17242E` | متن اصلی |
+| `text.secondary` | `#5C6971` | متن توضیحی؛ روی سطح کم‌رنگ حداقل ۴٫۵ |
+
+### Semantic
+
+Semantic tokens باید مستقل از Brand تعریف شوند:
+
+- `status.info` و `status.info.surface`؛
+- `status.success` و `status.success.surface`؛
+- `status.warning` و `status.warning.surface`؛
+- `status.danger` و `status.danger.surface`؛
+- `state.draft`، `state.offline`، `state.stale`، `state.noData` و `state.noPermission`؛
+- `insight.ai` با Label صریح و غیرقابل اشتباه با Fact.
+
+هیچ معنا فقط با رنگ منتقل نمی‌شود؛ Label، Icon یا Shape نیز الزامی است.
+
+## ۳. Typography و اعداد
+
+- فونت فارسی انتخاب‌شده برای V1.1: `Vazirmatn Variable` خودمیزبان از manifest
+  نسخهٔ `2.0.0`؛ Qualification بصری همهٔ مصرف‌کنندگان در `VX-G5` باز است؛
+- Fallback: `Tahoma, Segoe UI, sans-serif`؛
+- وزن‌های Production: 400، 500، 600 و 700؛
+- الزام مالک محصول در ۲۰۲۶-۰۹-۲۸: تغییر آیندهٔ فونت فارسی باید در تمام بخش‌های فعال
+  از یک قرارداد مرکزی، نسخه‌دار و قابل بازگشت ممکن باشد؛ Login، Shell، Portfolio،
+  Project، فرم و جدول، Chat، Reporting، نمایش موبایل و صفحهٔ Offline نباید
+  font-family مستقل و پراکنده داشته باشند؛
+- فونت گزارش PDF و Print از قرارداد نسخه‌دار خروجی استفاده می‌کند و با تغییر فونت
+  باید Embedding، شکل‌گیری متن فارسی/اعداد، صفحه‌بندی و Goldenهای چاپ دوباره
+  تأیید شوند. XLSX نام فونت را در Style ثبت می‌کند؛ نمایش همان قلم در نرم‌افزار
+  گیرنده وابسته به نصب فونت روی دستگاه اوست؛
+- تعویض فونت، متن ذخیره‌شده، دادهٔ Domain، تاریخ و مقدار Canonical را تغییر نمی‌دهد؛
+- Headingها فشرده اما نه تزئینی؛ Body برای استفاده طولانی با Line-height باز؛
+- عدد، درصد، ارز، واحد و تاریخ از Formatter مرکزی استفاده می‌کنند؛
+- نمایش فارسی اعداد در UI و خروجی؛ مقدار Canonical در Domain تغییر نمی‌کند؛
+- ستون‌های عددی و KPIها از Tabular figures استفاده می‌کنند.
+
+## ۴. Geometry
+
+- Grid پایه: ۴px؛
+- Spacing رسمی: 4، 8، 12، 16، 20، 24، 32 و 40؛
+- Radius رسمی: 8، 12، 16 و 20؛
+- Border پیش‌فرض 1px و کم‌کنتراست؛
+- Shadow فقط برای Layer، Popover و Surface مهم؛
+- Glass/blur تزئینی و Shadow سنگین در Moduleهای پرتکرار ممنوع است.
+
+## ۵. Motion Contract
+
+| نوع | مدت Candidate | سیاست |
+| --- | --- | --- |
+| Hover/press | 120–160ms | فقط بازخورد مستقیم |
+| Panel/state | 180–240ms | بدون Bounce |
+| Login wireframe | حداکثر 2200ms | یک‌بار هنگام ورود؛ Non-blocking |
+| Login glow | حداکثر یک Pass | Loop دائمی ممنوع |
+| Skeleton | حداقل و آرام | بدون Flash |
+
+در `prefers-reduced-motion: reduce` تمام Motionهای غیرضروری خاموش می‌شوند.
+
+## ۶. Component Contract
+
+### Foundation
+
+- AppShell، Sidebar، Topbar و ProjectContext؛
+- Button، IconButton، Link و Focus Ring؛
+- TextField، Select، Textarea، PersianDateInput و FileInput؛
+- Card، Section، Divider، Badge و StatusLabel؛
+- Table، FilterBar، Pagination و Mobile row fallback؛
+- Modal، Drawer، Popover، Toast و ConfirmDialog؛
+- Empty، Loading، Skeleton، Error، Offline، Stale و NoPermission.
+
+### V1.1
+
+- BrandLockup و LoginComposition؛
+- Avatar، AvatarFallback، ProfilePhotoCrop و PrivacyLabel؛
+- ProjectDuplicationStepper، TransferSelection، ConflictResolution و PreviewSummary؛
+- Attachment، Evidence و Collaboration primitives؛
+- Report layout و Print primitives؛
+- Executive Intelligence workspace؛ Agent هرگز به Chat box ساده تقلیل داده نمی‌شود.
+
+هر Component باید Default، Hover، Focus-visible، Pressed، Disabled، Loading، Error و Offline state مرتبط خود را تعریف کند.
+
+قرارداد `PMCS-UX-PRINT-001` چاپ مرورگر محدود MS43 را از خروجی رسمی
+Reporting جدا می‌کند. برگهٔ نمونه فقط Snapshot مجاز یا نبود آن، منبع و
+هشدار تازگی را نشان می‌دهد؛ Navigation/فرم چاپ نمی‌شوند. A4/Golden و فونت
+تازه هنوز در `VX-G5` Qualified نشده‌اند.
+
+در UX2-MS42، Portfolio هنگام دریافت اولیهٔ داده، Skeleton خنثای Card/Panel
+با `aria-hidden` نشان می‌دهد و پیام زندهٔ Loading را حفظ می‌کند. Placeholder
+عدد یا وضعیت ساختگی ندارد؛ در خطا حذف می‌شود تا پیام واقعی و دکمهٔ تلاش
+دوباره دیده شوند. این نمونه، قرارداد Loading سایر Componentها را Qualified
+نمی‌کند.
+
+در UX2-MS40، `PmcsFileInput` برای مدیریت ظاهر Login به‌عنوان نخستین مصرف
+مشترک FileInput افزوده شد: Input بومی همچنان فایل و محدودیت `accept` را
+نگه می‌دارد، در حالی که انتخاب/نام فایل/حذف انتخاب و Focus در UI فارسی
+نمایش داده می‌شود. Captureهای 18/44 و Run 402 شواهد همین سطح‌اند؛ مهاجرت
+سایر ورودی‌های فایل و Qualification سراسری Component هنوز باز است.
+
+در UX2-MS44، `PMCS-UX-PROTOTYPE-REVIEW-001` یک نمونهٔ مستقل برای بازبینی
+۱۰ سناریو و ۷ State مرتبط، Desktop/Tablet/Mobile، و قلم Web/Print می‌دهد.
+دو قلم خودمیزبان فقط در Prototype قرار دارند؛ این مشاهده انتخاب نهایی،
+مهاجرت Routeهای فعال یا تأیید بصری مالک نیست. شرط `VX-G3` تکمیل Contract
+همهٔ Stateهای لازم، نقد Prototype و تصمیم قلم است؛ `VX-G4/G5` جدا می‌مانند.
+
+در UX2-MS46، `PMCS-UX-COMPONENT-STATES-001` ماتریس پوشش واقعی و شکاف
+Componentهای مشترک را از روی Source و Captureهای فعال ثبت می‌کند. Hover
+دکمهٔ غیرفعال در Preview مسدود دیگر نباید سیگنال رنگ Action فعال بدهد؛
+قاب 45 و آزمون Browser شرط Evidence این اصلاح محدودند. این ماتریس
+همهٔ Stateها را Qualified یا `VX-G3` را بسته اعلام نمی‌کند.
+
+در UX2-MS47، Prototype مستقل `docs/ux/prototypes/ms47/index.html`
+Action/Field/Status/Feedback/Table را در ۹ State قراردادی با
+رفتار واقعی Hover/Focus/Pressed و Label/ARIA نمایش می‌دهد. Browser
+E2E و قاب‌های Desktop/Tablet/Mobile، نمونه را قابل مرور می‌کنند؛
+مصرف‌کنندگان فعال و Visual Qualification هنوز Gateهای مستقل‌اند.
+
+در UX2-MS48، وزیرمتن از manifest مرکزی `2.0.0` برای Web/Offline/
+PDF/XLSX/Print با Golden رسمی و Runهای 425/426 متصل شد. UX2-MS49
+نمونهٔ مستقل Navigation موبایل، وضعیت‌های داده/Permission/Offline
+و Dialog تأیید نسخه را برای بازبینی `VX-G3` می‌افزاید؛ اجرای آن
+در تمام Shellها یا Dialogهای فعال و Qualification `VX-G4/G5` هنوز باز است.
+
+در UX2-MS50، بستهٔ `docs/ux/review/ms50/` قاب‌های واقعی فعال را کنار
+نمونه‌های MS44/47/49 قرار می‌دهد. `images.json` Commit، Artifact و Hash
+ده تصویر دست‌نخورده را ثبت می‌کند. این Evidence برای بازبینی مالک است؛
+خانه‌های `G` ماتریس Component، تأیید `VX-G3`، مهاجرت `VX-G4` و
+Qualification `VX-G5` با انتشار بسته به‌تنهایی بسته نمی‌شوند.
+
+در UX2-MS51، `docs/ux/prototypes/ms51/` لایه‌های Popover/Drawer/Toast
+و ردیف موبایل را با وضعیت‌های داده و رفتار Focus/Keyboard نمونه می‌کند.
+Run 433 و Artifact ۱۲قابی شواهد همین Prototype هستند؛ مصرف‌کنندگان
+فعال و نمونهٔ تفصیلی Login/Shell/Chart هنوز شرط Gate بعدی‌اند.
+
+در UX2-MS52، نمونهٔ مستقل Login/Shell/Chart با نشان/فونت رسمی،
+نمودار دارای عنوان/توصیف و جدول جایگزین، حالت‌های بدون داده، Navigation
+موبایل و Print A4 یک‌صفحه‌ای ساخته شد. Run 435/Artifact `11007206344`
+شواهد همین Prototype هستند؛ بستهٔ مرور مالک و تصمیم `VX-G3`، سپس
+مهاجرت همهٔ مصرف‌کنندگان فعال و Qualification مستقل باقی‌اند.
+
+در UX2-MS53، بستهٔ `docs/ux/review/ms53/` هشت قاب منتخب از UI فعال
+و Prototype را با چهار معیار هویت/خوانایی، حقیقت State، تعامل و چاپ
+کنار Manifest منشأ می‌آورد. شواهد تعاملی MS44/47/49/51/52 از همان
+صفحه باز می‌شوند. این مرور قرارداد Component مصرف‌کنندگان فعال را
+خودکار کامل نمی‌کند؛ تصمیم صریح مالک و رفع شکاف‌های `S/G` شرط
+`VX-G3` است.
+
+در ۲۰۲۶-۰۹-۲۹ مالک جهت بصری را مناسب دانست و با ارزیابی محدود
+تراکم موبایل و متن فنی انگلیسی موافقت کرد؛ تصمیم دقیق در
+`docs/ux/review/ms54-owner-decision.md` است. این پاسخ تأیید جداگانهٔ
+تمام معیارهای مرور یا پذیرش `VX-G3` نیست. UX2-MS54 نمونهٔ مستقل
+`docs/ux/prototypes/ms54/` را با متن فارسی و چیدمان کوتاه‌تر موبایل
+می‌آزماید؛ Run 439/Artifact `11018211937` شواهد این پیگیری محدودند.
+مصرف‌کنندگان فعال، State Contract کامل و Qualification جدا می‌مانند.
+
+در UX2-MS55 نمونهٔ مستقل `docs/ux/prototypes/ms55/` تصویر جایگزین،
+پیش‌نمایش برش، مرز حریم خصوصی و هشت وضعیت مرتبط را بدون بارگذاری یا ذخیره
+نمایش می‌دهد. Run 443 هشت Job سبز و Artifact `11019328744` با ۱۳ قاب
+و Hashهای معتبر شاهد همین Prototype هستند؛ CI مستندات شرط Checkpoint است. فهرست
+`docs/ux/pmcs-v1.1-vx-g3-closure-ledger.md` خانواده‌های باز را به
+برش‌های قابل‌آزمون وصل می‌کند؛ پروفایل فعال و Gateهای G3/G4/G5 بازند.
+
+در UX2-MS56 نمونهٔ مستقل `docs/ux/prototypes/ms56/` انتخاب دسته،
+سیاست تعارض پیش از پیش‌نمایش، ردیف‌های افزودنی/ردشده/متعارض/مسدود،
+موارد مستثنا و مرور تأیید محلی را نشان می‌دهد. هر تغییر در انتخاب،
+پیش‌نمایش قبلی را باطل می‌کند و هیچ اقدام اجرایی یا درخواست شبکه‌ای
+وجود ندارد. Source Run 445 هشت Job سبز و Artifact `11020397707` با
+۱۴ قاب معتبر/بازبینی‌شده شاهد Prototype هستند؛ CI مستندات شرط Checkpoint است؛
+Wizard فعال و Qualification در G4/G5 جدا می‌مانند.
+
+در UX2-MS57 نمونهٔ مستقل `docs/ux/prototypes/ms57/` وضعیت‌های صف،
+بررسی، قرنطینه، آزادشده، ردشده، آفلاین، منع مجوز، خطا، تعارض نسخه و
+بدون پیوست را برای فایل پیام گروه پروژه نمایش می‌دهد. مرور منشأ صرفاً
+محلی است و اتصال، دریافت یا تبدیل مدرک را اجرا نمی‌کند. Source Run 448 هشت Job سبز و Artifact `11022376179` با ۱۵ قاب معتبر/بازبینی‌شده Evidence نمونه هستند؛ کنترل واقعی بایت/هش/نسخه،
+Permission و Qualification مصرف‌کنندگان در G4/G5 جدا می‌مانند.
+
+در UX2-MS58 نمونهٔ مستقل `docs/ux/prototypes/ms58/` وضعیت‌های
+درخواست/پردازش/آمادگی/رد/انقضا/مجوز/آفلاین/خطا را از برگهٔ مرورگر
+جدا می‌کند. برگهٔ چاپ برچسب غیررسمی، منبع و تازگی دارد و Fact غایب را
+تخمین نمی‌زند. چاپ A4/A3 عمودی و افقی در Prototype آزموده می‌شود؛
+Golden و دانلود رسمی و Qualification مصرف‌کنندگان در G4/G5 جداست.
+
+در UX2-MS59 نمونهٔ مفهومی `docs/ux/prototypes/ms59/` هوشمندی مدیریتی
+را با نه وضعیت، فرضیهٔ آزمایشی و منشأ/تازگی/عدم قطعیت/مجوز جداگانه
+نشان می‌دهد. Actionهای واقعی و ساخت Draft قفل‌اند و مرور منشأ فقط
+محلی است. این نمونه، UI اجرایی Agent را در V1.1 فعال نمی‌کند؛
+Stageهای ۲ تا ۷ و رابط تولیدی طبق Roadmap به V1.2 تعلق دارند.
+
+در UX2-MS60 نمونهٔ مستقل فرم شمسی/فیلتر، Stateهای خطا، موفقیت،
+Loading، بدون نتیجه، آفلاین، مجوز و تازگی را با Label و پیام متنی
+می‌سنجد. تقویم و تبدیل مقدار رسمی در نمونه انجام نمی‌شوند. مهاجرت
+مصرف‌کنندگان فعال و Qualification در Gateهای بعدی بازند.
+
+در UX2-MS61 متن ثانویهٔ Token فعال از `#68747C` به `#5C6971` اصلاح
+شد: نسبت آن روی `surface.subtle` از ۴٫۱۹ به ۴٫۹۴، روی بوم گرم به
+۵٫۳۳ و روی کارت سفید به ۵٫۶۵ می‌رسد. آزمون Contract نسبت حداقل ۴٫۵
+را برای متن اصلی/ثانویه، Semantic Status و حالت‌ها روی سطح مربوط
+می‌سنجد؛ Browser، Token محاسبه‌شده، Focus ۳px و Reduced Motion را
+در UI فعال بررسی می‌کند. این ممیزی نمونهٔ قرارداد است و آزمون جامع
+تمام مسیرهای مهاجرت‌یافته در `VX-G5` جدا می‌ماند. بستهٔ تصمیم
+`docs/ux/review/ms61/` چهار معیار مالک را با شواهد به‌روز نشان می‌دهد.
+
+## ۷. Login Experience Contract
+
+ظاهر Login از Authentication جدا می‌ماند. Descriptor فقط Schema-validated است و اجازه HTML/CSS/JavaScript دلخواه ندارد:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "experienceVersion": "management-excellence-1",
+  "composition": "architectural-split",
+  "brandAssetId": "official-bbq-mark",
+  "backgroundAssetId": null,
+  "motionPolicy": "wireframe-once",
+  "surfaceTone": "warm-ivory",
+  "active": true
+}
+```
+
+الزامات:
+
+- Preview قبل از Publish؛
+- Publish اتمیک؛
+- Rollback به نسخه قبلی؛
+- Fallback داخلی در خرابی Asset؛
+- محدودیت حجم/نوع فایل و Malware scan؛
+- Authentication، Redirect و BFF تحت تأثیر Descriptor قرار نمی‌گیرند.
+
+## ۸. Responsive Contract
+
+- Desktop: Sidebar کامل و Data-dense؛
+- Tablet: Sidebar فشرده و دو ستون کنترل‌شده؛
+- Mobile: Navigation جایگزین، یک ستون و جدول با fallback صریح؛
+- در MS41، شش Shell فعال زیر Navigation افقی موبایل راهنمای فارسی پیمایش
+  لمسی و حرکت با کلید تب دارند. این affordance، مهاجرت کامل Navigation
+  جایگزین و آزمون‌های جامع Responsive را نمی‌بندد؛
+- هیچ Action اصلی فقط با Hover قابل دسترسی نیست؛
+- Targetهای لمسی حداقل 44px؛
+- Zoom متن و عرض 320px نباید باعث از دست رفتن Action شود.
+
+## ۹. Accessibility و Qualification
+
+- WCAG AA برای متن و کنترل‌های اصلی؛
+- Focus-visible سراسری و قابل مشاهده؛
+- ترتیب Tab طبیعی و بدون Trap؛
+- Label، Description و Error رابطه معنایی دارند؛
+- Status، Chart و Icon فقط به رنگ متکی نیستند؛
+- Screen reader announcement برای Sync، Error و نتیجه Action؛
+- Visual regression روی Desktop/Tablet/Mobile؛
+- Print golden test و Performance budget؛
+- Gate فونت: جایگزینی آزمایشی یک خانوادهٔ فارسی از تنظیم مرکزی باید در تمام مسیرهای
+  فعال، Offline و PDF/Print با Regression دسکتاپ/تبلت/موبایل، RTL، اعداد و
+  نبود clipping پاس شود؛ هر استثنای فنی مستند و پیش از `VX-G5` بسته شود؛
+- UX-G3 فقط بعد از تأیید بصری مالک محصول بسته می‌شود.
+
+## پیگیری تصمیم مالک در MS62
+
+سه معیار هویت/خوانایی، حقیقت وضعیت نمونه‌ها و قرارداد تعامل در سطح
+طراحی پذیرفته‌اند؛ چاپ/تراکم تا دیدن شاهد پُرداده و چندصفحه‌ای باز است.
+نمونهٔ `docs/ux/prototypes/ms62/` یک جدول ۴۸ردیفی مشترک برای Desktop،
+Tablet، Mobile و چاپ است. نمای موبایل نام ستون را همراه هر مقدار حفظ
+می‌کند. چاپ همهٔ ردیف‌ها، واحد ریال، منبع/تاریخ ساختگی و غیررسمی‌بودن
+را نگه می‌دارد و مستقل از صفحهٔ جاری نمایش است. سرستون و زمینهٔ گزارش
+باید در صفحات بعدی تکرار شوند؛ جمع کل فقط یک بار و با برچسب نمونه می‌آید.
+
+پذیرش این شاهد به پاسخ مالک پس از مشاهده وابسته است. سنجش خروجی رسمی،
+مجوز و بایت فایل، دادهٔ واقعی و مرورگرهای هدف در G4/G5 جدا می‌مانند.
+
+محدودیت مشاهده‌شدهٔ چاپ مرورگر MS62: استخراج برخی ترکیب‌های «لا» ترتیب
+حروف را جابه‌جا می‌کند. خوانایی بصری و شمارش عددی جای آزمون Round-trip
+متن نیست؛ صحت کپی/جستجوی فارسیِ PDF رسمی در G5 جداگانه باید پذیرفته شود.
+
+## نتیجهٔ بازبینی MS63
+
+مالک پس از ارائهٔ نمونهٔ ۴۸ردیفی، نمای موبایل و چاپ‌های چندصفحه‌ای MS62،
+معیار چهارم را نیز در محدودهٔ همین قرارداد و نمونه پذیرفت. تمام چهار
+معیار پاسخ مثبت دارند. `VX-G3 System Ready` پس از ممیزی فهرست خانواده‌های
+Component و CI مستقل Checkpoint MS63 در این محدوده بسته می‌شود.
+خانه‌های `S/G` مصرف‌کنندگان فعال در ماتریس، کار مهاجرت `VX-G4` هستند؛
+آزمون بصری، دسترس‌پذیری، چندمرورگری و خروجی رسمی در `VX-G5` می‌مانند.

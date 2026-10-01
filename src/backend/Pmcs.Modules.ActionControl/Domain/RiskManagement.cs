@@ -99,6 +99,9 @@ public sealed class ProjectRisk : AggregateRoot
     public Guid? LastReviewedBy { get; private set; }
     public DateTimeOffset? LastReviewedAt { get; private set; }
     public DateTimeOffset? ClosedAt { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
     public IReadOnlyCollection<string> EvidenceReferences => GovernanceRules.ReadList(EvidenceReferencesJson);
     public IReadOnlyCollection<string> ClosureEvidence => GovernanceRules.ReadList(ClosureEvidenceJson);
 
@@ -126,7 +129,8 @@ public sealed class ProjectRisk : AggregateRoot
             SourceEntityId = sourceEntityId, SourceRevision = sourceRevision,
             SourceSnapshot = GovernanceRules.Required(sourceSnapshot, 1_000, "governance.source.snapshot.invalid"),
             EvidenceReferencesJson = GovernanceRules.JsonList(evidence, 700, "governance.risk.evidence.invalid", true),
-            SlaDueAt = slaDueAt, SlaRuleVersionId = slaRuleVersionId, CreatedBy = actor, CreatedAt = at
+            SlaDueAt = slaDueAt, SlaRuleVersionId = slaRuleVersionId, CreatedBy = actor, CreatedAt = at,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(at, RiskStatus.Proposed.ToString())
         };
     }
 
@@ -146,14 +150,16 @@ public sealed class ProjectRisk : AggregateRoot
         MatrixVersion = matrix.Version; FormulaVersion = matrix.FormulaVersion; ResponseStrategy = strategy;
         ResponsePlan = GovernanceRules.Required(responsePlan, 4_000, "governance.risk.response.invalid");
         EarlyWarningIndicator = GovernanceRules.Required(earlyWarningIndicator, 1_000, "governance.risk.trigger.invalid");
-        ReviewDate = reviewDate; Status = RiskStatus.Assessed; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        ReviewDate = reviewDate; Status = RiskStatus.Assessed; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
 
     public void Activate(long baseRevision, Guid actor, DateTimeOffset at)
     {
         GovernanceRules.Revision(Revision, baseRevision, "governance.risk.revision.conflict"); GovernanceRules.Identities(actor);
         if (Status != RiskStatus.Assessed) throw new DomainRuleException("governance.risk.activate.invalid_state", "Only an assessed risk can become active.");
-        Status = RiskStatus.Active; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        Status = RiskStatus.Active; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
 
     public void Review(long baseRevision, GovernanceRiskMatrixVersion matrix, ProbabilityBand residualProbability,
@@ -165,7 +171,8 @@ public sealed class ProjectRisk : AggregateRoot
         var rating = matrix.Rate(residualProbability, residualImpact);
         ResidualProbability = residualProbability; ResidualImpact = residualImpact; ResidualScore = rating.Score;
         ResidualRating = rating.Band; ResponsePlan = GovernanceRules.Required(responsePlan, 4_000, "governance.risk.response.invalid");
-        ReviewDate = nextReviewDate; Status = RiskStatus.Monitoring; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        ReviewDate = nextReviewDate; Status = RiskStatus.Monitoring; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
 
     public void Materialize(long baseRevision, Guid issueId, Guid actor, DateTimeOffset at)
@@ -173,7 +180,8 @@ public sealed class ProjectRisk : AggregateRoot
         GovernanceRules.Revision(Revision, baseRevision, "governance.risk.revision.conflict"); GovernanceRules.Identities(issueId, actor);
         if (Status is not (RiskStatus.Active or RiskStatus.Monitoring) || MaterializedIssueId.HasValue)
             throw new DomainRuleException("governance.risk.materialize.invalid_state", "Only an unmaterialized active risk can materialize.");
-        MaterializedIssueId = issueId; Status = RiskStatus.Materialized; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        MaterializedIssueId = issueId; Status = RiskStatus.Materialized; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
 
     public void Close(long baseRevision, bool expired, string reason, IReadOnlyCollection<string>? evidence,
@@ -184,7 +192,8 @@ public sealed class ProjectRisk : AggregateRoot
             throw new DomainRuleException("governance.risk.close.invalid_state", "Risk cannot close in this state.");
         ClosureReason = GovernanceRules.Required(reason, 1_500, "governance.risk.closure_reason.invalid");
         ClosureEvidenceJson = GovernanceRules.JsonList(evidence, 700, "governance.risk.closure_evidence.invalid", true);
-        Status = expired ? RiskStatus.Expired : RiskStatus.Closed; ClosedAt = at; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        Status = expired ? RiskStatus.Expired : RiskStatus.Closed; ClosedAt = at; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
 
     public void Reopen(long baseRevision, string reason, Guid actor, DateTimeOffset at)
@@ -193,6 +202,11 @@ public sealed class ProjectRisk : AggregateRoot
         if (Status is not (RiskStatus.Closed or RiskStatus.Expired))
             throw new DomainRuleException("governance.risk.reopen.invalid_state", "Only a closed or expired risk can reopen.");
         _ = GovernanceRules.Required(reason, 1_000, "governance.risk.reopen_reason.invalid");
-        Status = RiskStatus.Reopened; ClosedAt = null; LastReviewedBy = actor; LastReviewedAt = at; AdvanceRevision();
+        Status = RiskStatus.Reopened; ClosedAt = null; LastReviewedBy = actor; LastReviewedAt = at;
+        AppendReportingEvent(at); AdvanceRevision();
     }
+
+    private void AppendReportingEvent(DateTimeOffset at) => ReportingHistoryJson =
+        GovernanceReportingHistory.Append(ReportingHistoryJson, at, Status.ToString(), ReviewDate,
+            (ResidualRating ?? InherentRating)?.ToString(), MatrixVersion, MaterializedIssueId);
 }

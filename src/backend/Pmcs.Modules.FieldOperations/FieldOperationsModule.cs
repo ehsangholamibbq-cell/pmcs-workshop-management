@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.BuildingBlocks.Application;
 using Pmcs.Modules.FieldOperations.Contracts;
 using Pmcs.Modules.FieldOperations.Endpoints;
 using Pmcs.Modules.FieldOperations.Migrations;
@@ -23,9 +24,13 @@ public sealed class FieldOperationsModule : IModule
 
         services.AddDbContext<FieldOperationsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IApprovedDailyFactSource, ApprovedDailyFactSource>();
+        services.AddScoped<IDailyReportReportingSource, DailyReportReportingSource>();
+        services.AddScoped<IDailyReportPeriodReportingSource, DailyReportPeriodReportingSource>();
+        services.AddScoped<IProgressEvidenceReportingSource, ProgressEvidenceReportingSource>();
         services.AddScoped<IDailyFactDirectory, DailyFactDirectory>();
         services.AddScoped<IProgressFactSource, ProgressFactSource>();
         services.AddScoped<IDailyReportWorkSource, DailyReportWorkSource>();
+        services.AddScoped<IProjectMessageConversionDestination, ProjectChatDailyFactConversionDestination>();
         services.AddScoped<IOfflineFieldOperationHandler, OfflineDailyReportOperationHandler>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsInitialMigration>();
         services.AddSingleton<IDatabaseMigration, FieldOperationsStructuredFactsMigration>();

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — بستهٔ بازبینی بصری VX-G3</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; line-height: 1.7; --navy: #0c2036; --green: #11643b; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    a { color: #0b6542; text-underline-offset: .2em; }
+    a:focus-visible, summary:focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; right: 1rem; top: -5rem; background: white; z-index: 5; padding: .4rem .7rem; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: 1rem max(1rem, calc((100vw - 1200px)/2)); }
+    .header-inner { display: flex; gap: .9rem; align-items: center; }
+    .brand { width: 94px; height: 62px; object-fit: contain; padding: .3rem; background: #fbf8f1; border-radius: 10px; flex: none; }
+    h1 { margin: 0; font-size: 1.35rem; line-height: 1.4; }
+    header p { margin: .1rem 0 0; color: #d7e1e2; font-size: .83rem; }
+    main { max-width: 1200px; margin: auto; padding: 1rem 1rem 3rem; }
+    .notice { border: 1px solid #b48b49; background: #fff8e8; color: #51390e; border-radius: 10px; padding: .7rem .9rem; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1rem; margin: 1rem 0; }
+    .panel { border: 1px solid #e4dcd0; border-radius: 14px; padding: 1rem; background: white; min-width: 0; }
+    h2 { color: var(--navy); margin: 0 0 .3rem; font-size: 1.16rem; }
+    h3 { color: var(--navy); margin: 0; font-size: .98rem; }
+    p { margin: .2rem 0 .65rem; }
+    ul { margin: .35rem 0 0; padding-right: 1.3rem; }
+    li { margin: .2rem 0; }
+    .links { display: flex; flex-wrap: wrap; gap: .4rem .9rem; }
+    .links a { display: inline-block; min-height: 44px; padding: .35rem .5rem; border-radius: 8px; background: #eaf3ed; }
+    .section { margin-top: 1.4rem; }
+    .section > p { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+    figure { margin: 0; border: 1px solid #e4dcd0; border-radius: 12px; overflow: hidden; background: white; min-width: 0; }
+    .image-link { display: block; padding: .6rem; background: #f3f4f1; }
+    .image-link img { display: block; width: 100%; height: 260px; object-fit: contain; object-position: top center; }
+    figure.mobile .image-link img { height: 320px; }
+    figcaption { padding: .7rem .85rem; }
+    figcaption p { color: var(--muted); font-size: .82rem; margin: .1rem 0 0; }
+    .tag { display: inline-block; margin-bottom: .2rem; font-size: .75rem; font-weight: 700; border-radius: 999px; padding: .1rem .55rem; background: #e8f2eb; color: #09522e; }
+    .tag.prototype { background: #e9f2fa; color: #235c99; }
+    .criteria { margin-top: 1.5rem; }
+    .criteria li { padding-bottom: .3rem; }
+    details { margin-top: 1rem; color: var(--muted); }
+    summary { cursor: pointer; font-weight: 700; }
+    .foot { color: var(--muted); font-size: .8rem; margin-top: 1.5rem; }
+    @media (max-width: 760px) {
+      .intro, .grid { grid-template-columns: 1fr; }
+      .brand { width: 70px; height: 50px; }
+      h1 { font-size: 1.05rem; }
+      .image-link img { height: 220px; }
+      figure.mobile .image-link img { height: 300px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { background: white; color: var(--navy); } header p { color: var(--muted); } .grid { grid-template-columns: 1fr 1fr; } figure { break-inside: avoid; } .image-link img, figure.mobile .image-link img { height: 180px; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">رفتن به بستهٔ بازبینی</a>
+  <header><div class="header-inner">
+    <img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین">
+    <div><h1>بستهٔ بازبینی بصری VX-G3</h1><p>PMCS · UX2-MS50 · مسیر مصوب «مدیریت ممتاز»</p></div>
+  </div></header>
+  <main id="main">
+    <div class="notice"><strong>وضعیت:</strong> این بسته برای مرور مالک محصول آماده می‌شود؛ پذیرش <code>VX-G3</code>، مهاجرت <code>VX-G4</code> و Qualification <code>VX-G5</code> با این صفحه به‌تنهایی اعلام نمی‌شوند.</div>
+    <div class="intro">
+      <section class="panel" aria-labelledby="scope-title"><h2 id="scope-title">چه چیزی را بررسی کنیم؟</h2>
+        <p>نمونه‌های واقعی UI فعال در کنار Prototypeهای کنترل‌شده آمده‌اند. روی هر تصویر کلیک کنید تا فایل کامل با ابعاد اصلی باز شود.</p>
+        <ul><li>هویت برند، سلسله‌مراتب و خوانایی وزیرمتن در فارسی/RTL</li><li>تراکم سبد، مرکز فرمان، گزارش و برگهٔ چاپ</li><li>حالت‌های خطا/آفلاین و Action غیرفعال با متن مستقل از رنگ</li><li>Navigation و Dialog در موبایل و پاسخ به صفحه‌کلید</li></ul>
+      </section>
+      <section class="panel" aria-labelledby="prototype-title"><h2 id="prototype-title">نمونه‌های تعاملی</h2>
+        <p>انتخابگر سناریو، حالت، Focus و Dialog را در فایل‌های مستقل باز کنید:</p>
+        <div class="links"><a href="../../prototypes/ms44/index.html">مقایسهٔ سناریوها و قلم</a><a href="../../prototypes/ms47/index.html">۹ State اجزای پایه</a><a href="../../prototypes/ms49/index.html">ناوبری و Dialog</a></div>
+      </section>
+    </div>
+
+    <section class="section" aria-labelledby="active-title"><h2 id="active-title">UI فعال · شاهد فعلی</h2><p>چهار قاب از Run 425؛ این‌ها وضعیت اجراشده‌اند، نه طرح پیشنهادی آینده.</p>
+      <div class="grid">
+        <figure><a class="image-link" href="images/active-login.png"><img src="images/active-login.png" alt="صفحهٔ ورود فعال با نشان رسمی و وزیرمتن" loading="lazy"></a><figcaption><span class="tag">فعال</span><h3>ورود و برند</h3><p>ترکیب گرم، کنتراست تیتر و اقدام اصلی.</p></figcaption></figure>
+        <figure class="mobile"><a class="image-link" href="images/active-project-mobile.png"><img src="images/active-project-mobile.png" alt="مرکز فرمان فعال در موبایل با ناوبری افقی فعلی" loading="lazy"></a><figcaption><span class="tag">فعال</span><h3>مرکز فرمان موبایل</h3><p>ناوبری افقی فعلی هنوز جایگزین نشده و در <code>VX-G4</code> باز است.</p></figcaption></figure>
+        <figure><a class="image-link" href="images/active-reporting.png"><img src="images/active-reporting.png" alt="مرکز گزارش‌های فعال با دادهٔ مجاز و وضعیت مستقل" loading="lazy"></a><figcaption><span class="tag">فعال</span><h3>مرکز گزارش</h3><p>تراکم فرم، وضعیت درخواست و مرز دادهٔ مجاز.</p></figcaption></figure>
+        <figure><a class="image-link" href="images/active-print.png"><img src="images/active-print.png" alt="برگهٔ چاپ محدود مرکز فرمان بدون ناوبری عملیاتی" loading="lazy"></a><figcaption><span class="tag">فعال</span><h3>چاپ مرورگر</h3><p>برگهٔ یک‌صفحه‌ای A4 با نبود Snapshot رسمی.</p></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="direction-title"><h2 id="direction-title">جهت بصری و خوانایی</h2><p>دو قاب وزیرمتن از Prototype MS44؛ داده‌ها فرضی‌اند.</p>
+      <div class="grid">
+        <figure><a class="image-link" href="images/font-command-desktop.png"><img src="images/font-command-desktop.png" alt="نمونهٔ مرکز فرمان با وزیرمتن در دسکتاپ" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>مرکز فرمان دسکتاپ</h3><p>سلسله‌مراتب، رنگ وضعیت و متن مدیریتی پرتراکم.</p></figcaption></figure>
+        <figure class="mobile"><a class="image-link" href="images/font-command-mobile.png"><img src="images/font-command-mobile.png" alt="نمونهٔ مرکز فرمان با وزیرمتن در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>مرکز فرمان موبایل</h3><p>خوانایی تیتر و ارقام در عرض محدود.</p></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="states-title"><h2 id="states-title">قرارداد Stateهای پایه</h2><p>دو قاب از MS47؛ تعامل‌های Keyboard و قفل Action در Prototype آزموده شده‌اند.</p>
+      <div class="grid">
+        <figure><a class="image-link" href="images/foundation-default.png"><img src="images/foundation-default.png" alt="نمونهٔ اجزای پایه با دکمه ورودی پیام و جدول" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>حالت عادی</h3><p>Action، Field، Status، Feedback و جدول فارسی.</p></figcaption></figure>
+        <figure class="mobile"><a class="image-link" href="images/foundation-error-mobile.png"><img src="images/foundation-error-mobile.png" alt="نمونهٔ خطای ورودی با متن و ارتباط معنایی در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>خطای موبایل</h3><p>Label/Error و پیام مستقل از رنگ.</p></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="navigation-title"><h2 id="navigation-title">ناوبری و تأیید نسخه</h2><p>دو قاب از MS49؛ جایگزین موبایل و Dialog هنوز در UI فعال مهاجرت نکرده‌اند.</p>
+      <div class="grid">
+        <figure class="mobile"><a class="image-link" href="images/system-mobile.png"><img src="images/system-mobile.png" alt="نمونهٔ ناوبری جمع‌شونده و وضعیت بدون داده در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>فهرست جمع‌شونده</h3><p>Action آشکار و عرض ۳۲۰px بدون overflow.</p></figcaption></figure>
+        <figure class="mobile"><a class="image-link" href="images/system-dialog-mobile.png"><img src="images/system-dialog-mobile.png" alt="نمونهٔ Dialog مرور نسخه با دکمهٔ تأیید غیرفعال در موبایل" loading="lazy"></a><figcaption><span class="tag prototype">Prototype</span><h3>بازبینی نسخه</h3><p>Tab/Shift+Tab، Escape و بازگشت Focus آزموده شده‌اند.</p></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="panel criteria" aria-labelledby="criteria-title"><h2 id="criteria-title">معیار بازبینی Gate</h2>
+      <ul><li>آیا ترکیب Login، Shell، سبد، مرکز فرمان، Chat، گزارش و Intelligence با جهت مصوب سازگار است؟ سناریوهای دیگر در Prototype MS44 قابل انتخاب‌اند.</li><li>آیا وزیرمتن در تیتر، فرم، جدول، ارقام شمسی و چاپ خواناست؟ Goldenهای رسمی MS48 جداگانه pin شده‌اند.</li><li>آیا Error، Offline، Permission، NoData، Loading و Conflict با متن روشن از Fact جدا می‌مانند؟</li><li>آیا Navigation موبایل و Dialog نمونه، Focus و Actionهای حساس را روشن و قابل کنترل می‌کنند؟</li></ul>
+      <p>پس از بازبینی، نتیجهٔ مالک برای <code>VX-G3</code> جداگانه ثبت می‌شود. سپس مسیرهای فعال در <code>VX-G4</code> مهاجرت و در <code>VX-G5</code> با Accessibility، Responsive، cross-browser، Print و Performance سنجیده می‌شوند.</p>
+    </section>
+    <details><summary>منشأ و تمامیت فایل‌ها</summary><p>ده تصویر این بسته بدون ویرایش از Artifactهای GitHub Runs 412، 419، 425 و 429 کپی شده‌اند. Source Commit، Artifact ID، digest ZIP و SHA/حجم/ابعاد هر تصویر در <a href="images.json">manifest تصویرها</a> ثبت است.</p></details>
+    <p class="foot">Chat فقط گروه پروژه است؛ این بسته دادهٔ عملیاتی، UAT یا مجوز انتشار تولیدی نیست.</p>
+  </main>
+</body>
+</html>

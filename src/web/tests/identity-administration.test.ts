@@ -39,6 +39,24 @@ test("invitation is sent as an idempotent server command", async () => {
   }
 });
 
+test("invitation retry can reuse its command identity", async () => {
+  const originalFetch = globalThis.fetch;
+  const keys: string[] = [];
+  globalThis.fetch = async (_input, init) => {
+    keys.push(new Headers(init?.headers).get("Idempotency-Key") ?? "");
+    return Response.json({ id: "invitation-id" }, { status: 202 });
+  };
+
+  try {
+    const input = { displayName: "کاربر نمونه", email: "user@example.com", tenantRole: "Member" as const, projects: [] };
+    await inviteUser("/api/pmcs", input, "stable-invitation-command");
+    await inviteUser("/api/pmcs", input, "stable-invitation-command");
+    assert.deepEqual(keys, ["stable-invitation-command", "stable-invitation-command"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("effective permission preview is a no-cache diagnostic read", async () => {
   const originalFetch = globalThis.fetch;
   let capturedUrl = "";

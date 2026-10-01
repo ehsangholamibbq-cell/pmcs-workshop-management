@@ -9,6 +9,8 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> opti
 
     public DbSet<ProjectLocation> ProjectLocations => Set<ProjectLocation>();
 
+    public DbSet<ProjectBootstrapPlan> ProjectBootstrapPlans => Set<ProjectBootstrapPlan>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("projects");
@@ -82,6 +84,47 @@ internal sealed class ProjectsDbContext(DbContextOptions<ProjectsDbContext> opti
             builder.HasOne<ProjectLocation>()
                 .WithMany()
                 .HasForeignKey(x => x.ParentLocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ProjectBootstrapPlan>(builder =>
+        {
+            builder.ToTable("project_bootstrap_plans");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.SourceProjectId).HasColumnName("source_project_id");
+            builder.Property(x => x.TargetProjectId).HasColumnName("target_project_id");
+            builder.Property(x => x.ConflictPolicy).HasColumnName("conflict_policy").HasConversion<string>().HasMaxLength(40);
+            builder.Property(x => x.SelectedCategoriesJson).HasColumnName("selected_categories").HasColumnType("jsonb");
+            builder.Property(x => x.MemberSelectionsJson).HasColumnName("member_selections").HasColumnType("jsonb");
+            builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
+            builder.Property(x => x.ContributorCatalogVersion).HasColumnName("contributor_catalog_version").HasMaxLength(80);
+            builder.Property(x => x.PreviewDigest).HasColumnName("preview_digest").HasMaxLength(64);
+            builder.Property(x => x.MembershipSnapshotToken).HasColumnName("membership_snapshot_token").HasMaxLength(64);
+            builder.Property(x => x.PreviewJson).HasColumnName("preview_json").HasColumnType("jsonb");
+            builder.Property(x => x.ResultJson).HasColumnName("result_json").HasColumnType("jsonb");
+            builder.Property(x => x.SourceRevision).HasColumnName("source_revision");
+            builder.Property(x => x.TargetRevision).HasColumnName("target_revision");
+            builder.Property(x => x.CreatedBy).HasColumnName("created_by");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.PreviewedAt).HasColumnName("previewed_at");
+            builder.Property(x => x.PreviewExpiresAt).HasColumnName("preview_expires_at");
+            builder.Property(x => x.ExecutedAt).HasColumnName("executed_at");
+            builder.Property(x => x.ActivatedAt).HasColumnName("activated_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.Ignore(x => x.DomainEvents);
+            builder.HasIndex(x => new { x.TenantId, x.TargetProjectId }).IsUnique();
+            builder.HasIndex(x => new { x.TenantId, x.SourceProjectId, x.Status });
+            builder.HasOne<Project>()
+                .WithMany()
+                .HasForeignKey(x => new { x.TenantId, x.SourceProjectId })
+                .HasPrincipalKey(x => new { x.TenantId, x.Id })
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne<Project>()
+                .WithMany()
+                .HasForeignKey(x => new { x.TenantId, x.TargetProjectId })
+                .HasPrincipalKey(x => new { x.TenantId, x.Id })
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

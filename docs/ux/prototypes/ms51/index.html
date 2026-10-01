@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — لایه‌ها و ردیف موبایل</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Vazirmatn, Tahoma, sans-serif; line-height: 1.7; color: #17242e; background: #fbf8f1; --navy: #0c2036; --green: #11643b; --focus: #187a49; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    :is(button, select, a):focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: 1rem max(1rem, calc((100vw - 1100px)/2)); }
+    .head { display: flex; align-items: center; gap: .8rem; }
+    .brand { width: 94px; height: 62px; flex: none; object-fit: contain; padding: .25rem; background: #fbf8f1; border-radius: 10px; }
+    h1 { font-size: 1.3rem; line-height: 1.4; margin: 0; }
+    header p { color: #d7e1e2; margin: .1rem 0 0; font-size: .8rem; }
+    main { max-width: 1100px; margin: auto; padding: 1.1rem 1rem 3rem; }
+    .note { background: #fff8e8; border: 1px solid #b48b49; border-radius: 10px; padding: .65rem .85rem; }
+    .controls { margin: 1rem 0; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; padding: .4rem .65rem; border: 1px solid #7b8c94; border-radius: 8px; background: white; color: #17242e; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1rem; }
+    .card { min-width: 0; background: white; border: 1px solid #e9dfcf; border-radius: 14px; padding: 1rem; }
+    h2 { color: var(--navy); font-size: 1.05rem; margin: 0 0 .3rem; }
+    h3 { color: var(--navy); font-size: .95rem; margin: .8rem 0 .2rem; }
+    p { margin: .2rem 0 .75rem; }
+    .muted { color: var(--muted); font-size: .82rem; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+    .action { min-height: 44px; border: 1px solid var(--green); border-radius: 8px; background: var(--green); color: white; padding: .4rem .75rem; font-weight: 700; }
+    .action:hover:not(:disabled) { background: #0b4f2e; }
+    .action:active:not(:disabled) { background: #083e26; transform: translateY(1px); }
+    .action.secondary { background: white; color: var(--green); }
+    .action.secondary:hover:not(:disabled) { background: #e4f2e9; }
+    .action:disabled { background: #e4e9e6; color: #40535a; border-color: #a8b4b5; cursor: not-allowed; transform: none; }
+    .popover-wrap { position: relative; display: inline-block; }
+    .popover { position: absolute; z-index: 3; right: 0; top: calc(100% + .45rem); width: min(285px, calc(100vw - 3rem)); background: white; border: 1px solid #86969c; border-radius: 10px; box-shadow: 0 8px 22px #0c203626; padding: .65rem; }
+    .popover[hidden] { display: none; }
+    .popover a { display: block; min-height: 44px; padding: .45rem; color: var(--green); }
+    .popover p { color: var(--muted); font-size: .78rem; margin: 0; }
+    .feedback { min-height: 65px; border-right: 4px solid #235c99; background: #f1f6f8; border-radius: 8px; padding: .55rem .8rem; margin: .8rem 0; }
+    .feedback[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .feedback[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .feedback[data-tone="success"] { border-color: #17684c; background: #f2f9f3; }
+    .feedback p { margin: 0; font-size: .82rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    th, td { border-bottom: 1px solid #e9dfcf; padding: .55rem .35rem; text-align: right; }
+    th { color: var(--muted); }
+    .mobile-rows { display: none; }
+    .row { border: 1px solid #e9dfcf; border-radius: 10px; padding: .55rem .7rem; margin: .5rem 0; }
+    .row dl { display: grid; grid-template-columns: 5rem minmax(0,1fr); gap: .2rem .5rem; margin: 0; }
+    .row dt { color: var(--muted); }
+    .row dd { margin: 0; overflow-wrap: anywhere; }
+    .skeleton { height: 45px; background: #edf0ee; border-radius: 8px; margin: .4rem 0; }
+    .toast { display: flex; justify-content: space-between; align-items: center; gap: .6rem; background: #e4f2e9; border: 1px solid #9bbfa8; border-radius: 10px; padding: .65rem .8rem; margin-top: 1rem; }
+    .toast[hidden] { display: none; }
+    dialog { border: 1px solid #a9b6b4; border-radius: 14px; padding: 1.2rem; width: min(480px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; color: #17242e; background: white; }
+    dialog::backdrop { background: #0c2036aa; }
+    dialog h2 { margin-top: 0; }
+    dialog .actions { justify-content: flex-end; margin-top: 1.1rem; }
+    .drawer { margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: min(420px, 100vw); border-radius: 14px 0 0 14px; }
+    .foot { margin-top: 1rem; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      .brand { width: 72px; height: 52px; }
+      h1 { font-size: 1.05rem; }
+      .desktop-table { display: none; }
+      .mobile-rows { display: block; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { background: white; color: var(--navy); } header p { color: var(--muted); } .controls, .actions, .popover-wrap, .toast, dialog { display: none !important; } .grid { grid-template-columns: 1fr; } .card { break-inside: avoid; } }
+  </style>
+</head>
+<body data-state="default">
+  <a class="skip" href="#main">رفتن به نمونهٔ لایه‌ها</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>لایه‌ها و ردیف موبایل</h1><p>PMCS · UX2-MS51 · نمونهٔ مستقل و بدون اتصال عملیاتی</p></div></div></header>
+  <main id="main">
+    <div class="note"><strong>دادهٔ فرضی:</strong> این نمونه برای بررسی رفتار Popover، Drawer، Toast و fallback جدول است؛ هیچ درخواست شبکه یا ثبت پروژه ندارد.</div>
+    <div class="controls"><label for="state">وضعیت داده</label><select id="state">
+      <option value="default">عادی</option><option value="loading">بارگذاری</option><option value="empty">بدون داده</option><option value="error">خطا</option><option value="permission">بدون مجوز</option><option value="offline">آفلاین</option><option value="conflict">تعارض</option><option value="success">موفق</option>
+    </select></div>
+    <div class="grid">
+      <section class="card" aria-labelledby="rows-title"><h2 id="rows-title">ردیف‌های نمونه</h2><p class="muted">در موبایل، هر ردیف به Card دارای Label/Value تبدیل می‌شود.</p>
+        <div class="feedback" id="feedback" role="status" aria-live="polite" data-tone="info"><strong id="feedback-title">دادهٔ نمونه</strong><p id="feedback-text">دو ردیف فرضی برای سنجش ظاهر و دسترسی نمایش داده می‌شود.</p></div>
+        <div id="rows"><div class="desktop-table"><table><caption class="muted">نمونهٔ ساختگی؛ گزارش رسمی نیست</caption><thead><tr><th scope="col">شناسه</th><th scope="col">شرح</th><th scope="col">مقدار</th><th scope="col">وضعیت</th></tr></thead><tbody><tr><td>Q-۰۱</td><td>بازبینی نمونه</td><td>۱٬۲۵۰٫۵</td><td>پیش‌نویس</td></tr><tr><td>Q-۰۲</td><td>کنترل دوم</td><td>۳۷۵٫۲</td><td>در انتظار</td></tr></tbody></table></div>
+          <div class="mobile-rows"><article class="row"><h3>Q-۰۱ · بازبینی نمونه</h3><dl><dt>مقدار</dt><dd>۱٬۲۵۰٫۵</dd><dt>وضعیت</dt><dd>پیش‌نویس</dd></dl></article><article class="row"><h3>Q-۰۲ · کنترل دوم</h3><dl><dt>مقدار</dt><dd>۳۷۵٫۲</dd><dt>وضعیت</dt><dd>در انتظار</dd></dl></article></div></div>
+        <div id="skeleton" hidden aria-hidden="true"><div class="skeleton"></div><div class="skeleton"></div></div>
+        <p class="muted" id="rows-reason">این مقادیر Fact یا Snapshot رسمی نیستند.</p>
+      </section>
+      <section class="card" aria-labelledby="layers-title"><h2 id="layers-title">لایه و بازخورد</h2><p class="muted">دکمه‌های واقعی، تمرکز آشکار و علت قفل اقدام.</p>
+        <div class="actions"><div class="popover-wrap"><button class="action secondary" id="popover-trigger" type="button" aria-expanded="false" aria-controls="popover">راهنمای وضعیت</button><div class="popover" id="popover" hidden><p>تنها دادهٔ مجاز پروژه باید در نمای عملیاتی دیده شود.</p><a href="#rows-title" id="popover-link">رفتن به ردیف‌ها</a></div></div>
+          <button class="action secondary" id="drawer-trigger" type="button">جزئیات نمونه</button>
+          <button class="action" id="toast-trigger" type="button">اعلان نمایشی</button></div>
+        <p class="muted" id="action-reason">هیچ تغییری در دادهٔ عملیاتی ثبت نمی‌شود.</p>
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden><span>فقط اعلان نمایشی؛ درخواستی صادر نشد.</span><button class="action secondary" id="toast-close" type="button" aria-label="بستن اعلان">بستن</button></div>
+      </section>
+    </div>
+    <p class="foot">Drawer فقط اطلاعات فرضی را نشان می‌دهد؛ تأیید نسخه و اقدام حساس در Prototype MS49 جداست. این نمونه جای Qualification مسیرهای فعال نیست.</p>
+  </main>
+  <dialog class="drawer" id="drawer" aria-labelledby="drawer-title" aria-describedby="drawer-text"><h2 id="drawer-title">جزئیات نمونه</h2><p id="drawer-text">نسخه و مجوز واقعی در این نمونه خوانده یا ذخیره نمی‌شوند. این لایه با Escape یا دکمهٔ بستن بسته می‌شود.</p><div class="actions"><button class="action secondary" id="drawer-close" type="button">بستن جزئیات</button></div></dialog>
+  <script>
+    const state = document.getElementById("state"), rows = document.getElementById("rows"), skeleton = document.getElementById("skeleton");
+    const feedback = document.getElementById("feedback"), title = document.getElementById("feedback-title"), message = document.getElementById("feedback-text");
+    const drawer = document.getElementById("drawer"), drawerTrigger = document.getElementById("drawer-trigger"), drawerClose = document.getElementById("drawer-close");
+    const popover = document.getElementById("popover"), popoverTrigger = document.getElementById("popover-trigger");
+    const toast = document.getElementById("toast"), toastTrigger = document.getElementById("toast-trigger");
+    const labels = {
+      default: ["دادهٔ نمونه", "دو ردیف فرضی برای سنجش ظاهر و دسترسی نمایش داده می‌شود.", "info"],
+      loading: ["در حال دریافت", "نتیجه‌ای پیش از پاسخ معتبر نمایش داده نمی‌شود.", "info"],
+      empty: ["بدون داده", "هیچ ردیف مجازی برای این وضعیت ساخته نمی‌شود.", "info"],
+      error: ["خطای دریافت", "داده در دسترس نیست؛ تلاش دوباره فقط پس از اتصال مجاز است.", "error"],
+      permission: ["بدون مجوز", "ردیف‌های فاقد مجوز نمایش داده نمی‌شوند.", "warning"],
+      offline: ["آفلاین", "دادهٔ تازه تأیید نشده است؛ اقدام متوقف می‌ماند.", "warning"],
+      conflict: ["تعارض نسخه", "برای ادامه، نسخهٔ سرور باید جداگانه بررسی شود.", "warning"],
+      success: ["نمایش موفق", "تنها دادهٔ فرضی نشان داده شد؛ ثبت عملیاتی نشده است.", "success"]
+    };
+    function closePopover(returnFocus = false) { popover.hidden = true; popoverTrigger.setAttribute("aria-expanded", "false"); if (returnFocus) popoverTrigger.focus(); }
+    function render() {
+      const value = state.value, [heading, detail, tone] = labels[value];
+      document.body.dataset.state = value;
+      title.textContent = heading; message.textContent = detail; feedback.dataset.tone = tone;
+      feedback.setAttribute("role", value === "error" || value === "conflict" ? "alert" : "status");
+      rows.hidden = !["default", "success"].includes(value); skeleton.hidden = value !== "loading";
+      const locked = ["loading", "error", "permission", "offline", "conflict"].includes(value);
+      toastTrigger.disabled = locked;
+      document.getElementById("action-reason").textContent = locked ? "اقدام نمایشی تا رفع این وضعیت غیرفعال است." : "هیچ تغییری در دادهٔ عملیاتی ثبت نمی‌شود.";
+      document.getElementById("rows-reason").textContent = value === "loading" ? "Skeleton فقط جایگاه خنثی است؛ هیچ Fact ساختگی ندارد." : "این مقادیر Fact یا Snapshot رسمی نیستند.";
+      toast.hidden = true; closePopover();
+    }
+    state.addEventListener("change", render);
+    popoverTrigger.addEventListener("click", () => { if (!popover.hidden) closePopover(true); else { popover.hidden = false; popoverTrigger.setAttribute("aria-expanded", "true"); document.getElementById("popover-link").focus(); } });
+    document.getElementById("popover-link").addEventListener("click", () => closePopover());
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !popover.hidden) { closePopover(true); event.preventDefault(); } });
+    document.addEventListener("pointerdown", (event) => { if (!popover.hidden && !event.target.closest(".popover-wrap")) closePopover(); });
+    drawerTrigger.addEventListener("click", () => { drawer.showModal(); drawerClose.focus(); });
+    drawerClose.addEventListener("click", () => drawer.close());
+    drawer.addEventListener("close", () => drawerTrigger.focus());
+    drawer.addEventListener("keydown", (event) => { if (event.key !== "Tab") return; const first = drawerClose; if (event.shiftKey || document.activeElement === first) { event.preventDefault(); first.focus(); } });
+    toastTrigger.addEventListener("click", () => { toast.hidden = false; });
+    document.getElementById("toast-close").addEventListener("click", () => { toast.hidden = true; toastTrigger.focus(); });
+    render();
+  </script>
+</body>
+</html>

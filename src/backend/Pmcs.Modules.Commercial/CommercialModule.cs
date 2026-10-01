@@ -23,6 +23,8 @@ public sealed class CommercialModule : IModule
         services.AddDbContext<CommercialDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<ICommercialReferenceDirectory, CommercialReferenceDirectory>();
         services.AddScoped<ICommercialStateSource, CommercialStateSource>();
+        services.AddScoped<IProjectCommercialProcurementSupplyReportingSource,
+            ProjectCommercialProcurementSupplyReportingSource>();
         services.AddScoped<CommercialStateFactory>();
         services.AddSingleton<IDatabaseMigration, CommercialInitialMigration>();
         services.AddSingleton<IDatabaseMigration, CommercialSupplyRealityMigration>();

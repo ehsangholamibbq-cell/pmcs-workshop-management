@@ -1,4 +1,6 @@
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.TechnicalOffice.Contracts;
+using System.Text.Json;
 
 namespace Pmcs.Modules.TechnicalOffice.Domain;
 
@@ -26,6 +28,8 @@ public sealed class TechnicalSubmittal : AggregateRoot
     public int ResubmissionNumber { get; private set; }
     public Guid? SupersedesSubmittalId { get; private set; }
     public string RevisionIdsJson { get; private set; } = "[]";
+    // Null marks legacy rows whose full transition chronology cannot be proved.
+    public string? ReportingHistoryJson { get; private set; }
     public string? RequiredDeliverableReference { get; private set; }
     public SubmittalStatus Status { get; private set; }
     public SubmittalReviewOutcome? ReviewOutcome { get; private set; }
@@ -38,6 +42,8 @@ public sealed class TechnicalSubmittal : AggregateRoot
     public DateTimeOffset? ClosedAt { get; private set; }
 
     public IReadOnlyCollection<Guid> RevisionIds => TechnicalOfficeRules.DeserializeIds(RevisionIdsJson);
+    public IReadOnlyCollection<TechnicalReportingEvent>? ReportingHistory => ReportingHistoryJson is null ? null :
+        JsonSerializer.Deserialize<TechnicalReportingEvent[]>(ReportingHistoryJson, TechnicalOfficeRules.JsonOptions);
 
     public static TechnicalSubmittal Create(
         Guid id, Guid tenantId, Guid projectId, string title, TechnicalSubmittalType type,
@@ -86,6 +92,7 @@ public sealed class TechnicalSubmittal : AggregateRoot
             RevisionIdsJson = normalizedRevisions,
             RequiredDeliverableReference = TechnicalOfficeRules.Optional(requiredDeliverableReference, 500, "technical.submittal.deliverable.too_long"),
             Status = SubmittalStatus.Draft,
+            ReportingHistoryJson = "[]",
             CreatedBy = createdBy,
             CreatedAt = createdAt
         };
@@ -100,10 +107,11 @@ public sealed class TechnicalSubmittal : AggregateRoot
         }
         Status = SubmittalStatus.Submitted;
         SubmittedAt = at;
+        AppendReportingEvent(TechnicalReportingEventType.Submitted, at);
         AdvanceRevision();
     }
 
-    public void BeginReview(long baseRevision)
+    public void BeginReview(long baseRevision, DateTimeOffset at)
     {
         EnsureRevision(baseRevision);
         if (Status != SubmittalStatus.Submitted)
@@ -111,6 +119,7 @@ public sealed class TechnicalSubmittal : AggregateRoot
             throw new DomainRuleException("technical.submittal.review.invalid_state", "Only a submitted package can enter review.");
         }
         Status = SubmittalStatus.UnderReview;
+        AppendReportingEvent(TechnicalReportingEventType.UnderReview, at);
         AdvanceRevision();
     }
 
@@ -142,6 +151,7 @@ public sealed class TechnicalSubmittal : AggregateRoot
         ReviewedBy = reviewer;
         ReviewedAt = at;
         ReviewComment = TechnicalOfficeRules.Optional(comment, 2_000, "technical.review.comment.too_long");
+        AppendReportingEvent(TechnicalReportingEventType.Reviewed, at, outcome);
         AdvanceRevision();
     }
 
@@ -154,9 +164,23 @@ public sealed class TechnicalSubmittal : AggregateRoot
         }
         Status = SubmittalStatus.Closed;
         ClosedAt = at;
+        AppendReportingEvent(TechnicalReportingEventType.Closed, at);
         AdvanceRevision();
     }
 
     private void EnsureRevision(long supplied) =>
         TechnicalOfficeRules.Revision(Revision, supplied, "technical.submittal.revision.conflict");
+
+    private void AppendReportingEvent(TechnicalReportingEventType type, DateTimeOffset at,
+        SubmittalReviewOutcome? outcome = null)
+    {
+        if (ReportingHistoryJson is null) return; // Never promote a legacy, partial history.
+        var history = ReportingHistory?.ToArray() ?? [];
+        if (at == default || at.ToUniversalTime() <
+            (history.Length == 0 ? CreatedAt : history[^1].AtUtc).ToUniversalTime())
+            throw new DomainRuleException("technical.submittal.history.chronology", "Transition time must follow the preceding event.");
+        ReportingHistoryJson = JsonSerializer.Serialize(history.Append(new TechnicalReportingEvent(
+            history.Length + 1, type, at.ToUniversalTime(), ReviewOutcome: outcome)).ToArray(),
+            TechnicalOfficeRules.JsonOptions);
+    }
 }

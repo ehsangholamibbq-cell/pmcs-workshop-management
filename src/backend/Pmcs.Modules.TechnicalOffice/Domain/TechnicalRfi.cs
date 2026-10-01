@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Pmcs.BuildingBlocks.Domain;
+using Pmcs.Modules.TechnicalOffice.Contracts;
 
 namespace Pmcs.Modules.TechnicalOffice.Domain;
 
@@ -28,6 +29,8 @@ public sealed class TechnicalRfi : AggregateRoot
     public string EvidenceReferencesJson { get; private set; } = "[]";
     public string RelatedRevisionIdsJson { get; private set; } = "[]";
     public string ResponseHistoryJson { get; private set; } = "[]";
+    // Null marks legacy rows whose full transition chronology cannot be proved.
+    public string? ReportingHistoryJson { get; private set; }
     public RfiStatus Status { get; private set; }
     public Guid RaisedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -39,6 +42,8 @@ public sealed class TechnicalRfi : AggregateRoot
     public IReadOnlyCollection<Guid> RelatedRevisionIds => TechnicalOfficeRules.DeserializeIds(RelatedRevisionIdsJson);
     public IReadOnlyCollection<RfiResponseRecord> Responses =>
         JsonSerializer.Deserialize<RfiResponseRecord[]>(ResponseHistoryJson, TechnicalOfficeRules.JsonOptions) ?? [];
+    public IReadOnlyCollection<TechnicalReportingEvent>? ReportingHistory => ReportingHistoryJson is null ? null :
+        JsonSerializer.Deserialize<TechnicalReportingEvent[]>(ReportingHistoryJson, TechnicalOfficeRules.JsonOptions);
 
     public static TechnicalRfi Create(
         Guid id, Guid tenantId, Guid projectId, string title, string question, string requestedFrom,
@@ -84,12 +89,13 @@ public sealed class TechnicalRfi : AggregateRoot
             EvidenceReferencesJson = JsonSerializer.Serialize(evidence, TechnicalOfficeRules.JsonOptions),
             RelatedRevisionIdsJson = TechnicalOfficeRules.SerializeIds(relatedRevisionIds, 50, "technical.rfi.revisions.invalid"),
             Status = RfiStatus.Draft,
+            ReportingHistoryJson = "[]",
             RaisedBy = raisedBy,
             CreatedAt = createdAt
         };
     }
 
-    public void SubmitForInternalReview(long baseRevision)
+    public void SubmitForInternalReview(long baseRevision, DateTimeOffset at)
     {
         EnsureRevision(baseRevision);
         if (Status != RfiStatus.Draft)
@@ -101,6 +107,7 @@ public sealed class TechnicalRfi : AggregateRoot
             throw new DomainRuleException("technical.rfi.evidence.required", "Evidence is required before review.");
         }
         Status = RfiStatus.InternalReview;
+        AppendReportingEvent(TechnicalReportingEventType.InternalReview, at);
         AdvanceRevision();
     }
 
@@ -117,6 +124,7 @@ public sealed class TechnicalRfi : AggregateRoot
             Responses.Count + 1, "InternalReviewReturn", normalizedReason, reviewer.ToString(), at, RfiResponseClassification.InformationOnly,
             false, [], reviewer, null, null, null, null));
         Status = RfiStatus.Draft;
+        AppendReportingEvent(TechnicalReportingEventType.ReturnToDraft, at);
         AdvanceRevision();
     }
 
@@ -129,6 +137,7 @@ public sealed class TechnicalRfi : AggregateRoot
         }
         Status = RfiStatus.Submitted;
         SubmittedAt = at;
+        AppendReportingEvent(TechnicalReportingEventType.Issued, at);
         AdvanceRevision();
     }
 
@@ -165,6 +174,7 @@ public sealed class TechnicalRfi : AggregateRoot
             null,
             null));
         Status = RfiStatus.Answered;
+        AppendReportingEvent(TechnicalReportingEventType.ResponseReceived, responseAt, classification, changePotential);
         AdvanceRevision();
     }
 
@@ -172,6 +182,7 @@ public sealed class TechnicalRfi : AggregateRoot
     {
         ReviewCurrentResponse(baseRevision, reviewer, at, true, comment);
         Status = RfiStatus.ResponseAccepted;
+        AppendReportingEvent(TechnicalReportingEventType.ResponseAccepted, at);
         AdvanceRevision();
     }
 
@@ -180,6 +191,7 @@ public sealed class TechnicalRfi : AggregateRoot
         ReviewCurrentResponse(baseRevision, reviewer, at, false,
             TechnicalOfficeRules.Required(reason, 1_000, "technical.rfi.clarification.reason.invalid"));
         Status = RfiStatus.ClarificationRequired;
+        AppendReportingEvent(TechnicalReportingEventType.ClarificationRequired, at);
         AdvanceRevision();
     }
 
@@ -192,6 +204,7 @@ public sealed class TechnicalRfi : AggregateRoot
         }
         Status = RfiStatus.Closed;
         ClosedAt = at;
+        AppendReportingEvent(TechnicalReportingEventType.Closed, at);
         AdvanceRevision();
     }
 
@@ -219,6 +232,19 @@ public sealed class TechnicalRfi : AggregateRoot
     {
         var responses = Responses.Append(response).ToArray();
         ResponseHistoryJson = JsonSerializer.Serialize(responses, TechnicalOfficeRules.JsonOptions);
+    }
+
+    private void AppendReportingEvent(TechnicalReportingEventType type, DateTimeOffset at,
+        RfiResponseClassification? classification = null, bool changePotential = false)
+    {
+        if (ReportingHistoryJson is null) return; // Never promote a legacy, partial history.
+        var history = ReportingHistory?.ToArray() ?? [];
+        if (at == default || at.ToUniversalTime() <
+            (history.Length == 0 ? CreatedAt : history[^1].AtUtc).ToUniversalTime())
+            throw new DomainRuleException("technical.rfi.history.chronology", "Transition time must follow the preceding event.");
+        ReportingHistoryJson = JsonSerializer.Serialize(history.Append(new TechnicalReportingEvent(
+            history.Length + 1, type, at.ToUniversalTime(), classification, changePotential)).ToArray(),
+            TechnicalOfficeRules.JsonOptions);
     }
 
     private void EnsureRevision(long supplied) =>

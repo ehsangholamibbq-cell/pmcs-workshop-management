@@ -106,8 +106,8 @@ export async function getEffectivePermissionPreview(
   return response.json() as Promise<EffectivePermissionPreviewModel>;
 }
 
-export async function inviteUser(apiBaseUrl: string, input: InviteUserInput): Promise<InvitationModel> {
-  return mutate<InvitationModel>(`${normalize(apiBaseUrl)}/api/v1/identity/invitations`, "POST", input);
+export async function inviteUser(apiBaseUrl: string, input: InviteUserInput, idempotencyKey?: string): Promise<InvitationModel> {
+  return mutate<InvitationModel>(`${normalize(apiBaseUrl)}/api/v1/identity/invitations`, "POST", input, idempotencyKey);
 }
 
 export async function resendInvitation(apiBaseUrl: string, invitationId: string): Promise<void> {
@@ -143,12 +143,12 @@ export async function revokeMembership(
   await mutate(`${normalize(apiBaseUrl)}/api/v1/identity/users/${userId}/memberships/${projectId}`, "DELETE");
 }
 
-async function mutate<T = unknown>(url: string, method: string, body?: unknown): Promise<T> {
+async function mutate<T = unknown>(url: string, method: string, body?: unknown, idempotencyKey?: string): Promise<T> {
   const response = await fetch(url, {
     method,
     headers: {
       "Content-Type": "application/json",
-      "Idempotency-Key": crypto.randomUUID(),
+      "Idempotency-Key": idempotencyKey ?? crypto.randomUUID(),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });

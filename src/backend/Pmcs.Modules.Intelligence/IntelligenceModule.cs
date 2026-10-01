@@ -37,12 +37,54 @@ public sealed class IntelligenceModule : IModule
             endpoint,
             TimeSpan.FromSeconds(timeoutSeconds));
         services.AddSingleton(settings);
-        services.AddSingleton(new HttpClient());
+        services.AddSingleton(new HttpClient { Timeout = Timeout.InfiniteTimeSpan });
         services.AddSingleton<IAdvisoryModelClient, OpenAiResponsesClient>();
+        services.AddSingleton<IModelProviderProbe>(provider => new OpenAiModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["OpenAI:Model"] ?? configuration["OPENAI_MODEL"],
+                configuration["OpenAI:ApiKey"] ?? configuration["OPENAI_API_KEY"])));
+        services.AddSingleton<IModelProviderProbe>(provider => new GeminiModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Gemini:Model"] ?? configuration["GEMINI_MODEL"],
+                configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"])));
+        services.AddSingleton<IModelProviderProbe>(provider => new AnthropicModelProbe(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Anthropic:Model"] ?? configuration["ANTHROPIC_MODEL"],
+                configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new OpenAiReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["OpenAI:Model"] ?? configuration["OPENAI_MODEL"],
+                configuration["OpenAI:ApiKey"] ?? configuration["OPENAI_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new GeminiReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Gemini:Model"] ?? configuration["GEMINI_MODEL"],
+                configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"])));
+        services.AddSingleton<IReferenceModelAdapter>(provider => new ClaudeReferenceAdapter(
+            provider.GetRequiredService<HttpClient>(),
+            new ModelProviderConfiguration(configuration["Anthropic:Model"] ?? configuration["ANTHROPIC_MODEL"],
+                configuration["Anthropic:ApiKey"] ?? configuration["ANTHROPIC_API_KEY"])));
+        services.AddScoped<IntelligenceAdministrationAccess>();
         services.AddScoped<PermissionAwareContextAssembler>();
+        services.AddScoped<IntelligenceToolRegistry>();
         services.AddSingleton<IDatabaseMigration, IntelligenceInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceAdministrationGrantMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceModelProfileMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceReferenceRunMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceModelPriceMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceReferenceSessionMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceProviderRegistrationMigration>();
+        services.AddSingleton<IDatabaseMigration, IntelligenceReferenceLineageMigration>();
         services.AddHostedService<AdvisoryGenerationWorker>();
+        services.AddHostedService<ReferenceRunRecoveryWorker>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapIntelligenceEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapIntelligenceEndpoints();
+        endpoints.MapModelProviderAdministration();
+        endpoints.MapIntelligenceGrantEndpoints();
+        endpoints.MapIntelligenceModelCatalogEndpoints();
+        endpoints.MapIntelligenceProfileAdministrationEndpoints();
+        endpoints.MapIntelligenceReferenceRunEndpoints();
+    }
 }

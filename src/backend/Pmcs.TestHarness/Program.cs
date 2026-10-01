@@ -56,8 +56,58 @@ internal static partial class Program
                 "guard" => GuardDatabase(),
                 "manifest" => WriteManifest(),
                 "probe" => await ProbeAsync(),
+                "probe-int1-providers" => await ProbeInt1ProvidersAsync(),
+                "verify-v1.1-load-soak" => await VerifyV11LoadSoakAsync(),
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
+                "verify-reporting" => await VerifyReportingAsync(),
+                "verify-collaboration-core" => await VerifyCollaborationCoreAsync(),
+                "verify-collaboration-revoked" => await VerifyCollaborationRevokedAsync(),
+                "verify-collaboration-interactions" => await VerifyCollaborationInteractionsAsync(),
+                "verify-collaboration-live" => await VerifyCollaborationLiveAsync(),
+                "verify-collaboration-attachment" => await VerifyCollaborationAttachmentAsync(),
+                "verify-collaboration-governance" => await VerifyCollaborationGovernanceAsync(),
+                "verify-collaboration-action-conversions" => await VerifyCollaborationActionConversionsAsync(),
+                "verify-collaboration-technical-conversions" => await VerifyCollaborationTechnicalConversionsAsync(),
+                "verify-collaboration-field-evidence-conversions" => await VerifyCollaborationFieldEvidenceConversionsAsync(),
+                "verify-collaboration-qualification" => await VerifyCollaborationQualificationAsync(),
+                "verify-collaboration-official-revoked" => await VerifyCollaborationOfficialRevokedAsync(),
+                "verify-reporting-golden" => await VerifyReportingGoldenAsync(),
+                "verify-reporting-pdf-golden" => await VerifyReportingPdfGoldenAsync(),
+                "verify-reporting-periodic" => await VerifyReportingPeriodicAsync(),
+                "verify-reporting-executive-state" =>
+                    await VerifyReportingExecutiveProjectStateAsync(),
+                "verify-reporting-project-progress" =>
+                    await VerifyReportingProjectProgressAsync(),
+                "verify-reporting-project-financial-position" =>
+                    await VerifyReportingProjectFinancialPositionAsync(),
+                "verify-reporting-project-commercial-procurement-supply" =>
+                    await VerifyReportingProjectCommercialProcurementSupplyAsync(),
+                "verify-reporting-project-technical-office" =>
+                    await VerifyReportingProjectTechnicalOfficeAsync(),
+                "verify-reporting-project-quality-hse" =>
+                    await VerifyReportingProjectQualityHseAsync(),
+                "verify-reporting-project-governance-action" =>
+                    await VerifyReportingProjectGovernanceActionAsync(),
+                "verify-reporting-portfolio-summary" =>
+                    await VerifyReportingPortfolioSummaryAsync(),
+                "prepare-reporting-portfolio-retry" =>
+                    await PrepareReportingPortfolioRetryAsync(),
+                "verify-reporting-portfolio-retry" =>
+                    await VerifyReportingPortfolioRetryAsync(),
+                "verify-reporting-portfolio-cancellation" =>
+                    await VerifyReportingPortfolioCancellationAsync(),
+                "verify-reporting-cancellation" => await VerifyReportingCancellationAsync(),
+                "prepare-reporting-recovery" => await PrepareReportingRecoveryAsync(),
+                "verify-reporting-recovery" => await VerifyReportingRecoveryAsync(),
+                "prepare-reporting-worker-revocation" => await PrepareReportingWorkerRevocationAsync(),
+                "verify-reporting-worker-revocation" => await VerifyReportingWorkerRevocationAsync(),
+                "verify-reporting-object-security" => await VerifyReportingObjectSecurityAsync(),
+                "prepare-reporting-orphan-objects" => await PrepareReportingOrphanObjectsAsync(),
+                "verify-reporting-orphan-objects" => await VerifyReportingOrphanObjectsAsync(),
+                "cleanup-reporting-orphan-objects" => await CleanupReportingOrphanObjectsAsync(),
+                "prepare-reporting-capacity" => await PrepareReportingCapacityAsync(),
+                "verify-reporting-capacity" => await VerifyReportingCapacityAsync(),
                 "verify-sync" => await VerifySyncAsync(),
                 "verify-exploratory" => await VerifyExploratoryAsync(),
                 _ => WriteUsage()
@@ -471,7 +521,22 @@ internal static partial class Program
     private static int WriteUsage()
     {
         Console.Error.WriteLine(
-            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-sync|verify-exploratory>");
+            "Usage: Pmcs.TestHarness <guard|manifest|probe|verify|verify-files|verify-reporting|" +
+            "verify-reporting-golden|verify-reporting-pdf-golden|verify-reporting-periodic|" +
+            "verify-reporting-executive-state|" +
+            "verify-reporting-project-progress|" +
+            "verify-reporting-project-financial-position|" +
+            "verify-reporting-project-commercial-procurement-supply|" +
+            "verify-reporting-project-technical-office|verify-reporting-project-quality-hse|" +
+            "verify-reporting-project-governance-action|verify-reporting-portfolio-summary|" +
+            "prepare-reporting-portfolio-retry|verify-reporting-portfolio-retry|" +
+            "verify-reporting-portfolio-cancellation|" +
+            "verify-reporting-cancellation|" +
+            "verify-reporting-recovery|" +
+            "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
+            "verify-reporting-object-security|prepare-reporting-orphan-objects|" +
+            "verify-reporting-orphan-objects|cleanup-reporting-orphan-objects|prepare-reporting-capacity|" +
+            "verify-reporting-capacity|verify-v1.1-load-soak|verify-sync|verify-exploratory>");
         return 2;
     }
 

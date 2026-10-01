@@ -1,0 +1,228 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Linq;
+using Pmcs.Modules.ActionControl.Contracts;
+using Pmcs.Modules.Reporting;
+using Pmcs.Modules.Reporting.Domain;
+using Pmcs.Modules.Reporting.Rendering;
+
+namespace Pmcs.Domain.Tests;
+
+public sealed class ProjectGovernanceActionReportRenderingTests
+{
+    private static readonly Guid Tenant = Id(1);
+    private static readonly Guid Project = Id(2);
+    private static readonly Guid Run = Id(500);
+    private static readonly DateTimeOffset Cutoff = new(2026, 9, 27, 8, 0, 0, TimeSpan.Zero);
+    private static readonly DateOnly Date = new(2026, 9, 27);
+    private static readonly string[] SheetNames =
+        ["Metadata", "Coverage", "Issue", "Risk", "Decision", "Escalation", "Action"];
+    private static readonly string[] ExpectedVisualDigests =
+    [
+        "b99f1c8b5f8ab07d5ba71868972bf84644c915e13f78b061b3f34a3c1e05bc35",
+        "20e4cded71dace52a61e6cef512d60ccf292de97719a91e6a651453f0b30fb99",
+        "5c5e3bd5e4dc2960d2fff53f38b59ff559f8e819a6d2a0dead3b9099fa224af9",
+        "ba449d454ba41841fee1491a94c3cbf17054de74554a71cf19e026fe5947ed56",
+        "7e814c297ee4def23da4eed5bb0b28d50e5b391633d2c03458c48970b0ac226b"
+    ];
+
+    [Fact]
+    public void F09RendererPinsTemplateSnapshotAndFiveSections()
+    {
+        var snapshot = Snapshot();
+        var parsed = ProjectGovernanceActionReportRenderSnapshot.Parse(snapshot.PayloadJson);
+        var request = Request(snapshot, ReportFormat.Pdf);
+        var registry = new ProjectGovernanceActionReportRendererRegistry(
+            new IProjectGovernanceActionReportRenderer[]
+            {
+                new ProjectGovernanceActionReportPdfRenderer(Options(), ReportingExecutionOptions.Default),
+                new ProjectGovernanceActionReportXlsxRenderer(ReportingExecutionOptions.Default)
+            });
+        Assert.Equal(snapshot.Sha256, CanonicalJson.Sha256(CanonicalJson.Serialize(parsed)));
+        Assert.Equal("project-governance-action-PRJ-F09-1405-07-05.pdf", request.FileName);
+        Assert.Equal(ReportFormat.Pdf, registry.Require(ReportFormat.Pdf).Format);
+        Assert.Equal(ReportFormat.Xlsx, registry.Require(ReportFormat.Xlsx).Format);
+        Assert.Equal("reporting.format.unsupported",
+            Assert.Throws<ReportRenderingException>(() => registry.Require(ReportFormat.Csv)).Code);
+        Assert.Equal("reporting.project_governance_action.render_request.invalid",
+            Assert.Throws<ReportRenderingException>(() => ProjectGovernanceActionReportRenderModel.Create(
+                request with { SnapshotSha256 = new string('0', 64) })).Code);
+        Assert.Equal("reporting.project_governance_action.snapshot.payload_invalid",
+            Assert.Throws<ReportRenderingException>(() => ProjectGovernanceActionReportRenderSnapshot.Parse(
+                snapshot.PayloadJson.Replace(ProjectGovernanceActionReportRuntimeContract.SemanticContractId,
+                    "PMCS-RPT1-F09-TAMPERED", StringComparison.Ordinal))).Code);
+    }
+
+    [Fact]
+    public void F09XlsxGoldenKeepsUnknownDecisionCountAndEscapesFormula()
+    {
+        var request = Request(Snapshot(), ReportFormat.Xlsx);
+        var renderer = new ProjectGovernanceActionReportXlsxRenderer(ReportingExecutionOptions.Default);
+        var first = renderer.Render(request);
+        var second = renderer.Render(request);
+        Assert.True(first.Bytes.SequenceEqual(second.Bytes));
+        Assert.True(first.Bytes.AsSpan().StartsWith("PK"u8));
+        using var stream = new MemoryStream(first.Bytes, writable: false);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        Assert.Equal(14, archive.Entries.Count);
+        var workbook = Read(archive, "xl/workbook.xml");
+        foreach (var name in SheetNames) Assert.Contains(name, workbook, StringComparison.Ordinal);
+        var sheets = Enumerable.Range(1, 7).Select(index => Read(archive,
+            $"xl/worksheets/sheet{index}.xml")).ToArray();
+        var spreadsheet = (XNamespace)"http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        foreach (var xml in sheets)
+        {
+            var document = XDocument.Parse(xml);
+            Assert.Equal("1", document.Descendants(spreadsheet + "sheetView").Single()
+                .Attribute("rightToLeft")?.Value);
+            Assert.Equal("frozen", document.Descendants(spreadsheet + "pane").Single()
+                .Attribute("state")?.Value);
+            Assert.Empty(document.Descendants(spreadsheet + "f"));
+        }
+        Assert.Contains("نامعلوم؛ صفر فرض نشود", sheets[1], StringComparison.Ordinal);
+        Assert.Contains("زمان تغییر وضعیت تاریخی موجود نیست", sheets[1], StringComparison.Ordinal);
+        Assert.Contains("'=SUM(A1:A2)", sheets[2], StringComparison.Ordinal);
+        Assert.Single(XDocument.Parse(sheets[4]).Descendants(spreadsheet + "row"));
+        Assert.DoesNotContain("SourceFactId", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("AssigneeDisplayName", string.Concat(sheets), StringComparison.OrdinalIgnoreCase);
+        Ms48FontGoldenArtifacts.Save("project-governance-action-golden.xlsx", first.Bytes);
+        Assert.True(first.Sha256 == "4f59c6e4a57491f301ecca0c2e853cbf08fc4246de3d0e46381e199bbca47890",
+            $"F09_XLSX_GOLDEN_SHA256={first.Sha256}");
+    }
+
+    [Fact]
+    public void F09PdfGoldenRendersFiveIndependentSections()
+    {
+        var request = Request(Snapshot(), ReportFormat.Pdf);
+        var renderer = new ProjectGovernanceActionReportPdfRenderer(Options(), ReportingExecutionOptions.Default);
+        var first = renderer.Render(request);
+        var second = renderer.Render(request);
+        var images = renderer.RenderQualificationImages(request);
+        var repeated = renderer.RenderQualificationImages(request);
+        Assert.True(first.Bytes.SequenceEqual(second.Bytes));
+        Assert.True(first.Bytes.AsSpan().StartsWith("%PDF-"u8));
+        Assert.Contains("%%EOF", Encoding.ASCII.GetString(first.Bytes[^32..]), StringComparison.Ordinal);
+        Assert.Equal(5, images.Count);
+        Assert.Equal(images.Count, repeated.Count);
+        Assert.All(images, image => Assert.True(image.AsSpan().StartsWith(
+            new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G', 0x0D, 0x0A, 0x1A, 0x0A })));
+        for (var index = 0; index < images.Count; index++)
+            Assert.True(images[index].SequenceEqual(repeated[index]));
+        var visualDigests = images.Select(page =>
+            Convert.ToHexString(SHA256.HashData(page)).ToLowerInvariant()).ToArray();
+        Ms48FontGoldenArtifacts.Save("project-governance-action-golden.pdf", first.Bytes);
+        for (var index = 0; index < images.Count; index++)
+            Ms48FontGoldenArtifacts.Save($"project-governance-action-page-{index + 1}.png", images[index]);
+        Assert.True(first.Sha256 == "42c03cd8de417624355e4f92d6eef3ae857f964ab99ed06c605e84567b628fe3" &&
+                visualDigests.SequenceEqual(ExpectedVisualDigests),
+            $"F09_PDF_GOLDEN_SHA256={first.Sha256}; F09_PDF_VISUAL_SHA256={string.Join(',', visualDigests)}");
+    }
+
+    [Fact]
+    public void F09RendererRejectsFalseZeroUnknownStateAndActionDowngrade()
+    {
+        var parsed = ProjectGovernanceActionReportRenderSnapshot.Parse(Snapshot().PayloadJson);
+        Assert.Null(parsed.Decisions.OfficialCount);
+        Assert.Equal(2, parsed.Issues.OfficialCount);
+        Assert.Equal("reporting.project_governance_action.snapshot.payload_invalid",
+            Assert.Throws<ReportRenderingException>(() => ProjectGovernanceActionReportRenderSnapshot.Parse(
+                CanonicalJson.Serialize(parsed with
+                {
+                    Decisions = parsed.Decisions with { OfficialCount = 0 }
+                }))).Code);
+        Assert.Equal("reporting.project_governance_action.snapshot.payload_invalid",
+            Assert.Throws<ReportRenderingException>(() => ProjectGovernanceActionReportRenderSnapshot.Parse(
+                CanonicalJson.Serialize(parsed with
+                {
+                    Issues = parsed.Issues with { Rows = parsed.Issues.Rows.Select(x =>
+                        x with { State = "Unapproved" }).ToArray() }
+                }))).Code);
+        Assert.Equal("reporting.project_governance_action.snapshot.payload_invalid",
+            Assert.Throws<ReportRenderingException>(() => ProjectGovernanceActionReportRenderSnapshot.Parse(
+                CanonicalJson.Serialize(parsed with
+                {
+                    Actions = parsed.Actions with { Rows = parsed.Actions.Rows.Select(x =>
+                        x with { Classification = GovernanceActionReportingClassification.Confidential }).ToArray() }
+                }))).Code);
+    }
+
+    private static ReportSnapshot Snapshot()
+    {
+        var issue = new ProjectGovernanceActionReportSection(GovernanceActionReportingStatus.Available, 2,
+            [new GovernanceActionReportingFact(Id(10), "=SUM(A1:A2)", GovernanceActionFactKind.Issue,
+                "Open", Cutoff.AddDays(-2), Date, null, "High", null,
+                GovernanceActionReportingClassification.Confidential),
+             new GovernanceActionReportingFact(Id(11), "ISS-11", GovernanceActionFactKind.Issue,
+                "Resolved", Cutoff.AddDays(-1), Date, null, "Medium", null,
+                GovernanceActionReportingClassification.Confidential)], [], ReportClassification.Confidential);
+        var empty = new ProjectGovernanceActionReportSection(GovernanceActionReportingStatus.NoData, 0,
+            [], [GovernanceActionReportingReason.NoOfficialRisk], ReportClassification.Confidential);
+        var decision = new ProjectGovernanceActionReportSection(
+            GovernanceActionReportingStatus.InsufficientData, null, [],
+            [GovernanceActionReportingReason.HistoricalTransitionUnavailable],
+            ReportClassification.Confidential);
+        var escalation = new ProjectGovernanceActionReportSection(GovernanceActionReportingStatus.NoData, 0,
+            [], [GovernanceActionReportingReason.NoRaisedEscalation], ReportClassification.Confidential);
+        var action = new ProjectGovernanceActionReportSection(GovernanceActionReportingStatus.Available, 1,
+            [new GovernanceActionReportingFact(Id(30), Id(30).ToString("N"),
+                GovernanceActionFactKind.Action, "Open", Cutoff.AddDays(-1), Date, null,
+                "High", null, GovernanceActionReportingClassification.Restricted)], [],
+            ReportClassification.Restricted);
+        var payload = new ProjectGovernanceActionReportSemanticSnapshot(
+            ProjectGovernanceActionReportRuntimeContract.SnapshotSchemaVersion,
+            ProjectGovernanceActionReportRuntimeContract.SemanticContractId,
+            ProjectGovernanceActionReportRuntimeContract.DefinitionCode,
+            ProjectGovernanceActionReportRuntimeContract.DefinitionVersion,
+            ProjectGovernanceActionReportingContract.PolicyVersion, ReportDataStatus.InsufficientData,
+            [GovernanceActionReportingReason.NoOfficialRisk,
+             GovernanceActionReportingReason.NoRaisedEscalation,
+             GovernanceActionReportingReason.HistoricalTransitionUnavailable],
+            new ProjectGovernanceActionReportParameters(),
+            new ProjectGovernanceActionReportProjectIdentity(Project, Tenant, "PRJ-F09", "Test Project",
+                "UTC", 1, 1, Cutoff.AddDays(-30), Cutoff.AddMinutes(1)),
+            new ProjectGovernanceActionReportCutoffIdentity(Cutoff, Date),
+            ReportClassification.Restricted, issue, empty, decision, escalation, action,
+            CanonicalJson.Sha256("{}"), new string('a', 64));
+        return ReportSnapshot.Create(Id(602), Run, Tenant, Project,
+            ProjectGovernanceActionReportRuntimeContract.SnapshotSchemaVersion,
+            payload.DataStatus, CanonicalJson.Serialize(payload), "{}",
+            payload.Classification, Cutoff.AddMinutes(2), Cutoff);
+    }
+
+    private static ProjectGovernanceActionReportRenderRequest Request(
+        ReportSnapshot snapshot, ReportFormat format)
+    {
+        var parsed = ProjectGovernanceActionReportRenderSnapshot.Parse(snapshot.PayloadJson);
+        return new ProjectGovernanceActionReportRenderRequest(Run,
+            format == ReportFormat.Pdf ? Id(600) : Id(601), snapshot.Id, Id(603),
+            ProjectGovernanceActionReportRuntimeContract.DefinitionCode,
+            ProjectGovernanceActionReportRuntimeContract.DefinitionVersion,
+            ProjectGovernanceActionReportRuntimeContract.TemplateVersion,
+            ProjectGovernanceActionReportRuntimeContract.TemplateContentDigest,
+            ProjectGovernanceActionReportRuntimeContract.RendererContractVersion,
+            ProjectGovernanceActionReportRuntimeContract.LayoutContractVersion,
+            format, ReportArtifactIdentity.FileName(parsed, format), "RPT-F090-0000-0000-0000-0001",
+            new string(format == ReportFormat.Pdf ? 'e' : 'f', 64),
+            snapshot.Sha256, snapshot.SourceManifestSha256, snapshot.SourceCutoffUtc, parsed);
+    }
+
+    private static ReportingRendererOptions Options()
+    {
+        var fonts = Path.Combine(AppContext.BaseDirectory, "fonts");
+        return new ReportingRendererOptions(CertifiedPdfRuntimeContract.LicenseDecision,
+            Path.Combine(fonts, PmcsTypographyContract.PdfRegularFileName), Path.Combine(fonts, PmcsTypographyContract.PdfBoldFileName),
+            CertifiedPdfRuntimeContract.RegularFontSha256, CertifiedPdfRuntimeContract.BoldFontSha256,
+            CertifiedPdfRuntimeContract.RuntimeImageDigest);
+    }
+
+    private static string Read(ZipArchive archive, string name)
+    {
+        var entry = archive.GetEntry(name) ?? throw new InvalidOperationException($"Missing {name}.");
+        using var stream = entry.Open();
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
+    private static Guid Id(int value) => Guid.Parse($"00000000-0000-0000-0000-{value:D12}");
+}

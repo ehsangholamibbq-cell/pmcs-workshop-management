@@ -42,6 +42,18 @@ export default defineConfig({
         storageState: authenticationState,
       },
     },
+    {
+      name: "firefox",
+      dependencies: ["authenticate"],
+      testMatch: /vx-g5-.*\.spec\.ts/u,
+      use: { ...devices["Desktop Firefox"], storageState: authenticationState },
+    },
+    {
+      name: "webkit",
+      dependencies: ["authenticate"],
+      testMatch: /vx-g5-.*\.spec\.ts/u,
+      use: { ...devices["Desktop Safari"], storageState: authenticationState },
+    },
   ],
 });
 

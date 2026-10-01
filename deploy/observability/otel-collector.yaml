@@ -1,0 +1,23 @@
+extensions:
+  health_check:
+    endpoint: 127.0.0.1:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+
+exporters:
+  prometheus:
+    endpoint: 127.0.0.1:9464
+    enable_open_metrics: true
+    translation_strategy: UnderscoreEscapingWithSuffixes
+    without_scope_info: true
+
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [prometheus]

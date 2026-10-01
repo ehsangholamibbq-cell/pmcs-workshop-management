@@ -24,7 +24,9 @@ fi
 
 schemas=(
   action_control
+  collaboration
   commercial
+  documents
   evidence
   field_operations
   finance
@@ -35,6 +37,7 @@ schemas=(
   project_intelligence
   projects
   quality_safety
+  reporting
   sync_control
   technical_office
   work_management

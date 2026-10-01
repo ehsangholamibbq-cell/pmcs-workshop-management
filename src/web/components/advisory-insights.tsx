@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getAdvisoryInsights,
   requestAdvisoryInsight,
@@ -10,7 +10,7 @@ import {
   type AdvisoryInsightType,
   type AdvisoryReviewStatus,
 } from "@/lib/intelligence";
-import { apiProblemMessage, toUserMessage } from "@/lib/localization";
+import { ApiRequestError, apiProblemMessage, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, formatPersianDateTime } from "@/lib/persian-date";
 
 interface AdvisoryInsightsProps {
@@ -23,19 +23,37 @@ interface AdvisoryInsightsProps {
 }
 
 export function AdvisoryInsights(props: AdvisoryInsightsProps) {
+  const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
   const [insights, setInsights] = useState<readonly AdvisoryInsightModel[]>([]);
   const [providerConfigured, setProviderConfigured] = useState<boolean | null>(null);
   const [canGenerate, setCanGenerate] = useState(false);
   const [canReview, setCanReview] = useState(false);
   const [hasActiveRequest, setHasActiveRequest] = useState(false);
   const [message, setMessage] = useState("در حال دریافت آخرین تحلیل مشورتی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "offline" | "unavailable" | "forbidden">("loading");
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const effectiveReadState = visibleScope === readScope ? readState : "loading";
+  const readSequence = useRef(0);
+  const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    currentReadSequence.current = 0;
+    setVisibleScope(null);
+    setInsights([]);
+    setProviderConfigured(null);
+    setCanGenerate(false);
+    setCanReview(false);
+    setHasActiveRequest(false);
     if (!props.isOnline) {
+      setVisibleScope(readScope);
+      setReadState("offline");
       setMessage("تولید و دریافت تحلیل مشورتی فقط هنگام اتصال به سرور انجام می‌شود.");
-      return;
+      return false;
     }
+    setReadState("loading");
+    setMessage("در حال دریافت آخرین تحلیل مشورتی…");
 
     try {
       const result = await getAdvisoryInsights(
@@ -43,6 +61,10 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
         { tenantId: props.tenantId, userId: props.userId },
         props.projectId,
       );
+      if (requestId !== readSequence.current) return false;
+      currentReadSequence.current = requestId;
+      setVisibleScope(readScope);
+      setReadState("current");
       setInsights(result.insights);
       setProviderConfigured(result.providerConfigured);
       setCanGenerate(result.canGenerate);
@@ -59,10 +81,17 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
       } else {
         setMessage("خروجی زیر مشورتی است و وضعیت رسمی پروژه را تغییر نمی‌دهد.");
       }
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "تحلیل‌های مشورتی دریافت نشدند."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setVisibleScope(readScope);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به تحلیل‌های مشورتی تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "تحلیل‌های مشورتی دریافت نشدند."));
+      return false;
     }
-  }, [props.apiBaseUrl, props.isOnline, props.projectId, props.tenantId, props.userId]);
+  }, [props.apiBaseUrl, props.isOnline, props.projectId, props.tenantId, props.userId, readScope]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void load(), 0);
@@ -76,11 +105,10 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
   }, [hasActiveRequest, load, props.isOnline]);
 
   async function generate() {
-    if (!props.isOnline) {
-      setMessage("برای تولید تحلیل جدید به اتصال سرور نیاز است.");
-      return;
-    }
+    if (!props.isOnline || effectiveReadState !== "current" || !canGenerate || !providerConfigured ||
+      hasActiveRequest || busy || currentReadSequence.current !== readSequence.current) return;
 
+    const commandSequence = readSequence.current;
     setBusy(true);
     try {
       await requestAdvisoryInsight(
@@ -88,17 +116,21 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
         { tenantId: props.tenantId, userId: props.userId },
         props.projectId,
       );
-      setHasActiveRequest(true);
-      setMessage("درخواست ثبت شد؛ فقط داده‌های رسمی و مجاز بررسی می‌شوند.");
-      await load();
+      if (commandSequence !== readSequence.current) return;
+      if (await load()) setMessage("درخواست ثبت شد؛ فقط داده‌های رسمی و مجاز بررسی می‌شوند.");
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت درخواست تحلیل ناموفق بود."));
+      if (commandSequence !== readSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) revoke();
+      else setMessage(toUserMessage(error, "ثبت درخواست تحلیل ناموفق بود."));
     } finally {
       setBusy(false);
     }
   }
 
   async function review(insight: AdvisoryInsightModel, decision: "accept" | "dismiss") {
+    if (!props.isOnline || effectiveReadState !== "current" || !canReview || busy ||
+      currentReadSequence.current !== readSequence.current) return;
+    const commandSequence = readSequence.current;
     setBusy(true);
     try {
       await reviewAdvisoryInsight(
@@ -108,20 +140,31 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
         insight,
         decision,
       );
-      setMessage(decision === "accept"
+      if (commandSequence !== readSequence.current) return;
+      if (await load()) setMessage(decision === "accept"
         ? "تحلیل به‌عنوان خروجی بازبینی‌شده پذیرفته شد؛ وضعیت رسمی همچنان بدون تغییر است."
         : "تحلیل کنار گذاشته شد و در سابقه ممیزی باقی ماند.");
-      await load();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت نتیجه بازبینی ناموفق بود."));
+      if (commandSequence !== readSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) revoke();
+      else setMessage(toUserMessage(error, "ثبت نتیجه بازبینی ناموفق بود."));
     } finally {
       setBusy(false);
     }
   }
 
-  const current = insights[0];
+  function revoke() {
+    readSequence.current += 1;
+    currentReadSequence.current = 0;
+    setInsights([]); setCanGenerate(false); setCanReview(false); setHasActiveRequest(false);
+    setVisibleScope(readScope);
+    setReadState("forbidden");
+    setMessage("دسترسی به تحلیل‌های مشورتی تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+  }
+
+  const current = effectiveReadState === "current" ? insights[0] : undefined;
   return (
-    <section className="advisory-section" id="advisory" aria-label="تحلیل مشورتی هوش مصنوعی">
+    <section className="advisory-section" id="advisory" aria-label="تحلیل مشورتی هوش مصنوعی" data-testid="advisory-insights" data-read-state={effectiveReadState}>
       <div className="advisory-heading">
         <div>
           <p className="eyebrow">هوشمندی پروژه</p>
@@ -131,13 +174,15 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
         <button
           type="button"
           className="secondary-button"
-          disabled={!props.isOnline || !canGenerate || !providerConfigured || hasActiveRequest || busy}
+          disabled={!props.isOnline || effectiveReadState !== "current" || !canGenerate || !providerConfigured || hasActiveRequest || busy}
           onClick={() => void generate()}
         >
           {hasActiveRequest ? "در صف پردازش…" : "تولید تحلیل جدید"}
         </button>
       </div>
-      <p className="calculation-note" aria-live="polite">{message}</p>
+      <p className="calculation-note" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت آخرین تحلیل مشورتی…" : message}</p>
+      {props.isOnline && (effectiveReadState === "unavailable" || effectiveReadState === "forbidden") &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت تحلیل مشورتی</button>}
 
       {current ? (
         <article className="advisory-card">
@@ -206,12 +251,12 @@ export function AdvisoryInsights(props: AdvisoryInsightsProps) {
             پذیرش این متن به معنی تأیید پرداخت، تغییر برنامه، بستن ریسک یا ایجاد اقدام رسمی نیست.
           </p>
         </article>
-      ) : (
+      ) : effectiveReadState === "current" ? (
         <div className="advisory-empty">
           <strong>تحلیل آماده‌ای وجود ندارد</strong>
           <span>ابتدا باید یک تصویر رسمی و به‌روز از وضعیت پروژه ساخته شده باشد.</span>
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

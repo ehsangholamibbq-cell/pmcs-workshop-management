@@ -1,0 +1,1305 @@
+import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
+import { projectId, userId } from "./support";
+import { captureVisualBaseline } from "./visual-baseline";
+
+const path = `/projects/${projectId}/collaboration`;
+
+test.beforeEach(async ({ page }) => {
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/unread`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ lastReadSequence: 0, unreadCount: 0 }),
+  }));
+});
+
+test("project Chat respects the disabled default without exposing messages", async ({ page }) => {
+  await page.goto(path);
+  await expect(page.getByRole("heading", { name: "گفت‌وگوی گروهی پروژه" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "گفت‌وگو در این پروژه در دسترس نیست" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "مرکز فرمان پروژه" })).toHaveAttribute("href", `/projects/${projectId}`);
+  await expect(page.locator(".collaboration-message")).toHaveCount(0);
+});
+
+test("revoked project membership never reveals a conversation", async ({ page }) => {
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({ status: 403 }));
+  await page.goto(path);
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.locator(".collaboration-message")).toHaveCount(0);
+  await captureVisualBaseline(page, "33-chat-forbidden");
+});
+
+test("project Chat renders only the scoped latest messages, including tombstones", async ({ page }) => {
+  let lastSequence = 2;
+  let sentMessage: string | null = null;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"), (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ nextSequence: lastSequence, messages: [
+      { id: "10000000-0000-4000-8000-000000000011", projectId, sequence: 1,
+        authorUserId: userId, body: "پیام پروژه", createdAt: "2026-09-28T00:00:00Z" },
+      { id: "10000000-0000-4000-8000-000000000012", projectId, sequence: 2,
+        authorUserId: userId, body: "متن حذف‌شده", createdAt: "2026-09-28T00:01:00Z",
+        deletedAt: "2026-09-28T00:02:00Z" },
+      ...(sentMessage ? [{ id: "10000000-0000-4000-8000-000000000013", projectId, sequence: 3,
+        authorUserId: userId, body: sentMessage, createdAt: "2026-09-28T00:03:00Z" }] : []),
+    ] }),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages`, (route) => {
+    const payload = route.request().postDataJSON() as { clientMessageId: string; body: string };
+    expect(route.request().headers()["idempotency-key"]).toBe(payload.clientMessageId);
+    sentMessage = payload.body;
+    lastSequence = 3;
+    return route.fulfill({ status: 201, contentType: "application/json",
+      body: JSON.stringify({ clientMessageId: payload.clientMessageId }) });
+  });
+  await page.goto(path);
+  await expect(page.locator(".collaboration-message")).toHaveCount(2);
+  await expect(page.getByText("پیام پروژه")).toBeVisible();
+  await expect(page.getByText("متن حذف‌شده")).toHaveCount(0);
+  await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "تازه‌سازی" })).toBeEnabled();
+  await captureVisualBaseline(page, "34-chat-scoped");
+  await page.getByLabel("پیام به گروه همین پروژه").fill("پیام جدید گروه");
+  await page.getByRole("button", { name: "ارسال به گروه پروژه" }).click();
+  await expect(page.getByText("پیام جدید گروه")).toBeVisible();
+  await expect(page.getByText("پیام در گفت‌وگوی پروژه ثبت شد.")).toBeVisible();
+});
+
+test("offline project message resumes with one stable idempotency identity", async ({ page, context }) => {
+  const attempts: { key: string | undefined; id: string }[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 0 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ nextSequence: 0, messages: [] }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages`, (route) => {
+    const payload = route.request().postDataJSON() as { clientMessageId: string };
+    attempts.push({ key: route.request().headers()["idempotency-key"], id: payload.clientMessageId });
+    return route.fulfill({ status: 201, contentType: "application/json",
+      body: JSON.stringify({ clientMessageId: payload.clientMessageId }) });
+  });
+  await page.goto(path);
+  await expect(page.getByText("هنوز پیامی در این پروژه ثبت نشده است.")).toBeVisible();
+  await context.setOffline(true);
+  await page.getByLabel("پیام به گروه همین پروژه").fill("پیام در قطع ارتباط");
+  await page.getByRole("button", { name: "ارسال به گروه پروژه" }).click();
+  await expect(page.getByText(/پیام در صف ارسال/u)).toBeVisible();
+  expect(attempts).toHaveLength(0);
+  await context.setOffline(false);
+  await expect(page.getByText("پیام‌های صف به گفت‌وگوی پروژه رسیدند.")).toBeVisible();
+  expect(attempts).toHaveLength(1);
+  expect(attempts[0].key).toBe(attempts[0].id);
+});
+
+test("a live project event refreshes the same room without reloading the page", async ({ page }) => {
+  let lastSequence = 1;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: lastSequence, messages: [
+        { id: "10000000-0000-4000-8000-000000000011", projectId, sequence: 1,
+          authorUserId: userId, body: "پیام آغازین", createdAt: "2026-09-28T00:00:00Z" },
+        ...(lastSequence === 2 ? [{ id: "10000000-0000-4000-8000-000000000012", projectId,
+          sequence: 2, authorUserId: userId, body: "پیام زنده پروژه",
+          createdAt: "2026-09-28T00:01:00Z" }] : []),
+      ],
+    }) }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => {
+      if (lastSequence === 2) return route.fulfill({ status: 503 });
+      lastSequence = 2;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        nextSequence: 2, events: [{ messageId: "10000000-0000-4000-8000-000000000012",
+          projectId, sequence: 2, createdAt: "2026-09-28T00:01:00Z" }],
+      }) });
+    });
+  await page.goto(path);
+  await expect(page.getByText("پیام زنده پروژه")).toBeVisible();
+  await expect(page.locator(".collaboration-message")).toHaveCount(2);
+});
+
+test("live membership revocation removes previously loaded messages", async ({ page }) => {
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: "10000000-0000-4000-8000-000000000011",
+        projectId, sequence: 1, authorUserId: userId, body: "محتوای محرمانه پروژه",
+        createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 403 }));
+  await page.goto(path);
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("محتوای محرمانه پروژه")).toHaveCount(0);
+  await expect(page.getByLabel("پیام به گروه همین پروژه")).toHaveCount(0);
+});
+
+test("project Chat searches, advances read cursor, and replies within the same room", async ({ page }) => {
+  const firstMessageId = "10000000-0000-4000-8000-000000000011";
+  let replyTo: string | null = null;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: firstMessageId, projectId, sequence: 1,
+        authorUserId: userId, body: "موضوع پیگیری فنی", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/unread`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ lastReadSequence: 0, unreadCount: 1 }),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/read-cursor`, (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(route.request().postDataJSON()).toEqual({ lastReadSequence: 1 });
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ lastReadSequence: 1 }) });
+  });
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/search\\?`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify([{ id: firstMessageId, projectId, sequence: 1, body: "موضوع پیگیری فنی" }]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages`, (route) => {
+    replyTo = (route.request().postDataJSON() as { replyToMessageId: string }).replyToMessageId;
+    const clientMessageId = (route.request().postDataJSON() as { clientMessageId: string }).clientMessageId;
+    return route.fulfill({ status: 201, contentType: "application/json",
+      body: JSON.stringify({ clientMessageId }) });
+  });
+  await page.goto(path);
+  await expect(page.getByText("۱ پیام خوانده‌نشده")).toBeVisible();
+  await page.getByRole("button", { name: "تا اینجا خواندم" }).click();
+  await expect(page.getByText("۰ پیام خوانده‌نشده")).toBeVisible();
+  await page.getByLabel("جست‌وجو در پیام‌های همین پروژه").fill("پیگیری فنی");
+  await page.getByRole("button", { name: "جست‌وجو", exact: true }).click();
+  await expect(page.getByRole("region", { name: "نتیجه‌های جست‌وجوی پروژه" })).toContainText("موضوع پیگیری فنی");
+  await page.locator(".collaboration-message").getByRole("button", { name: "پاسخ به پیام" }).click();
+  await expect(page.getByText("در پاسخ به: موضوع پیگیری فنی")).toBeVisible();
+  await page.getByLabel("پیام به گروه همین پروژه").fill("پاسخ محدود به پروژه");
+  await page.getByRole("button", { name: "ارسال به گروه پروژه" }).click();
+  await expect(page.getByText("پیام در گفت‌وگوی پروژه ثبت شد.")).toBeVisible();
+  expect(replyTo).toBe(firstMessageId);
+});
+
+test("project reactions persist across reload, allow read-only viewing and clear on revoked access", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let reacted = false;
+  let canReact = true;
+  let revoked = false;
+  const mutations: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام برای واکنش", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/reactions`,
+    (route) => route.fulfill(revoked ? { status: 403 } : { status: 200,
+      contentType: "application/json", body: JSON.stringify({ messageId, canReact,
+        reactions: reacted ? [{ emoji: "👍", count: 1, reactedByMe: true }] : [] }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/reactions/*`,
+    (route) => {
+      mutations.push(route.request().method());
+      reacted = route.request().method() === "PUT";
+      return route.fulfill(reacted ? { status: 200, contentType: "application/json",
+        body: JSON.stringify({ messageId, emoji: "👍", reacted: true }) } : { status: 204 });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  const thumb = page.getByRole("button", { name: "👍، ۰ واکنش" });
+  await expect(thumb).toHaveAttribute("aria-pressed", "false");
+  await thumb.click();
+  await expect(page.getByRole("button", { name: "👍، ۱ واکنش" })).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۱ واکنش" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "👍، ۱ واکنش" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۰ واکنش" })).toHaveAttribute("aria-pressed", "false");
+  expect(mutations).toEqual(["PUT", "DELETE"]);
+
+  canReact = false;
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("button", { name: "👍، ۰ واکنش" })).toBeDisabled();
+  await expect(page.getByText("نمایش واکنش‌ها مجاز است؛ ثبت واکنش به مجوز ارسال نیاز دارد.")).toBeVisible();
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "واکنش‌ها" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام برای واکنش")).toHaveCount(0);
+});
+
+test("only a project moderator can pin and unpin, while readers see the pinned state", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canModerate = true;
+  let pinnedAt: string | null = null;
+  let revoked = false;
+  const methods: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام سنجاق پروژه", pinnedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/pin`,
+    (route) => {
+      methods.push(route.request().method());
+      if (revoked) return route.fulfill({ status: 403 });
+      pinnedAt = route.request().method() === "PUT" ? "2026-09-28T00:05:00Z" : null;
+      return route.fulfill({ status: 200, contentType: "application/json",
+        body: JSON.stringify({ id: messageId, projectId, pinnedAt }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "سنجاق پیام" }).click();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("سنجاق‌شده")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toBeVisible();
+  await page.getByRole("button", { name: "برداشتن سنجاق" }).click();
+  await expect(page.getByRole("button", { name: "سنجاق پیام" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByText("سنجاق‌شده")).toHaveCount(0);
+  expect(methods).toEqual(["PUT", "DELETE"]);
+
+  pinnedAt = "2026-09-28T00:05:00Z";
+  canModerate = false;
+  await page.reload();
+  await expect(page.getByText("سنجاق‌شده")).toBeVisible();
+  await expect(page.getByRole("button", { name: "برداشتن سنجاق" })).toHaveCount(0);
+  canModerate = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "برداشتن سنجاق" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام سنجاق پروژه")).toHaveCount(0);
+});
+
+test("a project reader downloads only a verified Released message attachment and loses it on 403", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000101";
+  const bytes = Buffer.from("PMCS project attachment", "utf8");
+  const attachmentPath = `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`;
+  const contentPath = `${attachmentPath}/${documentId}/content`;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 2 }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 2, messages: [
+        { id: messageId, projectId, sequence: 1, authorUserId: userId,
+          body: "پیام با پیوست", createdAt: "2026-09-28T00:00:00Z" },
+        { id: "10000000-0000-4000-8000-000000000012", projectId, sequence: 2,
+          authorUserId: userId, body: "حذف‌شده", createdAt: "2026-09-28T00:01:00Z",
+          deletedAt: "2026-09-28T00:02:00Z" },
+      ],
+    }) }));
+  await page.route(`**/api/pmcs${attachmentPath}`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([{
+      messageId, documentId, originalFileName: "project.pdf", contentType: "application/pdf",
+      sizeBytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"),
+      classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+      releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1, contentUrl: contentPath,
+    }]),
+  }));
+  await page.route(`**/api/pmcs${contentPath}`, (route) => route.fulfill(revoked
+    ? { status: 403 } : { status: 200, contentType: "application/pdf", body: bytes }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "پیوست‌ها" })).toHaveCount(1);
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("project.pdf", { exact: false })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "دریافت پیوست" }).click();
+  expect((await download).suggestedFilename()).toBe("project.pdf");
+  await expect(page.getByText("پیوست پس از تأیید صحت دریافت شد.")).toBeVisible();
+  revoked = true;
+  await page.getByRole("button", { name: "دریافت پیوست" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام با پیوست")).toHaveCount(0);
+});
+
+test("only the message author queues a Chat document and sees quarantine status across reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const bytes = Buffer.from("%PDF-1.7\nPMCS project Chat upload\n%%EOF\n", "utf8");
+  let canUpload = true;
+  let revoked = false;
+  let released = false;
+  let attached = false;
+  let uploadedId = "";
+  let uploadedSha = "";
+  const attachmentPath = `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`;
+  const metadata = () => ({
+    messageId, documentId: uploadedId, originalFileName: "scope.pdf", contentType: "application/pdf",
+    sizeBytes: bytes.length, sha256: uploadedSha, classification: "Internal",
+    retentionPolicy: "Standard", legalHold: false, releasedAt: "2026-09-28T00:02:00Z",
+    versionNumber: 1, contentUrl: `${attachmentPath}/${uploadedId}/content`,
+  });
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ projectId, lastSequence: 1, canUpload }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام نویسنده", createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(attached ? [metadata()] : []) }));
+  await page.route(new RegExp(`/api/pmcs${attachmentPath}/[^/]+$`, "u"), (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(released).toBe(true);
+    attached = true;
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify(metadata()) });
+  });
+  await page.route(`**/api/pmcs/api/v1/upload-sessions`, (route) => {
+    const payload = route.request().postDataJSON() as {
+      clientGeneratedId: string; projectId: string; ownerType: string; ownerId: string; sha256: string;
+    };
+    expect(payload.projectId).toBe(projectId);
+    expect(payload.ownerType).toBe("ProjectChat");
+    expect(payload.ownerId).toBe(messageId);
+    expect(route.request().headers()["idempotency-key"]).toBe(`${payload.clientGeneratedId}:session`);
+    uploadedId = payload.clientGeneratedId;
+    uploadedSha = payload.sha256;
+    return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({
+      document: { id: uploadedId, status: "PendingUpload" }, uploadMethod: "PUT",
+      uploadUrl: `/api/v1/documents/${uploadedId}/content`, expiresAt: "2026-09-29T00:00:00Z",
+    }) });
+  });
+  await page.route(`**/api/pmcs/api/v1/documents/*/content`, (route) => {
+    expect(route.request().method()).toBe("PUT");
+    expect(route.request().headers()["idempotency-key"]).toBe(`${uploadedId}:content`);
+    return route.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ status: "Quarantined" }) });
+  });
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/uploads/`, "u"),
+    (route) => route.fulfill(revoked ? { status: 403 } : { status: 200,
+      contentType: "application/json", body: JSON.stringify({
+        id: uploadedId, messageId, originalFileName: "scope.pdf", contentType: "application/pdf",
+        sizeBytes: bytes.length, sha256: uploadedSha, status: released ? "Released" : "Quarantined",
+        versionNumber: 1, releasedAt: released ? "2026-09-28T00:02:00Z" : null,
+      }) }));
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await page.getByLabel("افزودن فایل به پیام خود").setInputFiles({
+    name: "scope.pdf", mimeType: "application/pdf", buffer: bytes,
+  });
+  await page.getByRole("button", { name: "نگهداری فایل در صف دستگاه" }).click();
+  await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "دریافت پیوست" })).toHaveCount(0);
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("در انتظار بررسی و آزادسازی", { exact: false })).toBeVisible();
+  released = true;
+  await page.getByRole("button", { name: "بررسی وضعیت آپلود" }).click();
+  await expect(page.getByRole("button", { name: "اتصال پیوست به پیام" })).toBeVisible();
+  await page.getByRole("button", { name: "اتصال پیوست به پیام" }).click();
+  await expect(page.getByText("پیوست آزادشده به همین پیام متصل شد.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "دریافت پیوست" })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByText("متصل به پیام", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "اتصال پیوست به پیام" })).toHaveCount(0);
+  canUpload = false;
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByLabel("افزودن فایل به پیام خود")).toHaveCount(0);
+  canUpload = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "پیوست‌ها" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام نویسنده")).toHaveCount(0);
+});
+
+test("own-message edit keeps the draft on revision conflict and confirms a fresh revision", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canEditOwn = true;
+  let revoked = false;
+  let currentBody = "نسخه اولیه پیام";
+  let revision = 1;
+  let editedAt: string | null = null;
+  const keys: string[] = [];
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canEditOwn }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: currentBody, revision, editedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}`,
+    (route) => {
+      expect(route.request().method()).toBe("PATCH");
+      const payload = route.request().postDataJSON() as { baseRevision: number; body: string };
+      keys.push(route.request().headers()["idempotency-key"]);
+      if (revoked) return route.fulfill({ status: 403 });
+      if (keys.length === 1) {
+        expect(payload.baseRevision).toBe(1);
+        currentBody = "ویرایش همزمان دیگر";
+        revision = 2;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ currentRevision: 2 }) });
+      }
+      expect(payload.baseRevision).toBe(2);
+      expect(payload.body).toBe("پیش‌نویس من");
+      currentBody = payload.body;
+      revision = 3;
+      editedAt = "2026-09-28T00:05:00Z";
+      return route.fulfill({ status: 200, contentType: "application/json",
+        body: JSON.stringify({ id: messageId, projectId, authorUserId: userId,
+          sequence: 1, createdAt: "2026-09-28T00:00:00Z", body: currentBody,
+          revision, editedAt, deletedAt: null, redactedAt: null }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "ویرایش پیام" }).click();
+  await page.getByLabel("ویرایش پیام خود").fill("پیش‌نویس من");
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر")).toBeVisible();
+  await expect(page.getByLabel("ویرایش پیام خود")).toHaveValue("پیش‌نویس من");
+  await page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر").scrollIntoViewIfNeeded();
+  await expect(page.getByText("نسخهٔ فعلی: ویرایش همزمان دیگر")).toBeInViewport();
+  await captureVisualBaseline(page, "40-chat-edit-conflict");
+  await page.getByRole("button", { name: "ویرایش دوباره بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByText("ویرایش پیام ثبت شد.")).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).not.toBe(keys[1]);
+  await page.reload();
+  await expect(page.getByText("پیش‌نویس من")).toBeVisible();
+  canEditOwn = false;
+  await page.reload();
+  await expect(page.getByRole("button", { name: "ویرایش پیام" })).toHaveCount(0);
+  canEditOwn = true;
+  revoked = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ویرایش پیام" }).click();
+  await page.getByLabel("ویرایش پیام خود").fill("تلاش جدید");
+  await page.getByRole("button", { name: "ثبت ویرایش" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیش‌نویس من")).toHaveCount(0);
+});
+
+test("own-message display deletion respects Legal Hold, revision and revoked access", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let legalHold = false;
+  let revoked = false;
+  let revision = 1;
+  let deletedAt: string | null = null;
+  let body = "پیام برای حذف";
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canEditOwn: true }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, legalHold, deletedAt, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/delete`,
+    (route) => {
+      expect(route.request().method()).toBe("POST");
+      expect((route.request().postDataJSON() as { baseRevision: number }).baseRevision).toBe(revision);
+      if (revoked) return route.fulfill({ status: 403 });
+      if (revision === 1) {
+        legalHold = true;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.legal_hold" }) });
+      }
+      revision += 1;
+      deletedAt = "2026-09-28T00:05:00Z";
+      body = "پیام حذف شده است";
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1,
+        createdAt: "2026-09-28T00:00:00Z", body, revision, legalHold, deletedAt, redactedAt: null,
+      }) });
+    });
+
+  await page.goto(path);
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  await expect(page.getByText("حذف فقط نمایش پیام را برمی‌دارد", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByText("این پیام تحت Legal Hold است و حذف نمایشی مجاز نیست.")).toBeVisible();
+  await expect(page.getByText("تحت نگهداری قانونی")).toBeVisible();
+  await expect(page.getByRole("button", { name: "حذف نمایشی پیام" })).toHaveCount(0);
+  legalHold = false;
+  revision = 2;
+  await page.reload();
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByText("پیام از نمایش گروه برداشته شد", { exact: false })).toBeVisible();
+  await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "حذف نمایشی پیام" })).toHaveCount(0);
+  deletedAt = null;
+  body = "پیام بعدی";
+  revision = 4;
+  await page.reload();
+  await page.getByRole("button", { name: "حذف نمایشی پیام" }).click();
+  revoked = true;
+  await page.getByRole("button", { name: "تأیید حذف نمایشی" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام بعدی")).toHaveCount(0);
+});
+
+test("moderator records a reason for redaction and Legal Hold with revision recovery", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canModerate = false;
+  let revoked = false;
+  let revision = 1;
+  let legalHold = false;
+  let redactedAt: string | null = null;
+  let body = "پیام نیازمند بررسی";
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, legalHold, redactedAt, deletedAt: null, pinnedAt: null,
+        createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/redact`,
+    (route) => {
+      expect(route.request().method()).toBe("POST");
+      const data = route.request().postDataJSON() as { baseRevision: number; reason: string };
+      expect(data.baseRevision).toBe(revision);
+      expect(data.reason).toBe("دلیل مستند تعدیل");
+      if (revision === 1) {
+        revision = 2;
+        body = "پیام همزمان تغییر کرد";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 2 }) });
+      }
+      revision = 3;
+      redactedAt = "2026-09-28T00:05:00Z";
+      body = "پیام توسط ناظر پنهان شده است";
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1, body, revision,
+        legalHold, redactedAt, deletedAt: null, pinnedAt: null, createdAt: "2026-09-28T00:00:00Z",
+      }) });
+    });
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/legal-hold`,
+    (route) => {
+      expect(route.request().method()).toBe("PUT");
+      const data = route.request().postDataJSON() as {
+        baseRevision: number; enabled: boolean; reason: string;
+      };
+      expect(data.baseRevision).toBe(revision);
+      expect(data.reason).toBe("نگهداری بررسی");
+      if (revoked) return route.fulfill({ status: 403 });
+      legalHold = data.enabled;
+      revision++;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+        id: messageId, projectId, authorUserId: userId, sequence: 1, body, revision,
+        legalHold, redactedAt, deletedAt: null, pinnedAt: null, createdAt: "2026-09-28T00:00:00Z",
+      }) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "پنهان‌سازی با دلیل" })).toHaveCount(0);
+  canModerate = true;
+  await page.reload();
+  await page.getByRole("button", { name: "پنهان‌سازی با دلیل" }).click();
+  await page.getByLabel("دلیل پنهان‌سازی پیام").fill("دلیل مستند تعدیل");
+  await page.getByRole("button", { name: "تأیید پنهان‌سازی" }).click();
+  await expect(page.getByText("نسخهٔ فعلی: پیام همزمان تغییر کرد")).toBeVisible();
+  await page.getByRole("button", { name: "تعدیل بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("button", { name: "تأیید پنهان‌سازی" }).click();
+  await expect(page.getByText("پیام با دلیل ثبت‌شده پنهان شد", { exact: false })).toBeVisible();
+  await expect(page.getByText("این پیام دیگر برای نمایش در دسترس نیست.")).toBeVisible();
+  await page.getByRole("button", { name: "اعمال نگهداری قانونی" }).click();
+  await page.getByLabel("دلیل اعمال نگهداری قانونی").fill("نگهداری بررسی");
+  await page.getByRole("button", { name: "تأیید نگهداری قانونی" }).click();
+  await expect(page.getByText("تحت نگهداری قانونی")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "برداشتن نگهداری قانونی" })).toBeVisible();
+  await page.getByRole("button", { name: "برداشتن نگهداری قانونی" }).click();
+  await page.getByLabel("دلیل برداشتن نگهداری قانونی").fill("نگهداری بررسی");
+  revoked = true;
+  await page.getByRole("button", { name: "تأیید برداشتن نگهداری" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام نیازمند بررسی")).toHaveCount(0);
+});
+
+test("private message history opens only for author or moderator and clears on revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const otherUserId = "10000000-0000-4000-8000-000000000098";
+  let authorUserId = otherUserId;
+  let canModerate = false;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canModerate }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId,
+        body: "متن فعلی", revision: 3, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/history`,
+    (route) => revoked ? route.fulfill({ status: 403 }) : route.fulfill({
+      status: 200, contentType: "application/json", body: JSON.stringify({
+        messageId, currentRevision: 3,
+        revisions: [{ fromRevision: 1, body: "متن پیشین خصوصی", action: "Edited",
+          actorUserId: otherUserId, occurredAt: "2026-09-28T00:01:00Z" }],
+        moderation: canModerate ? [{ messageRevision: 3, action: "HoldApplied",
+          reason: "دلیل خصوصی تعدیل", actorUserId: otherUserId,
+          occurredAt: "2026-09-28T00:02:00Z" }] : [],
+      }),
+    }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "تاریخچهٔ محدود پیام" })).toHaveCount(0);
+  authorUserId = userId;
+  await page.reload();
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByText("متن پیشین خصوصی")).toBeVisible();
+  await expect(page.getByText("دلیل خصوصی تعدیل")).toHaveCount(0);
+  authorUserId = otherUserId;
+  canModerate = true;
+  await page.reload();
+  await expect(page.getByText("متن پیشین خصوصی")).toHaveCount(0);
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByText("دلیل: دلیل خصوصی تعدیل")).toBeVisible();
+  await page.reload();
+  revoked = true;
+  await page.getByRole("button", { name: "تاریخچهٔ محدود پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("متن فعلی")).toHaveCount(0);
+});
+
+test("formal conversion lineage stays behind the room grant and closes on revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  let canConvert = false;
+  let revoked = false;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "پیام تبدیل‌شده", revision: 2, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => revoked ? route.fulfill({ status: 403 }) : route.fulfill({
+      status: 200, contentType: "application/json", body: JSON.stringify([{
+        id: "10000000-0000-4000-8000-000000000021", messageId, messageRevision: 2,
+        destinationType: "Action", destinationId: "10000000-0000-4000-8000-000000000031",
+        destinationReference: "ACT-001", documents: [],
+        confirmedBy: userId, confirmedAt: "2026-09-28T00:01:00Z",
+      }]),
+    }));
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "تبدیل‌های رسمی پیام" })).toHaveCount(0);
+  canConvert = true;
+  await page.reload();
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByText("اقدام: ACT-001")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("اقدام: ACT-001")).toHaveCount(0);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+  await expect(page.getByText("پیام تبدیل‌شده")).toHaveCount(0);
+});
+
+test("confirmed Action conversion rebases on revision conflict and never duplicates after reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `site-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
+  let canConvertAction = false;
+  let revision = 2;
+  let body = "پیام نیازمند اقدام";
+  let revoked = false;
+  let action: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertAction }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(action ? [action] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { assigneeUserId: string; title: string; priority: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Action");
+      expect(request.confirmed).toBe(true);
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details.assigneeUserId).toBe(userId);
+      expect(request.details.title).toBe("اقدام تأییدشده");
+      expect(request.details.priority).toBe("High");
+      expect(request.baseRevision).toBe(revision);
+      if (posts === 1) {
+        revision = 3;
+        body = "پیام همزمان تغییر کرد";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      action = { id: "10000000-0000-4000-8000-000000000021", messageId,
+        messageRevision: revision, destinationType: "Action", destinationId: request.destinationId,
+        destinationReference: "ACT-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(action) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" })).toHaveCount(0);
+  canConvertAction = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
+  await page.getByLabel("عنوان اقدام").fill("اقدام تأییدشده");
+  await page.getByRole("combobox", { name: /^اولویت/u }).selectOption("High");
+  await page.getByRole("checkbox", { name: /فایل site-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل site-2\.pdf/u })).not.toBeChecked();
+  await page.getByRole("checkbox", { name: /ایجاد رکورد رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
+  await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
+  await expect(page.getByText("نسخهٔ فعلی پیام: پیام همزمان تغییر کرد")).toBeVisible();
+  await page.getByRole("button", { name: "تبدیل بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("checkbox", { name: /ایجاد رکورد رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت اقدام رسمی" }).click();
+  await expect(page.getByText("اقدام رسمی با ارجاع ACT-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت اقدام رسمی از پیام" }).click();
+  await expect(page.getByText("برای این پیام اقدام رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});
+
+test("confirmed Issue conversion requires owner permission and survives conflict, reload and revocation", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `issue-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
+  let canConvertIssue = false;
+  let revision = 2;
+  let body = "مسئلهٔ هماهنگی کارگاه";
+  let revoked = false;
+  let issue: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertIssue }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(issue ? [issue] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { ownerUserId: string; title: string; observedFact: string;
+          severity: string; urgency: string; confidentiality: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Issue");
+      expect(request.confirmed).toBe(true);
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details.ownerUserId).toBe(userId);
+      expect(request.details.title).toBe("مسئلهٔ تأییدشده");
+      expect(request.details.observedFact).toBe("واقعیت مشاهده‌شده");
+      expect(request.details.severity).toBe("High");
+      expect(request.details.urgency).toBe("Immediate");
+      expect(request.details.confidentiality).toBe("GeneralProject");
+      expect(request.baseRevision).toBe(revision);
+      if (posts === 1) {
+        revision = 3;
+        body = "نسخهٔ تازهٔ مسئله";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      issue = { id: "10000000-0000-4000-8000-000000000022", messageId,
+        messageRevision: revision, destinationType: "Issue", destinationId: request.destinationId,
+        destinationReference: "ISS-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(issue) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" })).toHaveCount(0);
+  canConvertIssue = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" }).click();
+  await page.getByLabel("عنوان مسئله").fill("مسئلهٔ تأییدشده");
+  await page.getByLabel("واقعیت مشاهده‌شده").fill("واقعیت مشاهده‌شده");
+  await page.getByRole("combobox", { name: /^شدت مسئله/u }).selectOption("High");
+  await page.getByRole("combobox", { name: /^فوریت مسئله/u }).selectOption("Immediate");
+  await page.getByRole("checkbox", { name: /فایل issue-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل issue-2\.pdf/u })).not.toBeChecked();
+  await page.getByRole("checkbox", { name: /ایجاد مسئلهٔ عمومی رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت مسئلهٔ رسمی" }).click();
+  await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ نسخهٔ تازه را بخوانید", { exact: false })).toBeVisible();
+  await expect(page.getByText("نسخهٔ فعلی پیام: نسخهٔ تازهٔ مسئله")).toBeVisible();
+  await page.getByRole("button", { name: "تبدیل مسئله بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("checkbox", { name: /ایجاد مسئلهٔ عمومی رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت مسئلهٔ رسمی" }).click();
+  await expect(page.getByText("مسئلهٔ رسمی با ارجاع ISS-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مسئلهٔ رسمی از پیام" }).click();
+  await expect(page.getByText("برای این پیام مسئلهٔ رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});
+
+test("confirmed RFI conversion keeps impact flags, rebases and prevents a second Draft after reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const secondDocumentId = "10000000-0000-4000-8000-000000000052";
+  const files = [documentId, secondDocumentId].map((id, index) => ({
+    messageId, documentId: id, originalFileName: `rfi-${index + 1}.pdf`,
+    contentType: "application/pdf", sizeBytes: 100, sha256: (index ? "b" : "a").repeat(64),
+    classification: "Internal", retentionPolicy: "Standard", legalHold: false,
+    releasedAt: "2026-09-28T00:00:00Z", versionNumber: 1,
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${id}/content`,
+  }));
+  let canConvertRfi = false;
+  let revision = 2;
+  let body = "پرسش فنی اولیه";
+  let revoked = false;
+  let rfi: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertRfi }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(files) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(rfi ? [rfi] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { title: string; question: string; requestedFrom: string; discipline: string;
+          potentialImpact: string; isBlocking: boolean; requiredByDate: string | null };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("RFI");
+      expect(request.confirmed).toBe(true);
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details.title).toBe("پرسش تأییدشده");
+      expect(request.details.question).toBe("تعارض مشخصات بتن");
+      expect(request.details.requestedFrom).toBe("مشاور");
+      expect(request.details.discipline).toBe("سازه");
+      expect(request.details.potentialImpact).toBe("Time, Quality");
+      expect(request.details.isBlocking).toBe(true);
+      expect(request.details.requiredByDate).toBeNull();
+      expect(request.baseRevision).toBe(revision);
+      if (posts === 1) {
+        revision = 3; body = "پرسش فنی ویرایش‌شده";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      rfi = { id: "10000000-0000-4000-8000-000000000023", messageId,
+        messageRevision: revision, destinationType: "RFI", destinationId: request.destinationId,
+        destinationReference: "RFI-001", documents: [{ id: documentId, sha256: files[0].sha256,
+          versionNumber: 1, fileName: files[0].originalFileName,
+          contentType: files[0].contentType, sizeBytes: files[0].sizeBytes }], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(rfi) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت RFI رسمی از پیام" })).toHaveCount(0);
+  canConvertRfi = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت RFI رسمی از پیام" }).click();
+  await page.getByLabel("عنوان RFI").fill("پرسش تأییدشده");
+  await page.getByLabel("سؤال فنی").fill("تعارض مشخصات بتن");
+  await page.getByLabel("مخاطب پاسخ").fill("مشاور");
+  await page.getByLabel("رشتهٔ فنی").fill("سازه");
+  await page.getByRole("checkbox", { name: "زمان" }).check();
+  await page.getByRole("checkbox", { name: "کیفیت" }).check();
+  await page.getByRole("checkbox", { name: "مانع اجرای کار است" }).check();
+  await page.getByRole("checkbox", { name: /فایل rfi-1\.pdf/u }).check();
+  await expect(page.getByRole("checkbox", { name: /فایل rfi-2\.pdf/u })).not.toBeChecked();
+  await page.getByRole("checkbox", { name: /ایجاد پیش‌نویس RFI رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت پیش‌نویس RFI" }).click();
+  await expect(page.getByText("نسخهٔ پیام تغییر کرده است؛ پرسش و نسخهٔ تازه را بررسی", { exact: false })).toBeVisible();
+  await expect(page.getByText("نسخهٔ فعلی پیام: پرسش فنی ویرایش‌شده")).toBeVisible();
+  await page.getByRole("button", { name: "تبدیل RFI بر پایهٔ نسخهٔ تازه" }).click();
+  await page.getByRole("checkbox", { name: /ایجاد پیش‌نویس RFI رسمی/u }).check();
+  await page.getByRole("button", { name: "تأیید و ساخت پیش‌نویس RFI" }).click();
+  await expect(page.getByText("پیش‌نویس RFI رسمی با ارجاع RFI-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت RFI رسمی از پیام" }).click();
+  await expect(page.getByText("برای این پیام RFI رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});
+
+test("Daily Fact conversion selects a scoped Draft and active location, rebases report and blocks duplicates", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const locationId = "10000000-0000-4000-8000-000000000072";
+  let canConvertDailyFact = false;
+  let reportRevision = 2;
+  let revoked = false;
+  let fact: Record<string, unknown> | null = null;
+  let posts = 0;
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertDailyFact }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body: "مشاهدهٔ مصالح کارگاه", revision: 2, deletedAt: null, redactedAt: null,
+        createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: reportId, projectId, reportDate: "2099-01-03", locationName: "کارگاه",
+        status: "Draft", revision: reportRevision },
+      { id: "10000000-0000-4000-8000-000000000073", projectId, reportDate: "2099-01-02",
+        locationName: "کارگاه", status: "Approved", revision: 3 },
+    ]),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/locations`, (route) => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: locationId, projectId, code: "SITE", name: "کارگاه", status: "Active" },
+      { id: "10000000-0000-4000-8000-000000000074", projectId,
+        code: "OLD", name: "محل غیرفعال", status: "Retired" },
+    ]),
+  }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(fact ? [fact] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number;
+        confirmed: boolean; documentIds: unknown[];
+        details: { reportId: string; baseReportRevision: number; locationId: string;
+          kind: string; description: string; category: string; quantity: number; unit: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("DailyFact");
+      expect(request.confirmed).toBe(true);
+      expect(request.baseRevision).toBe(2);
+      expect(request.documentIds).toEqual([]);
+      expect(request.details.reportId).toBe(reportId);
+      expect(request.details.locationId).toBe(locationId);
+      expect(request.details.kind).toBe("Material");
+      expect(request.details.description).toBe("ورود مصالح تأییدشده");
+      expect(request.details.category).toBe("بتن");
+      expect(request.details.quantity).toBe(12);
+      expect(request.details.unit).toBe("مترمکعب");
+      expect(request.details.baseReportRevision).toBe(posts === 1 ? 2 : 3);
+      if (posts === 1) {
+        reportRevision = 3;
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.conversion.fact.report.conflict" }) });
+      }
+      fact = { id: "10000000-0000-4000-8000-000000000024", messageId,
+        messageRevision: 2, destinationType: "DailyFact", destinationId: request.destinationId,
+        destinationReference: `${reportId}/${request.destinationId}`, documents: [], confirmedBy: userId,
+        confirmedAt: "2026-09-28T00:01:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(fact) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" })).toHaveCount(0);
+  canConvertDailyFact = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" }).click();
+  const form = page.getByRole("region", { name: "تبدیل پیام به واقعیت روزانهٔ رسمی" });
+  await expect(form.getByLabel("گزارش روزانهٔ پیش‌نویس").locator("option")).toHaveCount(1);
+  await expect(form.getByLabel("محل فعال پروژه").locator("option")).toHaveCount(1);
+  await form.getByLabel("نوع واقعیت").selectOption("Material");
+  await form.getByLabel("شرح واقعیت").fill("ورود مصالح تأییدشده");
+  await form.getByLabel("رسته، فعالیت یا موضوع").fill("بتن");
+  await form.getByLabel("مقدار واقعی").fill("12");
+  await form.getByLabel("واحد").fill("مترمکعب");
+  await form.getByRole("checkbox", { name: /افزودن این واقعیت/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت واقعیت رسمی" }).click();
+  await expect(form.getByText("نسخه یا وضعیت گزارش روزانه تغییر کرده است", { exact: false })).toBeVisible();
+  await form.getByRole("button", { name: "بازخوانی گزارش و تأیید دوباره" }).click();
+  await form.getByRole("checkbox", { name: /افزودن این واقعیت/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت واقعیت رسمی" }).click();
+  await expect(form.getByText("واقعیت روزانهٔ رسمی با ارجاع", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت واقعیت روزانه از پیام" }).click();
+  await expect(page.getByText("برای این پیام واقعیت روزانهٔ رسمی قبلاً ثبت شده است", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});
+
+test("Evidence conversion binds one Released file hash to a report fact and rejects reuse after reload", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  const reportId = "10000000-0000-4000-8000-000000000071";
+  const factId = "10000000-0000-4000-8000-000000000072";
+  let canConvertEvidence = false;
+  let revision = 2;
+  let body = "مدرک اولیهٔ کارگاه";
+  let revoked = false;
+  let evidence: Record<string, unknown> | null = null;
+  let posts = 0;
+  const file = { messageId, documentId, originalFileName: "site.pdf", contentType: "application/pdf",
+    sizeBytes: 100, sha256: "a".repeat(64), versionNumber: 1, classification: "Internal",
+    retentionPolicy: "Standard", legalHold: false, releasedAt: "2026-09-28T00:01:00Z",
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${documentId}/content` };
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertEvidence }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([file]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([
+      { id: reportId, projectId, reportDate: "2099-01-03", locationName: "کارگاه", status: "Draft", revision: 2 },
+    ]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/daily-reports/${reportId}`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      id: reportId, projectId, reportDate: "2099-01-03", status: "Draft", revision: 2,
+      facts: [{ id: factId, description: "مشاهدهٔ بتن‌ریزی" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(evidence ? [evidence] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number; confirmed: boolean;
+        documentIds: string[]; details: { dailyReportId: string; dailyFactId: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("Evidence");
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details).toEqual({ dailyReportId: reportId, dailyFactId: factId });
+      expect(request.baseRevision).toBe(revision);
+      expect(request.confirmed).toBe(true);
+      if (posts === 1) {
+        revision = 3; body = "نسخهٔ تازهٔ مدرک";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      evidence = { id: "10000000-0000-4000-8000-000000000025", messageId,
+        messageRevision: revision, destinationType: "Evidence", destinationId: request.destinationId,
+        destinationReference: "EVD-001", documents: [{ id: documentId, sha256: file.sha256,
+          versionNumber: 1, fileName: "site.pdf", contentType: "application/pdf", sizeBytes: 100 }],
+        confirmedBy: userId, confirmedAt: "2026-09-28T00:02:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(evidence) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" })).toHaveCount(0);
+  canConvertEvidence = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" }).click();
+  const form = page.getByRole("region", { name: "تبدیل فایل پیام به مدرک رسمی" });
+  await expect(form.getByText(`هش منبع:`, { exact: false })).toBeVisible();
+  await form.getByLabel("واقعیت روزانه، اختیاری").selectOption(factId);
+  await form.getByRole("checkbox", { name: /تبدیل همین فایل به مدرک رسمی/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت مدرک رسمی" }).click();
+  await expect(form.getByText("نسخهٔ پیام تغییر کرده است؛ فایل و نسخهٔ تازه", { exact: false })).toBeVisible();
+  await form.getByRole("button", { name: "تبدیل مدرک بر پایهٔ نسخهٔ تازه" }).click();
+  await form.getByRole("checkbox", { name: /تبدیل همین فایل به مدرک رسمی/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت مدرک رسمی" }).click();
+  await expect(form.getByText("مدرک رسمی با ارجاع EVD-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت مدرک رسمی از فایل پیام" }).click();
+  await expect(page.getByText("برای تبدیل، یک فایل آزادشده تبدیل‌نشده", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});
+
+test("Technical Document conversion makes a Draft revision from one Released file and requires reapproval", async ({ page }) => {
+  const messageId = "10000000-0000-4000-8000-000000000011";
+  const documentId = "10000000-0000-4000-8000-000000000051";
+  let canConvertTechnicalDocument = false;
+  let revision = 2;
+  let body = "مشخصات اولیهٔ بتن";
+  let revoked = false;
+  let document: Record<string, unknown> | null = null;
+  let posts = 0;
+  const file = { messageId, documentId, originalFileName: "spec.pdf", contentType: "application/pdf",
+    sizeBytes: 100, sha256: "a".repeat(64), versionNumber: 1, classification: "Internal",
+    retentionPolicy: "Standard", legalHold: false, releasedAt: "2026-09-28T00:01:00Z",
+    contentUrl: `/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments/${documentId}/content` };
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ projectId, lastSequence: 1, canConvert: true, canConvertTechnicalDocument }),
+  }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/events\\?`, "u"),
+    (route) => route.fulfill({ status: 503 }));
+  await page.route(new RegExp(`/api/pmcs/api/v1/projects/${projectId}/collaboration/messages\\?after=0$`, "u"),
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      nextSequence: 1, messages: [{ id: messageId, projectId, sequence: 1, authorUserId: userId,
+        body, revision, deletedAt: null, redactedAt: null, createdAt: "2026-09-28T00:00:00Z" }],
+    }) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/attachments`,
+    (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([file]) }));
+  await page.route(`**/api/pmcs/api/v1/projects/${projectId}/collaboration/messages/${messageId}/conversions`,
+    (route) => {
+      if (revoked) return route.fulfill({ status: 403 });
+      if (route.request().method() === "GET") return route.fulfill({ status: 200,
+        contentType: "application/json", body: JSON.stringify(document ? [document] : []) });
+      posts++;
+      const request = route.request().postDataJSON() as {
+        destinationId: string; destinationType: string; baseRevision: number; confirmed: boolean;
+        documentIds: string[]; details: { title: string; type: string; discipline: string;
+          originator: string | null; revisionCode: string };
+      };
+      expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(request.destinationType).toBe("TechnicalDocument");
+      expect(request.documentIds).toEqual([documentId]);
+      expect(request.details).toEqual({ title: "مشخصات تأییدشده", type: "Specification",
+        discipline: "سازه", originator: "پیمانکار", revisionCode: "A0" });
+      expect(request.baseRevision).toBe(revision);
+      expect(request.confirmed).toBe(true);
+      if (posts === 1) {
+        revision = 3; body = "متن تازهٔ سند";
+        return route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ code: "collaboration.message.revision.conflict", currentRevision: 3 }) });
+      }
+      document = { id: "10000000-0000-4000-8000-000000000026", messageId,
+        messageRevision: revision, destinationType: "TechnicalDocument", destinationId: request.destinationId,
+        destinationReference: "DOC-001", documents: [{ id: documentId, sha256: file.sha256,
+          versionNumber: 1, fileName: "spec.pdf", contentType: "application/pdf", sizeBytes: 100 }],
+        confirmedBy: userId, confirmedAt: "2026-09-28T00:02:00Z" };
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(document) });
+    });
+
+  await page.goto(path);
+  await expect(page.getByRole("button", { name: "ساخت سند فنی رسمی از فایل پیام" })).toHaveCount(0);
+  canConvertTechnicalDocument = true;
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت سند فنی رسمی از فایل پیام" }).click();
+  const form = page.getByRole("region", { name: "تبدیل فایل پیام به سند فنی رسمی" });
+  await form.getByLabel("عنوان سند").fill("مشخصات تأییدشده");
+  await form.getByLabel("نوع سند").selectOption("Specification");
+  await form.getByLabel("رشتهٔ فنی").fill("سازه");
+  await form.getByLabel("تهیه‌کننده، اختیاری").fill("پیمانکار");
+  await form.getByRole("checkbox", { name: /ساخت سند فنی رسمی و نسخهٔ اولیه/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت سند فنی رسمی" }).click();
+  await expect(form.getByText("نسخهٔ پیام تغییر کرده است؛ فایل و مشخصات سند", { exact: false })).toBeVisible();
+  await form.getByRole("button", { name: "تبدیل سند فنی بر پایهٔ نسخهٔ تازه" }).click();
+  await form.getByRole("checkbox", { name: /ساخت سند فنی رسمی و نسخهٔ اولیه/u }).check();
+  await form.getByRole("button", { name: "تأیید و ساخت سند فنی رسمی" }).click();
+  await expect(form.getByText("سند فنی رسمی با ارجاع DOC-001 ثبت شد", { exact: false })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "ساخت سند فنی رسمی از فایل پیام" }).click();
+  await expect(page.getByText("برای تبدیل، یک فایل آزادشده تبدیل‌نشده", { exact: false })).toBeVisible();
+  expect(posts).toBe(2);
+  revoked = true;
+  await page.getByRole("button", { name: "تبدیل‌های رسمی پیام" }).click();
+  await expect(page.getByRole("heading", { name: "دسترسی به گفت‌وگو ندارید" })).toBeVisible();
+});

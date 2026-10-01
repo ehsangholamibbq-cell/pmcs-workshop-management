@@ -1,0 +1,33 @@
+# PMCS V1.1 — Risk Register
+
+- شناسه: `PMCS-GOV-V1.1-RISK-001`
+- نسخه: `1.4.0`
+- وضعیت: Active از G0 تا Baseline Lock
+
+| ID | ریسک | احتمال/اثر | کنترل الزامی | مالک Gate | Evidence خروج |
+| --- | --- | --- | --- | --- | --- |
+| `R-GOV-01` | توسعه از Snapshot یا Commit اشتباه | متوسط/بحرانی | SHA دقیق Parent و Repository Start، PR با expected head | Architecture | Baseline manifest و compare evidence |
+| `R-GOV-02` | تزریق Feature جدید به V1 Locked | کم/بحرانی | شاخه مستقل V1.1، no-runtime guard، Full Regression | Release | Git ancestry و runtime diff |
+| `R-GOV-03` | Main محافظت‌نشده و Push ناخواسته | متوسط/زیاد | منع direct push در Policy، PR-only V1.1، SHA check | Release | PR history و merge evidence |
+| `R-ARCH-01` | Coupling مستقیم Persistence ماژول‌ها | متوسط/بحرانی | Manifest، Application Contract و architecture test | Architecture | dependency guard |
+| `R-SEC-01` | کد یا Asset ناسالم در Login | متوسط/بحرانی | Schema بسته، CSP، validation/quarantine و rollback | Security | negative upload و CSP tests |
+| `R-SEC-02` | نشت تصویر یا مشخصات عضو | متوسط/زیاد | private object storage، field permission و tenant isolation | Security | privacy matrix |
+| `R-PRJ-01` | انتقال Role باعث privilege escalation شود | متوسط/بحرانی | Preview، re-evaluation در مقصد و Permission مستقل | Projects/Security | cross-role negative tests |
+| `R-PRJ-02` | دادهٔ عملیاتی در Duplicate پروژه کپی شود | متوسط/بحرانی | allowlist Contributor و non-copy contract | Projects/QA | source-target database assertions |
+| `R-DOC-01` | Malware یا فایل جعلی منتشر شود | متوسط/بحرانی | signature، scanner adapter، quarantine و release state | Documents/Security | malicious fixture tests |
+| `R-COL-01` | Chat منبع حقیقت رسمی تلقی شود | متوسط/زیاد | Convert command، confirmation و lineage | Collaboration | mutation boundary tests |
+| `R-RPT-01` | گزارش زیبا ولی عدد نادرست باشد | متوسط/بحرانی | semantic model، as-of، hash و golden data | Reporting/QA | deterministic replay tests |
+| `R-AI-01` | Agent Permission یا Business Rule را دور بزند | متوسط/بحرانی | Tool Registry، per-call evaluation و no-SQL tests | Intelligence/Security | negative tool suite |
+| `R-AI-02` | انتخاب یا fallback مدل باعث نشت داده، افزایش مجوز یا مصرف کنترل‌نشده شود | متوسط/بحرانی | Profile/allowlist نسخه‌دار، Permission مستقل مدیریت، data classification و بودجه، fallback هم‌سطح و fail-closed | Intelligence/Security | آزمون منفی انتخاب/تفویض/cross-tenant، fallback، cap و audit lineage |
+| `R-AI-03` | Credential ناموجود/چرخیده یا Provider غیرفعال به‌اشتباه Available تلقی شود | متوسط/زیاد | V1.1: Runtime INT1 خاموش، بدون Grant راه‌انداز، Provider/Model فعال در Registry INT1 یا Credential ویژهٔ INT1 در استقرار؛ Probe بدون Credential = Unavailable. فعال‌سازی فقط پس از Gate `AGENT-S1-LIVE` | Intelligence/Security | V1.1 QA1: آزمون عدم اجرا، default-deny و CI قرارداد؛ ریسک اتصال زنده باز تا آزمون سه Provider با Credential امن، structured output و tool calling پس از V1.1 |
+| `R-AI-04` | خروجی ابزار یا پاسخ مدل payload حساس را در Audit/Outbox/Receipt نشت دهد یا متن ابزار دستور جدید شود | متوسط/بحرانی | schema بسته، ابزار فقط خواندنی، Context محدود، خروجی گذرا و ثبت metadata-only | Intelligence/Security | بازرسی DB/log، آزمون payload خصمانه و citation/tool rejection |
+| `R-UX-01` | Motion/Asset باعث افت سرعت یا خستگی شود | متوسط/متوسط | budget، lazy asset، non-blocking login و reduced-motion | UX/QA | performance/visual evidence |
+| `R-OFF-01` | قابلیت جدید در Offline duplicate/conflict بسازد | متوسط/زیاد | stable client ID، idempotency و conflict state | Feature owner | reconnect/concurrency tests |
+| `R-MIG-01` | Migration برگشت Runtime را مختل کند | کم/بحرانی | expand/migrate/verify/contract و restore drill | Data/Release | upgrade + rollback rehearsal |
+| `R-SCOPE-01` | V1.1 به بستهٔ بزرگ غیرقابل‌بستن تبدیل شود | زیاد/زیاد | Checkpoint مستقل، Non-Scope و WIP limit | Product | roadmap review در هر Gate |
+| `R-REL-01` | انتشار پیش از آزمون و پذیرش کامل مالک، یا شروع نسخهٔ بعد پیش از انتشار V1.1 | کم/بحرانی | Gate مستقل `OWNER-ACCEPTANCE` پس از Baseline Lock؛ انتشار فقط با قبولی صریح؛ V1.2 فقط پس از ثبت انتشار طبق ADR 0034 | Product/Release | فرم پذیرش دارای Candidate SHA و نتیجه + مرجع انتشار رسمی |
+
+ریسک بدون Owner، Gate و Evidence قابل پذیرش نیست. `R-REL-01` باز تا قبولی دستی مالک و انتشار رسمی V1.1 باقی می‌ماند. تغییر احتمال/اثر یا پذیرش Risk باید در Checkpoint بعدی نسخه‌دار ثبت شود.
+
+مصوبهٔ ADR 0033 ریسک `R-AI-03` را نمی‌بندد؛ Release نسخهٔ 1.1 فقط در صورت
+اثبات خاموش‌ماندن INT1 و ثبت تعهد Gate زنده می‌تواند این ریسک باز را حمل کند.

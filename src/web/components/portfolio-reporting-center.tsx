@@ -1,0 +1,233 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
+import { PmcsSessionBoundary, SessionBadge } from "@/components/pmcs-session";
+import { formatPersianDateTime } from "@/lib/persian-date";
+import { scopedStorageKey } from "@/lib/field-database";
+import { loadPortfolioReportingCenter, type PortfolioReportDefinitionView,
+  type PortfolioReportOutputView, type PortfolioReportRunView,
+  type PortfolioReportingCenterView } from "@/lib/portfolio-reporting-center";
+import { downloadPortfolioReportOutput, PortfolioReportOutputAccessError } from
+  "@/lib/portfolio-reporting-output";
+import { PortfolioReportRequestAccessError, requestPortfolioReport,
+  type PortfolioReportRequest } from "@/lib/portfolio-reporting-run-request";
+
+const statusLabels: Record<string, string> = {
+  Queued: "در صف", Processing: "در حال تهیه", Succeeded: "آماده", Failed: "ناموفق",
+  Cancelled: "لغوشده", Available: "داده در دسترس", NoData: "بدون داده",
+  InsufficientData: "داده ناکافی",
+};
+
+function pendingRequest(): PortfolioReportRequest | null {
+  try {
+    const stored = localStorage.getItem(scopedStorageKey("pmcs-portfolio-report-request"));
+    if (!stored) return null;
+    const request = JSON.parse(stored) as PortfolioReportRequest;
+    return request.definitionCode === "portfolio-summary-certified" &&
+      request.clientGeneratedId && request.templateVersion ? request : null;
+  } catch { return null; }
+}
+
+export function PortfolioReportingCenter() {
+  return <PmcsSessionBoundary><PortfolioReportingContent /></PmcsSessionBoundary>;
+}
+
+function PortfolioReportingContent() {
+  const [view, setView] = useState<PortfolioReportingCenterView | null>(null);
+  const [failure, setFailure] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const [format, setFormat] = useState<"Pdf" | "Xlsx">("Pdf");
+  const [pendingRun, setPendingRun] = useState<PortfolioReportRequest | null>(pendingRequest);
+  const [busy, setBusy] = useState(false);
+  const [runNotice, setRunNotice] = useState("");
+  const [runNoticeKind, setRunNoticeKind] = useState<"status" | "error">("status");
+  const [downloadBusyId, setDownloadBusyId] = useState("");
+  const [downloadNotice, setDownloadNotice] = useState("");
+  const [downloadNoticeKind, setDownloadNoticeKind] = useState<"status" | "error">("status");
+
+  function refreshCenter(clearNotices = false) {
+    setView(null);
+    setFailure("");
+    if (clearNotices) { setRunNotice(""); setDownloadNotice(""); }
+    setRefresh((value) => value + 1);
+  }
+
+  const remember = useCallback((request: PortfolioReportRequest | null) => {
+    try {
+      const key = scopedStorageKey("pmcs-portfolio-report-request");
+      if (request) localStorage.setItem(key, JSON.stringify(request));
+      else localStorage.removeItem(key);
+    } catch { /* Keep the same identity in memory for this session. */ }
+    setPendingRun(request);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void loadPortfolioReportingCenter("/api/pmcs").then((result) => {
+      if (!active) return;
+      if (result.kind !== "ready") remember(null);
+      setView(result);
+      setFailure("");
+    }).catch(() => {
+      if (!active) return;
+      setView(null);
+      setFailure("دریافت گزارش‌های مجاز سبد کامل نشد؛ اتصال را بررسی و دوباره تلاش کنید.");
+    });
+    return () => { active = false; };
+  }, [refresh, remember]);
+
+  async function createRun(definition: PortfolioReportDefinitionView) {
+    if (view?.kind !== "ready" || busy) return;
+    const allowed = definition.supportedFormats.filter((item): item is "Pdf" | "Xlsx" =>
+      item === "Pdf" || item === "Xlsx");
+    const selectedFormat = allowed.includes(format) ? format : allowed[0];
+    if (!selectedFormat) return;
+    const request = pendingRun ?? { clientGeneratedId: crypto.randomUUID(),
+      definitionCode: "portfolio-summary-certified" as const,
+      templateVersion: definition.templateVersion, format: selectedFormat };
+    remember(request);
+    setBusy(true);
+    setRunNotice("");
+    setRunNoticeKind("status");
+    try {
+      await requestPortfolioReport("/api/pmcs", request);
+      remember(null);
+      setRunNotice("درخواست گزارش سبد پذیرفته شد؛ وضعیت آن در سابقه نمایش داده می‌شود.");
+      refreshCenter();
+    } catch (error) {
+      if (error instanceof PortfolioReportRequestAccessError) {
+        remember(null);
+        setView(error.status === 403 ? { kind: "forbidden" } : { kind: "unavailable" });
+      } else {
+        setRunNoticeKind("error");
+        setRunNotice(error instanceof Error ? error.message : "درخواست گزارش سبد کامل نشد.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function downloadOutput(run: PortfolioReportRunView, output: PortfolioReportOutputView) {
+    if (downloadBusyId || view?.kind !== "ready") return;
+    setDownloadBusyId(output.id);
+    setDownloadNotice("");
+    setDownloadNoticeKind("status");
+    try {
+      const blob = await downloadPortfolioReportOutput("/api/pmcs", run, output);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = output.fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setDownloadNotice("خروجی سبد تأیید و دریافت شد.");
+    } catch (error) {
+      if (error instanceof PortfolioReportOutputAccessError && error.status === 403) {
+        remember(null);
+        setView({ kind: "forbidden" });
+      } else {
+        setDownloadNoticeKind("error");
+        setDownloadNotice(error instanceof Error ? error.message : "دریافت خروجی سبد کامل نشد.");
+      }
+    } finally {
+      setDownloadBusyId("");
+    }
+  }
+
+  return <main className="app-shell reporting-shell">
+    <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
+      <BrandMark />
+      <SidebarNavigation label="بخش‌های گزارش سبد">
+        <Link className="nav-item" href="/portfolio">مرکز فرمان سبد پروژه‌ها</Link>
+        <span className="nav-item active" aria-current="page">گزارش‌های سبد</span>
+        <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
+      </SidebarNavigation>
+      <SessionBadge />
+    </aside>
+
+    <section className="workspace reporting-workspace" aria-labelledby="portfolio-reporting-title">
+      <header className="topbar">
+        <div><p className="eyebrow">گزارش معتبر در محدودهٔ سازمان</p>
+          <h1 id="portfolio-reporting-title">مرکز گزارش‌های سبد پروژه‌ها</h1>
+          <p className="muted">فقط مجموعهٔ پروژه‌های مجاز و سنجش‌پذیر در گزارش سبد حضور دارند.</p>
+        </div>
+        <button className="secondary-button" type="button" onClick={() => refreshCenter(true)}>
+          تازه‌سازی
+        </button>
+      </header>
+      {failure ? <section className="reporting-state" role="alert"><h2>دریافت گزارش‌ها کامل نشد</h2>
+        <p>{failure}</p><button type="button" onClick={() => refreshCenter(true)}>تلاش دوباره</button>
+      </section>
+        : !view ? <p className="reporting-state" role="status">در حال دریافت مرکز گزارش‌های سبد…</p>
+        : view.kind === "unavailable" ? <section className="reporting-state" role="status">
+          <h2>گزارش‌های سبد در دسترس نیستند</h2>
+          <p>پس از فعال‌سازی مجاز، تعریف و سابقهٔ سبد در این بخش نمایش داده می‌شوند.</p>
+        </section>
+        : view.kind === "forbidden" ? <section className="reporting-state" role="alert">
+          <h2>دسترسی به گزارش‌های سبد ندارید</h2>
+          <p>مجوز سازمانی گزارش و دسترسی به سبد را با مدیر بررسی کنید.</p>
+        </section>
+        : <div className="reporting-sections">
+          {runNotice && <p role={runNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${runNoticeKind}`}>{runNotice}</p>}
+          {downloadNotice && <p role={downloadNoticeKind === "error" ? "alert" : "status"} className={`reporting-notice ${downloadNoticeKind}`}>{downloadNotice}</p>}
+          {pendingRun && <div className="reporting-notice reporting-pending" role="status">
+            <span>یک درخواست نیمه‌تمام سبد محفوظ است؛ پس از بررسی سابقه همان درخواست را دوباره بفرستید.</span>
+            <button className="secondary-button" type="button" onClick={() => remember(null)}>
+              کنارگذاشتن تلاش نیمه‌تمام
+            </button>
+          </div>}
+          <section className="reporting-section" aria-labelledby="portfolio-report-definitions">
+            <div className="reporting-section-heading"><h2 id="portfolio-report-definitions">گزارش‌های مجاز</h2>
+              <span className="count-badge">{view.definitions.length.toLocaleString("fa-IR")}</span></div>
+            {view.definitions.length ? <ul className="reporting-grid">{view.definitions.map((definition) =>
+              <li className="reporting-card" key={definition.code}>
+                <p className="eyebrow">قالب {definition.templateVersion}</p><h3>{definition.title}</h3>
+                <p>{definition.description}</p>
+                <small>قالب‌های خروجی: {definition.supportedFormats.join("، ")}</small>
+                <div className="reporting-request">
+                  <label htmlFor="portfolio-report-format">قالب درخواستی</label>
+                  <select id="portfolio-report-format" value={pendingRun?.format ??
+                    (definition.supportedFormats.includes(format) ? format :
+                      definition.supportedFormats[0] ?? "")} disabled={Boolean(pendingRun) || busy}
+                    onChange={(event) => setFormat(event.target.value as "Pdf" | "Xlsx")}>
+                    {definition.supportedFormats.map((item) =>
+                      <option key={item} value={item}>{item}</option>)}
+                  </select>
+                  <button type="button" disabled={busy || !definition.supportedFormats.length}
+                    onClick={() => void createRun(definition)}>
+                    {busy ? "در حال ثبت…" : pendingRun ? "تلاش دوباره با همان درخواست" : "درخواست گزارش سبد"}
+                  </button>
+                </div>
+              </li>)}</ul> : <p className="reporting-state">گزارش سبد برای این نقش در دسترس نیست.</p>}
+          </section>
+          <section className="reporting-section" aria-labelledby="portfolio-report-runs">
+            <div className="reporting-section-heading"><h2 id="portfolio-report-runs">سابقهٔ درخواست‌ها</h2>
+              <span className="count-badge">{view.runs.length.toLocaleString("fa-IR")}</span></div>
+            {view.runs.length ? <ol className="reporting-runs">{view.runs.map((run) =>
+              <li className="reporting-card" key={run.id}>
+                <div className="reporting-run-heading"><strong>گزارش سبد پروژه‌ها</strong>
+                  <span className="status-pill">{statusLabels[run.status] ?? "وضعیت نامشخص"}</span></div>
+                <time dateTime={run.createdAt}>{formatPersianDateTime(run.createdAt)}</time>
+                <p>{run.dataStatus ? statusLabels[run.dataStatus] ?? "وضعیت داده نامشخص" :
+                  "وضعیت داده هنوز مشخص نیست"}</p>
+                <small>{run.outputs.length ? `${run.outputs.length.toLocaleString("fa-IR")} خروجی ثبت‌شده` :
+                  "خروجی ثبت نشده است"}</small>
+                {run.status === "Succeeded" && run.outputs.length > 0 && <div className="reporting-request">
+                  {run.outputs.map((output) => <button className="secondary-button" type="button"
+                    key={output.id} disabled={Boolean(downloadBusyId)}
+                    onClick={() => void downloadOutput(run, output)}>
+                    {downloadBusyId === output.id ? "در حال دریافت…" :
+                      `دریافت خروجی ${output.format === "Pdf" ? "PDF" : "Excel"}`}
+                  </button>)}
+                </div>}
+              </li>)}</ol> : <p className="reporting-state">هنوز درخواستی برای سبد ثبت نشده است.</p>}
+          </section>
+        </div>}
+    </section>
+  </main>;
+}

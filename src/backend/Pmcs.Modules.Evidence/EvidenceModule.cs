@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.BuildingBlocks.Application;
+using Pmcs.Modules.Evidence.Services;
 using Pmcs.Modules.Evidence.Endpoints;
 using Pmcs.Modules.Evidence.Migrations;
 using Pmcs.Modules.Evidence.Persistence;
@@ -20,9 +22,11 @@ public sealed class EvidenceModule : IModule
         var connectionString = configuration.GetConnectionString("Pmcs")
             ?? throw new InvalidOperationException("Connection string 'Pmcs' is required.");
         services.AddDbContext<EvidenceDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IProjectMessageConversionDestination, ProjectChatEvidenceConversionDestination>();
         services.Configure<ObjectStorageOptions>(configuration.GetSection(ObjectStorageOptions.SectionName));
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         services.AddSingleton<IDatabaseMigration, EvidenceInitialMigration>();
+        services.AddSingleton<IDatabaseMigration, EvidenceChatSourceMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapEvidenceEndpoints();

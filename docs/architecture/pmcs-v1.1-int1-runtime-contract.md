@@ -1,0 +1,44 @@
+# INT1 — قرارداد Runtime مرجع و شواهد باز
+
+- Parent: `PMCS-V1.1-INT1-DOR-001` و ADR 0032.
+- وضعیت: Candidate پیاده‌سازی؛ Checkpoint محدود Foundation و Gate زنده هر دو جداگانه ارزیابی می‌شوند.
+- Feature flag: `Intelligence:INT1ReferenceEnabled=false` به‌صورت پیش‌فرض و در انتشار V1.1؛ روشن‌کردن در Pilot/Production تنها پس از `AGENT-S1-LIVE` و credential معتبر مجاز است.
+
+## سطح محدود
+
+`POST /api/v1/projects/{projectId}/intelligence/reference-runs` با `RequestId` یکتا، پرسش متنی محدود و `Idempotency-Key`، فقط یک فراخوانی ابزار خواندنی ثبت‌شده و یک پاسخ ساختاریافته انجام می‌دهد. `GET .../{runId}` فقط metadata درخواست همان کاربر را نشان می‌دهد؛ پاسخ متنی و payload ابزار در DB، Outbox، idempotency receipt و Audit ذخیره نمی‌شوند. تکرار درخواست با کلید یکسان فقط metadata برمی‌گرداند و پاسخ گذرا را دوباره تولید نمی‌کند. این سطح، Chat/Agent عمومی یا Action نوشتنی نیست.
+
+هر Run یک Session مستقل یک‌نوبتی با شناسه و انقضای ده‌دقیقه‌ای دارد. هیچ تاریخچهٔ گفتگو برای نوبت بعد نگهداری یا بازاستفاده نمی‌شود؛ RequestId همان شناسهٔ Run و SessionId مجزا است. Context فقط در حافظهٔ همان درخواست و در محدودهٔ timeout Profile حضور دارد.
+
+قبل از Run، `insights.generate`، وجود پروژه، انتخاب Profile نسخه‌دار، scope، طبقه‌بندی `Confidential`، قابلیت‌های `StructuredOutput | ToolCalling`، Provider فعال‌شدهٔ مستقل، مدل فعال و تأییدشده، پیکربندی adapter و نرخ مصرف بررسی می‌شوند. Tool Registry در هر فراخوانی `insights.generate` و Permission منبع manifest را دوباره می‌سنجد و فقط به Application Contract ماژول مالک می‌رود. خروجی‌های Reporting فقط metadata هستند؛ Collaboration حداکثر هشت پیام، هر متن تا ۵۰۰ نویسه، بدون فایل/ضمیمه برمی‌گرداند. آداپتور هیچ SQL، URL ابزار داخلی یا secret در اختیار مدل نمی‌گذارد.
+
+سطح مدیریت `GET /api/v1/intelligence/admin/profiles/preview` تصمیم مدل، محدودهٔ پروژه، مجوز اجرا، پیکربندی adapter و هزینهٔ سقف را بدون Secret نشان می‌دهد. Preview خود دسترسی اجرای مدل یا ابزار نمی‌دهد. Latency از timestampهای Run مشتق و همراه usage/cost و علت خطا در metadata/Audit ثبت می‌شود.
+
+سه آداپتور OpenAI، Google Gemini و Anthropic Claude تصمیم native function call را به شناسهٔ manifest نگاشت می‌کنند. ورودی ابزار با `projectId` درخواست و schema بسته مقایسه می‌شود. پاسخ نهایی باید یک `answer` محدود و تنها citation همان ابزار داشته باشد؛ پاسخ ناقص، ابزار ناشناخته، تغییر ابزار در fallback و مصرف بالاتر از سقف رد می‌شوند. Fallback فقط برای timeout، unavailable و invalid response به مدل تأییدشدهٔ همان Profile با محدودیت برابر انجام می‌شود.
+
+وقتی Profile اجازهٔ fallback می‌دهد، نوبت نخست حداکثر نصف بودجهٔ زمانی Run را مصرف می‌کند؛ نوبت دوم فقط از زمان باقیماندهٔ همان بودجه بهره می‌برد. انقضای نوبت نخست با کد `ai.provider.timeout` ثبت و فقط به مدل مجاز دیگری از fallback می‌رود؛ مدل اولیه به نام fallback دوباره اجرا نمی‌شود. لغو درخواست کاربر یا انقضای کل Run به مدل دوم دسترسی نمی‌دهد.
+
+نرخ‌های `input/output microunits per token` سقف محافظه‌کارانه‌ای هستند که مدیر ارشد هنگام ثبت نسخهٔ مدل اعلام می‌کند؛ هزینهٔ ثبت‌شده برآورد محاسبه‌شده از usage Provider با این نرخ است و صورتحساب Provider نیست. مدل نسخهٔ قدیمی با نرخ صفر برای انتخاب/Run بسته می‌ماند تا نسخهٔ قیمت‌گذاری‌شده منتشر و تأیید شود. قبل از شروع، مصرف بدبینانهٔ سقف token با بودجه سنجیده می‌شود و usage نهایی دوباره بررسی می‌شود.
+
+مصرف گزارش‌شدهٔ هر تصمیم ابزار و پاسخ نهایی به Run افزوده می‌شود؛ در fallback، مصرف مشاهده‌شدهٔ مدل نخست با برآورد سقف مدل مقصد پیش از جابه‌جایی سنجیده و همراه مصرف واقعی مقصد در Audit نهایی محاسبه می‌شود. مصرف مشاهده‌شده در شکست نیز از metadata حذف نمی‌شود. مصرفی که Provider هنگام خطای شبکه یا پاسخ نامعتبر اصلاً گزارش نکند، قابل اندازه‌گیری قطعی نیست؛ برآورد ثبت‌شده معادل صورتحساب خارجی نیست.
+
+## وضعیت Gateها
+
+ADR 0033، Gate Foundation غیرفعال نسخهٔ 1.1 را از Qualification زندهٔ Stage 1
+تفکیک کرده است. QA1 باید غیرفعال‌بودن Reference Run و Worker، نبود Grant راه‌انداز،
+Provider/Model فعال و Secret، و default-deny مدیریت را در Candidate انتشار بسنجد.
+این Checkpoint محدود پس از CI مستقل می‌تواند بسته شود؛ Stage 1 تا آزمون زنده
+`AGENT-S1-LIVE` پس از V1.1 Qualified نیست.
+
+- Run 674 (`36795510420`) برای Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` هر هشت Job سبز دارد؛ DB ایزوله، سه adapter، cross-tenant/project، fallback، هزینه، lineage، لغو Client و مرورگر را بررسی می‌کند. Source Runtime پیشین Run 672 نیز هشت Job سبز داشت.
+- آزمون اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable` باز است؛ credential در مخزن/CI عمومی نگهداری نمی‌شود. CLI بدون Secret هر سه را `Unavailable` گزارش کرده و موفقیت زنده ادعا نمی‌کند.
+- timeout، لغو Client، بازیابی Runهای `Running` رهاشده، Session یک‌نوبتی و حضور migration در restore drill در سناریوهای متصل Source نهایی سنجیده شدند؛ مرور Gate و اتصال زنده هنوز لازم‌اند.
+- Audit و telemetry metadata-only، مصرف مشاهده‌شدهٔ دو تلاش، fallback و نبود payload در DB و log با fixture بررسی شده‌اند. پاسخ خام یا هزینه‌ای که Provider گزارش نکند، صورتحساب قطعی نیست.
+
+در lineage هر Run، مدل و نسخهٔ اولیه همراه Provider و نسخهٔ فعال‌سازی اولیه ثبت می‌شود؛ اگر fallback رخ دهد، مدل/Provider و نسخهٔ مقصد جداگانه در فیلدهای انتخاب نهایی و دلیل خطا ثبت می‌شوند. نسخهٔ Provider پیش از هر ارسال به Provider دوباره کنترل می‌شود تا disable/re-activate میان دو گام، Run را fail-closed کند.
+
+## آزمون متصل ایزوله
+
+`tools/qa/verify-int1-reference.sh` پس از assertionهای baseline در پایگاه `pmcs_qa_*` سه مدل fixture را ثبت می‌کند و API را فقط با QA Gateway احراز‌شده، Feature Flag موقت و `INT1FixtureEnabled` بالا می‌آورد. Handler ساختگی تنها در همین محیط و با این دو Gate وارد DI می‌شود. این آزمون مسیر HTTP، انتخاب هر سه مدل، ابزار مالک با مجوز واقعی، fallback شامل timeout نوبت اول، لغو اتصال Client بدون fallback، ابزار ناشناخته، disable، replay و نبود سؤال/پاسخ/کلید در چهار Store را بررسی می‌کند؛ هیچ درخواست بیرونی نمی‌فرستد و معادل آزمون اتصال زنده نیست. در استقرار عادی هر دو Flag خاموش‌اند.
+
+همان سناریوی QA یک Run قدیمیِ `Running` با Session منقضی می‌سازد و پس از شروع Worker، تبدیل آن به `Failed/ai.run.abandoned` و Audit یکتا را بررسی می‌کند. Restore drill شاخه نیز حضور migration lineage و پنج ستون نسخه/انتخاب اولیه را در پایگاه بازیابی‌شده می‌سنجد.

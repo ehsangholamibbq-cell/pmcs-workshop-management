@@ -1,0 +1,24 @@
+{
+  "contractVersion": 1,
+  "product": "PMCS V1.1",
+  "requiredEvidence": [
+    "candidate-manifest",
+    "scope-and-contracts",
+    "permission-and-security",
+    "documents-and-identity",
+    "project-and-collaboration",
+    "offline-and-reconnect",
+    "reporting-and-exports",
+    "browser-visual-print-a11y",
+    "int1-dormant",
+    "migration-empty",
+    "migration-v1-upgrade",
+    "migration-upgrade-smoke",
+    "migration-runtime-rollback",
+    "migration-backup-restore",
+    "migration-repeat",
+    "migration-interruption-recovery",
+    "load-and-soak",
+    "artifact-digests"
+  ]
+}

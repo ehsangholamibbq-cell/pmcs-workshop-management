@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { transitionAction, type ManagementActionStatus } from "@/lib/actions";
 import { reviewDailyReport } from "@/lib/daily-reports";
 import { scopedStorageKey } from "@/lib/field-database";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, formatPersianDateTime } from "@/lib/persian-date";
 import {
   changeNotificationReceipt,
@@ -27,10 +27,12 @@ interface MyWorkCenterProps {
 
 export function MyWorkCenter(props: MyWorkCenterProps) {
   const [work, setWork] = useState<MyWorkModel | null>(null);
-  const [notifications, setNotifications] = useState<readonly InAppNotificationModel[]>([]);
+  const [notifications, setNotifications] = useState<readonly InAppNotificationModel[] | null>(null);
   const [comments, setComments] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState("در حال دریافت کارتابل یکپارچه…");
+  const [messageKind, setMessageKind] = useState<"status" | "error">("status");
+  const [readState, setReadState] = useState<"loading" | "current" | "cached" | "unavailable" | "forbidden">("loading");
   const actorIdentity = useMemo(
     () => ({ tenantId: props.tenantId, userId: props.userId }),
     [props.tenantId, props.userId],
@@ -43,12 +45,23 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
 
   const load = useCallback(async () => {
     if (!props.isOnline) {
-      setWork(readCache<MyWorkModel>(cacheKey));
-      setNotifications(readCache<readonly InAppNotificationModel[]>(notificationCacheKey) ?? []);
-      setMessage("آخرین نسخه ذخیره‌شده روی دستگاه نمایش داده می‌شود؛ رسید رسمی نیازمند اتصال است.");
+      const cachedWork = readCache<MyWorkModel>(cacheKey);
+      const cachedNotifications = readCache<readonly InAppNotificationModel[]>(notificationCacheKey);
+      setWork(cachedWork);
+      setNotifications(cachedNotifications);
+      setReadState(cachedWork || cachedNotifications ? "cached" : "unavailable");
+      setMessage(cachedWork || cachedNotifications
+        ? "نسخهٔ ذخیره‌شده روی دستگاه نمایش داده می‌شود؛ ممکن است قدیمی باشد و اقدام رسمی نیازمند اتصال است."
+        : "در حالت آفلاین نسخهٔ ذخیره‌شده‌ای از کارتابل و اعلان‌ها در دسترس نیست.");
+      setMessageKind("status");
       return;
     }
 
+    setReadState("loading");
+    setWork(null);
+    setNotifications(null);
+    setMessage("در حال دریافت تازهٔ کارتابل و اعلان‌ها…");
+    setMessageKind("status");
     try {
       const [nextWork, nextNotifications] = await Promise.all([
         getMyWork(props.apiBaseUrl, actorIdentity, props.projectId),
@@ -58,11 +71,27 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
       setNotifications(nextNotifications);
       localStorage.setItem(cacheKey, JSON.stringify(nextWork));
       localStorage.setItem(notificationCacheKey, JSON.stringify(nextNotifications));
+      setReadState("current");
       setMessage(nextWork.items.length === 0 ? "کار فعالی به شما تخصیص داده نشده است." : "کارتابل بر اساس مجوز فعلی شما محاسبه شد.");
     } catch (error) {
-      setWork(readCache<MyWorkModel>(cacheKey));
-      setNotifications(readCache<readonly InAppNotificationModel[]>(notificationCacheKey) ?? []);
-      setMessage(toUserMessage(error, "کارتابل یکپارچه دریافت نشد."));
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        localStorage.removeItem(cacheKey);
+        localStorage.removeItem(notificationCacheKey);
+        setWork(null);
+        setNotifications(null);
+        setReadState("forbidden");
+        setMessage("دسترسی به کارتابل یا اعلان‌های این پروژه تأیید نشد؛ دادهٔ ذخیره‌شده نمایش داده نمی‌شود.");
+      } else {
+        const cachedWork = readCache<MyWorkModel>(cacheKey);
+        const cachedNotifications = readCache<readonly InAppNotificationModel[]>(notificationCacheKey);
+        setWork(cachedWork);
+        setNotifications(cachedNotifications);
+        setReadState(cachedWork || cachedNotifications ? "cached" : "unavailable");
+        setMessage(cachedWork || cachedNotifications
+          ? "دریافت تازه کامل نشد؛ فقط نسخهٔ ذخیره‌شده نمایش داده می‌شود و ممکن است قدیمی باشد."
+          : toUserMessage(error, "دریافت کارتابل و اعلان‌ها کامل نشد."));
+      }
+      setMessageKind("error");
     }
   }, [
     cacheKey,
@@ -93,6 +122,7 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
       props.onChanged();
     } catch (error) {
       setMessage(toUserMessage(error, "تغییر وضعیت اقدام انجام نشد."));
+      setMessageKind("error");
     } finally {
       setBusyId(null);
     }
@@ -102,6 +132,7 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
     const comment = comments[item.id] ?? "";
     if (action === "return" && !comment.trim()) {
       setMessage("برای عودت گزارش، دلیل اصلاح را ثبت کنید.");
+      setMessageKind("error");
       return;
     }
 
@@ -121,6 +152,7 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
       props.onChanged();
     } catch (error) {
       setMessage(toUserMessage(error, "تصمیم گزارش ثبت نشد."));
+      setMessageKind("error");
     } finally {
       setBusyId(null);
     }
@@ -140,23 +172,30 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
       await load();
     } catch (error) {
       setMessage(toUserMessage(error, "ثبت رسید اعلان انجام نشد."));
+      setMessageKind("error");
     } finally {
       setBusyId(null);
     }
   }
 
   const items = work?.items ?? [];
-  const unread = notifications.filter((item) => item.readAt === null).length;
+  const visibleNotifications = notifications ?? [];
+  const unread = visibleNotifications.filter((item) => item.readAt === null).length;
+  const canAct = props.isOnline && readState === "current";
   return (
-    <section className="my-work-center" aria-label="کارهای من و اعلان‌ها" data-testid="my-work-center">
+    <section className="my-work-center" aria-label="کارهای من و اعلان‌ها" data-testid="my-work-center" data-read-state={readState}>
+      <div className={`my-work-feedback ${messageKind}`} role={messageKind === "error" ? "alert" : "status"}>
+        <p>{message}</p>
+        {props.isOnline && (readState === "cached" || readState === "unavailable" || readState === "forbidden") &&
+          <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت کارتابل</button>}
+      </div>
       <article className="operational-card my-work-card" data-testid="my-work-panel">
         <div className="card-heading">
           <div><p className="eyebrow">کارتابل یکپارچه</p><h2>کارهای من</h2></div>
           <span className={items.some((item) => item.isOverdue) ? "count-badge warning" : "count-badge"}>
-            {items.length.toLocaleString("fa-IR")}
+            {work ? items.length.toLocaleString("fa-IR") : "—"}
           </span>
         </div>
-        <p className="microcopy" aria-live="polite">{message}</p>
         <div className="my-work-list" data-testid="my-work-list">
           {items.map((item) => (
             <div className={`my-work-item${item.isOverdue ? " overdue" : ""}`} data-testid="my-work-item" data-entity-id={item.targetId} key={item.id}>
@@ -168,42 +207,44 @@ export function MyWorkCenter(props: MyWorkCenterProps) {
               </div>
               {item.kind === "ManagementAction" && (
                 <div className="review-actions">
-                  {item.status !== "InProgress" && <button className="secondary-button" data-testid="my-work-action-start" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "InProgress")}>شروع</button>}
-                  <button data-testid="my-work-action-done" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void transition(item, "Done")}>انجام شد</button>
+                  {item.status !== "InProgress" && <button className="secondary-button" data-testid="my-work-action-start" type="button" disabled={!canAct || busyId === item.id} onClick={() => void transition(item, "InProgress")}>شروع</button>}
+                  <button data-testid="my-work-action-done" type="button" disabled={!canAct || busyId === item.id} onClick={() => void transition(item, "Done")}>انجام شد</button>
                 </div>
               )}
               {item.kind === "DailyReportReview" && (
                 <div className="work-review-controls">
                   <textarea rows={2} aria-label={`نظر ${item.title}`} placeholder="نظر اختیاری؛ برای عودت، دلیل الزامی است" value={comments[item.id] ?? ""} onChange={(event) => setComments((current) => ({ ...current, [item.id]: event.target.value }))} />
                   <div className="review-actions">
-                    <button data-testid="daily-report-review-approve" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "approve")}>تأیید</button>
-                    <button className="secondary-button" data-testid="daily-report-review-return" type="button" disabled={!props.isOnline || busyId === item.id} onClick={() => void review(item, "return")}>عودت برای اصلاح</button>
+                    <button data-testid="daily-report-review-approve" type="button" disabled={!canAct || busyId === item.id} onClick={() => void review(item, "approve")}>تأیید</button>
+                    <button className="secondary-button" data-testid="daily-report-review-return" type="button" disabled={!canAct || busyId === item.id} onClick={() => void review(item, "return")}>عودت برای اصلاح</button>
                   </div>
                 </div>
               )}
               {item.kind === "DailyReportCorrection" && <a className="inline-link" href="#daily-report-history">بازکردن نسخه اصلاحی</a>}
             </div>
           ))}
-          {items.length === 0 && <p className="muted">در حال حاضر موردی برای اقدام شما وجود ندارد.</p>}
+          {work && items.length === 0 && <p className="muted">{readState === "cached" ? "در نسخهٔ ذخیره‌شده موردی برای اقدام ثبت نشده است." : "در حال حاضر موردی برای اقدام شما وجود ندارد."}</p>}
+          {!work && readState !== "loading" && <p className="muted">دادهٔ تأییدشدهٔ کارتابل در دسترس نیست.</p>}
         </div>
       </article>
 
       <article className="operational-card notification-card" data-testid="notification-panel">
         <div className="card-heading">
           <div><p className="eyebrow">اعلان داخل سامانه</p><h2>اعلان‌های من</h2></div>
-          <span className={unread > 0 ? "count-badge warning" : "count-badge"}>{unread.toLocaleString("fa-IR")}</span>
+          <span className={unread > 0 ? "count-badge warning" : "count-badge"}>{notifications ? unread.toLocaleString("fa-IR") : "—"}</span>
         </div>
         <div className="notification-list" data-testid="notification-list">
-          {notifications.slice(0, 20).map((notification) => (
+          {visibleNotifications.slice(0, 20).map((notification) => (
             <div className={`notification-item${notification.readAt ? " read" : ""}`} data-testid="notification-item" data-entity-id={notification.id} key={notification.id}>
               <div><strong>{notification.title}</strong><small>{formatPersianDateTime(notification.occurredAt)}</small><p>{notification.body}</p></div>
               <div className="review-actions">
-                {!notification.readAt && <button className="secondary-button" data-testid="notification-read" type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "read")}>خواندم</button>}
-                {!notification.acknowledgedAt && <button data-testid="notification-acknowledge" type="button" disabled={!props.isOnline || busyId === notification.id} onClick={() => void receipt(notification, "acknowledge")}>تأیید دریافت</button>}
+                {!notification.readAt && <button className="secondary-button" data-testid="notification-read" type="button" disabled={!canAct || busyId === notification.id} onClick={() => void receipt(notification, "read")}>خواندم</button>}
+                {!notification.acknowledgedAt && <button data-testid="notification-acknowledge" type="button" disabled={!canAct || busyId === notification.id} onClick={() => void receipt(notification, "acknowledge")}>تأیید دریافت</button>}
               </div>
             </div>
           ))}
-          {notifications.length === 0 && <p className="muted">اعلان فعالی وجود ندارد.</p>}
+          {notifications && notifications.length === 0 && <p className="muted">{readState === "cached" ? "در نسخهٔ ذخیره‌شده اعلان فعالی ثبت نشده است." : "اعلان فعالی وجود ندارد."}</p>}
+          {!notifications && readState !== "loading" && <p className="muted">دادهٔ تأییدشدهٔ اعلان‌ها در دسترس نیست.</p>}
         </div>
       </article>
     </section>

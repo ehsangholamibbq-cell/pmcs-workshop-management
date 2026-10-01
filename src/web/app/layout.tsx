@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import "./globals.css";
+import "./typography.generated.css";
 
 export const metadata: Metadata = {
   title: "سامانه کنترل مدیریت پروژه | مرکز فرمان پروژه",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#112a2a",
+  themeColor: "#0c2036",
   colorScheme: "light",
 };
 

@@ -31,6 +31,12 @@ public sealed class EvidenceFile : AggregateRoot
 
     public string ObjectKey { get; private set; } = string.Empty;
 
+    public Guid? SourceMessageId { get; private set; }
+
+    public Guid? SourceDocumentId { get; private set; }
+
+    public int? SourceDocumentVersion { get; private set; }
+
     public EvidenceFileStatus Status { get; private set; }
 
     public DateTimeOffset? CapturedAtDevice { get; private set; }
@@ -101,6 +107,24 @@ public sealed class EvidenceFile : AggregateRoot
             CreatedAt = createdAt,
             UploadExpiresAt = createdAt.AddHours(SessionLifetimeHours)
         };
+    }
+
+    public static EvidenceFile CreateFromReleasedChat(
+        Guid id, Guid tenantId, Guid projectId, Guid dailyReportId,
+        Guid? dailyFactId, Guid messageId, Guid documentId, int documentVersion,
+        string originalFileName, string contentType, long sizeBytes, string sha256,
+        Guid createdBy, DateTimeOffset createdAt)
+    {
+        if (messageId == Guid.Empty || documentId == Guid.Empty || documentVersion < 1)
+            throw new DomainRuleException("evidence.chat_source.invalid", "A released chat source is required.");
+        var evidence = CreatePending(id, tenantId, projectId, dailyReportId, dailyFactId,
+            originalFileName, contentType, sizeBytes, sha256,
+            $"pmcs/converted-chat/{id:N}", null, createdBy, createdAt);
+        evidence.SourceMessageId = messageId;
+        evidence.SourceDocumentId = documentId;
+        evidence.SourceDocumentVersion = documentVersion;
+        evidence.MarkUploaded($"sha256:{evidence.Sha256}", createdAt);
+        return evidence;
     }
 
     public void RenewUploadSession(DateTimeOffset renewedAt)

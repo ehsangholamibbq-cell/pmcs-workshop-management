@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import {
   createFinancialObligation,
@@ -23,7 +23,7 @@ import {
   type PettyCashRequestModel,
 } from "@/lib/finance-control";
 import type { FinancialRecordModel } from "@/lib/finance";
-import { formatAmountFa, toUserMessage } from "@/lib/localization";
+import { ApiRequestError, formatAmountFa, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 import type { ProjectLocationModel } from "@/lib/projects";
 
@@ -49,6 +49,8 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   const [pettyCash, setPettyCash] = useState<readonly PettyCashRequestModel[]>([]);
   const [policies, setPolicies] = useState<readonly ManagementFeePolicyModel[]>([]);
   const [message, setMessage] = useState("در حال دریافت کنترل‌های تکمیلی مالی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
 
   const [obligationType, setObligationType] = useState<FinancialObligationType>("Payable");
@@ -71,12 +73,20 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   const [feeRate, setFeeRate] = useState("");
   const [feeEffectiveFrom, setFeeEffectiveFrom] = useState(todayIsoInProjectTimeZone);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    setControl(null);
+    setObligations([]);
+    setPettyCash([]);
+    setPolicies([]);
     if (!props.isOnline) {
+      setReadState("offline");
       setMessage("کنترل تعهدات، تنخواه و کارمزد هنگام اتصال به سرور در دسترس است.");
-      return;
+      return false;
     }
 
+    setReadState("loading");
+    setMessage("در حال دریافت کنترل‌های تکمیلی مالی…");
     try {
       const [nextControl, nextObligations, nextPettyCash, nextPolicies] = await Promise.all([
         getFinanceControlState(props.apiBaseUrl, identity, props.projectId),
@@ -84,13 +94,21 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
         listPettyCashRequests(props.apiBaseUrl, identity, props.projectId),
         listManagementFeePolicies(props.apiBaseUrl, identity, props.projectId),
       ]);
+      if (requestId !== readSequence.current) return false;
       setControl(nextControl);
       setObligations(nextObligations);
       setPettyCash(nextPettyCash);
       setPolicies(nextPolicies);
+      setReadState("current");
       setMessage("محاسبات تعهد، تنخواه و کارمزد از سرویس قطعی مالی به‌روز شد.");
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "کنترل‌های تکمیلی مالی دریافت نشد یا دسترسی این نقش محدود است."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به کنترل‌های تکمیلی مالی این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "کنترل‌های تکمیلی مالی دریافت نشد."));
+      return false;
     }
   }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
 
@@ -101,6 +119,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
 
   async function createObligation(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const amount = Number(obligationAmount);
     if (!obligationNumber.trim() || !obligationDescription.trim() || !Number.isFinite(amount) || amount <= 0) {
       setMessage("شماره، شرح و مبلغ مثبت برای تعهد مالی الزامی است.");
@@ -124,6 +143,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function moveObligation(item: FinancialObligationModel, action: "submit" | "approve" | "return") {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const comment = action === "return" ? window.prompt("دلیل عودت تعهد مالی") ?? "" : "";
     if (action === "return" && !comment.trim()) return;
     await run(item.id, "تغییر وضعیت تعهد مالی ناموفق بود.", async () => {
@@ -132,6 +152,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function settle(item: FinancialObligationModel) {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const expectedType = item.type === "Payable" ? "Payment" : "Receipt";
     const eligible = props.records.filter((record) => record.status === "Posted" && record.type === expectedType);
     const defaultRecord = eligible.find((record) => record.amount >= item.outstandingAmount);
@@ -151,6 +172,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
 
   async function createPetty(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const amount = Number(pettyAmount);
     if (!pettyNumber.trim() || !pettyPurpose.trim() || !pettyCustodian.trim() || !Number.isFinite(amount) || amount <= 0) {
       setMessage("شماره، هدف، تنخواه‌گردان و مبلغ مثبت الزامی است.");
@@ -175,6 +197,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function movePetty(item: PettyCashRequestModel, action: "submit" | "approve" | "return" | "reconciliation/approve") {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const comment = action === "return" ? window.prompt("دلیل عودت درخواست تنخواه") ?? "" : "";
     if (action === "return" && !comment.trim()) return;
     await run(item.id, "تغییر وضعیت درخواست تنخواه ناموفق بود.", async () => {
@@ -183,6 +206,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function recordAdvance(item: PettyCashRequestModel) {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const record = props.records.find((candidate) =>
       candidate.status === "Posted" && candidate.type === "PettyCashFunding" && candidate.amount === item.approvedAmount);
     const recordId = window.prompt("شناسه سند قطعی تأمین تنخواه", record?.id ?? "") ?? "";
@@ -193,6 +217,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function reconcile(item: PettyCashRequestModel) {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const expenseText = window.prompt("مبلغ هزینه‌کرد قطعی", String(item.approvedAmount ?? ""));
     if (expenseText === null) return;
     const expenseAmount = Number(expenseText);
@@ -229,6 +254,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
 
   async function createFee(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const rate = Number(feeRate);
     if (!feeTitle.trim() || !Number.isFinite(rate) || rate <= 0 || rate > 100) {
       setMessage("عنوان و نرخ معتبر کارمزد مدیریت الزامی است.");
@@ -247,6 +273,7 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function moveFee(item: ManagementFeePolicyModel, action: "submit" | "approve" | "return") {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     const comment = action === "return" ? window.prompt("دلیل عودت قاعده کارمزد") ?? "" : "";
     if (action === "return" && !comment.trim()) return;
     await run(item.id, "تغییر وضعیت قاعده کارمزد ناموفق بود.", async () => {
@@ -255,20 +282,38 @@ export function FinanceCompletionPanel(props: FinanceCompletionPanelProps) {
   }
 
   async function run(id: string, fallback: string, action: () => Promise<void>) {
+    if (!props.isOnline || readState !== "current" || busy !== null) return;
     setBusy(id);
     try {
       await action();
       await load();
       props.onChanged?.();
     } catch (error) {
-      setMessage(toUserMessage(error, fallback));
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        setControl(null);
+        setObligations([]);
+        setPettyCash([]);
+        setPolicies([]);
+        setReadState("forbidden");
+        setMessage("دسترسی به کنترل‌های تکمیلی مالی این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+      } else setMessage(toUserMessage(error, fallback));
     } finally {
       setBusy(null);
     }
   }
 
+  if (readState !== "current") return (
+    <section className="finance-completion" data-testid="finance-control-v2" data-read-state={readState}>
+      <div className="section-title"><div><p className="eyebrow">کنترل مالی تکمیلی</p><h3>تعهدات، گردش تنخواه و کارمزد مدیریت</h3></div></div>
+      <p className="microcopy" role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {props.isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت کنترل‌های تکمیلی مالی</button>}
+    </section>
+  );
+
   return (
-    <section className="finance-completion" data-testid="finance-control-v2">
+    <section className="finance-completion" data-testid="finance-control-v2" data-read-state={readState}>
       <div className="section-title">
         <div>
           <p className="eyebrow">کنترل مالی تکمیلی</p>

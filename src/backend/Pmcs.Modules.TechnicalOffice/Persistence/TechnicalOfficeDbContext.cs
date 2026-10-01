@@ -138,6 +138,7 @@ internal sealed class TechnicalOfficeDbContext(DbContextOptions<TechnicalOfficeD
             builder.Property(item => item.EvidenceReferencesJson).HasColumnName("evidence_references_json").HasColumnType("jsonb");
             builder.Property(item => item.RelatedRevisionIdsJson).HasColumnName("related_revision_ids_json").HasColumnType("jsonb");
             builder.Property(item => item.ResponseHistoryJson).HasColumnName("response_history_json").HasColumnType("jsonb");
+            builder.Property(item => item.ReportingHistoryJson).HasColumnName("reporting_history_json").HasColumnType("jsonb");
             builder.Property(item => item.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.RaisedBy).HasColumnName("raised_by");
             builder.Property(item => item.CreatedAt).HasColumnName("created_at");
@@ -147,6 +148,7 @@ internal sealed class TechnicalOfficeDbContext(DbContextOptions<TechnicalOfficeD
             builder.Ignore(item => item.EvidenceReferences);
             builder.Ignore(item => item.RelatedRevisionIds);
             builder.Ignore(item => item.Responses);
+            builder.Ignore(item => item.ReportingHistory);
             builder.Ignore(item => item.DomainEvents);
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Number }).IsUnique();
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status, item.IsBlocking });
@@ -179,6 +181,7 @@ internal sealed class TechnicalOfficeDbContext(DbContextOptions<TechnicalOfficeD
             builder.Property(item => item.ResubmissionNumber).HasColumnName("resubmission_number");
             builder.Property(item => item.SupersedesSubmittalId).HasColumnName("supersedes_submittal_id");
             builder.Property(item => item.RevisionIdsJson).HasColumnName("revision_ids_json").HasColumnType("jsonb");
+            builder.Property(item => item.ReportingHistoryJson).HasColumnName("reporting_history_json").HasColumnType("jsonb");
             builder.Property(item => item.RequiredDeliverableReference).HasColumnName("required_deliverable_reference").HasMaxLength(500);
             builder.Property(item => item.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
             builder.Property(item => item.ReviewOutcome).HasColumnName("review_outcome").HasConversion<string>().HasMaxLength(40);
@@ -191,6 +194,7 @@ internal sealed class TechnicalOfficeDbContext(DbContextOptions<TechnicalOfficeD
             builder.Property(item => item.ClosedAt).HasColumnName("closed_at");
             builder.Property(item => item.Revision).HasColumnName("revision").IsConcurrencyToken();
             builder.Ignore(item => item.RevisionIds);
+            builder.Ignore(item => item.ReportingHistory);
             builder.Ignore(item => item.DomainEvents);
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Number }).IsUnique();
             builder.HasIndex(item => new { item.TenantId, item.ProjectId, item.Status });

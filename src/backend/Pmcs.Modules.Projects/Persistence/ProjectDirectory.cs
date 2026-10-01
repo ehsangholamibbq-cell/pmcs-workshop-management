@@ -68,7 +68,11 @@ internal sealed class ProjectDirectory(ProjectsDbContext dbContext) : IProjectDi
             project.CalendarMode == ProjectCalendarMode.NotConfigured
                 ? ProjectCalendarConfigurationState.NotConfigured
                 : ProjectCalendarConfigurationState.Configured,
-            project.WorkingDaysMask));
+            project.WorkingDaysMask),
+        project.ConfigurationVersion,
+        project.DailyCutoffLocalTime,
+        project.ReportingFrequency,
+        project.DailyReportWorkflow);
 
     private static ProjectFeatureState Map(CapabilityMode mode) => mode switch
     {

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PMCS — ترکیب ورود، پوسته و نمودار</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font-family: Vazirmatn, Tahoma, sans-serif; line-height: 1.7; color: #17242e; background: #fbf8f1; --navy: #0c2036; --green: #11643b; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    :is(a, button, select, summary):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; background: white; padding: .4rem .7rem; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .85rem max(1rem, calc((100vw - 1180px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 92px; height: 62px; flex: none; object-fit: contain; padding: .25rem; background: #fbf8f1; border-radius: 10px; }
+    h1 { font-size: 1.3rem; line-height: 1.4; margin: 0; }
+    header p { color: #d7e1e2; font-size: .8rem; margin: .1rem 0 0; }
+    main { max-width: 1180px; margin: auto; padding: 1rem 1rem 3rem; }
+    .note { border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; padding: .6rem .8rem; }
+    .controls { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: 1rem 0; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; padding: .4rem .65rem; border: 1px solid #7b8c94; border-radius: 8px; color: #17242e; background: white; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 1rem; }
+    .card { min-width: 0; border: 1px solid #e9dfcf; border-radius: 14px; background: white; padding: 1rem; }
+    h2 { font-size: 1.05rem; color: var(--navy); margin: 0 0 .3rem; }
+    p { margin: .25rem 0 .65rem; }
+    .muted { color: var(--muted); font-size: .82rem; }
+    .login { display: grid; grid-template-columns: 1fr 1fr; min-height: 240px; border: 1px solid #d9d8d1; border-radius: 12px; overflow: hidden; margin: .65rem 0; }
+    .login-art { position: relative; background: linear-gradient(135deg, #071525 15%, #15334d 70%, #11643b); color: white; padding: 1.1rem; display: flex; flex-direction: column; justify-content: flex-end; }
+    .login-art::before { content: ""; position: absolute; inset: 18% 12% auto auto; width: 45%; height: 38%; border: 1px solid #9ba4a899; transform: skewY(-10deg); }
+    .login-art strong { position: relative; font-size: 1.08rem; }
+    .login-art span { position: relative; color: #d7e1e2; font-size: .76rem; }
+    .login-form { padding: 1rem; background: #f5efe4; display: grid; align-content: center; gap: .5rem; }
+    .login-form .field { height: 35px; border: 1px solid #b6c0c0; border-radius: 7px; background: white; }
+    .login-form .field-label { font-size: .75rem; font-weight: 700; }
+    .login-form .fake-action { border-radius: 7px; background: #e4e9e6; color: #40535a; padding: .4rem .6rem; text-align: center; font-weight: 700; font-size: .78rem; }
+    .shell { display: grid; grid-template-columns: 170px minmax(0, 1fr); border: 1px solid #d9d8d1; border-radius: 12px; overflow: hidden; min-height: 240px; margin: .65rem 0; }
+    .shell-nav { background: var(--navy); color: white; padding: .7rem; }
+    .shell-nav a { display: block; color: white; padding: .45rem; border-radius: 7px; min-height: 44px; }
+    .shell-nav a[aria-current="page"] { background: #15334d; border-right: 3px solid #9ba4a8; }
+    .shell-content { padding: .9rem; min-width: 0; }
+    .context { background: #f5efe4; border: 1px solid #e9dfcf; border-radius: 8px; padding: .5rem .7rem; font-size: .82rem; }
+    .nav-toggle { display: none; min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; background: white; color: var(--navy); padding: .4rem .7rem; font-weight: 700; }
+    .panel { background: #fbf8f1; border: 1px solid #e9dfcf; border-radius: 9px; margin-top: .7rem; padding: .6rem .75rem; }
+    .panel strong { color: var(--navy); }
+    .chart-card { grid-column: 1 / -1; }
+    .chart-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+    .chart-frame { background: #f8faf8; border: 1px solid #d5e0db; border-radius: 10px; padding: .75rem; min-width: 0; }
+    svg { display: block; width: 100%; height: auto; }
+    .legend { font-size: .8rem; color: var(--muted); }
+    .line-key { display: inline-block; width: 20px; border-top: 3px solid #11643b; vertical-align: middle; margin-left: .3rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    th, td { border-bottom: 1px solid #e9dfcf; text-align: right; padding: .35rem; }
+    th { color: var(--muted); }
+    .state-message { min-height: 88px; border-right: 4px solid #235c99; border-radius: 8px; background: #f1f6f8; padding: .7rem .9rem; }
+    .state-message[hidden], .chart-layout[hidden] { display: none; }
+    .state-message[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .state-message[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .skeleton { height: 28px; margin-top: .5rem; background: #e8edeb; border-radius: 7px; }
+    .foot { margin-top: 1rem; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 760px) {
+      .grid, .chart-layout { grid-template-columns: 1fr; }
+      .chart-card { grid-column: auto; }
+      .shell { grid-template-columns: 1fr; }
+      .nav-toggle { display: inline-block; margin-bottom: .45rem; }
+      .shell-nav { display: none; }
+      .shell-nav[data-open="true"] { display: block; }
+      .brand { width: 70px; height: 52px; }
+      h1 { font-size: 1.05rem; }
+    }
+    @media (max-width: 420px) { .login { grid-template-columns: 1fr; } .login-art { min-height: 140px; } .login-form { min-height: 150px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { color: var(--navy); background: white; } header p { color: var(--muted); } .controls, .login-card, .shell-card, .nav-toggle { display: none !important; } .grid, .chart-layout { display: block; } .chart-frame { break-inside: avoid; } }
+  </style>
+</head>
+<body data-state="default">
+  <a class="skip" href="#main">رفتن به نمونهٔ ترکیب</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>ترکیب ورود، پوسته و نمودار</h1><p>PMCS · UX2-MS52 · نمونهٔ مستقل و بدون اتصال عملیاتی</p></div></div></header>
+  <main id="main">
+    <div class="note"><strong>نمونهٔ طراحی:</strong> مقادیر نمودار و دوره‌ها فرضی‌اند؛ هیچ ورود، درخواست یا Snapshot رسمی ایجاد نمی‌شود.</div>
+    <div class="controls"><label for="state">وضعیت نمودار</label><select id="state"><option value="default">عادی</option><option value="loading">بارگذاری</option><option value="empty">بدون داده</option><option value="error">خطا</option><option value="permission">بدون مجوز</option><option value="offline">آفلاین</option></select></div>
+    <div class="grid">
+      <section class="card login-card" aria-labelledby="login-title"><h2 id="login-title">ترکیب ورود</h2><p class="muted">نشان رسمی، سطح گرم و Motion غیرمزاحم؛ فرم زیر صرفاً ماکت است.</p>
+        <div class="login"><div class="login-art"><strong>ساختن، فراتر از امروز</strong><span>معماری مصوب · مدیریت ممتاز</span></div><div class="login-form" aria-label="ماکت غیرتعاملی ورود"><div class="field-label">شناسهٔ نمونه</div><div class="field" aria-hidden="true"></div><div class="field-label">رمز نمونه</div><div class="field" aria-hidden="true"></div><div class="fake-action">ورود در این نمونه غیرفعال است</div></div></div>
+      </section>
+      <section class="card shell-card" aria-labelledby="shell-title"><h2 id="shell-title">پوسته و Context پروژه</h2><p class="muted">ناوبری موبایل با Disclosure و متن مستقل از رنگ.</p>
+        <div class="shell"><nav class="shell-nav" id="shell-nav" aria-label="بخش‌های نمونه" data-open="false"><a href="#shell-title" aria-current="page">مرکز فرمان</a><a href="#chart-title">روند نمونه</a><a href="#source-note">منبع و مرز</a></nav><div class="shell-content"><button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="shell-nav">بخش‌ها را باز کنید</button><div class="context"><strong>پروژهٔ فرضی:</strong> نمونهٔ آموزشی · دورهٔ ۱۴۰۵/۰۷</div><div class="panel"><strong>مرکز فرمان</strong><p class="muted">اولویت‌ها در محصول واقعی فقط از دادهٔ مجاز و معتبر می‌آیند.</p></div><div class="panel"><strong>وضعیت:</strong> پیش‌نمایش طراحی</div></div></div>
+      </section>
+      <section class="card chart-card" aria-labelledby="chart-title"><h2 id="chart-title">نمودار روند نمونه</h2><p class="muted">رنگ تنها نشانهٔ روند نیست؛ عنوان، برچسب نقاط و جدول همان دادهٔ فرضی را بیان می‌کنند.</p>
+        <div class="chart-layout" id="chart-layout"><figure class="chart-frame"><svg viewBox="0 0 620 220" role="img" aria-labelledby="svg-title svg-desc"><title id="svg-title">روند شش دورهٔ فرضی</title><desc id="svg-desc">مقدار نمونه از ۲۰ به ۳۵ می‌رسد؛ جدول کنار نمودار مقدار دقیق را دارد.</desc><g fill="none" stroke="#d0dcd6" stroke-width="1"><path d="M40 20V185H600M40 60H600M40 105H600M40 150H600" /></g><polyline fill="none" stroke="#11643b" stroke-width="4" points="50,150 155,130 260,137 365,93 470,70 575,50" /><g fill="#11643b" stroke="white" stroke-width="2"><circle cx="50" cy="150" r="6"/><circle cx="155" cy="130" r="6"/><circle cx="260" cy="137" r="6"/><circle cx="365" cy="93" r="6"/><circle cx="470" cy="70" r="6"/><circle cx="575" cy="50" r="6"/></g><g fill="#17242e" font-size="14" text-anchor="middle"><text x="50" y="208">فروردین</text><text x="155" y="208">اردیبهشت</text><text x="260" y="208">خرداد</text><text x="365" y="208">تیر</text><text x="470" y="208">مرداد</text><text x="575" y="208">شهریور</text></g></svg><figcaption class="legend"><span class="line-key"></span>روند صرفاً نمونه · واحد فرضی</figcaption></figure>
+          <div><table><caption class="muted">جدول جایگزین نمودار · دادهٔ فرضی</caption><thead><tr><th scope="col">ماه ۱۴۰۵</th><th scope="col">مقدار نمونه</th></tr></thead><tbody><tr><td>فروردین</td><td>۲۰</td></tr><tr><td>اردیبهشت</td><td>۲۳</td></tr><tr><td>خرداد</td><td>۲۲</td></tr><tr><td>تیر</td><td>۲۹</td></tr><tr><td>مرداد</td><td>۳۲</td></tr><tr><td>شهریور</td><td>۳۵</td></tr></tbody></table></div></div>
+        <div class="state-message" id="chart-message" role="status" aria-live="polite" hidden><strong id="message-title"></strong><p id="message-text"></p><div class="skeleton" id="skeleton" aria-hidden="true" hidden></div></div>
+        <p class="foot" id="source-note">منبع: دادهٔ ساختگی Prototype؛ بدون جمع‌بندی مدیریتی، AI Insight یا گزارش رسمی.</p>
+      </section>
+    </div>
+    <p class="foot">Login واقعی از Identity/BFF، Shell واقعی از Permission و Chart واقعی از Source معتبر پیروی می‌کنند. این فایل صرفاً تصمیم بصری را قابل مرور می‌کند.</p>
+  </main>
+  <script>
+    const state = document.getElementById("state"), layout = document.getElementById("chart-layout"), message = document.getElementById("chart-message");
+    const texts = {
+      loading: ["در حال دریافت", "تا دریافت پاسخ، هیچ نقطه یا مقدار فرضی نمایش داده نمی‌شود.", "info"],
+      empty: ["بدون داده", "دورهٔ انتخابی هنوز دادهٔ مجاز ندارد؛ نمودار ساخته نمی‌شود.", "info"],
+      error: ["خطای دریافت", "روند قابل اتکا نیست؛ دادهٔ قبلی به‌جای پاسخ معتبر نشان داده نمی‌شود.", "error"],
+      permission: ["بدون مجوز", "مقدارها و نمودار از دید کاربر فاقد مجوز پنهان می‌مانند.", "warning"],
+      offline: ["آفلاین", "تازگی داده تأیید نشده است؛ روند رسمی نمایش داده نمی‌شود.", "warning"]
+    };
+    function render() {
+      const value = state.value, current = texts[value];
+      document.body.dataset.state = value; layout.hidden = value !== "default"; message.hidden = value === "default";
+      if (!current) return;
+      document.getElementById("message-title").textContent = current[0];
+      document.getElementById("message-text").textContent = current[1];
+      message.dataset.tone = current[2]; message.setAttribute("role", ["error", "permission"].includes(value) ? "alert" : "status");
+      document.getElementById("skeleton").hidden = value !== "loading";
+    }
+    state.addEventListener("change", render);
+    const nav = document.getElementById("shell-nav"), toggle = document.getElementById("nav-toggle");
+    function closeNav(returnFocus = false) { nav.dataset.open = "false"; toggle.setAttribute("aria-expanded", "false"); toggle.textContent = "بخش‌ها را باز کنید"; if (returnFocus) toggle.focus(); }
+    toggle.addEventListener("click", () => { if (nav.dataset.open === "true") closeNav(true); else { nav.dataset.open = "true"; toggle.setAttribute("aria-expanded", "true"); toggle.textContent = "بخش‌ها را ببندید"; nav.querySelector("a").focus(); } });
+    nav.addEventListener("click", (event) => { if (event.target.closest("a") && matchMedia("(max-width: 760px)").matches) closeNav(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && nav.dataset.open === "true") { closeNav(true); event.preventDefault(); } });
+    render();
+  </script>
+</body>
+</html>

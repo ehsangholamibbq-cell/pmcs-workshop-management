@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   listOperationIssues,
   resolveConflictOperation,
@@ -15,94 +15,158 @@ import {
   type LocalSyncDiagnostics,
   type SyncDeviceModel,
 } from "@/lib/sync-client";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { readSyncRecoveryState, type LocalSyncRecoveryState } from "@/lib/sync-recovery";
 
 interface SyncIssuesPanelProps {
   readonly apiBaseUrl: string;
+  readonly tenantId: string;
+  readonly userId: string;
   readonly projectId: string;
+  readonly isOnline: boolean;
   readonly refreshToken: number;
 }
 
-export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIssuesPanelProps) {
+export function SyncIssuesPanel({ apiBaseUrl, tenantId, userId, projectId, isOnline, refreshToken }: SyncIssuesPanelProps) {
+  const readScope = `${apiBaseUrl}:${tenantId}:${userId}:${projectId}:${refreshToken}`;
   const [issues, setIssues] = useState<readonly OperationIssue[]>([]);
   const [attachmentIssues, setAttachmentIssues] = useState<readonly AttachmentIssue[]>([]);
   const [diagnostics, setDiagnostics] = useState<LocalSyncDiagnostics | null>(null);
   const [recovery, setRecovery] = useState<LocalSyncRecoveryState | null>(null);
   const [devices, setDevices] = useState<readonly SyncDeviceModel[]>([]);
   const [loadingFailed, setLoadingFailed] = useState(false);
+  const [localReady, setLocalReady] = useState(false);
+  const [localScope, setLocalScope] = useState<string | null>(null);
+  const [deviceReadState, setDeviceReadState] = useState<"loading" | "current" | "offline" | "unavailable" | "forbidden">("loading");
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const readSequence = useRef(0);
+  const currentReadSequence = useRef(0);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
+  const [commandAccessRevoked, setCommandAccessRevoked] = useState(false);
   const [currentDeviceId, setCurrentDeviceId] = useState("");
-  const [localRefresh, setLocalRefresh] = useState(0);
 
-  const load = useCallback(async () => {
-    const [items, attachments, localDiagnostics, recoveryState] = await Promise.all([
-      listOperationIssues(projectId),
-      listAttachmentIssues(projectId),
-      readLocalSyncDiagnostics(projectId),
-      readSyncRecoveryState(projectId),
-    ]);
-    setIssues(items);
-    setAttachmentIssues(attachments);
-    setDiagnostics(localDiagnostics);
-    setRecovery(recoveryState);
-    setCurrentDeviceId(getOrCreateDeviceId());
-
-    if (typeof navigator !== "undefined" && navigator.onLine) {
-      setDevices(await listSyncDevices(apiBaseUrl));
-    }
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    currentReadSequence.current = 0;
+    setVisibleScope(null);
+    setDevices([]);
+    setMessage("");
+    setCommandAccessRevoked(false);
+    setLocalReady(false);
+    setLocalScope(null);
     setLoadingFailed(false);
-  }, [apiBaseUrl, projectId]);
+    setDeviceReadState(isOnline ? "loading" : "offline");
+    try {
+      const [items, attachments, localDiagnostics, recoveryState] = await Promise.all([
+        listOperationIssues(projectId),
+        listAttachmentIssues(projectId),
+        readLocalSyncDiagnostics(projectId),
+        readSyncRecoveryState(projectId),
+      ]);
+      if (requestId !== readSequence.current) return false;
+      setIssues(items);
+      setAttachmentIssues(attachments);
+      setDiagnostics(localDiagnostics);
+      setRecovery(recoveryState);
+      setCurrentDeviceId(getOrCreateDeviceId());
+      setLocalReady(true);
+      setLocalScope(readScope);
+    } catch {
+      if (requestId !== readSequence.current) return false;
+      setIssues([]);
+      setAttachmentIssues([]);
+      setDiagnostics(null);
+      setRecovery(null);
+      setLoadingFailed(true);
+      setLocalScope(readScope);
+    }
+
+    if (!isOnline) {
+      setVisibleScope(readScope);
+      return false;
+    }
+    try {
+      const result = await listSyncDevices(apiBaseUrl);
+      if (requestId !== readSequence.current) return false;
+      currentReadSequence.current = requestId;
+      setDevices(result);
+      setDeviceReadState("current");
+    } catch (error) {
+      if (requestId !== readSequence.current) return false;
+      setDeviceReadState(error instanceof ApiRequestError && [401, 403, 404].includes(error.status)
+        ? "forbidden" : "unavailable");
+    }
+    setVisibleScope(readScope);
+    return currentReadSequence.current === requestId;
+  }, [apiBaseUrl, isOnline, projectId, readScope]);
 
   useEffect(() => {
-    let active = true;
-    const timeoutId = window.setTimeout(() => {
-      void load().catch(() => {
-        if (active) setLoadingFailed(true);
-      });
-    }, 0);
-    return () => {
-      active = false;
-      window.clearTimeout(timeoutId);
-    };
-  }, [load, localRefresh, refreshToken]);
+    const timeoutId = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [load, refreshToken]);
+
+  const effectiveDeviceState = !isOnline ? "offline" : visibleScope === readScope ? deviceReadState : "loading";
+  const visibleIssues = localReady && localScope === readScope ? issues : [];
+  const visibleAttachmentIssues = localReady && localScope === readScope ? attachmentIssues : [];
+  const visibleDevices = effectiveDeviceState === "current" ? devices : [];
+
+  function revokeAccess() {
+    readSequence.current += 1;
+    currentReadSequence.current = 0;
+    setDevices([]);
+    setDeviceReadState("forbidden");
+    setVisibleScope(readScope);
+    setMessage("");
+    setCommandAccessRevoked(true);
+  }
 
   async function resolve(issue: OperationIssue, resolution: "keep-server" | "reapply") {
+    if (!isOnline || effectiveDeviceState !== "current" || busy ||
+      currentReadSequence.current !== readSequence.current) return;
+    const commandSequence = readSequence.current;
     setBusy(issue.operationId);
     setMessage("");
     try {
       await resolveConflictOperation(apiBaseUrl, projectId, issue.operationId, resolution);
-      setMessage(resolution === "keep-server"
+      if (commandSequence !== readSequence.current) return;
+      if (await load()) setMessage(resolution === "keep-server"
         ? "نسخه رسمی سرور پذیرفته و قصد محلی بایگانی شد."
         : "قصد محلی با شناسه جدید و نسخه فعلی سرور دوباره در صف قرار گرفت.");
-      setLocalRefresh((value) => value + 1);
     } catch (error) {
-      setMessage(toUserMessage(error, "تعیین تکلیف تعارض انجام نشد."));
+      if (commandSequence !== readSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) revokeAccess();
+      else setMessage(toUserMessage(error, "تعیین تکلیف تعارض انجام نشد."));
     } finally {
       setBusy("");
     }
   }
 
   async function revoke(device: SyncDeviceModel) {
+    if (!isOnline || effectiveDeviceState !== "current" || busy ||
+      currentReadSequence.current !== readSequence.current ||
+      !devices.some((candidate) => candidate.registrationId === device.registrationId)) return;
+    const commandSequence = readSequence.current;
     setBusy(device.registrationId);
     setMessage("");
     try {
       await revokeSyncDevice(apiBaseUrl, device, "لغو دسترسی دستگاه توسط صاحب حساب");
-      setMessage("نشست‌ها و مجوزهای آفلاین دستگاه لغو شدند.");
-      setLocalRefresh((value) => value + 1);
+      if (commandSequence !== readSequence.current) return;
+      if (await load()) setMessage("نشست‌ها و مجوزهای آفلاین دستگاه لغو شدند.");
     } catch (error) {
-      setMessage(toUserMessage(error, "لغو دسترسی دستگاه انجام نشد."));
+      if (commandSequence !== readSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) revokeAccess();
+      else setMessage(toUserMessage(error, "لغو دسترسی دستگاه انجام نشد."));
     } finally {
       setBusy("");
     }
   }
 
-  const issueCount = issues.length + attachmentIssues.length;
+  const issueCount = visibleIssues.length + visibleAttachmentIssues.length;
 
   return (
-    <article className="operational-card" data-testid="sync-recovery-center" data-project-id={projectId}>
+    <article className="operational-card sync-recovery-center" data-testid="sync-recovery-center" data-project-id={projectId} data-device-read-state={effectiveDeviceState}>
       <div className="card-heading">
         <div>
           <p className="eyebrow">مرکز تعارض و همگام‌سازی</p>
@@ -113,7 +177,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
         </span>
       </div>
 
-      {diagnostics && (
+      {localReady && localScope === readScope && diagnostics && (
         <div className="metric-row">
           <div>
             <strong>{diagnostics.lastPushAt ? formatDeviceTime(diagnostics.lastPushAt) : "—"}</strong>
@@ -130,7 +194,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
         </div>
       )}
 
-      {recovery && (
+      {localReady && localScope === readScope && recovery && (
         <div className="sync-recovery-summary" data-testid="sync-recovery-status" data-sync-phase={recovery.phase}>
           <strong>{recoveryPhaseLabel(recovery.phase)}</strong>
           <span>{consistencyLabel(recovery.consistency)}</span>
@@ -141,24 +205,26 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
         </div>
       )}
 
-      {diagnostics?.clockSkewWarning && (
+      {localReady && localScope === readScope && diagnostics?.clockSkewWarning && (
         <p className="calculation-note" role="alert">
           ساعت دستگاه با سرور اختلاف قابل‌توجه دارد؛ زمان رسمی پذیرش همچنان زمان سرور است.
         </p>
       )}
-      {diagnostics?.bootstrapRequired && (
+      {localReady && localScope === readScope && diagnostics?.bootstrapRequired && (
         <p className="calculation-note">
           نقطه کنترل محلی با سرور یکسان نبود؛ دریافت کنترل‌شده از ابتدای داده مجاز انجام می‌شود.
         </p>
       )}
 
-      {loadingFailed ? (
-        <p className="muted">خواندن وضعیت محلی ممکن نشد.</p>
+      {localScope === readScope && loadingFailed ? (
+        <p className="calculation-note" role="alert">خواندن وضعیت محلی ممکن نشد.</p>
+      ) : !localReady || localScope !== readScope ? (
+        <p className="muted" role="status">در حال بررسی صف محلی همین دستگاه…</p>
       ) : issueCount === 0 ? (
         <p className="muted">تعارض یا عملیات ردشده‌ای روی این دستگاه وجود ندارد.</p>
       ) : (
         <div className="issue-list">
-          {issues.map((issue) => (
+          {visibleIssues.map((issue) => (
             <div className="issue-item" key={issue.operationId}>
               <div>
                 <strong>{issue.status === "conflict" ? "تعارض" : "ردشده"}</strong>
@@ -168,7 +234,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
                     <button
                       className="secondary-button"
                       type="button"
-                      disabled={busy === issue.operationId}
+                      disabled={busy === issue.operationId || effectiveDeviceState !== "current"}
                       onClick={() => void resolve(issue, "keep-server")}
                     >
                       پذیرش نسخه رسمی سرور
@@ -177,7 +243,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
                       <button
                         className="secondary-button"
                         type="button"
-                        disabled={busy === issue.operationId}
+                        disabled={busy === issue.operationId || effectiveDeviceState !== "current"}
                         onClick={() => void resolve(issue, "reapply")}
                       >
                         بازاعمال روی نسخه فعلی
@@ -189,7 +255,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
               <small>{formatDeviceTime(issue.createdAtDevice)}</small>
             </div>
           ))}
-          {attachmentIssues.map((issue) => (
+          {visibleAttachmentIssues.map((issue) => (
             <div className="issue-item" key={issue.attachmentId}>
               <div>
                 <strong>مدرک ردشده · {issue.originalFileName}</strong>
@@ -201,11 +267,23 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
         </div>
       )}
 
-      {devices.length > 0 && (
+      <p className="device-read-message" role={effectiveDeviceState === "unavailable" || effectiveDeviceState === "forbidden" ? "alert" : "status"}>
+        {effectiveDeviceState === "loading" ? "در حال دریافت دستگاه‌های ثبت‌شده از سرور…" :
+          effectiveDeviceState === "offline" ? "صف و تعارض‌های این دستگاه محلی‌اند؛ فهرست و لغو دستگاه‌های حساب فقط با اتصال و پاسخ جاری سرور ممکن است." :
+          effectiveDeviceState === "unavailable" ? "فهرست دستگاه‌های حساب دریافت نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود." :
+          effectiveDeviceState === "forbidden" ? commandAccessRevoked
+            ? "فرمان انجام نشد؛ دسترسی دوباره تأیید نشد و داده و فرمان قبلی نمایش داده نمی‌شود."
+            : "دسترسی به دستگاه‌های حساب تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود." :
+          visibleDevices.length ? "دستگاه‌های حساب با پاسخ جاری سرور تأیید شدند." : "دستگاه ثبت‌شده‌ای برای این حساب گزارش نشد."}
+      </p>
+      {isOnline && (effectiveDeviceState === "unavailable" || effectiveDeviceState === "forbidden") &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت دستگاه‌ها</button>}
+
+      {visibleDevices.length > 0 && (
         <details>
           <summary>دستگاه‌های ثبت‌شده این حساب</summary>
           <div className="issue-list">
-            {devices.map((device) => (
+            {visibleDevices.map((device) => (
               <div className="issue-item" key={device.registrationId}>
                 <div>
                   <strong>{device.displayName}{device.deviceId === currentDeviceId ? " · دستگاه جاری" : ""}</strong>
@@ -216,7 +294,7 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
                     <button
                       className="secondary-button"
                       type="button"
-                      disabled={busy === device.registrationId}
+                      disabled={busy === device.registrationId || effectiveDeviceState !== "current"}
                       onClick={() => void revoke(device)}
                     >
                       لغو نشست و مجوز آفلاین
@@ -229,7 +307,8 @@ export function SyncIssuesPanel({ apiBaseUrl, projectId, refreshToken }: SyncIss
         </details>
       )}
 
-      {message && <p className="calculation-note" aria-live="polite">{message}</p>}
+      {message && visibleScope === readScope && effectiveDeviceState === "current" &&
+        <p className="calculation-note" aria-live="polite">{message}</p>}
       <p className="microcopy">
         موارد تعارض خودکار حل نمی‌شوند. لغو دستگاه در نخستین اتصال بعدی اثر می‌کند و پاک‌سازی از راه دور روی دستگاه کاملاً آفلاین تضمین‌پذیر نیست.
       </p>

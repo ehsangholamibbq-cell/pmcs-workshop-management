@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PersianDateInput } from "@/components/persian-date-input";
 import { FinanceCompletionPanel } from "@/components/finance-completion-panel";
 import {
@@ -27,7 +27,7 @@ import {
   type PurchaseOrderModel,
 } from "@/lib/commercial";
 import { listProjectLocations, type ProjectLocationModel } from "@/lib/projects";
-import { formatAmountFa, toUserMessage } from "@/lib/localization";
+import { ApiRequestError, formatAmountFa, toUserMessage } from "@/lib/localization";
 import { formatPersianDate, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 
 interface FinanceControlProps {
@@ -65,6 +65,8 @@ export function FinanceControl(props: FinanceControlProps) {
   const [baselineAmount, setBaselineAmount] = useState("");
   const [baselineNotes, setBaselineNotes] = useState("");
   const [message, setMessage] = useState("در حال دریافت وضعیت مالی…");
+  const [readState, setReadState] = useState<"loading" | "current" | "unavailable" | "forbidden" | "offline">("loading");
+  const readSequence = useRef(0);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const identity = useMemo(
@@ -73,11 +75,22 @@ export function FinanceControl(props: FinanceControlProps) {
   );
 
   const load = useCallback(async () => {
+    const requestId = ++readSequence.current;
+    setRecords([]);
+    setBaselines([]);
+    setState(null);
+    setContracts([]);
+    setCommitments([]);
+    setParties([]);
+    setLocations([]);
     if (!props.isOnline) {
+      setReadState("offline");
       setMessage("کنترل مالی پایه در این نسخه برای واحد مالی و هنگام اتصال به سرور در دسترس است.");
       return;
     }
 
+    setReadState("loading");
+    setMessage("در حال دریافت وضعیت مالی…");
     try {
       const [currentRecords, currentBaselines, currentState, currentContracts, currentCommitments, currentParties, currentLocations] = await Promise.all([
         listFinancialRecords(props.apiBaseUrl, identity, props.projectId),
@@ -88,6 +101,7 @@ export function FinanceControl(props: FinanceControlProps) {
         listParties(props.apiBaseUrl, identity, props.projectId),
         listProjectLocations(props.apiBaseUrl, identity, props.projectId),
       ]);
+      if (requestId !== readSequence.current) return;
       setRecords(currentRecords);
       setBaselines(currentBaselines);
       setState(currentState);
@@ -95,9 +109,14 @@ export function FinanceControl(props: FinanceControlProps) {
       setCommitments(currentCommitments);
       setParties(currentParties);
       setLocations(currentLocations);
+      setReadState("current");
       setMessage(financialStateMessage(currentState));
     } catch (error) {
-      setMessage(toUserMessage(error, "داده مالی از سرور دریافت نشد یا دسترسی این کاربر محدود است."));
+      if (requestId !== readSequence.current) return;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به کنترل مالی این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "داده مالی دریافت نشد."));
     }
   }, [identity, props.apiBaseUrl, props.isOnline, props.projectId]);
 
@@ -106,8 +125,24 @@ export function FinanceControl(props: FinanceControlProps) {
     return () => window.clearTimeout(timeoutId);
   }, [load, props.refreshToken]);
 
+  function handleCommandError(error: unknown, fallback: string) {
+    if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+      readSequence.current += 1;
+      setRecords([]);
+      setBaselines([]);
+      setState(null);
+      setContracts([]);
+      setCommitments([]);
+      setParties([]);
+      setLocations([]);
+      setReadState("forbidden");
+      setMessage("دسترسی به کنترل مالی این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+    } else setMessage(toUserMessage(error, fallback));
+  }
+
   async function createRecord(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const parsedAmount = Number(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || !description.trim()) {
       setMessage("مبلغ مثبت و شرح واقعی سند الزامی است.");
@@ -146,13 +181,14 @@ export function FinanceControl(props: FinanceControlProps) {
       await load();
       props.onChanged?.();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت سند مالی ناموفق بود."));
+      handleCommandError(error, "ثبت سند مالی ناموفق بود.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function moveRecord(record: FinancialRecordModel, action: "submit" | "post" | "return") {
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const comment = action === "return" ? window.prompt("دلیل عودت سند برای اصلاح") ?? "" : "";
     if (action === "return" && !comment.trim()) {
       setMessage("عودت سند بدون دلیل انجام نشد.");
@@ -165,13 +201,14 @@ export function FinanceControl(props: FinanceControlProps) {
       await load();
       props.onChanged?.();
     } catch (error) {
-      setMessage(toUserMessage(error, "تغییر وضعیت سند ناموفق بود."));
+      handleCommandError(error, "تغییر وضعیت سند ناموفق بود.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function editRecord(record: FinancialRecordModel) {
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const revisedDescription = window.prompt("شرح اصلاح‌شده سند", record.description);
     if (revisedDescription === null || !revisedDescription.trim()) return;
     const revisedAmountText = window.prompt("مبلغ اصلاح‌شده", String(record.amount));
@@ -193,7 +230,7 @@ export function FinanceControl(props: FinanceControlProps) {
       );
       await load();
     } catch (error) {
-      setMessage(toUserMessage(error, "اصلاح سند ناموفق بود."));
+      handleCommandError(error, "اصلاح سند ناموفق بود.");
     } finally {
       setBusyId(null);
     }
@@ -201,6 +238,7 @@ export function FinanceControl(props: FinanceControlProps) {
 
   async function createBaseline(event: FormEvent) {
     event.preventDefault();
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const parsedAmount = Number(baselineAmount);
     if (!baselineTitle.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setMessage("عنوان و مبلغ مثبت برای پیش‌نویس بودجه الزامی است.");
@@ -222,13 +260,14 @@ export function FinanceControl(props: FinanceControlProps) {
       setBaselineNotes("");
       await load();
     } catch (error) {
-      setMessage(toUserMessage(error, "ثبت پیش‌نویس بودجه ناموفق بود."));
+      handleCommandError(error, "ثبت پیش‌نویس بودجه ناموفق بود.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function moveBaseline(baseline: BudgetBaselineModel, action: "submit" | "approve" | "return") {
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const comment = action === "return" ? window.prompt("دلیل عودت بودجه برای اصلاح") ?? "" : "";
     if (action === "return" && !comment.trim()) {
       setMessage("عودت بودجه بدون دلیل انجام نشد.");
@@ -241,13 +280,14 @@ export function FinanceControl(props: FinanceControlProps) {
       await load();
       props.onChanged?.();
     } catch (error) {
-      setMessage(toUserMessage(error, "تغییر وضعیت بودجه ناموفق بود."));
+      handleCommandError(error, "تغییر وضعیت بودجه ناموفق بود.");
     } finally {
       setBusyId(null);
     }
   }
 
   async function editBaseline(baseline: BudgetBaselineModel) {
+    if (!props.isOnline || readState !== "current" || busyId !== null) return;
     const revisedTitle = window.prompt("عنوان اصلاح‌شده بودجه", baseline.title);
     if (revisedTitle === null || !revisedTitle.trim()) return;
     const revisedAmountText = window.prompt("مبلغ اصلاح‌شده بودجه", String(baseline.amount));
@@ -269,14 +309,23 @@ export function FinanceControl(props: FinanceControlProps) {
       );
       await load();
     } catch (error) {
-      setMessage(toUserMessage(error, "اصلاح بودجه ناموفق بود."));
+      handleCommandError(error, "اصلاح بودجه ناموفق بود.");
     } finally {
       setBusyId(null);
     }
   }
 
+  if (readState !== "current") return (
+    <article className="operational-card finance-control" id="finance" data-testid="finance-control" data-read-state={readState}>
+      <div className="card-heading"><div><p className="eyebrow">کنترل مالی پایه</p><h2>واقعیت مالی و کنترل تنخواه</h2></div></div>
+      <p className="microcopy" role={readState === "loading" || readState === "offline" ? "status" : "alert"}>{message}</p>
+      {props.isOnline && readState !== "loading" &&
+        <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت کنترل مالی</button>}
+    </article>
+  );
+
   return (
-    <article className="operational-card finance-control" id="finance">
+    <article className="operational-card finance-control" id="finance" data-testid="finance-control" data-read-state={readState}>
       <div className="card-heading">
         <div>
           <p className="eyebrow">کنترل مالی پایه</p>

@@ -19,6 +19,7 @@ internal static partial class TechnicalOfficeEndpoints
         group.MapPost("/document-revisions/{revisionId:guid}/submit", SubmitDocumentRevisionAsync);
         group.MapPost("/document-revisions/{revisionId:guid}/approve", ApproveDocumentRevisionAsync);
         group.MapPost("/document-revisions/{revisionId:guid}/return", ReturnDocumentRevisionAsync);
+        group.MapGet("/document-revisions/{revisionId:guid}/content", ReadConvertedRevisionContentAsync);
         group.MapPost("/transmittals", CreateTransmittalAsync);
         group.MapPost("/transmittals/{transmittalId:guid}/issue", IssueTransmittalAsync);
         group.MapPost("/transmittals/{transmittalId:guid}/acknowledge", AcknowledgeTransmittalAsync);

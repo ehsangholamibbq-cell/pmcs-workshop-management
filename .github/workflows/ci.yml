@@ -12,17 +12,33 @@ permissions:
 jobs:
   architecture:
     runs-on: ubuntu-latest
+    env:
+      PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
       - run: node tools/qa/regression-runner.mjs run architecture
+      - name: Record V1.1 candidate preflight
+        run: node tools/qa/v1.1-candidate-preflight.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qa-regression-architecture
           path: artifacts/qa/regression/architecture.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g4-consumer-inventory
+          path: artifacts/qa/vx-g4-consumers.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-candidate-manifest
+          path: artifacts/qa/v1.1-evidence/candidate-manifest*
           if-no-files-found: error
 
   backend:
@@ -36,11 +52,36 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: node tools/qa/regression-runner.mjs run backend
+        env:
+          PMCS_PDF_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F02_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F03_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F04_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F05_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F06_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_F07_RENDER_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+          PMCS_MS48_FONT_QUALIFICATION_OUTPUT: ${{ github.workspace }}/artifacts/qa/ms48-font-golden
+      - name: Render isolated MS45 PDF and XLSX font review
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: dotnet run --project tools/qa/FontReview/FontReview.csproj --configuration Release -- --output artifacts/qa/ms45-font-review
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qa-regression-backend
           path: artifacts/qa/regression/backend.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms48-font-golden-candidate
+          path: artifacts/qa/ms48-font-golden/
+          if-no-files-found: ignore
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms45-font-review
+          path: artifacts/qa/ms45-font-review/
           if-no-files-found: error
 
   integration:
@@ -83,8 +124,15 @@ jobs:
       PGPORT: 5432
       PGUSER: pmcs
       PGPASSWORD: pmcs_integration_only
+      PMCS_V1_UPGRADE_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_v1_upgrade;Username=pmcs;Password=pmcs_integration_only
+      PMCS_V1_UPGRADE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_v1_upgrade
+      PMCS_V1_RESTORE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_v1_upgrade
+      PMCS_V1_INTERRUPT_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_restore_drill_v1_interrupted;Username=pmcs;Password=pmcs_integration_only
+      PMCS_V1_INTERRUPT_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_v1_interrupted
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -93,11 +141,12 @@ jobs:
           dotnet-version: 10.0.x
       - name: Start isolated object storage
         run: |
+          docker build --tag pmcs-integration-minio:local --file deploy/minio/Dockerfile .
           docker run --detach --name pmcs-integration-minio \
             --publish 9000:9000 \
             --env MINIO_ROOT_USER=pmcs_integration \
             --env MINIO_ROOT_PASSWORD=pmcs_integration_only \
-            quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z@sha256:d249d1fb6966de4d8ad26c04754b545205ff15a62e4fd19ebd0f26fa5baacbc0 server /data
+            pmcs-integration-minio:local server /data
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
               exit 0
@@ -113,6 +162,12 @@ jobs:
         with:
           name: qa-regression-integration
           path: artifacts/qa/regression/integration.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-int1-dormant
+          path: artifacts/qa/v1.1-evidence/
           if-no-files-found: error
       - if: failure()
         run: docker logs pmcs-integration-minio || true
@@ -136,6 +191,8 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
+    env:
+      PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -148,10 +205,16 @@ jobs:
           name: qa-regression-web
           path: artifacts/qa/regression/web.json
           if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g5-build-budget
+          path: artifacts/qa/vx-g5-build-budget.json
+          if-no-files-found: error
 
   ui-e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       CI: "true"
       PMCS_DEMO_USER_PASSWORD: Pmcs-E2E-only-2026!
@@ -159,6 +222,7 @@ jobs:
       PMCS_E2E_USER_PASSWORD: Pmcs-E2E-only-2026!
       PMCS_E2E_ADMIN_CLIENT_SECRET: identity_admin_dev_only
       PMCS_E2E_BASE_URL: http://localhost:3000
+      PMCS_GENERAL_PERMIT_LIMIT: "10000"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -166,11 +230,21 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: src/web/package-lock.json
-      - name: Install Web and Chromium dependencies
+      - name: Install Web and browser dependencies
         working-directory: src/web
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox webkit
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin V1.1 Candidate release identity
+        run: |
+          echo "PMCS_RELEASE_COMMIT=${{ github.event.pull_request.head.sha || github.sha }}" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_VERSION=1.1.0" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_BUILT_AT=$(date -u -d "$(git show -s --format=%cI HEAD)" '+%Y-%m-%dT%H:%M:%S.000Z')" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_REQUIRED=true" >> "$GITHUB_ENV"
       - name: Start isolated full application stack
         run: docker compose up --detach --build
       - name: Wait for OIDC, API and Web readiness
@@ -185,10 +259,24 @@ jobs:
           done
           docker compose ps
           exit 1
+      - name: Verify built API and Web release identity
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/qa/v1.1-release-build-evidence.mjs
       - name: Prepare isolated OIDC browser fixture
         run: node tools/qa/prepare-ui-e2e.mjs
       - name: Verify real browser login, RTL, responsive and offline recovery
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node tools/qa/regression-runner.mjs run ui-e2e
+      - name: Verify complete VX-G1 screenshot inventory and record SHA-256 index
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/qa/visual-baseline.mjs verify
+      - name: Verify V1.1 visual, print and accessibility candidate evidence
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/qa/v1.1-visual-evidence.mjs
       - if: failure()
         run: docker compose logs --no-color
       - if: always()
@@ -198,6 +286,365 @@ jobs:
         with:
           name: qa-regression-ui-e2e
           path: artifacts/qa/regression/ui-e2e.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-visual-evidence
+          path: artifacts/qa/v1.1-evidence/browser-visual-print-a11y*
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-release-build
+          path: artifacts/qa/v1.1-evidence/release-build.artifact.json
+          if-no-files-found: error
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ui-e2e-failure-context
+          path: |
+            src/web/test-results/**/error-context.md
+            src/web/test-results/**/*.png
+          if-no-files-found: ignore
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-current-ui-tour
+          path: src/web/artifacts/visual-tour/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms44-prototype-review
+          path: src/web/artifacts/ms44-prototype/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms47-component-states
+          path: src/web/artifacts/ms47-component-states/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms49-system-states
+          path: src/web/artifacts/ms49-system-states/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms50-vx-g3-review
+          path: src/web/artifacts/ms50-vx-g3-review/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms51-overlays-and-rows
+          path: src/web/artifacts/ms51-overlays-and-rows/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms52-composition
+          path: src/web/artifacts/ms52-composition/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms53-vx-g3-owner-review
+          path: src/web/artifacts/ms53-vx-g3-owner-review/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms54-owner-followups
+          path: src/web/artifacts/ms54-owner-followups/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms55-profile-privacy
+          path: src/web/artifacts/ms55-profile-privacy/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms56-duplication-wizard
+          path: src/web/artifacts/ms56-duplication-wizard/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms57-attachment-evidence
+          path: src/web/artifacts/ms57-attachment-evidence/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms58-reporting-print
+          path: src/web/artifacts/ms58-reporting-print/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms59-intelligence-concept
+          path: src/web/artifacts/ms59-intelligence-concept/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms60-form-filter-states
+          path: src/web/artifacts/ms60-form-filter-states/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms61-owner-review
+          path: src/web/artifacts/ms61-owner-review/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms62-dense-print
+          path: src/web/artifacts/ms62-dense-print/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms64-portfolio-navigation
+          path: src/web/artifacts/ms64-portfolio-navigation/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms65-project-navigation
+          path: src/web/artifacts/ms65-project-navigation/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms66-shell-navigation
+          path: src/web/artifacts/ms66-shell-navigation/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms67-profile-feedback
+          path: src/web/artifacts/ms67-profile-feedback/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms68-identity-feedback
+          path: src/web/artifacts/ms68-identity-feedback/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms69-permission-preview
+          path: src/web/artifacts/ms69-permission-preview/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms70-login-admin-feedback
+          path: src/web/artifacts/ms70-login-admin-feedback/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms71-bootstrap-source-truth
+          path: src/web/artifacts/ms71-bootstrap-source-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms72-bootstrap-busy
+          path: src/web/artifacts/ms72-bootstrap-busy/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms73-reporting-feedback
+          path: src/web/artifacts/ms73-reporting-feedback/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms74-my-work-truth
+          path: src/web/artifacts/ms74-my-work-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms75-chat-refresh-truth
+          path: src/web/artifacts/ms75-chat-refresh-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms76-portfolio-refresh-truth
+          path: src/web/artifacts/ms76-portfolio-refresh-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms77-project-access-truth
+          path: src/web/artifacts/ms77-project-access-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms78-project-list-truth
+          path: src/web/artifacts/ms78-project-list-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms79-technical-read-truth
+          path: src/web/artifacts/ms79-technical-read-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms80-daily-history-truth
+          path: src/web/artifacts/ms80-daily-history-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms81-planning-progress-truth
+          path: src/web/artifacts/ms81-planning-progress-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms82-planning-basis-truth
+          path: src/web/artifacts/ms82-planning-basis-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms83-finance-control-truth
+          path: src/web/artifacts/ms83-finance-control-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms84-finance-completion-truth
+          path: src/web/artifacts/ms84-finance-completion-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms85-commercial-control-truth
+          path: src/web/artifacts/ms85-commercial-control-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms86-supply-reality-truth
+          path: src/web/artifacts/ms86-supply-reality-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms87-governance-read-truth
+          path: src/web/artifacts/ms87-governance-read-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms88-today-report-truth
+          path: src/web/artifacts/ms88-today-report-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms88-project-calendar-truth
+          path: src/web/artifacts/ms88-project-calendar-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms89-project-locations-read-truth
+          path: src/web/artifacts/ms89-project-locations-read-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms92-attention-triage-read-truth
+          path: src/web/artifacts/ms92-attention-triage-read-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms90-quality-safety-truth
+          path: src/web/artifacts/ms90-quality-safety-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms91-advisory-read-truth
+          path: src/web/artifacts/ms91-advisory-read-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms93-sync-device-read-truth
+          path: src/web/artifacts/ms93-sync-device-read-truth/
+          if-no-files-found: error
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms96-chat-event-refresh-truth
+          path: src/web/artifacts/ms96-chat-event-refresh-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms94-reality-capture-location-truth
+          path: src/web/artifacts/ms94-reality-capture-location-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms95-evidence-capture-feedback
+          path: src/web/artifacts/ms95-evidence-capture-feedback/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms97-local-evidence-access-truth
+          path: src/web/artifacts/ms97-local-evidence-access-truth/
+          if-no-files-found: error
+
+      - if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms98-chat-secondary-read-truth
+          path: src/web/artifacts/ms98-chat-secondary-read-truth/
+          if-no-files-found: error
+      - name: Upload Chat command, draft and access evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-ms99-chat-command-draft
+          path: src/web/artifacts/ms99-chat-command-draft/
+          if-no-files-found: error
+      - name: Upload independent G5 browser qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-vx-g5-browser-qualification
+          path: src/web/artifacts/vx-g5/
           if-no-files-found: error
 
   identity-container:
@@ -251,6 +698,13 @@ jobs:
           pattern: qa-regression-*
           path: artifacts/qa/regression
           merge-multiple: true
+      - name: Download V1.1 Candidate and dormant INT1 evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pmcs-v1.1-*
+          path: artifacts/qa/v1.1-evidence
+          merge-multiple: true
       - name: Generate fail-closed PMCS V1 qualification report
         env:
           PMCS_EXPECTED_COMMIT: ${{ github.sha }}
@@ -263,9 +717,42 @@ jobs:
           PMCS_JOB_RESULT_UI_E2E: ${{ needs['ui-e2e'].result }}
           PMCS_JOB_RESULT_IDENTITY_CONTAINER: ${{ needs['identity-container'].result }}
         run: node tools/qa/test-report-generator.mjs
+      - name: Link tested V1.1 domains to connected regression evidence
+        run: |
+          test -f artifacts/qa/v1.1-evidence/candidate-manifest.json
+          test -f artifacts/qa/v1.1-evidence/int1-dormant.json
+          node tools/qa/v1.1-domain-evidence.mjs
+      - name: Download Web build budget
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: pmcs-vx-g5-build-budget
+          path: artifacts/qa/v1.1-build-budget
+      - name: Verify V1.1 artifact digests and build identity
+        run: node tools/qa/v1.1-artifact-digests.mjs
+      - name: Generate fail-closed PMCS V1.1 qualification report
+        if: always()
+        env:
+          PMCS_EXPECTED_COMMIT: ${{ github.sha }}
+          PMCS_WORKFLOW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          export PMCS_EXPECTED_TREE="$(git rev-parse HEAD^{tree})"
+          node tools/qa/v1.1-test-report-generator.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pmcs-v1-qualification-report
           path: artifacts/qa/qualification/
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-qa1-evidence
+          path: artifacts/qa/v1.1-evidence/
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-qualification-report
+          path: artifacts/qa/v1.1-qualification/
           if-no-files-found: error

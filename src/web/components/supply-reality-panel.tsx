@@ -1,9 +1,9 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listPurchaseOrders, type PurchaseOrderModel } from "@/lib/commercial";
 import { scopedStorageKey } from "@/lib/field-database";
-import { toUserMessage } from "@/lib/localization";
+import { ApiRequestError, toUserMessage } from "@/lib/localization";
 import { formatPersianDateTime, todayIsoInProjectTimeZone } from "@/lib/persian-date";
 import {
   acknowledgeMaterialIssue,
@@ -41,8 +41,14 @@ interface SupplyRealityPanelProps {
 
 export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   const identity = useMemo(() => ({ tenantId: props.tenantId, userId: props.userId }), [props.tenantId, props.userId]);
-  const cacheKey = useMemo(() => scopedStorageKey(`pmcs-supply-state:${props.projectId}`), [props.projectId]);
-  const [state, setState] = useState<SupplyStateModel | null>(() => readCache(cacheKey));
+  const cacheKey = scopedStorageKey(`pmcs-supply-state:${props.projectId}`);
+  const readScope = `${props.apiBaseUrl}:${props.tenantId}:${props.userId}:${props.projectId}`;
+  const [state, setState] = useState<SupplyStateModel | null>(null);
+  const [cachedState, setCachedState] = useState<SupplyStateModel | null>(null);
+  const [visibleScope, setVisibleScope] = useState<string | null>(null);
+  const [readState, setReadState] = useState<"loading" | "current" | "cached" | "offline" | "unavailable" | "forbidden">("loading");
+  const effectiveReadState = visibleScope === readScope ? readState : "loading";
+  const readSequence = useRef(0);
   const [orders, setOrders] = useState<readonly PurchaseOrderModel[]>([]);
   const [message, setMessage] = useState("در حال دریافت واقعیت تدارکات و موجودی…");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -111,24 +117,47 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   const [serviceEvidence, setServiceEvidence] = useState("");
   const [serviceComment, setServiceComment] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<boolean> => {
+    const requestId = ++readSequence.current;
+    setState(null);
+    setOrders([]);
+    setCachedState(null);
+    setVisibleScope(null);
     if (!props.isOnline) {
-      setMessage(readCache(cacheKey) ? "نمای ذخیره‌شده نمایش داده می‌شود؛ اقدام رسمی تا اتصال مجدد غیرفعال است." : "برای دریافت واقعیت تدارکات، اتصال به سرور لازم است.");
-      return;
+      const cached = readCache(cacheKey);
+      setCachedState(cached);
+      setVisibleScope(readScope);
+      setReadState(cached ? "cached" : "offline");
+      setMessage(cached ? "نمای ذخیره‌شدهٔ این دستگاه، تأییدنشده و فقط خواندنی است؛ برای فرمان رسمی به پاسخ تازهٔ سرور نیاز است."
+        : "برای دریافت واقعیت تدارکات، اتصال به سرور لازم است.");
+      return false;
     }
+    setReadState("loading");
+    setMessage("در حال دریافت واقعیت تدارکات و موجودی…");
     try {
       const [nextState, nextOrders] = await Promise.all([
         getSupplyState(props.apiBaseUrl, identity, props.projectId),
         listPurchaseOrders(props.apiBaseUrl, identity, props.projectId),
       ]);
+      if (requestId !== readSequence.current) return false;
       setState(nextState);
       setOrders(nextOrders);
       window.localStorage.setItem(cacheKey, JSON.stringify(nextState));
+      setVisibleScope(readScope);
+      setReadState("current");
       setMessage(supplyStateMessage(nextState));
+      return true;
     } catch (error) {
-      setMessage(toUserMessage(error, "دریافت واقعیت تدارکات و موجودی ناموفق بود."));
+      if (requestId !== readSequence.current) return false;
+      const denied = error instanceof ApiRequestError && [401, 403, 404].includes(error.status);
+      if (denied) window.localStorage.removeItem(cacheKey);
+      setVisibleScope(readScope);
+      setReadState(denied ? "forbidden" : "unavailable");
+      setMessage(denied ? "دسترسی به واقعیت تدارکات این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود."
+        : toUserMessage(error, "واقعیت تدارکات و موجودی دریافت نشد."));
+      return false;
     }
-  }, [cacheKey, identity, props.apiBaseUrl, props.isOnline, props.projectId]);
+  }, [cacheKey, identity, props.apiBaseUrl, props.isOnline, props.projectId, readScope]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void load(), 0);
@@ -136,18 +165,27 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
   }, [load, props.refreshToken]);
 
   async function run(id: string, action: () => Promise<unknown>, success: string) {
-    if (!props.isOnline) {
-      setMessage("ثبت رسمی در حالت آفلاین مجاز نیست؛ داده موجود روی سرور تغییری نکرد.");
-      return false;
-    }
+    if (!props.isOnline || effectiveReadState !== "current" || busyId !== null) return false;
+    const commandSequence = readSequence.current;
     setBusyId(id);
     try {
       await action();
+      if (commandSequence !== readSequence.current) return false;
+      if (!await load()) return false;
       setMessage(success);
-      await load();
       props.onChanged?.();
       return true;
     } catch (error) {
+      if (commandSequence !== readSequence.current) return false;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        readSequence.current += 1;
+        setState(null); setOrders([]); setCachedState(null);
+        window.localStorage.removeItem(cacheKey);
+        setVisibleScope(readScope);
+        setReadState("forbidden");
+        setMessage("دسترسی به واقعیت تدارکات این پروژه تأیید نشد؛ دادهٔ قبلی نمایش داده نمی‌شود.");
+        return false;
+      }
       setMessage(toUserMessage(error, "عملیات تدارکات و موجودی ناموفق بود."));
       return false;
     } finally {
@@ -289,10 +327,22 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
     }), "پذیرش خدمت ثبت شد و هیچ موجودی کالایی ایجاد نکرد.");
   }
 
-  return <article className="operational-card supply-reality" id="supply">
+  if (effectiveReadState !== "current") return <article className="operational-card supply-reality" id="supply"
+    data-testid="supply-reality" data-read-state={effectiveReadState}>
+    <div className="card-heading"><div><p className="eyebrow">واقعیت تدارکات و موجودی</p><h2>از دریافت فیزیکی تا مصرف مستند</h2></div></div>
+    <p className="microcopy" role={effectiveReadState === "unavailable" || effectiveReadState === "forbidden" ? "alert" : "status"}>{effectiveReadState === "loading" && visibleScope !== readScope ? "در حال دریافت واقعیت تدارکات و موجودی…" : message}</p>
+    {effectiveReadState === "cached" && cachedState && <div className="finance-metrics supply-metrics" role="group" aria-label="نمای ذخیره‌شدهٔ تأییدنشده">
+      <Metric label="در انتظار بازرسی (ذخیره‌شده)" value={cachedState.pendingInspectionCount} />
+      <Metric label="امانت تسویه‌نشده (ذخیره‌شده)" value={cachedState.unreconciledMaterialIssueCount} />
+    </div>}
+    {props.isOnline && effectiveReadState !== "loading" &&
+      <button className="secondary-button" type="button" onClick={() => void load()}>تلاش دوباره برای دریافت واقعیت تدارکات</button>}
+  </article>;
+
+  return <article className="operational-card supply-reality" id="supply" data-testid="supply-reality" data-read-state={effectiveReadState}>
     <div className="card-heading"><div><p className="eyebrow">واقعیت تدارکات و موجودی</p><h2>از دریافت فیزیکی تا مصرف مستند</h2></div><span className={props.isOnline ? "status-chip positive" : "status-chip warning"}>{props.isOnline ? "برخط و رسمی" : "نمای ذخیره‌شده"}</span></div>
     <p className="microcopy" aria-live="polite">{message}</p>
-    <div className="finance-metrics supply-metrics">
+    <div className="finance-metrics supply-metrics" data-testid="supply-current-metrics">
       <Metric label="در انتظار بازرسی" value={state?.pendingInspectionCount} warning={(state?.pendingInspectionCount ?? 0) > 0} />
       <Metric label="قرنطینه یا مردود" value={(state?.quarantinedReceiptCount ?? 0) + (state?.rejectedReceiptCount ?? 0)} warning={(state?.quarantinedReceiptCount ?? 0) + (state?.rejectedReceiptCount ?? 0) > 0} />
       <Metric label="امانت تسویه‌نشده" value={state?.unreconciledMaterialIssueCount} warning={(state?.unreconciledMaterialIssueCount ?? 0) > 0} />
@@ -349,7 +399,8 @@ export function SupplyRealityPanel(props: SupplyRealityPanelProps) {
     </details>
 
     <details open><summary>موجودی و امانت کارگاه</summary>
-      <div className="stock-table" role="table" aria-label="موجودی رسمی به تفکیک قلم و محل">{state?.stockPositions.length ? state.stockPositions.map((position) => <div className="stock-row" role="row" key={`${position.itemId}:${position.locationId}`}><strong>{labelItem(state, position.itemId)}</strong><span>{labelLocation(state, position.locationId)}</span><span>{position.onHandBaseQuantity.toLocaleString("fa-IR")} {position.baseUnit}</span><small>آخرین حرکت: {dateFa(position.lastMovementAt)}</small></div>) : <p className="empty-state">هنوز موجودی پذیرفته‌شده و ثبت‌شده‌ای وجود ندارد.</p>}</div>
+      {state?.stockPositions.length ? <div className="stock-table" role="table" aria-label="موجودی رسمی به تفکیک قلم و محل">{state.stockPositions.map((position) => <div className="stock-row" role="row" key={`${position.itemId}:${position.locationId}`}><strong role="rowheader">{labelItem(state, position.itemId)}</strong><span role="cell">{labelLocation(state, position.locationId)}</span><span role="cell">{position.onHandBaseQuantity.toLocaleString("fa-IR")} {position.baseUnit}</span><small role="cell">آخرین حرکت: {dateFa(position.lastMovementAt)}</small></div>)}</div>
+        : <div className="stock-table"><p className="empty-state">هنوز موجودی پذیرفته‌شده و ثبت‌شده‌ای وجود ندارد.</p></div>}
       <div className="supply-form-grid">
         <form className="capture-form compact-form" onSubmit={(event) => void submitIssue(event)}><h3>تحویل به اکیپ یا محل مصرف</h3>
           <label className="field">قلم<select value={issueItemId} onChange={(event) => setIssueItemId(event.target.value)}><option value="">انتخاب کنید</option>{activeMaterialItems.map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></label>

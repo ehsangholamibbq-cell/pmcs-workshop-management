@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — انتخاب و پیش‌نمایش تکثیر پروژه</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.7 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --green: #11643b; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; }
+    button, select, input { font: inherit; }
+    button { cursor: pointer; min-height: 44px; }
+    :is(a, button, select, input, summary):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; background: white; padding: .4rem .7rem; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1180px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 84px; height: 58px; object-fit: contain; flex: none; padding: .2rem; border-radius: 9px; background: #fbf8f1; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { width: min(1180px, 100%); margin: auto; padding: 1rem 1rem 3rem; }
+    .note { border: 1px solid #b48b49; border-radius: 10px; padding: .6rem .8rem; background: #fff8e8; color: #51390e; }
+    .steps { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; padding: 0; list-style: none; }
+    .steps li { border: 1px solid #d5e0db; border-radius: 99px; padding: .2rem .65rem; background: white; color: var(--muted); font-size: .8rem; }
+    .steps li[data-active="true"] { border-color: var(--green); color: var(--green); font-weight: 800; }
+    .layout { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; }
+    .card { min-width: 0; border: 1px solid #e9dfcf; border-radius: 14px; padding: 1rem; background: white; }
+    h2 { margin: 0 0 .35rem; font-size: 1.1rem; color: var(--navy); }
+    h3 { margin: .7rem 0 .25rem; font-size: .94rem; color: var(--navy); }
+    p { margin: .25rem 0 .7rem; }
+    .muted { color: var(--muted); font-size: .82rem; }
+    .field { display: grid; gap: .2rem; margin: .75rem 0; font-weight: 700; }
+    select { width: 100%; min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; background: white; padding: .35rem .6rem; color: inherit; }
+    fieldset { border: 0; padding: 0; margin: .7rem 0; }
+    legend { font-weight: 800; margin-bottom: .25rem; }
+    .choice { display: flex; gap: .55rem; align-items: flex-start; padding: .55rem .6rem; border: 1px solid #d5e0db; border-radius: 8px; margin-bottom: .45rem; }
+    .choice:has(input:checked) { border-color: var(--green); background: #f1f8f3; }
+    .choice input { width: 19px; height: 19px; flex: none; margin-top: .2rem; accent-color: var(--green); }
+    .choice span { min-width: 0; }
+    .choice small { display: block; color: var(--muted); font-size: .77rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0; }
+    .primary, .secondary { border-radius: 8px; padding: .4rem .8rem; font-weight: 700; }
+    .primary { border: 1px solid var(--green); background: var(--green); color: white; }
+    .secondary { border: 1px solid #7b8c94; background: white; color: var(--navy); }
+    button:disabled { cursor: not-allowed; border-color: #aeb8b8; background: #e4e9e6; color: #46555b; }
+    .preview-head { display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: .5rem; }
+    .badge { display: inline-block; border-radius: 99px; padding: .15rem .55rem; background: #e0eee5; color: #254c3b; font-size: .75rem; }
+    .badge[data-tone="warning"] { background: #fff1ce; color: #654313; }
+    .badge[data-tone="error"] { background: #ffe9e6; color: #8f2924; }
+    .status { border-right: 4px solid #235c99; border-radius: 8px; background: #f1f6f8; padding: .6rem .8rem; margin: .65rem 0; }
+    .status[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .status[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .status strong { display: block; }
+    .status p { margin: 0; }
+    .skeleton { height: 24px; border-radius: 7px; margin-top: .45rem; background: #dce5e2; }
+    .summary { display: flex; flex-wrap: wrap; gap: .35rem; margin: .6rem 0; }
+    .summary span { border: 1px solid #d5e0db; border-radius: 8px; padding: .25rem .5rem; font-size: .78rem; }
+    .rows { display: grid; gap: .4rem; margin: .55rem 0; }
+    .row { display: grid; grid-template-columns: minmax(95px, .25fr) minmax(0, 1fr); gap: .5rem; border: 1px solid #e9dfcf; border-radius: 8px; padding: .45rem .6rem; }
+    .row strong { color: var(--green); }
+    .row[data-kind="conflict"] strong, .row[data-kind="skipped"] strong { color: #76500f; }
+    .row[data-kind="blocked"] strong { color: #a12d27; }
+    .row p { margin: 0; font-size: .82rem; }
+    details { border-top: 1px solid #e9dfcf; padding-top: .45rem; }
+    details summary { cursor: pointer; min-height: 44px; font-weight: 700; }
+    details ul { margin: .1rem 0 .5rem; padding-right: 1.5rem; }
+    .confirm { margin: .8rem 0; padding: .65rem; border-radius: 8px; border: 1px solid #d5e0db; background: #f8faf8; }
+    .confirm label { display: flex; gap: .5rem; align-items: flex-start; }
+    .confirm input { width: 19px; height: 19px; flex: none; margin-top: .22rem; accent-color: var(--green); }
+    .foot { color: var(--muted); font-size: .8rem; margin-top: 1rem; }
+    dialog { width: min(520px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; border: 1px solid #d5e0db; border-radius: 14px; padding: 1rem; background: white; color: inherit; box-shadow: 0 20px 60px #0c203655; }
+    dialog::backdrop { background: #0c2036aa; }
+    dialog dl { margin: .6rem 0; }
+    dialog dl div { padding: .3rem 0; border-bottom: 1px solid #e9dfcf; }
+    dialog dt { font-weight: 700; }
+    dialog dd { margin: 0; color: var(--muted); }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .card { padding: .8rem; } }
+    @media (max-width: 360px) { .brand { width: 66px; height: 50px; } h1 { font-size: 1.04rem; } .row { grid-template-columns: 1fr; gap: 0; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { color: var(--navy); background: white; } header p { color: var(--muted); } .steps, .actions, .field, fieldset, dialog, .confirm { display: none !important; } .layout { display: block; } .card { break-inside: avoid; margin-bottom: .8rem; } }
+  </style>
+</head>
+<body data-state="unprepared">
+  <a class="skip" href="#main">رفتن به نمونهٔ تکثیر</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>انتخاب و پیش‌نمایش تکثیر پروژه</h1><p>PMCS · UX2-MS56 · نمونهٔ مستقل</p></div></div></header>
+  <main id="main">
+    <p class="note"><strong>نمونهٔ طراحی:</strong> نام‌ها، ردیف‌ها و نسخه‌ها فرضی‌اند. پروژه‌ای ساخته یا فعال نمی‌شود و هیچ درخواستی به سرور نمی‌رود.</p>
+    <ol class="steps" aria-label="مراحل نمونه"><li id="step-select" data-active="true">۱. انتخاب دامنه</li><li id="step-preview">۲. مرور پیش‌نمایش</li><li id="step-confirm">۳. تأیید محلی</li></ol>
+    <div class="layout">
+      <section class="card" aria-labelledby="selection-title"><h2 id="selection-title">دامنهٔ انتقال</h2><p class="muted">مبدأ و مقصد فرضی‌اند؛ دادهٔ عملیاتی و تاریخچهٔ گفت‌وگو منتقل نمی‌شوند.</p>
+        <p><strong>مبدأ:</strong> پروژهٔ نمونهٔ الف<br><strong>مقصد:</strong> پیش‌نویس مستقل ب</p>
+        <fieldset id="categories"><legend>دسته‌های مجاز نمونه</legend>
+          <label class="choice"><input type="checkbox" value="settings" checked><span>تنظیمات پایه<small>تنظیم مستقل مقصد؛ بدون دادهٔ عملیاتی</small></span></label>
+          <label class="choice"><input type="checkbox" value="locations" checked><span>مکان‌ها<small>کد مشترک می‌تواند تعارض بسازد</small></span></label>
+          <label class="choice"><input type="checkbox" value="members"><span>اعضای منتخب<small>فقط عضویت جدید؛ حساب کاربری کپی نمی‌شود</small></span></label>
+        </fieldset>
+        <label class="field" for="policy">سیاست تعارض پیش از پیش‌نمایش<select id="policy"><option value="fail">توقف در هر تعارض</option><option value="skip">ردکردن ردیف متعارض و ادامهٔ امن</option></select></label>
+        <label class="field" for="scenario">وضعیت پیش‌نمایش فرضی<select id="scenario"><option value="ready">آماده با ردیف‌های مجاز</option><option value="conflict">تعارض کد مکان</option><option value="blocked">قلم بدون مجوز</option><option value="loading">در حال محاسبه</option><option value="empty">بدون قلم منتخب</option><option value="error">خطای محاسبه</option><option value="offline">آفلاین</option><option value="permission">بدون مجوز</option><option value="expired">نسخهٔ پیش‌نمایش منقضی</option></select></label>
+        <div class="actions"><button class="primary" id="prepare" type="button">محاسبهٔ نمایشی پیش‌نمایش</button></div>
+        <p class="muted" id="selection-hint" role="status">هر تغییر در انتخاب یا سیاست، پیش‌نمایش قبلی و تأیید آن را باطل می‌کند.</p>
+      </section>
+      <section class="card" aria-labelledby="preview-title"><div class="preview-head"><div><h2 id="preview-title">پیش‌نمایش انتقال</h2><p class="muted">نسخهٔ نمایشی ب-۰۱ · بدون چکیده یا نتیجهٔ رسمی</p></div><span class="badge" id="badge">ساخته نشده</span></div>
+        <div class="status" id="status" role="status" aria-live="polite"><strong id="status-title">پیش‌نمایش هنوز ساخته نشده است</strong><p id="status-detail">دسته‌ها و سیاست تعارض را انتخاب و نمونه را محاسبه کنید.</p><div class="skeleton" id="skeleton" hidden aria-hidden="true"></div></div>
+        <div id="result" hidden><div class="summary" id="summary" aria-label="خلاصهٔ وضعیت ردیف‌ها"></div><div class="rows" id="rows" aria-label="ردیف‌های پیش‌نمایش"></div><details id="exclusions"><summary>مواردی که همیشه مستثنا هستند</summary><ul><li>دادهٔ عملیاتی و اسناد اجرایی</li><li>تاریخچهٔ گفت‌وگوی گروه پروژه</li><li>حساب کاربری و مجوزهای مستقل مقصد</li></ul></details></div>
+        <div class="confirm"><label><input type="checkbox" id="reviewed" disabled><span>ردیف‌ها، موارد مستثنا، سیاست تعارض و نسخهٔ همین پیش‌نمایش را بررسی کردم.</span></label><p class="muted" id="confirmation-reason">تا پیش‌نمایش معتبر و بدون مانع آماده نشود، تأیید باز نمی‌شود.</p></div>
+        <div class="actions"><button class="secondary" id="review-button" type="button" disabled>مرور تأیید محلی</button><button class="primary" id="execute" type="button" disabled>اجرای انتقال در این نمونه غیرفعال است</button></div>
+      </section>
+    </div>
+    <p class="foot">در محصول واقعی، نسخهٔ برنامه، مجوز، اتصال، سیاست تعارض، تأیید صریح و اعتبار پیش‌نمایش دوباره کنترل می‌شوند. این صفحه فقط قرارداد تجربه را نشان می‌دهد.</p>
+  </main>
+  <dialog id="review-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-detail"><h2 id="dialog-title">مرور تأیید محلی</h2><p id="dialog-detail">این مرور فقط در همین صفحه ثبت می‌شود و هیچ انتقالی را اجرا نمی‌کند.</p><dl><div><dt>مقصد</dt><dd>پیش‌نویس مستقل ب</dd></div><div><dt>نسخه</dt><dd>پیش‌نمایش فرضی ب-۰۱</dd></div><div><dt>سیاست تعارض</dt><dd id="dialog-policy"></dd></div><div><dt>موارد مستثنا</dt><dd>دادهٔ عملیاتی، تاریخچهٔ گفت‌وگو و حساب‌ها</dd></div></dl><div class="actions"><button class="primary" id="acknowledge" type="button">ثبت مرور محلی</button><button class="secondary" id="cancel" type="button">انصراف</button></div></dialog>
+  <script>
+    const state = { prepared: false, reviewed: false };
+    const $ = id => document.getElementById(id);
+    const categories = [...document.querySelectorAll('#categories input')];
+    const status = $('status'), scenario = $('scenario'), policy = $('policy'), reviewed = $('reviewed'), dialog = $('review-dialog');
+    const copy = {
+      ready: ['پیش‌نمایش معتبر نمونه', 'فقط ردیف‌های انتخاب‌شده دیده می‌شوند؛ ثبت نهایی در این نمونه وجود ندارد.', 'normal'],
+      conflict: ['تعارض کد مکان', 'سیاست انتخاب‌شده پیش از پیش‌نمایش تعیین می‌کند ردیف متعارض مانع است یا رد می‌شود.', 'warning'],
+      blocked: ['قلم بدون مجوز', 'قلم مسدود قابل دورزدن نیست؛ با هیچ سیاست تعارضی اجرا مجاز نمی‌شود.', 'error'],
+      loading: ['در حال محاسبه', 'نتیجه یا عددی تا پایان محاسبه ساخته نمی‌شود.', 'normal'],
+      empty: ['قلمی برای انتقال نیست', 'دستهٔ منتخب را بررسی و پیش‌نمایش تازه بسازید.', 'warning'],
+      error: ['محاسبهٔ پیش‌نمایش ناموفق بود', 'نتیجهٔ قبلی قابل اتکا نیست؛ پس از رفع خطا دوباره محاسبه کنید.', 'error'],
+      offline: ['اتصال برقرار نیست', 'پیش‌نمایش رسمی یا انتقال حساس در آفلاین انجام نمی‌شود.', 'warning'],
+      permission: ['مجوز کافی نیست', 'ردیف محدود پنهان است و مرور تأیید باز نمی‌شود.', 'warning'],
+      expired: ['نسخهٔ پیش‌نمایش منقضی شد', 'انتخاب‌ها باقی می‌مانند؛ پیش‌نمایش تازه برای تصمیم لازم است.', 'error'],
+    };
+    function selected() { return categories.filter(input => input.checked).map(input => input.value); }
+    function invalidate() { state.prepared = false; state.reviewed = false; reviewed.checked = false; render(); $('selection-hint').textContent = 'انتخاب یا سیاست تغییر کرد؛ پیش‌نمایش قبلی و تأیید آن باطل شد.'; }
+    function render() {
+      const key = state.prepared ? selected().length === 0 ? 'empty' : scenario.value : 'unprepared';
+      document.body.dataset.state = key;
+      const [heading, description, tone] = key === 'unprepared' ? ['پیش‌نمایش هنوز ساخته نشده است', 'دسته‌ها و سیاست تعارض را انتخاب و نمونه را محاسبه کنید.', 'normal'] : copy[key];
+      $('status-title').textContent = heading; $('status-detail').textContent = description;
+      status.dataset.tone = tone; status.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      const hasRows = state.prepared && ['ready', 'conflict', 'blocked'].includes(key) && selected().length > 0;
+      $('result').hidden = !hasRows; $('skeleton').hidden = key !== 'loading';
+      let added = 0, skipped = 0, conflicts = 0, blocked = 0;
+      $('rows').replaceChildren();
+      if (hasRows) {
+        for (const category of selected()) {
+          let disposition = 'added', label = 'افزودنی', title = { settings: 'تنظیمات پایه', locations: 'ساختار مکان‌ها', members: 'عضویت منتخب' }[category];
+          let detail = category === 'members' ? 'حساب کپی نمی‌شود؛ عضویت مقصد مستقل است.' : 'فقط تنظیم نمونه به مقصد مستقل افزوده می‌شود.';
+          if (category === 'locations' && key === 'conflict') {
+            disposition = policy.value === 'skip' ? 'skipped' : 'conflict'; label = disposition === 'skipped' ? 'ردشده' : 'تعارض';
+            detail = disposition === 'skipped' ? 'کد مشترک رد می‌شود؛ به‌صورت حدسی جایگزین نمی‌شود.' : 'کد مشترک مانع است؛ سیاست بعد از پیش‌نمایش تغییر نمی‌کند.';
+          }
+          if (category === 'locations' && key === 'blocked') { disposition = 'blocked'; label = 'مسدود'; detail = 'دسترسی کافی نیست؛ ردکردن تعارض این مانع را رفع نمی‌کند.'; }
+          ({ added: () => added++, skipped: () => skipped++, conflict: () => conflicts++, blocked: () => blocked++ })[disposition]();
+          const row = document.createElement('article'); row.className = 'row'; row.dataset.kind = disposition;
+          const kind = document.createElement('strong'), content = document.createElement('div'), name = document.createElement('b'), explanation = document.createElement('p');
+          kind.textContent = label; name.textContent = title; explanation.textContent = detail; content.append(name, explanation); row.append(kind, content); $('rows').append(row);
+        }
+      }
+      $('summary').replaceChildren();
+      for (const [label, count] of [['افزودنی', added], ['ردشده', skipped], ['تعارض', conflicts], ['مسدود', blocked]]) {
+        const item = document.createElement('span'); item.textContent = `${label}: ${count}`; $('summary').append(item);
+      }
+      const eligible = hasRows && key !== 'blocked' && blocked === 0 && conflicts === 0;
+      if (!eligible) { reviewed.checked = false; state.reviewed = false; }
+      reviewed.disabled = !eligible; $('review-button').disabled = !eligible || !reviewed.checked;
+      $('confirmation-reason').textContent = state.reviewed ? 'مرور محلی ثبت شد؛ هیچ انتقالی انجام نشده است.' : eligible ? 'تأیید فقط پس از بررسی ردیف‌ها و موارد مستثنا باز می‌شود؛ اجرای واقعی در نمونه وجود ندارد.' : 'تا پیش‌نمایش معتبر و بدون مانع آماده نشود، تأیید باز نمی‌شود.';
+      $('badge').textContent = !state.prepared ? 'ساخته نشده' : eligible ? 'قابل مرور محلی' : 'اجرا مسدود';
+      $('badge').dataset.tone = !state.prepared || eligible ? 'normal' : tone === 'error' ? 'error' : 'warning';
+      $('step-select').dataset.active = String(!state.prepared); $('step-preview').dataset.active = String(state.prepared && !state.reviewed); $('step-confirm').dataset.active = String(state.reviewed);
+      $('execute').disabled = true;
+    }
+    categories.forEach(input => input.addEventListener('change', invalidate));
+    policy.addEventListener('change', invalidate); scenario.addEventListener('change', invalidate);
+    $('prepare').addEventListener('click', () => { state.prepared = true; state.reviewed = false; reviewed.checked = false; $('selection-hint').textContent = 'برای تغییر انتخاب یا سیاست، پیش‌نمایش تازه لازم است.'; render(); });
+    reviewed.addEventListener('change', () => { if (!reviewed.checked) state.reviewed = false; render(); });
+    $('review-button').addEventListener('click', () => { $('dialog-policy').textContent = policy.options[policy.selectedIndex].textContent; dialog.showModal(); $('acknowledge').focus(); });
+    $('acknowledge').addEventListener('click', () => { state.reviewed = true; dialog.close(); render(); $('review-button').focus(); });
+    $('cancel').addEventListener('click', () => { dialog.close(); $('review-button').focus(); });
+    dialog.addEventListener('close', () => $('review-button').focus());
+    render();
+  </script>
+</body>
+</html>

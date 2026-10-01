@@ -36,6 +36,7 @@ export interface EnqueueAttachmentInput {
   readonly dailyFactId?: string | null;
   readonly file: File;
   readonly capturedAtDevice?: string;
+  readonly ensureAllowed?: () => void;
 }
 
 export interface AttachmentSyncSummary {
@@ -92,7 +93,9 @@ const activeSyncs = new Map<string, Promise<AttachmentSyncSummary>>();
 export async function enqueueAttachment(input: EnqueueAttachmentInput): Promise<QueuedAttachment> {
   validateFile(input.file);
   await requireOfflineAuthorization(input.projectId, "CaptureDailyReportFact");
+  input.ensureAllowed?.();
   const sha256 = await calculateSha256(input.file);
+  input.ensureAllowed?.();
   const attachment: QueuedAttachment = {
     attachmentId: crypto.randomUUID(),
     tenantId: input.tenantId,
@@ -110,8 +113,10 @@ export async function enqueueAttachment(input: EnqueueAttachmentInput): Promise<
     attemptCount: 0,
   };
   const database = await openFieldDatabase();
-  await writeAttachments(database, [attachment]);
-  database.close();
+  try {
+    input.ensureAllowed?.();
+    await writeAttachments(database, [attachment]);
+  } finally { database.close(); }
   return attachment;
 }
 

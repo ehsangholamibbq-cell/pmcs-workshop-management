@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — پیوست و منشأ مدرک</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.7 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --green: #11643b; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; }
+    button { cursor: pointer; min-height: 44px; }
+    :is(a, button, select):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1180px)/2)); }
+    .head { display: flex; align-items: center; gap: .75rem; }
+    .brand { width: 84px; height: 58px; flex: none; object-fit: contain; border-radius: 9px; padding: .2rem; background: #fbf8f1; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { width: min(1180px, 100%); margin: auto; padding: 1rem 1rem 3rem; }
+    .note { padding: .6rem .8rem; border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1rem 0; }
+    .controls label { font-weight: 700; }
+    select { min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; padding: .35rem .6rem; background: white; color: inherit; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(270px, .7fr); gap: 1rem; }
+    .card { min-width: 0; padding: 1rem; border: 1px solid #e9dfcf; border-radius: 14px; background: white; }
+    h2 { margin: 0 0 .35rem; color: var(--navy); font-size: 1.1rem; }
+    h3 { margin: .7rem 0 .25rem; color: var(--navy); font-size: .94rem; }
+    p { margin: .25rem 0 .75rem; }
+    .muted { color: var(--muted); font-size: .82rem; }
+    .context { padding: .6rem .75rem; border: 1px solid #d5e0db; border-radius: 9px; background: #f8faf8; }
+    .context strong { display: block; }
+    .context small { color: var(--muted); }
+    .status { margin: .8rem 0; padding: .6rem .8rem; border-right: 4px solid #235c99; border-radius: 8px; background: #f1f6f8; }
+    .status[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .status[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .status strong { display: block; }
+    .status p { margin: 0; }
+    .skeleton { height: 20px; width: 74%; border-radius: 7px; margin-top: .45rem; background: #dce5e2; }
+    .file { border: 1px solid #d5e0db; border-radius: 10px; padding: .8rem; background: #f8faf8; }
+    .file-head { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    .file-head strong { overflow-wrap: anywhere; }
+    .badge { border-radius: 99px; padding: .15rem .55rem; background: #e0eee5; color: #254c3b; font-size: .75rem; }
+    .badge[data-tone="warning"] { color: #654313; background: #fff1ce; }
+    .badge[data-tone="error"] { color: #8f2924; background: #ffe9e6; }
+    .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem .8rem; margin: .7rem 0 0; }
+    .facts div { border-top: 1px solid #e2e9e4; padding-top: .4rem; }
+    .facts dt { font-weight: 700; font-size: .8rem; }
+    .facts dd { margin: 0; color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+    .primary, .secondary { border-radius: 8px; padding: .4rem .8rem; font-weight: 700; }
+    .primary { border: 1px solid var(--green); color: white; background: var(--green); }
+    .secondary { border: 1px solid #7b8c94; color: var(--navy); background: white; }
+    button:disabled { cursor: not-allowed; border-color: #aeb8b8; color: #46555b; background: #e4e9e6; }
+    .rule { border-bottom: 1px solid #e9dfcf; padding: .6rem 0; }
+    .rule strong { display: block; }
+    .rule p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .foot { margin-top: 1rem; color: var(--muted); font-size: .8rem; }
+    dialog { width: min(510px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; border: 1px solid #d5e0db; border-radius: 14px; padding: 1rem; color: inherit; background: white; box-shadow: 0 20px 60px #0c203655; }
+    dialog::backdrop { background: #0c2036aa; }
+    dialog ul { padding-right: 1.4rem; }
+    @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .card { padding: .8rem; } }
+    @media (max-width: 360px) { .brand { width: 65px; height: 50px; } h1 { font-size: 1.04rem; } .facts { grid-template-columns: 1fr; } .controls { display: grid; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @page { size: A4; margin: 13mm; }
+    @media print { header { color: var(--navy); background: white; } header p { color: var(--muted); } .controls, .actions, dialog { display: none !important; } .layout { display: block; } .card { break-inside: avoid; margin-bottom: .8rem; } }
+  </style>
+</head>
+<body data-state="queued">
+  <a class="skip" href="#main">رفتن به نمونهٔ پیوست</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>پیوست و منشأ مدرک</h1><p>PMCS · UX2-MS57 · نمونهٔ مستقل</p></div></div></header>
+  <main id="main">
+    <p class="note"><strong>نمونهٔ طراحی:</strong> پیام و فایل زیر ساختگی‌اند؛ انتخاب فایل، بارگذاری، دریافت، اتصال و ساخت مدرک در این صفحه انجام نمی‌شود.</p>
+    <div class="controls"><label for="state">وضعیت پیوست نمونه</label><select id="state"><option value="queued">در صف امن دستگاه</option><option value="pending">در حال ارسال و بررسی</option><option value="quarantined">در قرنطینه</option><option value="released">آزادشده</option><option value="rejected">ردشده</option><option value="offline">آفلاین</option><option value="permission">بدون مجوز</option><option value="error">خطای دریافت وضعیت</option><option value="conflict">تعارض نسخهٔ پیام</option><option value="empty">بدون پیوست</option></select></div>
+    <div class="layout">
+      <section class="card" aria-labelledby="attachment-title"><h2 id="attachment-title">پیوست گفت‌وگوی گروه پروژه</h2><div class="context"><strong>پروژهٔ نمونه · پیام گروهی فرضی</strong><small>پیوست فقط در محدودهٔ همین پیام و عضویت مجاز قابل دسترسی است؛ پیام خصوصی در این نمونه وجود ندارد.</small></div>
+        <div class="status" id="status" role="status" aria-live="polite"><strong id="status-title"></strong><p id="status-detail"></p><div class="skeleton" id="skeleton" hidden aria-hidden="true"></div></div>
+        <div class="file" id="file"><div class="file-head"><strong>برگه-نمونه.pdf</strong><span class="badge" id="badge"></span></div><dl class="facts"><div><dt>منشأ</dt><dd>پیام گروهی پروژهٔ نمونه</dd></div><div><dt>نسخه</dt><dd>۲، صرفاً نمایشی</dd></div><div><dt>طبقه‌بندی</dt><dd>داخلی، نمونه</dd></div><div><dt>تطبیق هش</dt><dd>در این صفحه قابل تأیید نیست؛ محصول باید بایت و نسخه را بسنجد.</dd></div></dl></div>
+        <div class="actions"><button class="secondary" id="review" type="button" disabled>مرور ارجاع نمونه</button><button class="primary" id="attach" type="button" disabled>اتصال واقعی در نمونه غیرفعال است</button><button class="secondary" id="download" type="button" disabled>دریافت واقعی غیرفعال است</button></div>
+        <p class="muted" id="review-result" role="status">فقط فایل آزادشده با نسخه و هش تأییدشده در محصول می‌تواند به پیام و سپس مدرک رسمی ارجاع شود.</p>
+      </section>
+      <aside class="card" aria-labelledby="rules-title"><h2 id="rules-title">مرزهای فایل و مدرک</h2><div class="rule"><strong>صف و قرنطینه</strong><p>فایل محلی یا قرنطینه‌شده هنوز پیوست قابل دریافت و منبع مدرک نیست.</p></div><div class="rule"><strong>انتشار و اتصال</strong><p>آزادسازی به‌تنهایی اتصال به پیام نیست؛ مالکیت، پیام زنده و مجوز جدا بررسی می‌شوند.</p></div><div class="rule"><strong>مدرک رسمی</strong><p>تبدیل پیام به مدرک، رکورد مستقل با تأیید صریح، نسخهٔ پیام و تطبیق دقیق فایل است.</p></div><div class="rule"><strong>دسترسی و نگهداری</strong><p>قطع مجوز، دریافت را می‌بندد؛ نگهداری و منع حذف طبق سیاست فایل باقی می‌مانند.</p></div></aside>
+    </div>
+    <p class="foot">هیچ برچسب این نمونه، اسکن امنیتی، انتشار، صحت هش، مجوز یا ثبت مدرک واقعی را تأیید نمی‌کند.</p>
+  </main>
+  <dialog id="review-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-detail"><h2 id="dialog-title">مرور منشأ و ارجاع نمونه</h2><p id="dialog-detail">این مرور محلی است؛ فایل به پیام وصل یا به مدرک تبدیل نمی‌شود.</p><ul><li>پیام گروهی پروژهٔ نمونه و نسخهٔ فعلی آن باید دوباره خوانده شوند.</li><li>فایل باید آزادشده، متعلق به همان پیام و دارای نسخه و هش دقیقاً مطابق پاسخ سرور باشد.</li><li>مجوز خواندن و تبدیل در لحظهٔ اقدام باید برقرار باشد.</li></ul><div class="actions"><button class="primary" id="acknowledge" type="button">ثبت مرور محلی</button><button class="secondary" id="cancel" type="button">انصراف</button></div></dialog>
+  <script>
+    const $ = id => document.getElementById(id), state = $('state'), status = $('status'), dialog = $('review-dialog'), review = $('review');
+    const messages = {
+      queued: ['در صف امن دستگاه', 'اتصال برقرار شود تا ارسال آغاز شود؛ هنوز هیچ فایل سروری یا پیوست پیام ساخته نشده است.', 'warning', 'در صف'],
+      pending: ['در حال ارسال و بررسی', 'نتیجهٔ اسکن و انتشار مشخص نیست؛ اتصال یا دریافت مجاز نیست.', 'normal', 'در حال بررسی'],
+      quarantined: ['در قرنطینه', 'فایل برای کنترل امنیتی نگه داشته شده و هنوز قابل اتصال به پیام نیست.', 'warning', 'قرنطینه'],
+      released: ['آزادشده، هنوز متصل نشده', 'در محصول پس از تطبیق نسخه، هش، مالکیت و مجوز می‌توان اتصال را درخواست کرد.', 'normal', 'آزادشده'],
+      rejected: ['ردشده در کنترل امنیتی', 'فایل نباید متصل، دریافت یا منبع مدرک شود.', 'error', 'ردشده'],
+      offline: ['اتصال برقرار نیست', 'وضعیت سرور معلوم نیست؛ صف محلی را با انتشار یا اتصال اشتباه نگیرید.', 'warning', 'نامعلوم'],
+      permission: ['دسترسی به پیوست مجاز نیست', 'نام و مشخصات فایل پنهان‌اند؛ هیچ اقدام مرتبط در دسترس نیست.', 'warning', 'پنهان'],
+      error: ['دریافت وضعیت کامل نشد', 'از وضعیت قبلی نتیجهٔ انتشار یا دسترسی نگیرید؛ پس از رفع خطا دوباره بررسی کنید.', 'error', 'نامعلوم'],
+      conflict: ['نسخهٔ پیام تغییر کرده است', 'پیش‌نویس ارجاع حفظ می‌شود؛ نسخهٔ پیام و فایل باید دوباره تطبیق داده شوند.', 'error', 'نیازمند بازبینی'],
+      empty: ['پیوستی ثبت نشده است', 'هیچ فایل تأییدشده‌ای برای این پیام نمونه وجود ندارد.', 'normal', 'بدون فایل'],
+    };
+    function render() {
+      const key = state.value, [title, detail, tone, badge] = messages[key];
+      document.body.dataset.state = key; $('status-title').textContent = title; $('status-detail').textContent = detail;
+      status.dataset.tone = tone; status.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      $('badge').textContent = badge; $('badge').dataset.tone = tone;
+      $('file').hidden = ['permission', 'error', 'empty'].includes(key);
+      $('skeleton').hidden = key !== 'pending';
+      review.disabled = key !== 'released'; $('attach').disabled = true; $('download').disabled = true;
+      $('review-result').textContent = 'فقط فایل آزادشده با نسخه و هش تأییدشده در محصول می‌تواند به پیام و سپس مدرک رسمی ارجاع شود.';
+    }
+    state.addEventListener('change', render);
+    review.addEventListener('click', () => { dialog.showModal(); $('acknowledge').focus(); });
+    $('acknowledge').addEventListener('click', () => { dialog.close(); $('review-result').textContent = 'مرور محلی ثبت شد؛ هیچ اتصال یا مدرک رسمی ساخته نشده است.'; review.focus(); });
+    $('cancel').addEventListener('click', () => { dialog.close(); review.focus(); });
+    dialog.addEventListener('close', () => review.focus());
+    render();
+  </script>
+</body>
+</html>

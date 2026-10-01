@@ -38,6 +38,9 @@ public sealed class ManagementIssue : AggregateRoot
     public Guid? ResolvedBy { get; private set; }
     public DateTimeOffset? ClosedAt { get; private set; }
     public Guid? ClosedBy { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
     public IReadOnlyCollection<string> EvidenceReferences => GovernanceRules.ReadList(EvidenceReferencesJson);
     public IReadOnlyCollection<string> ClosureEvidence => GovernanceRules.ReadList(ClosureEvidenceJson);
 
@@ -68,7 +71,8 @@ public sealed class ManagementIssue : AggregateRoot
             MaterializedFromRiskId = materializedFromRiskId,
             EvidenceReferencesJson = GovernanceRules.JsonList(evidence, 700, "governance.issue.evidence.invalid", true),
             Confidentiality = confidentiality, Status = IssueStatus.Open, SlaDueAt = slaDueAt,
-            SlaRuleVersionId = slaRuleVersionId, CreatedBy = actor, CreatedAt = at
+            SlaRuleVersionId = slaRuleVersionId, CreatedBy = actor, CreatedAt = at,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(at, IssueStatus.Open.ToString(), targetResolutionDate)
         };
     }
 
@@ -94,6 +98,8 @@ public sealed class ManagementIssue : AggregateRoot
             ResolvedAt = null; ResolvedBy = null; ClosedAt = null; ClosedBy = null;
             ClosureEvidenceJson = "[]";
         }
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson, at,
+            target.ToString(), TargetResolutionDate);
         LastChangedBy = actor; LastChangedAt = at; AdvanceRevision();
     }
 

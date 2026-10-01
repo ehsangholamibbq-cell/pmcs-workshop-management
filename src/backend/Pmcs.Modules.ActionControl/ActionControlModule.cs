@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pmcs.BuildingBlocks.Modules;
 using Pmcs.BuildingBlocks.Persistence;
+using Pmcs.BuildingBlocks.Application;
 using Pmcs.Modules.ActionControl.Contracts;
 using Pmcs.Modules.ActionControl.Endpoints;
 using Pmcs.Modules.ActionControl.Migrations;
@@ -24,9 +25,13 @@ public sealed class ActionControlModule : IModule
         services.AddScoped<IAttentionDispositionSource, AttentionDispositionSource>();
         services.AddScoped<IPortfolioActionSource, PortfolioActionSource>();
         services.AddScoped<IManagementActionWorkSource, ManagementActionWorkSource>();
+        services.AddScoped<IProjectGovernanceActionReportingSource, ProjectGovernanceActionReportingSource>();
+        services.AddScoped<IProjectMessageConversionDestination, ProjectChatActionConversionDestination>();
         services.AddHostedService<GovernanceDeadlineWorker>();
         services.AddSingleton<IDatabaseMigration, ActionControlInitialMigration>();
         services.AddSingleton<IDatabaseMigration, ActionGovernanceMigration>();
+        services.AddSingleton<IDatabaseMigration, GovernanceReportingHistoryMigration>();
+        services.AddSingleton<IDatabaseMigration, ActionChatSourceMigration>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapActionControlEndpoints();

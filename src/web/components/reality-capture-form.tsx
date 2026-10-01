@@ -23,6 +23,7 @@ interface RealityCaptureFormProps {
   readonly onQueued: (factId: string) => Promise<void>;
   readonly measurementItems?: readonly MeasurementItemModel[];
   readonly locations?: readonly ProjectLocationModel[];
+  readonly locationReadState: "loading" | "current" | "cached" | "unavailable" | "forbidden";
 }
 
 export function RealityCaptureForm({
@@ -34,6 +35,7 @@ export function RealityCaptureForm({
   onQueued,
   measurementItems = [],
   locations = [],
+  locationReadState,
 }: RealityCaptureFormProps) {
   const [draft, setDraft] = useState<DailyFactDraft>(emptyFactDraft);
   const fields = useMemo(() => factFields(draft.kind), [draft.kind]);
@@ -42,6 +44,10 @@ export function RealityCaptureForm({
     [locations],
   );
   const selectedKind = factKinds.find((item) => item.value === draft.kind);
+  const selectedLocation = activeLocations.find((location) => location.id === draft.locationId);
+  const staleLocation = Boolean(draft.locationId && !selectedLocation);
+  const staleMeasurementItem = Boolean(draft.measurementItemId &&
+    !measurementItems.some((item) => item.id === draft.measurementItemId));
 
   function update<K extends keyof DailyFactDraft>(key: K, value: DailyFactDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -71,13 +77,23 @@ export function RealityCaptureForm({
 
     try {
       onStatus("در حال ذخیره روی این دستگاه…");
+      if (locationReadState !== "current" && locationReadState !== "cached") {
+        throw new FactValidationError("فهرست محل‌های مجاز در دسترس نیست؛ پیش‌نویس روی این دستگاه حفظ شد.");
+      }
       if (!draft.locationId) {
         throw new FactValidationError("انتخاب محل پروژه برای ثبت واقعیت الزامی است");
+      }
+      if (!selectedLocation) {
+        throw new FactValidationError("محل انتخاب‌شده در فهرست فعال فعلی نیست؛ محل را دوباره انتخاب کنید.");
+      }
+      if (draft.kind === "WorkProgress" && draft.measurementItemId &&
+        !measurementItems.some((item) => item.id === draft.measurementItemId)) {
+        throw new FactValidationError("قلم اندازه‌گیری انتخاب‌شده دیگر در فهرست فعلی نیست؛ دوباره انتخاب کنید.");
       }
 
       const reportDate = todayIsoInProjectTimeZone();
       const factId = crypto.randomUUID();
-      const payload = buildDailyFactPayload(draft, factId, reportDate);
+      const payload = buildDailyFactPayload({ ...draft, locationName: selectedLocation.name }, factId, reportDate);
       await enqueueOperation({
         tenantId,
         userId,
@@ -90,8 +106,8 @@ export function RealityCaptureForm({
       setDraft((current) => ({
         ...emptyFactDraft,
         kind: current.kind,
-        locationId: current.locationId,
-        locationName: current.locationName,
+        locationId: selectedLocation.id,
+        locationName: selectedLocation.name,
       }));
       await onQueued(factId);
     } catch (error) {
@@ -102,7 +118,7 @@ export function RealityCaptureForm({
   }
 
   return (
-    <form className="capture-form" onSubmit={save}>
+    <form className="capture-form" data-testid="reality-capture-form" data-location-read-state={locationReadState} onSubmit={save} noValidate>
       <div className="field full-width">
         <label htmlFor="fact-kind">نوع واقعیت</label>
         <select
@@ -127,7 +143,7 @@ export function RealityCaptureForm({
         </div>
       )}
 
-      {draft.kind === "WorkProgress" && measurementItems.length > 0 && (
+      {draft.kind === "WorkProgress" && (measurementItems.length > 0 || Boolean(draft.measurementItemId)) && (
         <div className="field">
           <label htmlFor="fact-measurement-item">قلم اندازه‌گیری اختیاری</label>
           <select
@@ -136,11 +152,13 @@ export function RealityCaptureForm({
             onChange={(event) => selectMeasurementItem(event.target.value)}
           >
             <option value="">ثبت مستقل بدون قلم</option>
+            {staleMeasurementItem && <option value={draft.measurementItemId} disabled>قلم قبلی در فهرست فعلی نیست</option>}
             {measurementItems.map((item) => (
               <option key={item.id} value={item.id}>{item.code} · {item.title} · {item.unit}</option>
             ))}
           </select>
           <small>این اتصال مستقل از ساختار شکست کار (WBS) است.</small>
+          {staleMeasurementItem && <small className="field-help" role="alert">قلم قبلی در فهرست فعلی نیست؛ پیش از ثبت دوباره انتخاب کنید یا اتصال را حذف کنید.</small>}
         </div>
       )}
 
@@ -153,10 +171,15 @@ export function RealityCaptureForm({
           onChange={(event) => selectLocation(event.target.value)}
         >
           <option value="">{activeLocations.length > 0 ? "انتخاب محل" : "فهرست محل در دسترس نیست"}</option>
+          {staleLocation && <option value={draft.locationId} disabled>محل قبلی دیگر فعال یا در دسترس نیست؛ دوباره انتخاب کنید</option>}
           {activeLocations.map((location) => (
             <option key={location.id} value={location.id}>{location.code} · {location.name}</option>
           ))}
         </select>
+        {staleLocation && <small className="field-help" role="alert">محل قبلی در فهرست فعال فعلی نیست؛ پیش‌نویس حفظ شده و انتخاب تازه لازم است.</small>}
+        {locationReadState === "cached" && <small className="field-help" role="status">فهرست محل‌ها نسخهٔ ذخیره‌شدهٔ این دستگاه است؛ ثبت، پیش‌نویس محلی و تا پذیرش سرور رسمی نیست.</small>}
+        {(locationReadState === "loading" || locationReadState === "forbidden" || locationReadState === "unavailable") &&
+          <small className="field-help" role="status">فهرست محل‌های مجاز هنوز قابل اتکا نیست؛ متن فرم حفظ می‌شود و ثبت پس از دریافت فهرست ممکن است.</small>}
         {activeLocations.length === 0 && (
           <small className="field-help">برای ثبت آفلاین، ابتدا باید فهرست محل‌های مجاز در حالت آنلاین دریافت شود.</small>
         )}

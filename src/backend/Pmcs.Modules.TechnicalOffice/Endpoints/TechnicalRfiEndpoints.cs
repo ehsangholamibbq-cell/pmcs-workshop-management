@@ -15,6 +15,7 @@ internal static partial class TechnicalOfficeEndpoints
     private static void MapRfiEndpoints(RouteGroupBuilder group)
     {
         group.MapPost("/rfis", CreateRfiAsync);
+        group.MapGet("/rfis/{rfiId:guid}/evidence/{documentId:guid}/content", ReadConvertedRfiEvidenceAsync);
         group.MapPost("/rfis/{rfiId:guid}/internal-review", SubmitRfiForInternalReviewAsync);
         group.MapPost("/rfis/{rfiId:guid}/return", ReturnRfiAsync);
         group.MapPost("/rfis/{rfiId:guid}/issue", IssueRfiAsync);
@@ -68,7 +69,7 @@ internal static partial class TechnicalOfficeEndpoints
         IClock clock, ITransactionalSideEffectWriter effects, IIdempotencyStore idempotency,
         CancellationToken cancellationToken) => TransitionRfiAsync(
             projectId, rfiId, request, context, actor, permissions, db, clock, effects, idempotency,
-            "technical.rfis.submit", "internal-review", (item, _) => item.SubmitForInternalReview(request.BaseRevision),
+            "technical.rfis.submit", "internal-review", (item, at) => item.SubmitForInternalReview(request.BaseRevision, at),
             "RfiInternalReviewRequested", cancellationToken);
 
     private static async Task<IResult> ReturnRfiAsync(

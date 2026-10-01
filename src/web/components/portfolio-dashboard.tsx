@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ProjectFeatureState, ProjectOperationalStatus } from "@/lib/command-center";
 import { currencyLabel, formatAmountFa, toUserMessage } from "@/lib/localization";
@@ -38,6 +40,7 @@ function PortfolioDashboardContent() {
   const [model, setModel] = useState<Awaited<ReturnType<typeof getPortfolioCommandCenter>> | null>(null);
   const [message, setMessage] = useState("در حال ساخت نمای مدیریتی از آخرین وضعیت‌های رسمی…");
   const [isLoading, setIsLoading] = useState(true);
+  const [readState, setReadState] = useState<"loading" | "current" | "error" | "offline">("loading");
   const [reloadToken, setReloadToken] = useState(0);
   const [query, setQuery] = useState("");
   const [attention, setAttention] = useState<PortfolioAttentionFilter>("All");
@@ -49,12 +52,17 @@ function PortfolioDashboardContent() {
     let active = true;
     const timeoutId = window.setTimeout(() => {
       if (!isOnline) {
+        setModel(null);
         setIsLoading(false);
+        setReadState("offline");
         setMessage("مرکز فرمان سبد پروژه‌ها برای تجمیع امن داده‌ها به اتصال سرور نیاز دارد.");
         return;
       }
 
+      setModel(null);
       setIsLoading(true);
+      setReadState("loading");
+      setMessage("در حال ساخت نمای مدیریتی از آخرین وضعیت‌های رسمی…");
       void getPortfolioCommandCenter(apiBaseUrl, {
         tenantId: session.tenantId,
         userId: session.userId,
@@ -62,11 +70,13 @@ function PortfolioDashboardContent() {
         .then((result) => {
           if (!active) return;
           setModel(result);
+          setReadState("current");
           setMessage("نمای سبد از آخرین تصاویر رسمی و داده‌های مجاز هر پروژه ساخته شد.");
         })
         .catch((error: unknown) => {
           if (!active) return;
           setModel(null);
+          setReadState("error");
           setMessage(toUserMessage(error, "نمای سبد پروژه‌ها از سرور دریافت نشد."));
         })
         .finally(() => {
@@ -80,24 +90,37 @@ function PortfolioDashboardContent() {
     };
   }, [isOnline, reloadToken, session.tenantId, session.userId]);
 
-  const projects = useMemo(() => selectPortfolioProjects(model?.projects ?? [], {
+  const visibleModel = isOnline && readState === "current" && !isLoading ? model : null;
+  const effectiveReadState = isOnline ? readState : "offline";
+  function refreshPortfolio() {
+    setModel(null);
+    setIsLoading(true);
+    setReadState("loading");
+    setMessage("در حال ساخت نمای مدیریتی از آخرین وضعیت‌های رسمی…");
+    setReloadToken((current) => current + 1);
+  }
+
+  const projects = useMemo(() => selectPortfolioProjects(visibleModel?.projects ?? [], {
     query,
     attention,
     lifecycle,
     sort,
-  }), [attention, lifecycle, model?.projects, query, sort]);
+  }), [attention, lifecycle, visibleModel?.projects, query, sort]);
 
   return (
     <main className="app-shell portfolio-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
-        <nav>
-          <Link className="nav-item active" href="/portfolio">سبد پروژه‌ها</Link>
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
+        <BrandMark />
+        <SidebarNavigation label="بخش‌های سبد پروژه‌ها">
+          <Link className="nav-item active" href="/portfolio" aria-current="page">سبد پروژه‌ها</Link>
+          <Link className="nav-item" href="/portfolio/reports">گزارش‌های سبد</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
           <a className="nav-item" href="#exceptions">اقدامات کلیدی</a>
           <a className="nav-item" href="#exposure">نمای مالی</a>
+          <Link className="nav-item" href="/profile">پروفایل من</Link>
           {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</Link>}
-        </nav>
+          {session.tenantRole === "TenantAdministrator" && <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>}
+        </SidebarNavigation>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />
           {isOnline ? "متصل به سرور" : "بدون اتصال"}
@@ -105,7 +128,7 @@ function PortfolioDashboardContent() {
         <SessionBadge />
       </aside>
 
-      <section className="workspace portfolio-workspace">
+      <section className="workspace portfolio-workspace" data-read-state={effectiveReadState}>
         <header className="topbar portfolio-topbar">
           <div>
             <p className="eyebrow">دید مدیریتی سازمان</p>
@@ -113,30 +136,33 @@ function PortfolioDashboardContent() {
             <p className="portfolio-lead">وضعیت‌های مستقل، استثناهای اجرایی و مسئول اقدام؛ بدون امتیاز سلامت ساختگی</p>
           </div>
           <div className="portfolio-refresh">
-            {model && <span>آخرین تجمیع: {formatDateTimeFa(model.generatedAt)}</span>}
+            {visibleModel && <span>آخرین تجمیع: {formatDateTimeFa(visibleModel.generatedAt)}</span>}
             <button
               className="secondary-button"
               type="button"
               disabled={!isOnline || isLoading}
-              onClick={() => setReloadToken((current) => current + 1)}
+              onClick={refreshPortfolio}
             >
               {isLoading ? "در حال دریافت…" : "تازه‌سازی"}
             </button>
           </div>
         </header>
 
-        <p className={`portfolio-system-message ${!isOnline ? "warning" : ""}`} aria-live="polite">
-          {message}
+        <p className={`portfolio-system-message ${effectiveReadState === "error" ? "error" : !isOnline ? "warning" : ""}`}
+          role={effectiveReadState === "error" ? "alert" : "status"}>
+          {isOnline ? message : "مرکز فرمان سبد پروژه‌ها برای تجمیع امن داده‌ها به اتصال سرور نیاز دارد."}
         </p>
 
-        {model && (
+        {effectiveReadState === "loading" && <PortfolioLoadingPreview />}
+
+        {visibleModel && (
           <>
             <section className="portfolio-kpis" aria-label="شاخص‌های کلیدی سبد پروژه‌ها">
-              <Kpi label="پروژه در دامنه دسترسی" value={model.header.projectCount} hint={`${model.header.activeProjectCount.toLocaleString("fa-IR")} فعال`} />
-              <Kpi label="عملیات بحرانی یا پرریسک" value={model.header.criticalProjectCount + model.header.atRiskProjectCount} hint={`${model.header.watchProjectCount.toLocaleString("fa-IR")} نیازمند پایش`} tone="danger" />
-              <Kpi label="بدون داده یا داده ناکافی" value={model.header.noDataProjectCount + model.header.insufficientDataProjectCount} hint="به‌عنوان وضعیت خوب محاسبه نشده" tone="unknown" />
-              <Kpi label="اقدام سررسیدگذشته" value={model.header.overdueActionCount} hint={`از ${model.header.openActionCount.toLocaleString("fa-IR")} اقدام باز`} tone="warning" />
-              <Kpi label="تأیید تجاری معطل" value={model.header.pendingCommercialApprovalCount} hint="قرارداد و درخواست خرید" />
+              <Kpi label="پروژه در دامنه دسترسی" value={visibleModel.header.projectCount} hint={`${visibleModel.header.activeProjectCount.toLocaleString("fa-IR")} فعال`} />
+              <Kpi label="عملیات بحرانی یا پرریسک" value={visibleModel.header.criticalProjectCount + visibleModel.header.atRiskProjectCount} hint={`${visibleModel.header.watchProjectCount.toLocaleString("fa-IR")} نیازمند پایش`} tone="danger" />
+              <Kpi label="بدون داده یا داده ناکافی" value={visibleModel.header.noDataProjectCount + visibleModel.header.insufficientDataProjectCount} hint="به‌عنوان وضعیت خوب محاسبه نشده" tone="unknown" />
+              <Kpi label="اقدام سررسیدگذشته" value={visibleModel.header.overdueActionCount} hint={`از ${visibleModel.header.openActionCount.toLocaleString("fa-IR")} اقدام باز`} tone="warning" />
+              <Kpi label="تأیید تجاری معطل" value={visibleModel.header.pendingCommercialApprovalCount} hint="قرارداد و درخواست خرید" />
             </section>
 
             <section className="portfolio-exposure" id="exposure" aria-labelledby="exposure-title">
@@ -147,11 +173,11 @@ function PortfolioDashboardContent() {
                 </div>
                 <span className="section-note">هیچ تبدیل ارزی پنهانی انجام نشده است</span>
               </div>
-              {model.header.currencyExposures.length === 0 ? (
+              {visibleModel.header.currencyExposures.length === 0 ? (
                 <p className="empty-state">هنوز وضعیت مالی یا تعهد خریدِ قابل تجمیعی وجود ندارد.</p>
               ) : (
                 <div className="currency-grid">
-                  {model.header.currencyExposures.map((exposure) => (
+                  {visibleModel.header.currencyExposures.map((exposure) => (
                     <article className="currency-card" key={exposure.currencyCode}>
                       <div className="currency-title">
                         <strong>{currencyLabel(exposure.currencyCode)}</strong>
@@ -177,7 +203,7 @@ function PortfolioDashboardContent() {
                 </div>
                 <span className="section-note">{projects.length.toLocaleString("fa-IR")} نتیجه</span>
               </div>
-              <div className="portfolio-filters" aria-label="فیلتر و مرتب‌سازی پروژه‌ها">
+              <div className="portfolio-filters" role="group" aria-label="فیلتر و مرتب‌سازی پروژه‌ها">
                 <label>
                   <span>جست‌وجو</span>
                   <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام، کد یا مدیر پروژه" />
@@ -221,21 +247,42 @@ function PortfolioDashboardContent() {
               )}
             </section>
 
-            <ActionExceptions actions={model.actionExceptions} />
+            <ActionExceptions actions={visibleModel.actionExceptions} />
           </>
         )}
 
-        {!model && !isLoading && (
+        {effectiveReadState !== "loading" && !visibleModel && (
           <section className="portfolio-empty-panel">
             <h2>{isOnline ? "داده سبد در دسترس نیست" : "اتصال سرور برقرار نیست"}</h2>
-            <p>{message}</p>
-            <button className="secondary-button" type="button" disabled={!isOnline} onClick={() => setReloadToken((current) => current + 1)}>
+            <p>{isOnline ? message : "مرکز فرمان سبد پروژه‌ها برای تجمیع امن داده‌ها به اتصال سرور نیاز دارد."}</p>
+            <button className="secondary-button" type="button" disabled={!isOnline} onClick={refreshPortfolio}>
               تلاش دوباره
             </button>
           </section>
         )}
       </section>
     </main>
+  );
+}
+
+function PortfolioLoadingPreview() {
+  return (
+    <div className="portfolio-loading-preview" aria-hidden="true">
+      <div className="portfolio-loading-kpis">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div className="portfolio-loading-card" key={index}>
+            <span className="portfolio-loading-line short" />
+            <span className="portfolio-loading-line number" />
+            <span className="portfolio-loading-line medium" />
+          </div>
+        ))}
+      </div>
+      <div className="portfolio-loading-panel">
+        <span className="portfolio-loading-line medium" />
+        <span className="portfolio-loading-line wide" />
+        <span className="portfolio-loading-line wide" />
+      </div>
+    </div>
   );
 }
 

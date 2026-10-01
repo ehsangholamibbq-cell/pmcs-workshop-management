@@ -26,9 +26,20 @@ export async function loginThroughOidc(page: Page, destination = "/portfolio"): 
   await page.locator("#kc-login").click();
 
   await expect(page).toHaveURL(new RegExp(`${escapeRegularExpression(destination)}(?:[?#]|$)`, "u"));
-  await expect(page.getByRole("heading", { name: destination === "/portfolio"
+  const destinationHeading = page.getByRole("heading", { name: destination === "/portfolio"
     ? "مرکز فرمان سبد پروژه‌ها"
-    : "مرکز فرمان پروژه" })).toBeVisible();
+    : "مرکز فرمان پروژه" });
+  const sessionRetry = page.locator(".auth-state").getByRole("button", { name: "تلاش دوباره" });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await expect.poll(async () => {
+      if (await destinationHeading.isVisible()) return "ready";
+      if (await sessionRetry.isVisible()) return "retry";
+      return "waiting";
+    }, { timeout: 15_000 }).not.toBe("waiting");
+    if (await destinationHeading.isVisible()) return;
+    if (await sessionRetry.isVisible()) await sessionRetry.click();
+  }
+  await expect(destinationHeading).toBeVisible();
 }
 
 export async function readStoredOperations(page: Page): Promise<readonly StoredOperation[]> {

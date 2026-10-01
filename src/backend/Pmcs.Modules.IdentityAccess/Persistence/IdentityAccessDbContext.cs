@@ -17,6 +17,10 @@ internal sealed class IdentityAccessDbContext(DbContextOptions<IdentityAccessDbC
 
     public DbSet<IdentityProviderOperation> IdentityProviderOperations => Set<IdentityProviderOperation>();
 
+    public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
+
+    public DbSet<LoginExperience> LoginExperiences => Set<LoginExperience>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("identity_access");
@@ -123,6 +127,54 @@ internal sealed class IdentityAccessDbContext(DbContextOptions<IdentityAccessDbC
             builder.Ignore(x => x.DomainEvents);
             builder.HasIndex(x => new { x.Status, x.NextAttemptAt });
             builder.HasIndex(x => new { x.TenantId, x.UserId });
+        });
+
+        modelBuilder.Entity<MemberProfile>(builder =>
+        {
+            builder.ToTable("member_profiles");
+            builder.HasKey(x => x.UserId);
+            builder.Property(x => x.UserId).HasColumnName("user_id");
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.JobTitle).HasColumnName("job_title").HasMaxLength(160);
+            builder.Property(x => x.OrganizationUnit).HasColumnName("organization_unit").HasMaxLength(160);
+            builder.Property(x => x.WorkPhone).HasColumnName("work_phone").HasMaxLength(40);
+            builder.Property(x => x.AvatarDocumentId).HasColumnName("avatar_document_id");
+            builder.Property(x => x.AvatarCropX).HasColumnName("avatar_crop_x").HasPrecision(6, 5);
+            builder.Property(x => x.AvatarCropY).HasColumnName("avatar_crop_y").HasPrecision(6, 5);
+            builder.Property(x => x.AvatarCropWidth).HasColumnName("avatar_crop_width").HasPrecision(6, 5);
+            builder.Property(x => x.AvatarCropHeight).HasColumnName("avatar_crop_height").HasPrecision(6, 5);
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(x => x.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.Ignore(x => x.DomainEvents);
+            builder.HasIndex(x => new { x.TenantId, x.UserId });
+        });
+
+        modelBuilder.Entity<LoginExperience>(builder =>
+        {
+            builder.ToTable("login_experiences");
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id");
+            builder.Property(x => x.TenantId).HasColumnName("tenant_id");
+            builder.Property(x => x.VersionNumber).HasColumnName("version_number");
+            builder.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(40);
+            builder.Property(x => x.CompositionVariant).HasColumnName("composition_variant").HasConversion<string>().HasMaxLength(60);
+            builder.Property(x => x.SurfaceTone).HasColumnName("surface_tone").HasConversion<string>().HasMaxLength(60);
+            builder.Property(x => x.AccentPalette).HasColumnName("accent_palette").HasConversion<string>().HasMaxLength(60);
+            builder.Property(x => x.MotionPolicy).HasColumnName("motion_policy").HasConversion<string>().HasMaxLength(40);
+            builder.Property(x => x.Eyebrow).HasColumnName("eyebrow").HasMaxLength(80);
+            builder.Property(x => x.Headline).HasColumnName("headline").HasMaxLength(140);
+            builder.Property(x => x.SupportingText).HasColumnName("supporting_text").HasMaxLength(320);
+            builder.Property(x => x.LogoDocumentId).HasColumnName("logo_document_id");
+            builder.Property(x => x.HeroDocumentId).HasColumnName("hero_document_id");
+            builder.Property(x => x.CreatedBy).HasColumnName("created_by");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+            builder.Property(x => x.PublishedBy).HasColumnName("published_by");
+            builder.Property(x => x.PublishedAt).HasColumnName("published_at");
+            builder.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
+            builder.Ignore(x => x.DomainEvents);
+            builder.HasIndex(x => new { x.TenantId, x.VersionNumber }).IsUnique();
         });
     }
 }

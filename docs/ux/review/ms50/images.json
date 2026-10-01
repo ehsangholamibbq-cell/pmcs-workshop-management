@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "PMCS-V1.1-UX2-MS50-VX-G3",
+  "sources": [
+    {
+      "key": "active",
+      "sourceCommit": "218dbfff78b94e8f3ce897321136544d5ef3f630",
+      "artifactId": "11003547859",
+      "archiveDigest": "sha256:cd9f084c7161653a59ce7358a8275b17ab0c4a64ebd6d83c761da1dbbe1a8722"
+    },
+    {
+      "key": "font",
+      "sourceCommit": "efba632036098ca3e5dabab81ba5770c3561929e",
+      "artifactId": "10998892196",
+      "archiveDigest": "sha256:bd9b537cd43437384f0320ba9cad84b23217b37ec51c5bc779f4031673d52203"
+    },
+    {
+      "key": "foundation",
+      "sourceCommit": "20b52c1e8f685b4efa1155c652512f3e63100538",
+      "artifactId": "11002615768",
+      "archiveDigest": "sha256:548d997a24caa384aa5bf5b7eee791bcd2de3c76ab910f0a0f85fd9df71022ef"
+    },
+    {
+      "key": "system",
+      "sourceCommit": "7336fcae49505f0edfb78842316ba2bcf96b3094",
+      "artifactId": "11004643711",
+      "archiveDigest": "sha256:0b3edb69d0f4ef5e4950e8e25b6f2cad6c09b5cdbeebba81b4be7563b06ad4d2"
+    }
+  ],
+  "images": [
+    {
+      "file": "images/active-login.png",
+      "source": "active",
+      "sourceFile": "01-login.png",
+      "sha256": "6b8a08f2718775a795ceb9652b09becdd140d8e86c30bdf6ddbe654a7964efd9",
+      "bytes": 562339,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "images/active-project-mobile.png",
+      "source": "active",
+      "sourceFile": "21-mobile-project.png",
+      "sha256": "5013976d3b10131ffffaaa0c3f430ddbc47f88943864c1338e86074dab378404",
+      "bytes": 47316,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "images/active-reporting.png",
+      "source": "active",
+      "sourceFile": "36-project-reporting-authorized.png",
+      "sha256": "0b130f0c493c8a0b22b47766b987cd4abb0ee2d67941364e9b0fde3657487d2a",
+      "bytes": 123350,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "images/active-print.png",
+      "source": "active",
+      "sourceFile": "43-project-print-preview.png",
+      "sha256": "0f77a0a2284e578070abb63c353f2ea96f537b12a1533becc63271091389957b",
+      "bytes": 42222,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "images/font-command-desktop.png",
+      "source": "font",
+      "sourceFile": "vazirmatn-command-desktop.png",
+      "sha256": "f9395b9efe428c742cd9ba39530b2006ff322fc0811bed1288783c68ada4652a",
+      "bytes": 120118,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "images/font-command-mobile.png",
+      "source": "font",
+      "sourceFile": "vazirmatn-command-mobile.png",
+      "sha256": "948880ad7cc53031d7d27e016ea14eca3e5f616f1b4c44b363f60998eb546a4c",
+      "bytes": 101479,
+      "width": 390,
+      "height": 1673
+    },
+    {
+      "file": "images/foundation-default.png",
+      "source": "foundation",
+      "sourceFile": "default-desktop.png",
+      "sha256": "3f99f44ebb62d6f26b4a2782823d22aae1d08b9a8837d081bae25890cb958b87",
+      "bytes": 84720,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "images/foundation-error-mobile.png",
+      "source": "foundation",
+      "sourceFile": "error-mobile.png",
+      "sha256": "b1d77d57a53319b57368ddfa2db47b1757e1eb537bc32ccfdfeec64982391001",
+      "bytes": 77322,
+      "width": 390,
+      "height": 1506
+    },
+    {
+      "file": "images/system-mobile.png",
+      "source": "system",
+      "sourceFile": "default-mobile.png",
+      "sha256": "9f8428d8b42f3750b0e312987422bb6377f9c659345438d2fd565b48ccbbf9e5",
+      "bytes": 76149,
+      "width": 390,
+      "height": 1181
+    },
+    {
+      "file": "images/system-dialog-mobile.png",
+      "source": "system",
+      "sourceFile": "dialog-mobile.png",
+      "sha256": "74e07b56e301968dd79ecc68e893a61e5272cf1b0b66a4584b8f7ce5e44a3f3c",
+      "bytes": 88878,
+      "width": 390,
+      "height": 1181
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { BrandMark } from "@/components/brand-mark";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
 import {
   getCommandCenter,
   recalculateProjectState,
@@ -32,7 +35,7 @@ import { formatPersianDate, formatPersianDateTime, todayIsoInProjectTimeZone } f
 import { countPendingOperations } from "@/lib/operation-store";
 import { countPendingAttachments } from "@/lib/attachment-store";
 import { runSyncRecoveryCycle, type SyncRecoveryTrigger } from "@/lib/sync-recovery";
-import { formatAmountFa, toUserMessage } from "@/lib/localization";
+import { ApiRequestError, formatAmountFa, toUserMessage } from "@/lib/localization";
 import { scopedStorageKey } from "@/lib/field-database";
 import { listProjectLocations, type ProjectLocationModel } from "@/lib/projects";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
@@ -46,7 +49,7 @@ interface FoundationDashboardProps {
 export function FoundationDashboard({ projectId }: FoundationDashboardProps) {
   return (
     <PmcsSessionBoundary>
-      <FoundationDashboardContent projectId={projectId} />
+      <FoundationDashboardContent key={projectId} projectId={projectId} />
     </PmcsSessionBoundary>
   );
 }
@@ -61,12 +64,21 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const [isSyncing, setIsSyncing] = useState(false);
   const [nextRetryAt, setNextRetryAt] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState("صف محلی آماده است");
+  const [captureMessage, setCaptureMessage] = useState("صف محلی آماده است");
   const [refreshToken, setRefreshToken] = useState(0);
   const [commandCenter, setCommandCenter] = useState<CommandCenterModel | null>(null);
   const [commandMessage, setCommandMessage] = useState("در حال دریافت آخرین تصویر رسمی وضعیت…");
+  const [commandReadState, setCommandReadState] = useState<"loading" | "current" | "cached" | "error" | "forbidden">("loading");
+  const projectAccessDenied = useRef(false);
+  const commandReadSequence = useRef(0);
+  const [commandReadVersion, setCommandReadVersion] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
   const [measurementItems, setMeasurementItems] = useState<readonly MeasurementItemModel[]>([]);
   const [projectLocations, setProjectLocations] = useState<readonly ProjectLocationModel[]>([]);
+  const [locationReadState, setLocationReadState] = useState<"loading" | "current" | "cached" | "unavailable" | "forbidden">("loading");
+  const [locationMessage, setLocationMessage] = useState("در حال دریافت مکان‌های پروژه…");
+  const locationReadSequence = useRef(0);
+  const [locationVersion, setLocationVersion] = useState(0);
   const isOnline = useSyncExternalStore(subscribeToOnlineState, readOnlineState, () => true);
   const commandCenterCacheKey = useMemo(
     () => scopedStorageKey(`pmcs-command-center:${projectId}`),
@@ -154,7 +166,7 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   const handleQueued = useCallback(async (factId: string) => {
     setLastFactId(factId);
     await refreshPendingCount();
-    setStorageMessage("روی این دستگاه ذخیره شد؛ پس از پذیرش سرور رسمی می‌شود");
+    setCaptureMessage("روی این دستگاه ذخیره شد؛ پس از پذیرش سرور رسمی می‌شود");
   }, [refreshPendingCount]);
 
   const handleAttachmentQueued = useCallback(async () => {
@@ -163,37 +175,72 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [refreshPendingCount]);
 
   const loadCommandCenter = useCallback(async () => {
+    if (projectAccessDenied.current) return;
+    const requestId = ++commandReadSequence.current;
+    setCommandReadVersion(requestId);
     const cached = readCachedCommandCenter(commandCenterCacheKey);
     if (!isOnline) {
       if (cached) {
         setCommandCenter(cached);
+        setCommandReadState("cached");
         setCommandMessage("نسخه ذخیره‌شده روی دستگاه نمایش داده می‌شود؛ برای به‌روزرسانی به سرور متصل شوید.");
       } else {
+        setCommandCenter(null);
+        setCommandReadState("error");
         setCommandMessage("بدون اتصال، تصویر رسمی ذخیره‌شده‌ای روی این دستگاه وجود ندارد.");
       }
       return;
     }
 
+    setCommandReadState("loading");
+    setCommandMessage("در حال دریافت آخرین تصویر رسمی وضعیت…");
     try {
       const model = await getCommandCenter(
         apiBaseUrl,
         { tenantId, userId },
         projectId,
       );
+      if (requestId !== commandReadSequence.current) return;
+      const previouslyDenied = projectAccessDenied.current;
+      projectAccessDenied.current = false;
       setCommandCenter(model);
+      setCommandReadState("current");
       localStorage.setItem(commandCenterCacheKey, JSON.stringify(model));
       setCommandMessage(model.isOutdated
         ? "داده تأییدشده جدیدتر از تصویر رسمی وضعیت است؛ محاسبه مجدد لازم است."
-        : "تصویر رسمی و قابل ردیابی وضعیت از سرور دریافت شد.");
+        : model.snapshot
+          ? "تصویر رسمی و قابل ردیابی وضعیت از سرور دریافت شد."
+          : "مشخصات پروژه دریافت شد؛ تصویر رسمی وضعیت هنوز ساخته نشده است.");
+      if (previouslyDenied) setRefreshToken((current) => current + 1);
     } catch (error) {
+      if (requestId !== commandReadSequence.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        projectAccessDenied.current = true;
+        ++locationReadSequence.current;
+        setLocationVersion(locationReadSequence.current);
+        localStorage.removeItem(commandCenterCacheKey);
+        localStorage.removeItem(locationCacheKey);
+        setCommandCenter(null);
+        setProjectLocations([]);
+        setMeasurementItems([]);
+        setLastFactId(null);
+        setLocationReadState("forbidden");
+        setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+        setCommandReadState("forbidden");
+        setCommandMessage("دسترسی به این پروژه در حال حاضر تأیید نشد؛ دادهٔ ذخیره‌شده نمایش داده نمی‌شود.");
+        return;
+      }
       if (cached) {
         setCommandCenter(cached);
+        setCommandReadState("cached");
         setCommandMessage("سرور در دسترس نبود؛ آخرین تصویر رسمی ذخیره‌شده نمایش داده می‌شود.");
       } else {
+        setCommandCenter(null);
+        setCommandReadState("error");
         setCommandMessage(toUserMessage(error, "وضعیت پروژه هنوز از سرور دریافت نشده است."));
       }
     }
-  }, [commandCenterCacheKey, isOnline, projectId, tenantId, userId]);
+  }, [commandCenterCacheKey, isOnline, locationCacheKey, projectId, tenantId, userId]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -203,22 +250,52 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [loadCommandCenter, refreshToken]);
 
   const loadProjectLocations = useCallback(async () => {
+    const requestId = ++locationReadSequence.current;
+    setLocationVersion(requestId);
     const cached = readCachedProjectLocations(locationCacheKey);
+    if (projectAccessDenied.current) {
+      setProjectLocations([]);
+      setLocationReadState("forbidden");
+      setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+      return;
+    }
     if (!isOnline) {
       setProjectLocations(cached);
+      setLocationReadState(cached.length ? "cached" : "unavailable");
+      setLocationMessage(cached.length
+        ? "نسخهٔ ذخیره‌شدهٔ مکان‌ها فقط برای ارجاع محلی است؛ فرمان رسمی نیازمند خواندن تازه از سرور است."
+        : "بدون اتصال، فهرست مکان‌ها روی این دستگاه موجود نیست.");
       return;
     }
 
+    setProjectLocations([]);
+    setLocationReadState("loading");
+    setLocationMessage("در حال دریافت مکان‌های پروژه…");
     try {
       const locations = await listProjectLocations(
         apiBaseUrl,
         { tenantId, userId },
         projectId,
       );
+      if (requestId !== locationReadSequence.current || projectAccessDenied.current) return;
       setProjectLocations(locations);
+      setLocationReadState("current");
+      setLocationMessage("فهرست مکان‌ها با پاسخ جاری سرور تأیید شده است.");
       localStorage.setItem(locationCacheKey, JSON.stringify(locations));
-    } catch {
-      setProjectLocations(cached);
+    } catch (error) {
+      if (requestId !== locationReadSequence.current || projectAccessDenied.current) return;
+      if (error instanceof ApiRequestError && [401, 403, 404].includes(error.status)) {
+        localStorage.removeItem(locationCacheKey);
+        setProjectLocations([]);
+        setLocationReadState("forbidden");
+        setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+      } else {
+        setProjectLocations(cached);
+        setLocationReadState(cached.length ? "cached" : "unavailable");
+        setLocationMessage(cached.length
+          ? "دریافت تازه ناموفق بود؛ این فهرست نسخهٔ ذخیره‌شده و تأییدنشدهٔ فعلی است."
+          : "مکان‌های پروژه از سرور دریافت نشد؛ دوباره تلاش کنید.");
+      }
     }
   }, [isOnline, locationCacheKey, projectId, tenantId, userId]);
 
@@ -230,8 +307,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
   }, [loadProjectLocations, refreshToken]);
 
   async function recalculate() {
-    if (!isOnline) {
-      setCommandMessage("محاسبه رسمی فقط هنگام اتصال به سرور انجام می‌شود.");
+    if (!isOnline || commandReadState !== "current") {
+      setCommandMessage("محاسبهٔ رسمی فقط با اتصال و دادهٔ جاری سرور انجام می‌شود.");
       return;
     }
 
@@ -251,18 +328,39 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
     }
   }
 
-  const snapshot = commandCenter?.snapshot ?? null;
-  const capabilityViews = commandCenter
-    ? commandCenter.capabilities.map(toCapabilityView)
+  const displayCommandCenter = commandReadState === "loading" ? null : commandCenter;
+  const snapshot = displayCommandCenter?.snapshot ?? null;
+  const capabilityViews = displayCommandCenter
+    ? displayCommandCenter.capabilities.map(toCapabilityView)
     : initialCapabilities;
-  const attentionItems = snapshot?.attentionItems ?? [];
+  const attentionItems = commandCenter?.snapshot?.attentionItems ?? [];
   const untriagedAttentionItems = attentionItems.filter((item) => item.disposition === "NeedsTriage");
 
+  if ((commandReadState === "loading" && !commandCenter) || commandReadState === "error" || commandReadState === "forbidden") {
+    return <main className="app-shell project-print-shell" data-command-read-state={commandReadState}>
+      <section className="workspace" data-command-read-state={commandReadState}>
+        <header className="topbar"><h1>مرکز فرمان پروژه</h1></header>
+        <section className="collaboration-state" role={commandReadState === "loading" ? "status" : "alert"}>
+          <h2>{commandReadState === "loading" ? "در حال دریافت پروژه…" :
+            commandReadState === "forbidden" ? "دسترسی به پروژه تأیید نشد" : "دریافت پروژه کامل نشد"}</h2>
+          <p>{commandMessage}</p>
+          {(commandReadState === "error" || commandReadState === "forbidden") && isOnline &&
+            <button type="button" onClick={() => {
+              projectAccessDenied.current = false;
+              setRefreshToken((current) => current + 1);
+            }}>تلاش دوباره</button>}
+          <Link className="primary-link" href="/">فهرست پروژه‌ها</Link>
+        </section>
+      </section>
+    </main>;
+  }
+
   return (
-    <main className="app-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
-        <nav>
+    <main className="app-shell project-print-shell" data-command-read-state={commandReadState}>
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
+        <BrandMark />
+        <SidebarNavigation label="بخش‌های مرکز فرمان پروژه"
+          scrollHint="برای بخش‌های بیشتر، این فهرست را پیمایش کنید.">
           <Link className="nav-item" href="/">پروژه‌ها</Link>
           {(session.tenantRole === "TenantAdministrator" || session.tenantRole === "PortfolioViewer") && (
             <a className="nav-item" href="/portfolio">نمای سبد مدیریتی</a>
@@ -278,9 +376,13 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           <a className="nav-item" href="#quality-safety">کیفیت و ایمنی</a>
           <a className="nav-item" href="#governance">ریسک و تصمیم</a>
           <a className="nav-item" href="#advisory">تحلیل مشورتی</a>
+          <Link className="nav-item" href={`/projects/${projectId}/collaboration`}>گفت‌وگوی پروژه</Link>
+          <Link className="nav-item" href={`/projects/${projectId}/reports`}>مرکز گزارش‌ها</Link>
           <a className="nav-item" href="#setup">تنظیمات پروژه</a>
+          <a className="nav-item" href="/profile">پروفایل من</a>
           {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/users">کاربران و دسترسی‌ها</a>}
-        </nav>
+          {session.tenantRole === "TenantAdministrator" && <a className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</a>}
+        </SidebarNavigation>
         <div className="sidebar-meta">
           <span className={isOnline ? "online-dot" : "offline-dot"} />
           {isOnline ? "آنلاین" : "آفلاین"}
@@ -288,12 +390,44 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <SessionBadge />
       </aside>
 
+      <section className="project-print-sheet" aria-label="خلاصه چاپی مرکز فرمان پروژه">
+        <header className="project-print-heading">
+          <div>
+            <p className="eyebrow">مرکز فرمان پروژه · نمای چاپ مرورگر</p>
+            <h1>{displayCommandCenter?.projectName ?? "مشخصات پروژه هنوز دریافت نشده است"}</h1>
+            <p>{displayCommandCenter?.projectCode ?? projectId} · {today}</p>
+          </div>
+          <Image className="project-print-logo" src="/brand/bbq-official-symbol.png"
+            alt="نشان رسمی بتن بسپار قزوین" width={52} height={27} priority unoptimized />
+        </header>
+        <section className="project-print-status" aria-labelledby="project-print-status-title">
+          <p className="eyebrow">ارزیابی عملیاتی محدود</p>
+          <h2 id="project-print-status-title">{operationalStatusLabel(snapshot?.operationalStatus)}</h2>
+          <p>{operationalStatusDescription(snapshot, commandMessage)}</p>
+          {displayCommandCenter?.isOutdated && <p className="project-print-warning">تصویر وضعیت قدیمی است؛ محاسبهٔ مجدد لازم است.</p>}
+          <p className="project-print-source">{commandMessage}</p>
+        </section>
+        {snapshot ? (
+          <section className="project-print-facts" aria-label="سنجه‌های تصویر وضعیت">
+            <dl>
+              <div><dt>تاریخ تصویر وضعیت</dt><dd>{formatPersianDate(snapshot.asOfDate)}</dd></div>
+              <div><dt>پوشش داده</dt><dd>{coverageLabel(snapshot)} · {coverageBasisLabel(snapshot)}</dd></div>
+              <div><dt>روز گزارش تأییدشده</dt><dd>{snapshot.approvedReportDays.toLocaleString("fa-IR")}</dd></div>
+              <div><dt>مورد نیازمند بررسی</dt><dd>{untriagedAttentionItems.length.toLocaleString("fa-IR")}</dd></div>
+            </dl>
+            <p>محاسبه: {formatPersianDateTime(snapshot.calculatedAt)} · نسخهٔ موتور: {snapshot.calculationVersion}</p>
+            <p className="project-print-snapshot">شناسهٔ تصویر رسمی: {snapshot.snapshotId}</p>
+          </section>
+        ) : <p className="project-print-absence">بدون تصویر رسمی وضعیت، سنجه‌ای برای چاپ وجود ندارد.</p>}
+        <footer>این نمونهٔ چاپ مرورگر برای ممیزی رابط است؛ گزارش رسمی امضاشده یا خروجی مرکز گزارش‌ها نیست.</footer>
+      </section>
+
       <section className="workspace">
         <header className="topbar">
           <div>
             <p className="eyebrow">
-              {commandCenter
-                ? `${commandCenter.projectName} · ${commandCenter.projectCode}`
+              {displayCommandCenter
+                ? `${displayCommandCenter.projectName} · ${displayCommandCenter.projectCode}`
                 : "در حال دریافت مشخصات پروژه…"}
             </p>
             <h1>مرکز فرمان پروژه</h1>
@@ -325,12 +459,12 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             <p className="muted">{operationalStatusDescription(snapshot, commandMessage)}</p>
             <div className="state-controls">
               <span className="scope-badge">ارزیابی عملیاتی · محدود</span>
-              {commandCenter?.isOutdated && <span className="stale-badge">تصویر وضعیت قدیمی است</span>}
-              {commandCenter?.canRecalculate && (
+              {displayCommandCenter?.isOutdated && <span className="stale-badge">تصویر وضعیت قدیمی است</span>}
+              {displayCommandCenter?.canRecalculate && (
                 <button
                   className="secondary-button"
                   type="button"
-                  disabled={!isOnline || isCalculating}
+                  disabled={!isOnline || isCalculating || commandReadState !== "current"}
                   onClick={() => void recalculate()}
                 >
                   {isCalculating ? "در حال محاسبه…" : "محاسبه وضعیت رسمی"}
@@ -364,18 +498,22 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
               tenantId={tenantId}
               userId={userId}
               projectId={projectId}
-              statusMessage={storageMessage}
-              onStatus={setStorageMessage}
+              statusMessage={captureMessage}
+              onStatus={setCaptureMessage}
               onQueued={handleQueued}
               measurementItems={measurementItems}
               locations={projectLocations}
+              locationReadState={locationReadState}
             />
+            <p className="field-help" role="status">وضعیت همگام‌سازی: {storageMessage}</p>
             <EvidenceCapture
               tenantId={tenantId}
               userId={userId}
               projectId={projectId}
               lastFactId={lastFactId}
               onQueued={handleAttachmentQueued}
+              projectReadState={commandReadState}
+              isProjectAccessRevoked={() => projectAccessDenied.current}
             />
             <TodayReportWorkflow
               apiBaseUrl={apiBaseUrl}
@@ -434,48 +572,48 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
           onChanged={() => setRefreshToken((current) => current + 1)}
         />
 
-        {commandCenter?.canReadFinance && (
+        {displayCommandCenter?.canReadFinance && (
           <section className="financial-summary" aria-label="خلاصه وضعیت مالی مستقل">
             <div>
               <p className="eyebrow">وضعیت مالی مستقل</p>
-              <h2>{financialStateTitle(commandCenter.financialState)}</h2>
+              <h2>{financialStateTitle(displayCommandCenter.financialState)}</h2>
               <p className="muted">این بخش در رنگ وضعیت عملیاتی بالا ادغام نمی‌شود.</p>
             </div>
             <div className="financial-summary-metrics">
               <span>
-                <strong>{formatFinancialAmount(commandCenter.financialState?.totalReceipts, commandCenter.financialState?.currencyCode)}</strong>
+                <strong>{formatFinancialAmount(displayCommandCenter.financialState?.totalReceipts, displayCommandCenter.financialState?.currencyCode)}</strong>
                 دریافت قطعی
               </span>
               <span>
-                <strong>{formatFinancialAmount(commandCenter.financialState?.recognizedSpend, commandCenter.financialState?.currencyCode)}</strong>
+                <strong>{formatFinancialAmount(displayCommandCenter.financialState?.recognizedSpend, displayCommandCenter.financialState?.currencyCode)}</strong>
                 هزینه شناسایی‌شده
               </span>
               <span>
-                <strong>{budgetComparisonLabel(commandCenter.financialState?.budgetComparisonState)}</strong>
+                <strong>{budgetComparisonLabel(displayCommandCenter.financialState?.budgetComparisonState)}</strong>
                 مقایسه بودجه
               </span>
             </div>
           </section>
         )}
 
-        {commandCenter?.canReadCommercial && (
+        {displayCommandCenter?.canReadCommercial && (
           <section className="financial-summary commercial-summary" aria-label="خلاصه مستقل قرارداد و تدارکات">
             <div>
               <p className="eyebrow">وضعیت مستقل قرارداد و خرید</p>
-              <h2>{commercialStateTitle(commandCenter.commercialState)}</h2>
+              <h2>{commercialStateTitle(displayCommandCenter.commercialState)}</h2>
               <p className="muted">این بخش در رنگ وضعیت عملیاتی یا مالی ادغام نمی‌شود.</p>
             </div>
             <div className="financial-summary-metrics">
               <span>
-                <strong>{commandCenter.commercialState?.activeContractCount.toLocaleString("fa-IR") ?? "—"}</strong>
+                <strong>{displayCommandCenter.commercialState?.activeContractCount.toLocaleString("fa-IR") ?? "—"}</strong>
                 قرارداد فعال
               </span>
               <span>
-                <strong>{formatCommercialCeiling(commandCenter.commercialState)}</strong>
+                <strong>{formatCommercialCeiling(displayCommandCenter.commercialState)}</strong>
                 سقف مصوبِ معلوم
               </span>
               <span>
-                <strong>{commandCenter.commercialState?.openCommitmentCount.toLocaleString("fa-IR") ?? "—"}</strong>
+                <strong>{displayCommandCenter.commercialState?.openCommitmentCount.toLocaleString("fa-IR") ?? "—"}</strong>
                 تعهد خرید باز
               </span>
             </div>
@@ -512,8 +650,8 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             measurementItems={measurementItems}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
-          <SyncIssuesPanel apiBaseUrl={apiBaseUrl} projectId={projectId} refreshToken={refreshToken} />
-          {commandCenter?.canReadCommercial && (
+          <SyncIssuesPanel apiBaseUrl={apiBaseUrl} tenantId={tenantId} userId={userId} projectId={projectId} isOnline={isOnline} refreshToken={refreshToken} />
+          {displayCommandCenter?.canReadCommercial && (
             <>
               <CommercialControl
                 apiBaseUrl={apiBaseUrl}
@@ -570,6 +708,19 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
             projectId={projectId}
             isOnline={isOnline}
             locations={projectLocations}
+            readState={locationReadState}
+            readVersion={locationVersion}
+            isCurrentRead={(version) => version === locationReadSequence.current && !projectAccessDenied.current}
+            readMessage={locationMessage}
+            onRetry={() => void loadProjectLocations()}
+            onAccessRevoked={() => {
+              ++locationReadSequence.current;
+              setLocationVersion(locationReadSequence.current);
+              localStorage.removeItem(locationCacheKey);
+              setProjectLocations([]);
+              setLocationReadState("forbidden");
+              setLocationMessage("دسترسی به مکان‌های پروژه تأیید نشد؛ فهرست قبلی نمایش داده نمی‌شود.");
+            }}
             onChanged={() => setRefreshToken((current) => current + 1)}
           />
           <div className="capability-grid">
@@ -588,9 +739,10 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
         <section className="section-block split" id="attention">
           <article>
             <p className="eyebrow">نیازمند رسیدگی</p>
-            <h2>{attentionItems.length > 0 ? "مشاهدات تأییدشده و تعیین تکلیف مدیریتی" : "مورد رسمی نیازمند بررسی ثبت نشده است"}</h2>
+            <h2>{commandReadState === "loading" ? "در حال دریافت موارد تأییدشده…" :
+              attentionItems.length > 0 ? "مشاهدات تأییدشده و تعیین تکلیف مدیریتی" : "مورد رسمی نیازمند بررسی ثبت نشده است"}</h2>
             {attentionItems.length > 0 ? (
-              <div className="command-attention-list">
+              <div className="command-attention-list" hidden={commandReadState === "loading"}>
                 {attentionItems.slice(0, 6).map((item) => (
                   <div className="command-attention-item" key={item.sourceFactId}>
                     <div>
@@ -611,6 +763,22 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                         projectId={projectId}
                         item={item}
                         isOnline={isOnline}
+                        readState={commandReadState}
+                        readVersion={commandReadVersion}
+                        isCurrentRead={(version) => version === commandReadSequence.current &&
+                          commandReadState === "current" && !projectAccessDenied.current}
+                        onAccessRevoked={() => {
+                          setCommandReadVersion(++commandReadSequence.current);
+                          projectAccessDenied.current = true;
+                          localStorage.removeItem(commandCenterCacheKey);
+                          localStorage.removeItem(locationCacheKey);
+                          setCommandCenter(null);
+                          setProjectLocations([]);
+                          setMeasurementItems([]);
+                          setLastFactId(null);
+                          setCommandReadState("forbidden");
+                          setCommandMessage("دسترسی به پروژه تأیید نشد؛ داده و فرمان قبلی نمایش داده نمی‌شود.");
+                        }}
                         onChanged={() => setRefreshToken((current) => current + 1)}
                       />
                     )}
@@ -622,16 +790,21 @@ function FoundationDashboardContent({ projectId }: Required<FoundationDashboardP
                 نبود مورد در این بخش فقط درباره پنجره ۳۰روزه واقعیت‌های تأییدشده است و به‌معنای سلامت کامل مالی، زمانی یا ایمنی، بهداشت و محیط‌زیست (HSE) نیست.
               </p>
             )}
-            {commandCenter && commandCenter.trend.length > 0 && (
-              <div className="trend-strip" aria-label="روند تصاویر اخیر وضعیت">
-                {commandCenter.trend.slice().reverse().map((point) => (
-                  <span
-                    className={`trend-point trend-${point.operationalStatus.toLowerCase()}`}
-                    key={point.snapshotId}
-                    title={`تاریخ ${formatStateDate(point.asOfDate)} · پوشش ${point.coveragePercent.toLocaleString("fa-IR")}٪`}
-                  />
-                ))}
-              </div>
+            {displayCommandCenter && displayCommandCenter.trend.length > 0 && (
+              <figure className="operational-trend">
+                <figcaption>روند تصاویر اخیر وضعیت</figcaption>
+                <ul className="trend-strip">
+                  {displayCommandCenter.trend.slice().reverse().map((point) => (
+                    <li className="trend-item" key={point.snapshotId}>
+                      <span aria-hidden="true" className={`trend-point trend-${point.operationalStatus.toLowerCase()}`} />
+                      <div><strong>{operationalStatusLabel(point.operationalStatus)}</strong>
+                        <small><time dateTime={point.asOfDate}>{formatStateDate(point.asOfDate)}</time>
+                          {` · پوشش ${point.coveragePercent.toLocaleString("fa-IR")}٪`}</small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </figure>
             )}
           </article>
           <article className="architecture-note">

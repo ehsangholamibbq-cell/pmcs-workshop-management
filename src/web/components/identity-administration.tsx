@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
+import { SidebarNavigation } from "@/components/sidebar-navigation";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   changeTenantRole,
   changeUserStatus,
@@ -14,13 +16,12 @@ import {
   upsertMembership,
   type IdentityDirectoryModel,
   type InvitationStatus,
-  type MembershipStatus,
   type TenantRole,
   type UserDirectoryModel,
-  type UserStatus,
   type EffectivePermissionPreviewModel,
 } from "@/lib/identity-administration";
 import { toUserMessage } from "@/lib/localization";
+import { projectRoleLabel, userStatusLabel } from "@/lib/identity-labels";
 import { formatPersianDateTime } from "@/lib/persian-date";
 import { listProjects, type ProjectModel } from "@/lib/projects";
 import { PmcsSessionBoundary, SessionBadge, usePmcsSession } from "@/components/pmcs-session";
@@ -40,10 +41,18 @@ function IdentityAdministrationContent() {
   const [directory, setDirectory] = useState<IdentityDirectoryModel | null>(null);
   const [projects, setProjects] = useState<readonly ProjectModel[]>([]);
   const [message, setMessage] = useState("در حال دریافت فهرست کاربران و دعوت‌ها…");
+  const [messageKind, setMessageKind] = useState<"status" | "success" | "error">("status");
   const [reloadToken, setReloadToken] = useState(0);
   const [busyKey, setBusyKey] = useState("");
+  const pendingSuccess = useRef<string | null>(null);
 
-  const reload = useCallback(() => setReloadToken((value) => value + 1), []);
+  const reload = useCallback((success?: string) => {
+    pendingSuccess.current = success ?? null;
+    setDirectory(null);
+    setMessage(success ?? "در حال دریافت فهرست کاربران و دعوت‌ها…");
+    setMessageKind(success ? "success" : "status");
+    setReloadToken((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     if (session.tenantRole !== "TenantAdministrator") return;
@@ -55,25 +64,32 @@ function IdentityAdministrationContent() {
       if (!active) return;
       setDirectory(loadedDirectory);
       setProjects(loadedProjects);
-      setMessage("فهرست کاربران و دامنه دسترسی‌ها از مرجع رسمی دریافت شد.");
+      setMessage(pendingSuccess.current ?? "فهرست کاربران و دامنه دسترسی‌ها از مرجع رسمی دریافت شد.");
+      setMessageKind("success");
+      pendingSuccess.current = null;
     }).catch((error: unknown) => {
       if (!active) return;
       setMessage(toUserMessage(error, "دریافت اطلاعات مدیریت کاربران انجام نشد."));
+      setMessageKind("error");
+      pendingSuccess.current = null;
     });
     return () => {
       active = false;
     };
   }, [reloadToken, session.tenantId, session.tenantRole, session.userId]);
 
-  async function runAction(key: string, action: () => Promise<void>, success: string) {
+  async function runAction(key: string, action: () => Promise<void>, success: string): Promise<boolean> {
     setBusyKey(key);
     setMessage("در حال ثبت و ممیزی تغییر…");
+    setMessageKind("status");
     try {
       await action();
-      setMessage(success);
-      reload();
+      reload(success);
+      return true;
     } catch (error) {
       setMessage(toUserMessage(error, "ثبت تغییر انجام نشد."));
+      setMessageKind("error");
+      return false;
     } finally {
       setBusyKey("");
     }
@@ -94,15 +110,18 @@ function IdentityAdministrationContent() {
 
   return (
     <main className="app-shell identity-shell">
-      <aside className="sidebar" aria-label="ناوبری اصلی">
-        <div className="brand-mark" aria-label="سامانه کنترل مدیریت پروژه"><span>پ</span></div>
-        <nav>
+      <aside className="sidebar disclosure-sidebar" aria-label="ناوبری اصلی">
+        <BrandMark />
+        <SidebarNavigation label="بخش‌های مدیریت هویت">
           <Link className="nav-item" href="/portfolio">سبد پروژه‌ها</Link>
           <Link className="nav-item" href="/">مرکز فرمان پروژه</Link>
-          <Link className="nav-item active" href="/admin/users">کاربران و دسترسی‌ها</Link>
-        </nav>
+          <Link className="nav-item" href="/profile">پروفایل من</Link>
+          <Link className="nav-item active" href="/admin/users" aria-current="page">کاربران و دسترسی‌ها</Link>
+          <Link className="nav-item" href="/admin/login-experience">ظاهر صفحه ورود</Link>
+        </SidebarNavigation>
         <SessionBadge />
       </aside>
+
 
       <section className="workspace identity-workspace">
         <header className="topbar">
@@ -111,10 +130,10 @@ function IdentityAdministrationContent() {
             <h1>کاربران، دعوت‌ها و عضویت پروژه</h1>
             <p className="identity-lead">حساب ورود و مجوز داخلی دو مرز مستقل‌اند؛ دعوت موفق بدون عضویت، دسترسی پروژه ایجاد نمی‌کند.</p>
           </div>
-          <button className="secondary-button" type="button" disabled={Boolean(busyKey)} onClick={reload}>تازه‌سازی</button>
+          <button className="secondary-button" type="button" disabled={Boolean(busyKey)} onClick={() => reload()}>تازه‌سازی</button>
         </header>
 
-        <p className="portfolio-system-message" aria-live="polite">{message}</p>
+        <p className={`portfolio-system-message identity-feedback ${messageKind}`} role={messageKind === "error" ? "alert" : "status"}>{message}</p>
 
         {directory && !directory.provisioningEnabled && (
           <div className="identity-warning" role="alert">
@@ -126,11 +145,12 @@ function IdentityAdministrationContent() {
           <>
             <InviteUserForm
               disabled={!directory.provisioningEnabled || Boolean(busyKey)}
+              busy={Boolean(busyKey)}
               projects={projects}
               projectRoles={directory.projectRoles}
-              onSubmit={(input) => runAction(
+              onSubmit={(input, idempotencyKey) => runAction(
                 "invite",
-                async () => { await inviteUser(apiBaseUrl, input); },
+                async () => { await inviteUser(apiBaseUrl, input, idempotencyKey); },
                 "دعوت در صف پایدار ثبت شد؛ وضعیت ارسال به‌صورت خودکار به‌روزرسانی می‌شود.",
               )}
             />
@@ -211,8 +231,9 @@ function IdentityAdministrationContent() {
   );
 }
 
-function InviteUserForm({ disabled, projects, projectRoles, onSubmit }: {
+function InviteUserForm({ disabled, busy, projects, projectRoles, onSubmit }: {
   readonly disabled: boolean;
+  readonly busy: boolean;
   readonly projects: readonly ProjectModel[];
   readonly projectRoles: readonly string[];
   readonly onSubmit: (input: {
@@ -220,25 +241,34 @@ function InviteUserForm({ disabled, projects, projectRoles, onSubmit }: {
     email: string;
     tenantRole: TenantRole;
     projects: readonly { projectId: string; roleCode: string }[];
-  }) => Promise<void>;
+  }, idempotencyKey: string) => Promise<boolean>;
 }) {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [tenantRole, setTenantRole] = useState<TenantRole>("Member");
   const [projectId, setProjectId] = useState("");
   const [projectRole, setProjectRole] = useState("Observer");
+  const retryIdentity = useRef<{ payload: string; key: string } | null>(null);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await onSubmit({
+    const input = {
       displayName,
       email,
       tenantRole,
       projects: projectId ? [{ projectId, roleCode: projectRole }] : [],
-    });
-    setDisplayName("");
-    setEmail("");
-    setProjectId("");
+    };
+    const payload = JSON.stringify(input);
+    if (retryIdentity.current?.payload !== payload) {
+      retryIdentity.current = { payload, key: crypto.randomUUID() };
+    }
+    const saved = await onSubmit(input, retryIdentity.current.key);
+    if (saved) {
+      retryIdentity.current = null;
+      setDisplayName("");
+      setEmail("");
+      setProjectId("");
+    }
   }
 
   return (
@@ -247,16 +277,16 @@ function InviteUserForm({ disabled, projects, projectRoles, onSubmit }: {
         <div><p className="eyebrow">دعوت کنترل‌شده</p><h2 id="invite-title">افزودن کاربر</h2></div>
         <span className="section-note">بدون ثبت‌نام عمومی</span>
       </div>
-      <form className="identity-form" onSubmit={(event) => void submit(event)}>
-        <label><span>نام و نام خانوادگی</span><input required maxLength={200} value={displayName} onChange={(event) => setDisplayName(event.target.value)} /></label>
-        <label><span>نشانی ایمیل</span><input dir="ltr" type="email" required maxLength={320} value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-        <label><span>نقش سازمانی</span><select value={tenantRole} onChange={(event) => setTenantRole(event.target.value as TenantRole)}>
+      <form className="identity-form" aria-busy={busy} onSubmit={(event) => void submit(event)}>
+        <label><span>نام و نام خانوادگی</span><input required disabled={disabled} maxLength={200} value={displayName} onChange={(event) => setDisplayName(event.target.value)} /></label>
+        <label><span>نشانی ایمیل</span><input dir="ltr" type="email" required disabled={disabled} maxLength={320} value={email} onChange={(event) => setEmail(event.target.value)} /></label>
+        <label><span>نقش سازمانی</span><select disabled={disabled} value={tenantRole} onChange={(event) => setTenantRole(event.target.value as TenantRole)}>
           <option value="Member">عضو سازمان</option><option value="PortfolioViewer">مشاهده‌گر سبد پروژه‌ها</option><option value="TenantAdministrator">مدیر سازمان</option>
         </select></label>
-        <label><span>پروژه اولیه، اختیاری</span><select value={projectId} onChange={(event) => setProjectId(event.target.value)}>
+        <label><span>پروژه اولیه، اختیاری</span><select disabled={disabled} value={projectId} onChange={(event) => setProjectId(event.target.value)}>
           <option value="">بدون عضویت اولیه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name} · {project.code}</option>)}
         </select></label>
-        <label><span>نقش در پروژه</span><select disabled={!projectId} value={projectRole} onChange={(event) => setProjectRole(event.target.value)}>
+        <label><span>نقش در پروژه</span><select disabled={disabled || !projectId} value={projectRole} onChange={(event) => setProjectRole(event.target.value)}>
           {projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}
         </select></label>
         <button className="primary-button" type="submit" disabled={disabled}>ثبت و ارسال دعوت امن</button>
@@ -271,25 +301,30 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
   readonly projects: readonly ProjectModel[];
   readonly projectRoles: readonly string[];
   readonly disabled: boolean;
-  readonly onAction: (key: string, action: () => Promise<void>, success: string) => Promise<void>;
+  readonly onAction: (key: string, action: () => Promise<void>, success: string) => Promise<boolean>;
 }) {
   const [projectId, setProjectId] = useState("");
   const [projectRole, setProjectRole] = useState("Observer");
   const [preview, setPreview] = useState<EffectivePermissionPreviewModel | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewMessage, setPreviewMessage] = useState("");
+  const [previewMessageKind, setPreviewMessageKind] = useState<"status" | "error">("status");
   const projectNames = useMemo(() => new Map(projects.map((project) => [project.id, project.name])), [projects]);
 
   async function loadPreview() {
     if (!projectId) return;
     setPreviewBusy(true);
+    setPreview(null);
     setPreviewMessage("در حال محاسبهٔ مجوز مؤثر…");
+    setPreviewMessageKind("status");
     try {
       setPreview(await getEffectivePermissionPreview(apiBaseUrl, user.id, projectId, projectRole));
       setPreviewMessage("نتیجه برای نقش انتخابی شبیه‌سازی شد؛ این نما مجوز جدیدی ایجاد یا ذخیره نمی‌کند.");
+      setPreviewMessageKind("status");
     } catch (error) {
       setPreview(null);
       setPreviewMessage(toUserMessage(error, "محاسبهٔ مجوز مؤثر انجام نشد."));
+      setPreviewMessageKind("error");
     } finally {
       setPreviewBusy(false);
     }
@@ -327,13 +362,13 @@ function UserCard({ user, currentUserId, projects, projectRoles, disabled, onAct
 
       {user.status !== "Deactivated" && (
         <div className="membership-editor">
-          <label><span>پروژه</span><select value={projectId} onChange={(event) => { setProjectId(event.target.value); setPreview(null); setPreviewMessage(""); }}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-          <label><span>نقش پروژه</span><select value={projectRole} onChange={(event) => setProjectRole(event.target.value)}>{projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}</select></label>
+          <label><span>پروژه</span><select disabled={disabled || previewBusy} value={projectId} onChange={(event) => { setProjectId(event.target.value); setPreview(null); setPreviewMessage(""); }}><option value="">انتخاب پروژه</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+          <label><span>نقش پروژه</span><select disabled={disabled || previewBusy} value={projectRole} onChange={(event) => { setProjectRole(event.target.value); setPreview(null); setPreviewMessage(""); }}>{projectRoles.map((role) => <option key={role} value={role}>{projectRoleLabel(role)}</option>)}</select></label>
           <button type="button" disabled={disabled || !projectId} onClick={() => void onAction(`membership-${user.id}`, () => upsertMembership(apiBaseUrl, user.id, projectId, projectRole), "عضویت و نقش پروژه ثبت شد.")}>ثبت عضویت</button>
           <button className="secondary-button" type="button" disabled={disabled || previewBusy || !projectId} onClick={() => void loadPreview()}>{previewBusy ? "در حال محاسبه…" : "پیش‌نمایش نقش انتخابی"}</button>
         </div>
       )}
-      {previewMessage && <p className="permission-preview-message" aria-live="polite">{previewMessage}</p>}
+      {previewMessage && <p className="permission-preview-message" role={previewMessageKind === "error" ? "alert" : "status"}>{previewMessage}</p>}
       {preview && (
         <section className="permission-preview" aria-label="پیش‌نمایش دسترسی مؤثر">
           <div className="permission-preview-summary">
@@ -367,20 +402,8 @@ function tenantRoleLabel(role: TenantRole): string {
   return ({ Member: "عضو سازمان", PortfolioViewer: "مشاهده‌گر سبد پروژه‌ها", TenantAdministrator: "مدیر سازمان" })[role];
 }
 
-function projectRoleLabel(role: string): string {
-  return ({ ProjectManager: "مدیر پروژه", ProjectController: "کارشناس کنترل پروژه", SiteSupervisor: "سرپرست کارگاه", Observer: "مشاهده‌گر", TechnicalOffice: "دفتر فنی", FinanceOperator: "کارشناس مالی", FinanceManager: "مدیر مالی", ContractAdministrator: "مدیر قرارداد", ProcurementOperator: "کارشناس خرید", ProcurementManager: "مدیر خرید", QualityController: "مسئول کنترل کیفیت", HseOfficer: "مسئول ایمنی، بهداشت و محیط‌زیست" } as Record<string, string>)[role] ?? "نقش پروژه";
-}
-
 function invitationStatusLabel(status: InvitationStatus): string {
   return ({ Queued: "در صف", Processing: "در حال پردازش", RetryScheduled: "تلاش مجدد زمان‌بندی‌شده", Sent: "ارسال‌شده", Failed: "ناموفق", Revoked: "لغوشده", Expired: "منقضی‌شده" })[status];
-}
-
-function userStatusLabel(status: UserStatus): string {
-  return ({ Invited: "دعوت‌شده", Active: "فعال", Suspended: "تعلیق‌شده", Deactivated: "غیرفعال" })[status];
-}
-
-export function membershipStatusLabel(status: MembershipStatus): string {
-  return ({ Proposed: "پیشنهادی", Active: "فعال", Suspended: "تعلیق‌شده", Expired: "منقضی‌شده", Revoked: "لغوشده" })[status];
 }
 
 function formatDateTime(value: string): string {

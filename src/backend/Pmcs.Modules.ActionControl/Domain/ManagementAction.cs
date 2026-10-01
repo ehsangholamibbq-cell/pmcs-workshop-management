@@ -14,7 +14,8 @@ public sealed class ManagementAction : AggregateRoot
 
     public Guid ProjectId { get; private set; }
 
-    public Guid SourceFactId { get; private set; }
+    public Guid? SourceFactId { get; private set; }
+    public Guid? SourceMessageId { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
 
@@ -39,6 +40,9 @@ public sealed class ManagementAction : AggregateRoot
     public DateTimeOffset? LastChangedAt { get; private set; }
 
     public DateTimeOffset? CompletedAt { get; private set; }
+    public string? ReportingHistoryJson { get; private set; }
+    public IReadOnlyCollection<GovernanceReportingEvent>? ReportingHistory =>
+        GovernanceReportingHistory.Read(ReportingHistoryJson);
 
     public static ManagementAction Create(
         Guid id,
@@ -84,8 +88,24 @@ public sealed class ManagementAction : AggregateRoot
             Priority = priority,
             Status = ManagementActionStatus.Open,
             CreatedBy = createdBy,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            ReportingHistoryJson = GovernanceReportingHistory.Start(createdAt,
+                ManagementActionStatus.Open.ToString(), dueDate, priority.ToString())
         };
+    }
+
+    public static ManagementAction CreateFromMessage(
+        Guid id, Guid tenantId, Guid projectId, Guid sourceMessageId,
+        string title, string? description, Guid assigneeUserId,
+        string assigneeDisplayName, DateOnly dueDate, ActionPriority priority,
+        Guid createdBy, DateTimeOffset createdAt)
+    {
+        var action = Create(id, tenantId, projectId, sourceMessageId, title,
+            description, assigneeUserId, assigneeDisplayName, dueDate, priority,
+            createdBy, createdAt);
+        action.SourceFactId = null;
+        action.SourceMessageId = sourceMessageId;
+        return action;
     }
 
     public void Transition(
@@ -113,6 +133,8 @@ public sealed class ManagementAction : AggregateRoot
         LastChangedBy = changedBy;
         LastChangedAt = changedAt;
         CompletedAt = targetStatus == ManagementActionStatus.Done ? changedAt : null;
+        ReportingHistoryJson = GovernanceReportingHistory.Append(ReportingHistoryJson,
+            changedAt, targetStatus.ToString(), DueDate, Priority.ToString());
         AdvanceRevision();
     }
 

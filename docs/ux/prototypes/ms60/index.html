@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMCS — فرم شمسی و فیلتر</title>
+  <style>
+    @font-face { font-family: Vazirmatn; src: url("../../../../src/web/public/typography/Vazirmatn-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { font: 16px/1.65 Vazirmatn, Tahoma, sans-serif; color: #17242e; background: #fbf8f1; --navy: #0c2036; --muted: #4b5c66; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select { font: inherit; }
+    button { min-height: 44px; cursor: pointer; }
+    :is(a, button, input, select):focus-visible { outline: 3px solid #187a49; outline-offset: 3px; }
+    .skip { position: absolute; top: -5rem; right: 1rem; z-index: 5; padding: .4rem .7rem; background: white; }
+    .skip:focus { top: .5rem; }
+    header { background: var(--navy); color: white; padding: .8rem max(1rem, calc((100vw - 1120px)/2)); }
+    .head { display: flex; gap: .75rem; align-items: center; }
+    .brand { width: 84px; height: 58px; flex: none; object-fit: contain; border-radius: 9px; padding: .2rem; background: #fbf8f1; }
+    h1 { margin: 0; font-size: 1.3rem; line-height: 1.4; }
+    header p { margin: 0; color: #d7e1e2; font-size: .8rem; }
+    main { max-width: 1120px; margin: auto; padding: 1rem 1rem 3rem; }
+    .note { padding: .6rem .8rem; border: 1px solid #b48b49; border-radius: 10px; background: #fff8e8; color: #51390e; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
+    .controls label { font-weight: 700; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 1rem; }
+    .card { min-width: 0; background: white; border: 1px solid #e9dfcf; border-radius: 14px; padding: 1rem; }
+    h2 { margin: 0 0 .4rem; color: var(--navy); font-size: 1.12rem; }
+    p { margin: .3rem 0 .8rem; }
+    .muted, .help { color: var(--muted); font-size: .82rem; }
+    .fields { display: grid; gap: .8rem; }
+    .field { display: grid; gap: .2rem; font-weight: 700; }
+    input, select { width: 100%; min-height: 44px; border: 1px solid #7b8c94; border-radius: 8px; padding: .4rem .6rem; background: white; color: #17242e; }
+    input[aria-invalid="true"] { border: 2px solid #a12d27; background: #fff8f7; }
+    .help { margin: 0; }
+    .error-text { color: #932720; font-weight: 700; font-size: .82rem; margin: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .primary, .secondary { padding: .4rem .8rem; border-radius: 8px; font-weight: 700; }
+    .primary { background: #11643b; border: 1px solid #11643b; color: white; }
+    .primary:hover:not(:disabled) { background: #0b4f2e; }
+    .secondary { background: white; border: 1px solid #7b8c94; color: var(--navy); }
+    button:disabled { cursor: not-allowed; color: #46555b; background: #e4e9e6; border-color: #aeb8b8; }
+    .status { border-right: 4px solid #235c99; background: #f1f6f8; border-radius: 8px; padding: .7rem .8rem; }
+    .status[data-tone="warning"] { border-color: #76500f; background: #fff8e8; }
+    .status[data-tone="error"] { border-color: #a12d27; background: #fff1ef; }
+    .status[data-tone="success"] { border-color: #17684c; background: #f2f9f3; }
+    .status strong { display: block; }
+    .status p { margin: 0; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+    th, td { text-align: right; padding: .6rem .3rem; border-bottom: 1px solid #e9dfcf; }
+    th { color: var(--muted); }
+    .skeleton { height: 22px; margin: .8rem 0; background: #dce5e2; border-radius: 8px; }
+    .foot { color: var(--muted); font-size: .8rem; margin-top: 1rem; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 360px) { .brand { width: 65px; height: 50px; } h1 { font-size: 1.04rem; } .controls { display: grid; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @media print { .controls, .actions, .fields { display: none !important; } .grid { display: block; } .card { break-inside: avoid; margin-bottom: .7rem; } }
+  </style>
+</head>
+<body data-state="ready">
+  <a class="skip" href="#main">رفتن به نمونهٔ فرم و فیلتر</a>
+  <header><div class="head"><img class="brand" src="../../../../src/web/public/brand/bbq-official-lockup.png" alt="نشان رسمی بتن بسپار قزوین"><div><h1>فرم شمسی و فیلتر</h1><p>PMCS · UX2-MS60 · نمونهٔ مستقل اجزای پایه</p></div></div></header>
+  <main id="main">
+    <p class="note"><strong>نمونهٔ طراحی:</strong> ردیف‌ها و تاریخ‌ها ساختگی‌اند. فیلتر فقط همین صفحه را تغییر می‌دهد؛ داده‌ای خوانده یا ثبت نمی‌شود.</p>
+    <div class="controls"><label for="state">وضعیت نمایشی</label><select id="state"><option value="ready">آماده</option><option value="invalid">تاریخ نامعتبر</option><option value="range">بازهٔ ناسازگار</option><option value="loading">در حال دریافت</option><option value="success">فیلتر نمایشی اعمال شد</option><option value="empty">نتیجه‌ای نیست</option><option value="error">خطای دریافت</option><option value="offline">آفلاین</option><option value="permission">بدون مجوز</option><option value="stale">نتیجهٔ کهنه</option></select></div>
+    <div class="grid">
+      <section class="card" aria-labelledby="form-title"><h2 id="form-title">شرط‌های جست‌وجو</h2><p class="muted">تاریخ‌های شمسی نمونه‌اند؛ تبدیل و اعتبارسنجی واقعی محصول در این صفحه اجرا نمی‌شود.</p>
+        <div class="fields">
+          <div><label class="field" for="start">از تاریخ شمسی<input id="start" type="text" inputmode="numeric" value="۱۴۰۵/۰۷/۰۱" aria-describedby="start-help start-error"></label><p class="help" id="start-help">نمونهٔ قالب: ۱۴۰۵/۰۷/۰۱</p><p class="error-text" id="start-error" hidden></p></div>
+          <div><label class="field" for="end">تا تاریخ شمسی<input id="end" type="text" inputmode="numeric" value="۱۴۰۵/۰۷/۰۷" aria-describedby="end-help end-error"></label><p class="help" id="end-help">پایان باید پس از شروع یا برابر آن باشد.</p><p class="error-text" id="end-error" hidden></p></div>
+          <label class="field" for="kind">وضعیت ردیف<select id="kind"><option value="all">همه</option><option value="open">نیازمند بررسی</option><option value="done">بررسی‌شده</option></select></label>
+        </div>
+        <div class="actions"><button class="primary" id="apply" type="button">اعمال فیلتر در نمونه</button><button class="secondary" id="clear" type="button">پاک‌کردن شرط‌های نمونه</button></div>
+        <p class="muted" id="action-reason">هیچ درخواست شبکه‌ای یا ثبت عملیاتی انجام نمی‌شود.</p>
+      </section>
+      <section class="card" aria-labelledby="results-title"><h2 id="results-title">نتیجهٔ نمونه</h2>
+        <div class="status" id="status" role="status" aria-live="polite" data-tone="normal"><strong id="status-title">آمادهٔ بررسی</strong><p id="status-detail">تا اعمال شرط‌ها، این دو ردیف فقط نمونهٔ چیدمان هستند.</p></div>
+        <div id="skeleton" class="skeleton" aria-hidden="true" hidden></div>
+        <div class="table-wrap" id="table-wrap"><table><caption class="muted">ردیف‌های ساختگی؛ نتیجهٔ رسمی نیستند</caption><thead><tr><th scope="col">شناسه</th><th scope="col">تاریخ شمسی</th><th scope="col">وضعیت</th></tr></thead><tbody id="rows"><tr><td>نمونهٔ ۱</td><td>۱۴۰۵/۰۷/۰۲</td><td>نیازمند بررسی</td></tr><tr><td>نمونهٔ ۲</td><td>۱۴۰۵/۰۷/۰۵</td><td>بررسی‌شده</td></tr></tbody></table></div>
+        <p class="muted" id="result-boundary">در حالت خطا، آفلاین یا منع مجوز، دادهٔ قبلی به‌عنوان نتیجهٔ معتبر نشان داده نمی‌شود.</p>
+      </section>
+    </div>
+    <p class="foot">نمونهٔ مستقل قرارداد وضعیت است؛ رفتار تقویم، تبدیل تاریخ و جست‌وجوی واقعی در مصرف‌کنندگان فعالِ مرحلهٔ مهاجرت سنجیده می‌شوند.</p>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const state = $('state'), start = $('start'), end = $('end'), kind = $('kind');
+    const states = {
+      ready: ['آمادهٔ بررسی', 'دو ردیف ساختگی فقط برای چیدمان نمایش داده شده‌اند.', 'normal', true, true],
+      invalid: ['تاریخ نامعتبر', 'ورودی تاریخ با پیام مرتبط اصلاح می‌شود؛ نتیجهٔ قبلی معتبر نیست.', 'error', false, true],
+      range: ['بازهٔ ناسازگار', 'پایان پیش از شروع است؛ فیلتر اجرا نمی‌شود.', 'error', false, true],
+      loading: ['در حال دریافت نمونه', 'جای‌نگهدار خنثی است؛ نتیجه‌ای پیش از پاسخ ساخته نمی‌شود.', 'normal', false, false],
+      success: ['فیلتر نمایشی اعمال شد', 'این نتیجه فقط در صفحهٔ نمونه و با دادهٔ ساختگی است.', 'success', true, true],
+      empty: ['نتیجه‌ای نیست', 'در این شرط نمونه ردیفی وجود ندارد؛ داده‌ای حدس زده نمی‌شود.', 'normal', false, true],
+      error: ['دریافت کامل نشد', 'ردیف‌های پیشین پنهان‌اند؛ پس از رفع خطا دوباره بررسی کنید.', 'error', false, true],
+      offline: ['اتصال برقرار نیست', 'مجوز و دادهٔ لحظه‌ای نامعلوم‌اند؛ نتیجهٔ پیشین معتبر فرض نمی‌شود.', 'warning', false, false],
+      permission: ['دسترسی مجاز نیست', 'ردیف‌ها و جزئیات حفاظت‌شده پنهان‌اند.', 'warning', false, false],
+      stale: ['نتیجهٔ کهنه', 'پس از تغییر نسخه، فیلتر قبلی باید دوباره بررسی شود.', 'warning', false, true],
+    };
+    function render() {
+      const key = state.value, [title, detail, tone, showRows, enabled] = states[key];
+      document.body.dataset.state = key;
+      $('status-title').textContent = title; $('status-detail').textContent = detail;
+      $('status').dataset.tone = tone; $('status').setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      $('table-wrap').hidden = !showRows; $('skeleton').hidden = key !== 'loading';
+      for (const control of [start, end, kind, $('apply'), $('clear')]) control.disabled = !enabled;
+      $('apply').setAttribute('aria-busy', String(key === 'loading'));
+      start.value = key === 'invalid' ? '۱۴۰۴/۱۲/۳۰' : '۱۴۰۵/۰۷/۰۱';
+      end.value = key === 'range' ? '۱۴۰۵/۰۶/۳۰' : '۱۴۰۵/۰۷/۰۷';
+      kind.value = key === 'empty' ? 'done' : 'all';
+      start.setAttribute('aria-invalid', String(key === 'invalid'));
+      end.setAttribute('aria-invalid', String(key === 'range'));
+      $('start-error').hidden = key !== 'invalid'; $('start-error').textContent = key === 'invalid' ? 'این روز در سال نمونه وجود ندارد.' : '';
+      $('end-error').hidden = key !== 'range'; $('end-error').textContent = key === 'range' ? 'پایان بازه باید پس از شروع یا برابر آن باشد.' : '';
+      $('action-reason').textContent = enabled ? 'فقط چیدمان و پیام نمونه تغییر می‌کند؛ ثبت عملیاتی انجام نمی‌شود.' : 'تا روشن‌شدن داده و مجوز، فیلتر غیرفعال است.';
+    }
+    state.addEventListener('change', render);
+    $('apply').addEventListener('click', () => {
+      if (['invalid', 'range'].includes(state.value)) { (state.value === 'invalid' ? start : end).focus(); return; }
+      state.value = kind.value === 'done' ? 'empty' : 'success'; render();
+    });
+    $('clear').addEventListener('click', () => { state.value = 'ready'; render(); start.focus(); });
+    render();
+  </script>
+</body>
+</html>
