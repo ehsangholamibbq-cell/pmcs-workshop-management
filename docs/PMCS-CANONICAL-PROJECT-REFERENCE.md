@@ -1,7 +1,7 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.146.0`
+- نسخه: `1.147.0`
 - آخرین کنترل: ۲۰۲۶-۱۰-۰۱
 - وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 در اجرا؛ QA1 باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
@@ -22,9 +22,10 @@
 | V1 source baseline | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
-| Stage مؤثر | `V1.1-UX2` بسته؛ DoR مستقل `V1.1-INT1` بر پایهٔ `52a56f9` در جریان است؛ QA1 و قفل V1.1 جدا هستند |
-| آخرین Source | MS100 print evidence correction `fd13282c7e71a77c5192761e127966467045f297`؛ tree `95a79963975b7a5afa783e1a1da7018883cea890`، Run 640 (`36772469486`) هشت Job سبز؛ Artifact `11124980874`، ZIP SHA-256 `f55bdc3d94d37fbe10fd0009131546e404236b7ca0f9f31a5ce6c55376f0040d` با ۲۵ Index/۲۹۶ PNG/۱۹۵ axe/۲۰ PDF معتبر و مرورشده |
-| Current evidence-bearing source checkpoint | MS100 Source Run 640 هشت Job سبز؛ Artifact `11124980874` معتبر و مرورشده؛ docs Run 641 Attempt دوم و Run 642 هر دو هشت Job سبز؛ G5 و UX2 بسته |
+| Stage مؤثر | `V1.1-UX2` بسته؛ DoR مستقل `V1.1-INT1` با Run 645 بسته؛ Runtime INT1 در Qualification و Gate خروج باز؛ QA1 و قفل V1.1 جدا |
+| آخرین Source | INT1 Runtime/لغو Client `65ec8f1814caf4f240688972f0ad7857cd134cb5`، tree `57264fed377bb69609a7c6b50130582743426080`، Run 674 (`36795510420`) هشت Job سبز؛ اتصال زندهٔ پیکربندی‌شده هنوز شاهد ندارد |
+| Current evidence-bearing source checkpoint | INT1 DoR: `241892fca22a995e31f922d35320eb771059d346`، Run 645 هشت Job سبز؛ Runtime: Runs 669/672/673/674 هشت Job سبز؛ UI-E2E Runs 670/671 شکست تقویم داشت و Source اصلاح‌شده در Runs 673/674 سبز شد؛ Checkpoint خروج INT1 ثبت نشده |
+| INT1 Qualification Candidate | `PMCS-V1.1-INT1-QC1` در `docs/checkpoints/v1.1-int1-runtime-qualification-candidate.md`؛ Gate خروج باز، اتصال زندهٔ پیکربندی‌شده فاقد شاهد |
 | Source lineage | MS100 از Source پایه `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac` به اصلاح شاهد چاپ `fd13282c7e71a77c5192761e127966467045f297` و docs نهایی `c950ec0f495396a9503a40de825f6c6830f73041` با Commit/fast-forward رسید؛ بدون Reset/Force Push |
 | Current safe checkpoint | `PMCS-V1.1-UX2-MS100-C1`؛ Source `fd13282c7e71a77c5192761e127966467045f297`، Run 640 هشت Job سبز؛ docs `c950ec0f495396a9503a40de825f6c6830f73041`، Run 642 هشت Job سبز؛ G5/UX2 بسته |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
@@ -94,7 +95,7 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.187.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.188.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.3.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
@@ -1077,7 +1078,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1-MS01 DoR از Parent `52a56f9` در Commit `241892f` و Run 645 هشت Job سبز بست. Store مجوز، Catalog/Profile، سه آداپتور، Registry خواندنی و Reference Run محدود تا Source `cc6c7c3` پیاده شده‌اند. گام جاری، CI مستقل همان SHA، آزمون منفی end-to-end، اتصال واقعی سه Provider و بررسی Gate خروج ADR 0032 است.**
+**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1-MS01 DoR از Parent `52a56f9` در Commit `241892f` و Run 645 هشت Job سبز بست. Store مجوز، Catalog/Profile، سه آداپتور، Registry خواندنی و Reference Run محدود تا Source `65ec8f1` با Run 674 هشت Job سبز پیاده شده‌اند. UI-E2E Runs 670/671 تقویم شمسی را رد کرد و Source اصلاح آزمون `6e92844` در Runs 673/674 سبز شد. گام جاری، اتصال واقعی پیکربندی‌شدهٔ سه Provider و بررسی Gate خروج ADR 0032 است.**
 Agent Stage 2، QA1، Production و قفل V1.1 Gateهای جدا می‌مانند.
 
 ## Resume Rule

@@ -22,12 +22,12 @@
 
 مصرف گزارش‌شدهٔ هر تصمیم ابزار و پاسخ نهایی به Run افزوده می‌شود؛ در fallback، مصرف مشاهده‌شدهٔ مدل نخست با برآورد سقف مدل مقصد پیش از جابه‌جایی سنجیده و همراه مصرف واقعی مقصد در Audit نهایی محاسبه می‌شود. مصرف مشاهده‌شده در شکست نیز از metadata حذف نمی‌شود. مصرفی که Provider هنگام خطای شبکه یا پاسخ نامعتبر اصلاً گزارش نکند، قابل اندازه‌گیری قطعی نیست؛ برآورد ثبت‌شده معادل صورتحساب خارجی نیست.
 
-## Gateهای باز
+## وضعیت Gateها
 
-- CI کامل یک SHA واحد، آزمون‌های منفی cross-tenant/project و سناریوی end-to-end Run با DB و Provider ساختگی.
-- تست اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable`؛ credential در مخزن/CI عمومی نگهداری نمی‌شود.
-- بررسی مستقل timeout/cancellation، بازیابی Runهای `Running` رهاشده، انقضای Session و اعتبارسنجی عملیاتی migration/restore.
-- Audit و telemetry metadata-only و بررسی مستقل هزینه، fallback و عدم نشت payload در log.
+- Run 674 (`36795510420`) برای Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` هر هشت Job سبز دارد؛ DB ایزوله، سه adapter، cross-tenant/project، fallback، هزینه، lineage، لغو Client و مرورگر را بررسی می‌کند. Source Runtime پیشین Run 672 نیز هشت Job سبز داشت.
+- آزمون اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable` باز است؛ credential در مخزن/CI عمومی نگهداری نمی‌شود. CLI بدون Secret هر سه را `Unavailable` گزارش کرده و موفقیت زنده ادعا نمی‌کند.
+- timeout، لغو Client، بازیابی Runهای `Running` رهاشده، Session یک‌نوبتی و حضور migration در restore drill در سناریوهای متصل Source نهایی سنجیده شدند؛ مرور Gate و اتصال زنده هنوز لازم‌اند.
+- Audit و telemetry metadata-only، مصرف مشاهده‌شدهٔ دو تلاش، fallback و نبود payload در DB و log با fixture بررسی شده‌اند. پاسخ خام یا هزینه‌ای که Provider گزارش نکند، صورتحساب قطعی نیست.
 
 در lineage هر Run، مدل و نسخهٔ اولیه همراه Provider و نسخهٔ فعال‌سازی اولیه ثبت می‌شود؛ اگر fallback رخ دهد، مدل/Provider و نسخهٔ مقصد جداگانه در فیلدهای انتخاب نهایی و دلیل خطا ثبت می‌شوند. نسخهٔ Provider پیش از هر ارسال به Provider دوباره کنترل می‌شود تا disable/re-activate میان دو گام، Run را fail-closed کند.
 

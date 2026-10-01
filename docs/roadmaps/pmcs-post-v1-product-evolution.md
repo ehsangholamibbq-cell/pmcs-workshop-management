@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.187.0`
+- نسخه سند: `1.188.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1 در اجرا، QA1 باز
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
@@ -1532,7 +1532,7 @@ Scope:
 
 **هدف:** اجرای Stage 1 از برنامهٔ هفت‌مرحله‌ای Agent مدیریتی، بدون ادعای Read-only Agent کامل.
 
-DoR مستقل و Gap Analysis پایه در `docs/architecture/pmcs-v1.1-int1-foundation-dor.md` با Run 645 بسته شدند. اجرای محدود Runtime و Gateهای باز در `docs/architecture/pmcs-v1.1-int1-runtime-contract.md` ثبت شده‌اند.
+DoR مستقل و Gap Analysis پایه در `docs/architecture/pmcs-v1.1-int1-foundation-dor.md` با Run 645 بسته شدند. اجرای محدود Runtime و Gateهای باز در `docs/architecture/pmcs-v1.1-int1-runtime-contract.md` و Candidate شواهد در `docs/checkpoints/v1.1-int1-runtime-qualification-candidate.md` ثبت شده‌اند؛ Candidate خروج INT1 را Safe نمی‌کند.
 
 Scope:
 
@@ -1915,3 +1915,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.185.0` | تصمیم مالک محصول `V1.1-INT1-MODEL-SELECTION` در ADR 0032: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و Anthropic/Claude، Profile نسخه‌دار، مدیریت سطح بالا، تفویض محدود، قیود داده/مصرف، fallback امن و Gate آزمون سه آداپتور. این نسخه فقط مصوبهٔ Roadmap است؛ INT1 Runtime آغاز یا بسته نشده است. |
 | `1.186.0` | INT1-MS01: DoR و Gap Analysis پایهٔ Advisory V1، قرارداد مجوز مستقل Global/Tenant، مدل داده و توالی Gateها در `PMCS-V1.1-INT1-DOR-001` ثبت شد. Runtime، انتخاب مدل و Gate خروج INT1 هنوز بازند؛ QA1 جدا می‌ماند. |
 | `1.187.0` | INT1 DoR در Run 645 (`36783866696`) هشت Job سبز و Safe شد. Store مجوز مستقل، Probe سه Provider، Catalog و Profile نسخه‌دار، Tool Registry خواندنی و Reference Run محدود/خاموش‌به‌پیش‌فرض در شاخه به‌صورت افزایشی پیاده‌سازی شدند؛ آخرین Source `cc6c7c344cbf40cccd3504a2227503b7d2052dc1` و CI آن هنوز Gate خروج نیست. تست اتصال واقعی، آزمون مستقل end-to-end و تأیید همهٔ بندهای ADR 0032 بازند؛ Agent Stage 2 و QA1 شروع نشده‌اند. |
+| `1.188.0` | INT1 Runtime تا Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` با سه adapter، انتخاب نسخه‌دار، Tool Registry مالک، Run پیش‌فرض خاموش، fallback/مصرف محدود، لغو Client و آزمون DB ایزوله پیش رفت؛ Run 674 (`36795510420`) هر هشت Job سبز. UI-E2E Runs 670/671 در تقویم شمسیِ تازه‌خوانی‌شونده شکست خورد؛ Source `6e92844be719d3cb7590ea752d2f6473dcd11032` آزمون را با read-state جاری همگام کرد و Runs 673/674 هشت Job سبز شدند. CLI بدون Secret برای هر سه `Unavailable/allAvailable=false` گزارش می‌دهد. اتصال واقعی پیکربندی‌شده و Gate خروج ADR 0032 بازند؛ Agent Stage 2 و QA1 شروع نشده‌اند. |
