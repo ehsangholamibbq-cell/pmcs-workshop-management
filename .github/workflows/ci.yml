@@ -127,6 +127,8 @@ jobs:
       PMCS_V1_UPGRADE_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_v1_upgrade;Username=pmcs;Password=pmcs_integration_only
       PMCS_V1_UPGRADE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_v1_upgrade
       PMCS_V1_RESTORE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_v1_upgrade
+      PMCS_V1_INTERRUPT_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_restore_drill_v1_interrupted;Username=pmcs;Password=pmcs_integration_only
+      PMCS_V1_INTERRUPT_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_v1_interrupted
     steps:
       - uses: actions/checkout@v4
         with:
@@ -261,6 +263,10 @@ jobs:
         env:
           PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node tools/qa/visual-baseline.mjs verify
+      - name: Verify V1.1 visual, print and accessibility candidate evidence
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/qa/v1.1-visual-evidence.mjs
       - if: failure()
         run: docker compose logs --no-color
       - if: always()
@@ -270,6 +276,12 @@ jobs:
         with:
           name: qa-regression-ui-e2e
           path: artifacts/qa/regression/ui-e2e.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-visual-evidence
+          path: artifacts/qa/v1.1-evidence/browser-visual-print-a11y*
           if-no-files-found: error
       - if: failure()
         uses: actions/upload-artifact@v4

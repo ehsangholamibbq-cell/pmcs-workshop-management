@@ -57,6 +57,7 @@ internal static partial class Program
                 "manifest" => WriteManifest(),
                 "probe" => await ProbeAsync(),
                 "probe-int1-providers" => await ProbeInt1ProvidersAsync(),
+                "verify-v1.1-load-soak" => await VerifyV11LoadSoakAsync(),
                 "verify" => await VerifyAsync(),
                 "verify-files" => await VerifyFilesAsync(),
                 "verify-reporting" => await VerifyReportingAsync(),
@@ -535,7 +536,7 @@ internal static partial class Program
             "prepare-reporting-worker-revocation|verify-reporting-worker-revocation|" +
             "verify-reporting-object-security|prepare-reporting-orphan-objects|" +
             "verify-reporting-orphan-objects|cleanup-reporting-orphan-objects|prepare-reporting-capacity|" +
-            "verify-reporting-capacity|verify-sync|verify-exploratory>");
+            "verify-reporting-capacity|verify-v1.1-load-soak|verify-sync|verify-exploratory>");
         return 2;
     }
 

@@ -58,19 +58,21 @@ createdb "${database_name}"
   dotnet build PMCS.slnx --configuration Release --no-restore
 )
 
-start_api() {
+launch_api() {
   local source="$1" seed="$2" port="$3"
+  local connection="${4:-${PMCS_V1_UPGRADE_CONNECTION_STRING}}"
+  local qa_gateway="${5:-true}"
   : >"${api_log}"
   (
     cd "${source}"
     ASPNETCORE_ENVIRONMENT=Development \
     ASPNETCORE_URLS="http://127.0.0.1:${port}" \
-    ConnectionStrings__Pmcs="${PMCS_V1_UPGRADE_CONNECTION_STRING}" \
-    PMCS_QA_CONNECTION_STRING="${PMCS_V1_UPGRADE_CONNECTION_STRING}" \
+    ConnectionStrings__Pmcs="${connection}" \
+    PMCS_QA_CONNECTION_STRING="${connection}" \
     PMCS_QA_DATABASE_URL="${PMCS_V1_UPGRADE_DATABASE_URL}" \
     PMCS_DEV_IDENTITY_ENABLED=false \
     PMCS_SEED_ENABLED="${seed}" \
-    PMCS_QA_GATEWAY_ENABLED=true \
+    PMCS_QA_GATEWAY_ENABLED="${qa_gateway}" \
     PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" \
     ProjectStateRefresh__Enabled=false \
     AdvisoryIntelligence__WorkerEnabled=false \
@@ -86,6 +88,11 @@ start_api() {
       --no-build --no-launch-profile
   ) >"${api_log}" 2>&1 &
   api_pid=$!
+}
+
+start_api() {
+  local source="$1" seed="$2" port="$3"
+  launch_api "${source}" "${seed}" "${port}" "${4:-${PMCS_V1_UPGRADE_CONNECTION_STRING}}" "${5:-true}"
   for _ in {1..90}; do
     if ! kill -0 "${api_pid}" 2>/dev/null; then
       echo 'V1 upgrade API exited before readiness.' >&2
@@ -123,7 +130,8 @@ docker run --rm --network host --volume "${root}:/workspace" \
   'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-backup.sh'
 backup_file="$(find "${tmp}/backup" -maxdepth 1 -name '*.dump' -type f -print -quit)"
 if [[ -z "${backup_file}" ]]; then echo 'V1 baseline backup missing.' >&2; exit 1; fi
-backup_sha256="$(sha256sum "${backup_file}" | cut -d' ' -f1)"
+backup_sha256="$(docker run --rm --volume "${tmp}/backup:/backup:ro" \
+  postgres:17-alpine sha256sum "/backup/$(basename "${backup_file}")" | cut -d' ' -f1)"
 
 docker run --rm --network host --volume "${root}:/workspace" \
   --volume "${tmp}/backup:/backup" --workdir /workspace \
@@ -177,6 +185,81 @@ fi
     >"${evidence_dir}/migration-rollback-probe.artifact.json"
 )
 stop_api
+
+interrupt_name="pmcs_restore_drill_v1_interrupted"
+interrupt_url="${PMCS_V1_INTERRUPT_DATABASE_URL:?Set interrupted restore target.}"
+interrupt_connection="${PMCS_V1_INTERRUPT_CONNECTION_STRING:?Set interrupted restore ADO connection.}"
+docker run --rm --network host --volume "${root}:/workspace" \
+  --volume "${tmp}/backup:/backup" --workdir /workspace \
+  --env PMCS_RESTORE_ADMIN_CONNECTION_STRING \
+  --env "PMCS_RESTORE_TARGET_CONNECTION_STRING=${interrupt_url}" \
+  --env "PMCS_RESTORE_TARGET_DATABASE=${interrupt_name}" \
+  --env "PMCS_RESTORE_BACKUP_FILE=/backup/$(basename "${backup_file}")" \
+  postgres:17-alpine sh -c \
+  'apk add --no-cache bash coreutils >/dev/null && bash ops/backup/postgres-restore-drill.sh'
+before_interruption="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command 'select count(*) from foundation.schema_migrations;')"
+if [[ "${before_interruption}" != "${v1_count}" ]]; then
+  echo 'Interrupted restore did not start from the locked V1 ledger.' >&2
+  exit 1
+fi
+psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null <<'SQL'
+create function foundation.qa_pause_migration_record() returns trigger language plpgsql as $$
+begin
+  perform pg_sleep(90);
+  return new;
+end;
+$$;
+create trigger qa_pause_migration_record before insert on foundation.schema_migrations
+for each row execute function foundation.qa_pause_migration_record();
+SQL
+launch_api "${root}" false 5100 "${interrupt_connection}" false
+observed=false
+for _ in {1..60}; do
+  sleeping="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+    --tuples-only --no-align --command "select count(*) from pg_stat_activity where datname = '${interrupt_name}' and wait_event = 'PgSleep' and pid <> pg_backend_pid();")"
+  if [[ "${sleeping}" != 0 ]]; then observed=true; break; fi
+  if ! kill -0 "${api_pid}" 2>/dev/null; then break; fi
+  sleep 1
+done
+if [[ "${observed}" != true ]]; then
+  echo 'Candidate did not reach the injected mid-transaction migration pause.' >&2
+  exit 1
+fi
+terminated="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command "select bool_and(pg_terminate_backend(pid)) from pg_stat_activity where datname = '${interrupt_name}' and wait_event = 'PgSleep' and pid <> pg_backend_pid();")"
+if [[ "${terminated}" != t ]]; then
+  echo 'The mid-migration database connection was not terminated.' >&2
+  exit 1
+fi
+stop_api
+after_interruption="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command 'select count(*) from foundation.schema_migrations;')"
+if [[ "${after_interruption}" != "${v1_count}" ]]; then
+  echo 'A partial migration remained committed after connection loss.' >&2
+  exit 1
+fi
+psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null <<'SQL'
+drop trigger qa_pause_migration_record on foundation.schema_migrations;
+drop function foundation.qa_pause_migration_record();
+SQL
+start_api "${root}" false 5101 "${interrupt_connection}" false
+after_recovery="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command 'select count(*) from foundation.schema_migrations;')"
+recovered_data="$(psql "${interrupt_url}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command "select (select count(*) from projects.projects)::text || '|' || (select count(*) from identity_access.users)::text;")"
+if [[ "${after_recovery}" != 70 || "${recovered_data}" != "${v1_data}" ]]; then
+  echo 'Candidate did not recover exactly once after the injected interruption.' >&2
+  exit 1
+fi
+stop_api
+
+PMCS_INTERRUPT_BEFORE="${before_interruption}" \
+PMCS_INTERRUPT_AFTER_FAILURE="${after_interruption}" \
+PMCS_INTERRUPT_RECOVERED="${after_recovery}" \
+PMCS_INTERRUPT_DATA_COUNTS="${recovered_data}" \
+PMCS_INTERRUPT_V1_DATA_COUNTS="${v1_data}" \
+  node tools/qa/v1.1-interruption-evidence.mjs
 
 PMCS_V1_LEDGER_COUNT="${v1_count}" PMCS_V1_RESTORED_COUNT="${restored_count}" \
 PMCS_V11_UPGRADE_COUNT="${candidate_count}" PMCS_V11_ROLLBACK_COUNT="${rollback_count}" \

@@ -109,7 +109,9 @@ fi
 restored_ledger="$(psql "${PMCS_RESTORE_TARGET_CONNECTION_STRING}" --no-psqlrc \
   --set ON_ERROR_STOP=1 --tuples-only --no-align \
   --command "select count(*)::text || '|' || md5(string_agg(module || ':' || version, ',' order by module, version)) from foundation.schema_migrations;")"
-backup_sha256="$(sha256sum "${backup_file}" | cut -d' ' -f1)"
+backup_sha256="$(docker run --rm \
+  --volume "${backup_directory}:/backup:ro" postgres:17-alpine \
+  sha256sum "/backup/$(basename "${backup_file}")" | cut -d' ' -f1)"
 PMCS_MIGRATION_FIRST_LEDGER="${first_ledger}" \
 PMCS_MIGRATION_REPEATED_LEDGER="${repeated_ledger}" \
 PMCS_MIGRATION_RESTORED_LEDGER="${restored_ledger}" \

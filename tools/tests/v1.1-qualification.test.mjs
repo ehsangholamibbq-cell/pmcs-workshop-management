@@ -10,6 +10,8 @@ import { validateDormantProbe } from "../qa/v1.1-int1-dormant-evidence.mjs";
 import { verifyDomainSources } from "../qa/v1.1-domain-evidence.mjs";
 import { validateMigrationObservations } from "../qa/v1.1-migration-evidence.mjs";
 import { validateUpgradeObservations } from "../qa/v1.1-upgrade-evidence.mjs";
+import { validateInterruptionObservations } from "../qa/v1.1-interruption-evidence.mjs";
+import { validateLoadSoak } from "../qa/v1.1-load-soak-evidence.mjs";
 
 const commit = "a".repeat(40);
 const tree = "b".repeat(40);
@@ -109,4 +111,19 @@ test("V1 upgrade and runtime rollback require preserved V1 data", () => {
   assert.throws(() => validateUpgradeObservations({ ...value, v1RestoredCount: "62" }));
   assert.throws(() => validateUpgradeObservations({ ...value, upgradeDataCounts: "1|5" }));
   assert.throws(() => validateUpgradeObservations({ ...value, rollbackCount: "69" }));
+});
+
+test("interrupted migration must roll back the ledger and preserve V1 data on recovery", () => {
+  const value = { before: "63", afterFailure: "63", recovered: "70", v1DataCounts: "2|5", recoveredDataCounts: "2|5" };
+  validateInterruptionObservations(value);
+  assert.throws(() => validateInterruptionObservations({ ...value, afterFailure: "64" }));
+  assert.throws(() => validateInterruptionObservations({ ...value, recoveredDataCounts: "1|5" }));
+});
+
+test("load/soak evidence rejects excessive latency and reporting capacity gaps", () => {
+  const service = { stage: "pmcs-v1.1-permission-diagnostics-load-soak", status: "passed", durationSeconds: 30.5, workers: 2, requests: 100, failedRequests: 0, p95Milliseconds: 400 };
+  const reporting = { stage: "reporting-worker-capacity-regression", status: "passed", assertions: 11, healthyRuns: 20, poisonAttempts: 3, p95BudgetSeconds: 30 };
+  validateLoadSoak(service, reporting);
+  assert.throws(() => validateLoadSoak({ ...service, p95Milliseconds: 1500 }, reporting));
+  assert.throws(() => validateLoadSoak(service, { ...reporting, healthyRuns: 19 }));
 });
