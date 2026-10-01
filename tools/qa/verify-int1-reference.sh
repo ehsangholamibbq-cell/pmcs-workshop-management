@@ -266,19 +266,54 @@ grep -q 'ai.provider.unavailable' "${response_file}"
 select_model 1
 
 psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null \
+  --command "update intelligence.profile_selections
+    set profile_version_id = 'a2000000-0000-4000-8000-000000000002',
+      revision = revision + 1, updated_at = now()
+    where use_case = 'int1.reference';"
+set +e
+curl --silent --max-time 2 --output /dev/null \
+  --request POST --header "X-Pmcs-QA-Key: ${PMCS_QA_AUTH_KEY}" \
+  --header 'X-Tenant-Id: 11111111-1111-1111-1111-111111111111' \
+  --header 'X-User-Id: 22222222-2222-2222-2222-222222222222' \
+  --header 'Idempotency-Key: int1-reference-b' \
+  --header 'Content-Type: application/json' \
+  --data '{"requestId":"a3000000-0000-4000-8000-00000000000b","question":"int1-fixture-cancel"}' \
+  "${run_url}"
+cancel_exit=$?
+set -e
+if [[ "${cancel_exit}" != '28' ]]; then
+  echo "INT1 client cancellation did not interrupt the request: curl ${cancel_exit}." >&2
+  exit 1
+fi
+cancelled=false
+for _ in {1..20}; do
+  cancellation_state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+    --tuples-only --no-align --command "select status || '|' || error_code || '|' || fallback::text from intelligence.reference_runs where id = 'a3000000-0000-4000-8000-00000000000b';")"
+  if [[ "${cancellation_state}" == 'Cancelled|ai.run.cancelled|false' ]]; then
+    cancelled=true
+    break
+  fi
+  sleep 1
+done
+if [[ "${cancelled}" != true ]]; then
+  echo "INT1 cancelled Run state diverged: ${cancellation_state}." >&2
+  exit 1
+fi
+
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 >/dev/null \
   --command "update intelligence.provider_registrations set enabled = false, version = version + 1, revision = revision + 1 where provider = 'OpenAI';"
 post_run 6 'fixture-disabled' 409
 grep -q 'ai.provider.disabled' "${response_file}"
 
 state="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
-  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.arguments_invalid')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-000000000000' and status = 'Failed' and not fallback and error_code = 'ai.provider.unavailable')::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(*) filter (where fallback and fallback_reason = 'ai.provider.timeout' and provider = 'GoogleGemini')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-00000000000a' and fallback_reason = 'ai.provider.invalid_response' and input_tokens = 34 and output_tokens = 26 and cost_microunits = 172)::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
-if [[ "${state}" != '6|1|1|1|1|1|1|3|0' ]]; then
+  --tuples-only --no-align --command "select count(*) filter (where status = 'Completed')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.unknown')::text || '|' || count(*) filter (where status = 'Failed' and error_code = 'ai.tool.arguments_invalid')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-000000000000' and status = 'Failed' and not fallback and error_code = 'ai.provider.unavailable')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-00000000000b' and status = 'Cancelled' and not fallback)::text || '|' || count(*) filter (where fallback and initial_provider = 'OpenAI' and provider = 'GoogleGemini' and fallback_reason = 'ai.provider.unavailable' and initial_model_catalog_id = 'a1000000-0000-4000-8000-000000000001' and provider_version = 2)::text || '|' || count(*) filter (where fallback and fallback_reason = 'ai.provider.timeout' and provider = 'GoogleGemini')::text || '|' || count(*) filter (where id = 'a3000000-0000-4000-8000-00000000000a' and fallback_reason = 'ai.provider.invalid_response' and input_tokens = 34 and output_tokens = 26 and cost_microunits = 172)::text || '|' || count(distinct provider)::text || '|' || count(*) filter (where provider_version < 1 or initial_provider_version < 1)::text from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%';")"
+if [[ "${state}" != '6|1|1|1|1|1|1|1|3|0' ]]; then
   echo "INT1 reference lineage diverged: ${state}." >&2
   exit 1
 fi
 side_effects="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
   --tuples-only --no-align --command "select (select count(*) from foundation.audit_events where event_type = 'IntelligenceReferenceRunFinished' and resource_id like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.outbox_messages where event_type = 'intelligence.reference-run.finished' and payload->'run'->>'Id' like 'a3000000-0000-4000-8000-%')::text || '|' || (select count(*) from foundation.idempotency_records where operation like 'intelligence.reference.run:%' and key like 'int1-reference-%')::text || '|' || (select count(*) from intelligence.reference_runs where id::text like 'a3000000-0000-4000-8000-%' and status = 'Completed' and cost_microunits = 112 and session_id <> id and session_expires_at = requested_at + interval '10 minutes')::text;")"
-if [[ "${side_effects}" != '9|9|9|5' ]]; then
+if [[ "${side_effects}" != '10|10|10|5' ]]; then
   echo "INT1 metadata, audit, outbox or receipt evidence diverged: ${side_effects}." >&2
   exit 1
 fi

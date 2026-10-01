@@ -20,6 +20,9 @@ internal sealed class Int1QaFixtureHandler : HttpMessageHandler
         if (tool && request.RequestUri?.Host == "api.openai.com" &&
             body.Contains("int1-fixture-timeout", StringComparison.Ordinal))
             await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+        if (tool && request.RequestUri?.Host == "api.openai.com" &&
+            body.Contains("int1-fixture-cancel", StringComparison.Ordinal))
+            await Task.Delay(TimeSpan.FromSeconds(8), cancellationToken);
         if (unavailable && request.RequestUri?.Host == "api.openai.com")
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
         if (request.RequestUri?.Host == "generativelanguage.googleapis.com" &&
