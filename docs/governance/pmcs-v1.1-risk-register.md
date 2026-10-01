@@ -1,7 +1,7 @@
 # PMCS V1.1 — Risk Register
 
 - شناسه: `PMCS-GOV-V1.1-RISK-001`
-- نسخه: `1.2.0`
+- نسخه: `1.3.0`
 - وضعیت: Active از G0 تا Baseline Lock
 
 | ID | ریسک | احتمال/اثر | کنترل الزامی | مالک Gate | Evidence خروج |
@@ -19,7 +19,7 @@
 | `R-RPT-01` | گزارش زیبا ولی عدد نادرست باشد | متوسط/بحرانی | semantic model، as-of، hash و golden data | Reporting/QA | deterministic replay tests |
 | `R-AI-01` | Agent Permission یا Business Rule را دور بزند | متوسط/بحرانی | Tool Registry، per-call evaluation و no-SQL tests | Intelligence/Security | negative tool suite |
 | `R-AI-02` | انتخاب یا fallback مدل باعث نشت داده، افزایش مجوز یا مصرف کنترل‌نشده شود | متوسط/بحرانی | Profile/allowlist نسخه‌دار، Permission مستقل مدیریت، data classification و بودجه، fallback هم‌سطح و fail-closed | Intelligence/Security | آزمون منفی انتخاب/تفویض/cross-tenant، fallback، cap و audit lineage |
-| `R-AI-03` | Credential ناموجود/چرخیده یا Provider غیرفعال به‌اشتباه Available تلقی شود | متوسط/زیاد | ثبت و فعال‌سازی مستقل default-deny با Probe ساختاریافته و tool calling، کنترل در انتخاب و پیش از هر ارسال داده؛ نتیجهٔ Unavailable صریح | Intelligence/Security | آزمون اتصال زندهٔ سه Provider با پیکربندی امن، disable در جریان Run و CI قرارداد |
+| `R-AI-03` | Credential ناموجود/چرخیده یا Provider غیرفعال به‌اشتباه Available تلقی شود | متوسط/زیاد | V1.1: Runtime INT1 خاموش، بدون Grant راه‌انداز، Provider/Model فعال یا Secret استقرار؛ Probe بدون Credential = Unavailable. فعال‌سازی فقط پس از Gate `AGENT-S1-LIVE` | Intelligence/Security | V1.1 QA1: آزمون عدم اجرا، default-deny و CI قرارداد؛ ریسک اتصال زنده باز تا آزمون سه Provider با Credential امن، structured output و tool calling پس از V1.1 |
 | `R-AI-04` | خروجی ابزار یا پاسخ مدل payload حساس را در Audit/Outbox/Receipt نشت دهد یا متن ابزار دستور جدید شود | متوسط/بحرانی | schema بسته، ابزار فقط خواندنی، Context محدود، خروجی گذرا و ثبت metadata-only | Intelligence/Security | بازرسی DB/log، آزمون payload خصمانه و citation/tool rejection |
 | `R-UX-01` | Motion/Asset باعث افت سرعت یا خستگی شود | متوسط/متوسط | budget، lazy asset، non-blocking login و reduced-motion | UX/QA | performance/visual evidence |
 | `R-OFF-01` | قابلیت جدید در Offline duplicate/conflict بسازد | متوسط/زیاد | stable client ID، idempotency و conflict state | Feature owner | reconnect/concurrency tests |
@@ -27,3 +27,6 @@
 | `R-SCOPE-01` | V1.1 به بستهٔ بزرگ غیرقابل‌بستن تبدیل شود | زیاد/زیاد | Checkpoint مستقل، Non-Scope و WIP limit | Product | roadmap review در هر Gate |
 
 ریسک بدون Owner، Gate و Evidence قابل پذیرش نیست. تغییر احتمال/اثر یا پذیرش Risk باید در Checkpoint بعدی نسخه‌دار ثبت شود.
+
+مصوبهٔ ADR 0033 ریسک `R-AI-03` را نمی‌بندد؛ Release نسخهٔ 1.1 فقط در صورت
+اثبات خاموش‌ماندن INT1 و ثبت تعهد Gate زنده می‌تواند این ریسک باز را حمل کند.

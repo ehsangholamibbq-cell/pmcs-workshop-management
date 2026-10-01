@@ -55,6 +55,32 @@ test("roadmap carries approved visual, profile and bootstrap decisions without s
   for (let stage = 1; stage <= 7; stage += 1) assert.match(agent, new RegExp(`Stage ${stage}`, "u"));
 });
 
+test("V1.1 INT1 release keeps live qualification as the first post-baseline Agent gate", () => {
+  const adr = read("docs/adr/0033-int1-v11-dormant-foundation-and-live-qualification.md");
+  const scope = read("docs/governance/pmcs-v1.1-scope-and-change-control.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const agent = read("docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md");
+  const qa = read("docs/qa/pmcs-v1.1-test-and-qualification-contract.md");
+  const risk = read("docs/governance/pmcs-v1.1-risk-register.md");
+  const endpoint = read("src/backend/Pmcs.Modules.Intelligence/Endpoints/IntelligenceReferenceRunEndpoints.cs");
+  const recovery = read("src/backend/Pmcs.Modules.Intelligence/Services/ReferenceRunRecoveryWorker.cs");
+  const grants = read("src/backend/Pmcs.Modules.Intelligence/Migrations/IntelligenceAdministrationGrantMigration.cs");
+  const defaults = read("src/backend/Pmcs.Api/appsettings.json");
+  for (const contract of [adr, scope, roadmap, agent, qa, risk]) {
+    assert.match(contract, /AGENT-S1-LIVE/u);
+  }
+  assert.match(adr, /پس از قفل Baseline نسخهٔ 1\.1/u);
+  assert.match(adr, /AGENT-S2/u);
+  assert.match(roadmap, /V1\.2 ابتدا `AGENT-S1-LIVE`/u);
+  assert.match(qa, /INT1ReferenceEnabled/u);
+  assert.match(risk, /R-AI-03[\s\S]*ریسک اتصال زنده باز تا آزمون سه Provider/u);
+  assert.match(endpoint, /bool\.TryParse\(configuration\["Intelligence:INT1ReferenceEnabled"\], out var enabled\) && enabled/u);
+  assert.match(recovery, /!bool\.TryParse\(configuration\["Intelligence:INT1ReferenceEnabled"\], out var enabled\) \|\|\s*!enabled\) return/u);
+  assert.doesNotMatch(grants, /insert\s+into\s+intelligence\.administration_grants/iu);
+  assert.doesNotMatch(defaults, /"INT1ReferenceEnabled"\s*:\s*true/u);
+  assert.doesNotMatch(defaults, /"(?:ApiKey|API_KEY|Secret)"\s*:/u);
+});
+
 test("login customization and project duplication retain fail-closed boundaries", () => {
   const adr = read("docs/adr/0028-configurable-login-member-profile-project-bootstrap.md");
   for (const boundary of [

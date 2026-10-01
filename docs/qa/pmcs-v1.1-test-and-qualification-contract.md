@@ -1,7 +1,7 @@
 # PMCS V1.1 — Test Strategy و Qualification Contract
 
 - شناسه: `PMCS-QA-V1.1-001`
-- نسخه: `1.0.0`
+- نسخه: `1.1.0`
 - وضعیت: Governance Contract
 - Parent Qualification: Run 69 / source `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -66,6 +66,13 @@
 - no SQL/DB، no privilege escalation و cross-project denial؛
 - timeout/cancel/safe failure و audit lineage؛
 - عدم وجود write-domain tool.
+- Gate محدود ADR 0033: `Intelligence:INT1ReferenceEnabled` در تنظیم انتشار خاموش؛
+  Reference Run و Recovery Worker در این حالت اجرا نمی‌شوند؛ Grant راه‌انداز،
+  Provider/Model فعال و Secret استقرار وجود ندارد؛ APIهای مدیریت بدون Grant مستقل
+  default-deny هستند و Advisory تاریخی V1 Regression را پاس می‌کند؛
+- نتیجهٔ Probe بدون Credential برای هر سه `Unavailable/allAvailable=false` است.
+  آزمون زنده در `AGENT-S1-LIVE` پس از قفل V1.1 اجباری می‌ماند و QA1 نسخهٔ 1.1
+  نباید آن را موفق یا Stage 1 را Qualified گزارش کند.
 
 ## ۴. Migration و Rollback matrix
 
@@ -100,7 +107,9 @@
 | `Qualified` | تمام Suiteها و Full Regression یک SHA |
 | `Final/Locked` | report، artifact digest، migration ledger و evidence commit |
 
+QA1 پس از Checkpoint محدود `V1.1-INT1` می‌تواند آغاز شود. هر تنظیمی که INT1 را در
+Pilot/Production V1.1 روشن کند، یا غیاب یکی از شواهد منفی بالا، Gate نسخه را رد می‌کند.
+
 ## ۷. ممنوعیت کاهش پوشش
 
 تست V1 فقط به‌دلیل زمان اجرای زیاد حذف یا Skip نمی‌شود. تغییر count باید با توضیح semantic coverage ثبت شود. Retry CI برای flaky test جای اصلاح علت را نمی‌گیرد و flaky suite مانع Qualification است.
-

@@ -1,12 +1,13 @@
 # Roadmap هفت‌مرحله‌ای Agent مدیریتی PMCS
 
 - شناسه سند: `PMCS-RM-AGENT-001`
-- نسخه سند: `1.3.0`
-- وضعیت: مصوب و لازم‌الاجرا؛ Stage 1/INT1 در اجرا، Gate خروج باز
+- نسخه سند: `1.4.0`
+- وضعیت: مصوب و لازم‌الاجرا؛ Foundation خاموش V1.1 در Qualification، Gate زندهٔ Stage 1 باز
 - تاریخ بازیابی و ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Parent roadmap: `pmcs-post-v1-product-evolution.md`
 - تصمیم تکمیلی INT1: `docs/adr/0032-int1-controlled-multi-provider-selection.md` (۲۰۲۶-۱۰-۰۱)
+- تصمیم زمان‌بندی Gate: `docs/adr/0033-int1-v11-dormant-foundation-and-live-qualification.md` (۲۰۲۶-۱۰-۰۱)
 - DoR و Gap Analysis: `docs/architecture/pmcs-v1.1-int1-foundation-dor.md`
 - Runtime مرجع و Gateهای باز: `docs/architecture/pmcs-v1.1-int1-runtime-contract.md`
 
@@ -51,6 +52,12 @@ V1 دارای یک پایهٔ Advisory/Permission-aware محدود است، ام
 - منع DB/SQL مستقیم و cross-module Persistence access.
 
 ### Gate خروج
+
+این Gate، Qualification **نهایی** `AGENT-S1` است. نسخهٔ 1.1 تنها Foundation
+غیرفعال را با Checkpoint محدود و QA1 بدون فعال‌سازی Agent تحویل می‌دهد. اتصال زندهٔ
+سه Provider در `AGENT-S1-LIVE`، نخستین Gate فاز Intelligence پس از Baseline V1.1،
+اجرا می‌شود. Stage 2 و فعال‌سازی INT1 تا عبور از آن ممنوع‌اند؛ این تقسیم یک Stage
+هشتم ایجاد نمی‌کند. مرجع زمان‌بندی [ADR 0033](../adr/0033-int1-v11-dormant-foundation-and-live-qualification.md) است.
 
 - تعویض Provider بدون تغییر Business Logic اثبات شود؛
 - مسیر انتخاب و آزمون اتصال هر سه آداپتور اثبات شود؛ نبود Credential یا Capability وضعیت `Unavailable` صریح بدهد؛

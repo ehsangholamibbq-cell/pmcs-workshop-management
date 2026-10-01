@@ -1,8 +1,8 @@
 # INT1 — قرارداد Runtime مرجع و شواهد باز
 
 - Parent: `PMCS-V1.1-INT1-DOR-001` و ADR 0032.
-- وضعیت: پیاده‌سازی در جریان؛ این سند checkpoint خروج INT1 نیست.
-- Feature flag: `Intelligence:INT1ReferenceEnabled=false` به‌صورت پیش‌فرض. روشن‌کردن در استقرار تنها پس از Gate مستقل و credential معتبر مجاز است.
+- وضعیت: Candidate پیاده‌سازی؛ Checkpoint محدود Foundation و Gate زنده هر دو جداگانه ارزیابی می‌شوند.
+- Feature flag: `Intelligence:INT1ReferenceEnabled=false` به‌صورت پیش‌فرض و در انتشار V1.1؛ روشن‌کردن در Pilot/Production تنها پس از `AGENT-S1-LIVE` و credential معتبر مجاز است.
 
 ## سطح محدود
 
@@ -23,6 +23,12 @@
 مصرف گزارش‌شدهٔ هر تصمیم ابزار و پاسخ نهایی به Run افزوده می‌شود؛ در fallback، مصرف مشاهده‌شدهٔ مدل نخست با برآورد سقف مدل مقصد پیش از جابه‌جایی سنجیده و همراه مصرف واقعی مقصد در Audit نهایی محاسبه می‌شود. مصرف مشاهده‌شده در شکست نیز از metadata حذف نمی‌شود. مصرفی که Provider هنگام خطای شبکه یا پاسخ نامعتبر اصلاً گزارش نکند، قابل اندازه‌گیری قطعی نیست؛ برآورد ثبت‌شده معادل صورتحساب خارجی نیست.
 
 ## وضعیت Gateها
+
+ADR 0033، Gate Foundation غیرفعال نسخهٔ 1.1 را از Qualification زندهٔ Stage 1
+تفکیک کرده است. QA1 باید غیرفعال‌بودن Reference Run و Worker، نبود Grant راه‌انداز،
+Provider/Model فعال و Secret، و default-deny مدیریت را در Candidate انتشار بسنجد.
+این Checkpoint محدود پس از CI مستقل می‌تواند بسته شود؛ Stage 1 تا آزمون زنده
+`AGENT-S1-LIVE` پس از V1.1 Qualified نیست.
 
 - Run 674 (`36795510420`) برای Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` هر هشت Job سبز دارد؛ DB ایزوله، سه adapter، cross-tenant/project، fallback، هزینه، lineage، لغو Client و مرورگر را بررسی می‌کند. Source Runtime پیشین Run 672 نیز هشت Job سبز داشت.
 - آزمون اتصال واقعی سه Provider با credential پیکربندی‌شده و ثبت `Available/Unavailable` باز است؛ credential در مخزن/CI عمومی نگهداری نمی‌شود. CLI بدون Secret هر سه را `Unavailable` گزارش کرده و موفقیت زنده ادعا نمی‌کند.

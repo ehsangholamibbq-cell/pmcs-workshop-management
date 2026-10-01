@@ -1,7 +1,7 @@
 # INT1 — Definition of Ready و قرارداد Foundation
 
 - شناسه: `PMCS-V1.1-INT1-DOR-001`
-- نسخه: `1.1.0`
+- نسخه: `1.2.0`
 - وضعیت: DoR مستقل با Run 645 (`36783866696`) و هشت Job سبز بسته شد؛ این سند به‌تنهایی Gate خروج INT1 را نمی‌بندد.
 - Parent: `PMCS-V1.1-UX2-MS100-C1`، SHA آغاز `52a56f9967309c7961e132d68504c7c679159bcd`
 - تصمیم لازم‌الاجرا: [ADR 0032](../adr/0032-int1-controlled-multi-provider-selection.md)
@@ -54,3 +54,13 @@ Stage 2 Agent خواندنی کامل، RAG، Executive Intelligence UI، Draft/
 ## ثبت شروع اجرا
 
 DoR در Commit `241892fca22a995e31f922d35320eb771059d346` با CI شمارهٔ ۶۴۵ بسته شد. پس از آن Store Grant، Catalog و Profile نسخه‌دار، سه Probe Provider، Tool Registry و مسیر Reference Run پشت Feature Flag خاموش‌به‌پیش‌فرض در Commitهای افزایشی شاخه پیاده‌سازی شدند. قرارداد Runtime و Gateهای باقیمانده در [سند Runtime مرجع](pmcs-v1.1-int1-runtime-contract.md) ثبت است. این ثبت، MS02–MS06 یا خروج INT1 را Safe اعلام نمی‌کند.
+
+## الحاقیهٔ تصمیم مالک محصول، ۲۰۲۶-۱۰-۰۱
+
+[ADR 0033](../adr/0033-int1-v11-dormant-foundation-and-live-qualification.md)
+ترتیب Gate را پس از بسته‌شدن این DoR اصلاح کرد. متن بالا قرارداد و ترتیب تاریخی
+آغاز INT1 را ثبت می‌کند. برای V1.1، MS02–MS06 با fixture متصل و CI مستقل، سپس
+Checkpoint محدودِ Foundation خاموش بررسی می‌شوند؛ پس از آن QA1 می‌تواند نسخهٔ بدون
+Runtime فعال Agent را ارزیابی کند. آزمون اتصال واقعی با Credential و Qualification
+نهایی `AGENT-S1` در Gate `AGENT-S1-LIVE` پس از Baseline V1.1 و پیش از Stage 2
+الزامی است. هیچ MS یا QA1 صرفاً با این الحاقیه Safe نمی‌شود.

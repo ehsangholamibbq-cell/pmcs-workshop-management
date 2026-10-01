@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.188.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 با MS100 Safe؛ INT1 در اجرا، QA1 باز
+- نسخه سند: `1.189.0`
+- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 Safe؛ INT1 Foundation Candidate، QA1 باز؛ اتصال زنده پس از V1.1
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -11,7 +11,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله فعال: `V1.1-INT1 — Foundation Runtime و Qualification`؛ QA1 و قفل V1.1 جدا هستند
+- مرحله فعال: `V1.1-INT1 — Foundation خاموش و Checkpoint محدود`؛ QA1 پس از آن و قفل V1.1 جدا هستند
 
 ## ۱. هدف و قاعده حاکم
 
@@ -58,6 +58,7 @@ Commit شروع Repository برای شاخهٔ V1.1 باید هنگام ایجا
 | `D-PV1-16` | هر ده خانوادهٔ استاندارد کاتالوگ RPT1 در Scope باقی می‌مانند؛ خانواده‌های ۲ تا ۱۰ باید با Micro-Slice و Qualification مستقل تکمیل شوند و RPT1 پیش از آن بسته نمی‌شود. | مصوب؛ ADR 0031 |
 | `D-PV1-17` | فونت فارسی باید در آینده برای تمام صفحات فعال، Login، Offline و PDF/Print از قرارداد مرکزی نسخه‌دار قابل تعویض باشد؛ انتخاب قلم نهایی باز است و Gate تعویض سراسری/Visual QA در UX2 الزامی است. | مصوب؛ `PMCS-DS-001` |
 | `D-PV1-18` | انتخاب کنترل‌شدهٔ GPT/OpenAI، Gemini/Google، Claude/Anthropic و Providerهای بعدی در INT1 با Profile نسخه‌دار و Permission مدیریت سطح بالا؛ جابه‌جایی مدل نباید محدودهٔ ابزار، داده یا مجوز را افزایش دهد. | مصوب؛ ADR 0032 |
+| `D-PV1-19` | تحویل Foundation خاموش INT1 در V1.1؛ آزمون اتصال واقعی و Qualification نهایی همان Stage در نخستین Gate فاز Intelligence پس از قفل V1.1، پیش از Agent Stage 2 و فعال‌سازی Runtime. | مصوب؛ ADR 0033؛ `R-AI-03` باز |
 
 ## ۴. نقشهٔ نسخه‌های محصول
 
@@ -1551,7 +1552,7 @@ Scope:
 
 **Non-Scope V1.1:** Stage 2 Read-only Agent، RAG، Executive Intelligence UI تولیدی، Draft Action، Controlled Write و `@PMCS` عمومی در Chat. این قابلیت‌ها فقط با Gateهای Stageهای بعدی فعال می‌شوند.
 
-**Gate خروج:** Provider swap و مسیر اتصال هر سه آداپتور، منع انتخاب بدون Permission، عدم گسترش Tool/Permission/Data در swap/fallback، Profile/Model/Policy lineage، rollback، safe failure و منع DB/SQL مستقیم به‌طور مستقل اثبات شوند. قرارداد الزام‌آور در `docs/adr/0032-int1-controlled-multi-provider-selection.md` است.
+**Gate محدود V1.1:** Provider swap و شکل اتصال سه آداپتور در compatibility fixture، منع انتخاب بدون Permission، عدم گسترش Tool/Permission/Data در swap/fallback، Profile/Model/Policy lineage، rollback، safe failure و منع DB/SQL مستقیم با Source/CI و DB ایزوله اثبات شوند. Runtime INT1 در انتشار خاموش، Grant راه‌انداز و Provider/Model فعال و Secret غایب باشند. Checkpoint محدود Foundation تنها پس از بازبینی این شواهد بسته می‌شود. آزمون واقعی سه Provider و Qualification نهایی Stage 1 طبق ADR 0032 و زمان‌بندی ADR 0033 در `AGENT-S1-LIVE` باقی می‌مانند.
 
 ### `V1.1-QA1` — Qualification and Baseline Lock
 
@@ -1568,6 +1569,7 @@ Suiteهای الزامی افزوده بر قرارداد V1:
 - Reporting determinism، print visual regression و export integrity؛
 - UI visual/accessibility/responsive؛
 - Agent Tool negative-boundary tests؛
+- اثبات خاموش‌بودن INT1 در انتشار، default-deny، نبود Grant راه‌انداز/Provider/Model فعال/Secret و Regression مسیر Advisory تاریخی V1؛ ثبت `R-AI-03` باز و تعهد Gate `AGENT-S1-LIVE`؛
 - Migration از V1 Baseline و rollback/restore rehearsal؛
 - Load/soak متناسب با Pilot و failure recovery؛
 - Full Regression تمام قابلیت‌های V1.
@@ -1584,7 +1586,7 @@ Suiteهای الزامی افزوده بر قرارداد V1:
 
 | Stage | عنوان قطعی | Release mapping فعلی | وضعیت |
 | --- | --- | --- | --- |
-| 1 | Intelligence Foundation | `V1.1-INT1` | In Progress |
+| 1 | Intelligence Foundation | `V1.1-INT1` خاموش؛ `AGENT-S1-LIVE` نخستین Gate Intelligence بعد از V1.1 | Foundation Candidate؛ Qualification نهایی باز |
 | 2 | Read-Only Project Intelligence Agent | V1.2 Intelligence Track | Planned |
 | 3 | Knowledge / RAG / Evidence / Citations | V1.2 Intelligence Track | Planned |
 | 4 | Executive Intelligence UI | V1.2 Intelligence Track + Visual Excellence | Planned |
@@ -1617,7 +1619,9 @@ V1.2 فقط پس از قفل Baseline V1.1 آغاز می‌شود.
 
 ### Intelligence Integration Phase 2
 
-V1.2 باید Stageهای 2 تا 7 برنامهٔ Agent مدیریتی را دقیقاً به‌ترتیب و با Gate مستقل اجرا کند:
+V1.2 ابتدا `AGENT-S1-LIVE` را با Credential امن، structured output و tool calling
+واقعی سه Provider و Checkpoint نهایی Stage 1 می‌بندد. فقط سپس Stageهای 2 تا 7
+برنامهٔ Agent مدیریتی را دقیقاً به‌ترتیب و با Gate مستقل اجرا می‌کند:
 
 1. Read-only Project Intelligence؛
 2. Knowledge/RAG/Evidence/Citations؛
@@ -1916,3 +1920,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.186.0` | INT1-MS01: DoR و Gap Analysis پایهٔ Advisory V1، قرارداد مجوز مستقل Global/Tenant، مدل داده و توالی Gateها در `PMCS-V1.1-INT1-DOR-001` ثبت شد. Runtime، انتخاب مدل و Gate خروج INT1 هنوز بازند؛ QA1 جدا می‌ماند. |
 | `1.187.0` | INT1 DoR در Run 645 (`36783866696`) هشت Job سبز و Safe شد. Store مجوز مستقل، Probe سه Provider، Catalog و Profile نسخه‌دار، Tool Registry خواندنی و Reference Run محدود/خاموش‌به‌پیش‌فرض در شاخه به‌صورت افزایشی پیاده‌سازی شدند؛ آخرین Source `cc6c7c344cbf40cccd3504a2227503b7d2052dc1` و CI آن هنوز Gate خروج نیست. تست اتصال واقعی، آزمون مستقل end-to-end و تأیید همهٔ بندهای ADR 0032 بازند؛ Agent Stage 2 و QA1 شروع نشده‌اند. |
 | `1.188.0` | INT1 Runtime تا Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` با سه adapter، انتخاب نسخه‌دار، Tool Registry مالک، Run پیش‌فرض خاموش، fallback/مصرف محدود، لغو Client و آزمون DB ایزوله پیش رفت؛ Run 674 (`36795510420`) هر هشت Job سبز. UI-E2E Runs 670/671 در تقویم شمسیِ تازه‌خوانی‌شونده شکست خورد؛ Source `6e92844be719d3cb7590ea752d2f6473dcd11032` آزمون را با read-state جاری همگام کرد و Runs 673/674 هشت Job سبز شدند. CLI بدون Secret برای هر سه `Unavailable/allAvailable=false` گزارش می‌دهد. اتصال واقعی پیکربندی‌شده و Gate خروج ADR 0032 بازند؛ Agent Stage 2 و QA1 شروع نشده‌اند. |
+| `1.189.0` | مصوبهٔ مالک محصول در ADR 0033، Gate Foundation خاموش V1.1 را از `AGENT-S1-LIVE` پس از Baseline V1.1 جدا کرد. Source Runtime Run 674 و docs Run 675 (`36796873924`) هر هشت Job سبز؛ اتصال واقعی شاهد ندارد و `R-AI-03` باز است. پس از Checkpoint محدود Foundation، QA1 می‌تواند فقط نسخهٔ بدون INT1 فعال را ارزیابی کند؛ Stage 2 و Qualification نهایی Stage 1 تا Gate زنده بازند. این نسخهٔ Roadmap به‌تنهایی Checkpoint یا QA1 را Safe نمی‌کند. |

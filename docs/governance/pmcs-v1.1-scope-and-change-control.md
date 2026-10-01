@@ -1,7 +1,7 @@
 # PMCS V1.1 — Scope، Non-Scope و Change Control
 
 - شناسه: `PMCS-GOV-V1.1-SCOPE-001`
-- نسخه: `1.1.0`
+- نسخه: `1.2.0`
 - Parent baseline: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
 ## ۱. هدف نسخه
@@ -21,12 +21,13 @@ V1.1 باید PMCS را بدون شکستن حقیقت‌ها و Workflowهای 
 | `V1.1-RPT1` | Reporting Phase 1 | گزارش استاندارد و Certified در PDF/Excel |
 | `V1.1-COL1` | Project Collaboration | گروه رسمی هر پروژه با فایل، Offline، Search و Audit |
 | `V1.1-UX2` | UI Migration | مهاجرت موجی تمام مسیرهای فعال به Design System |
-| `V1.1-INT1` | Agent Stage 1 | Gateway و انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini، Anthropic/Claude؛ Profile/Permission مدیریت سطح بالا، Tool registry، Audit و safe failure طبق ADR 0032 |
+| `V1.1-INT1` | Foundation غیرفعال Stage 1 | Gateway و سه آداپتور، انتخاب نسخه‌دار، Profile/Permission مدیریت سطح بالا، Tool registry، Audit و safe failure با آزمون fixture و CI؛ Gate محدود ADR 0033، بدون Qualification اتصال زنده |
 | `V1.1-QA1` | Qualification | Migration، Regression، Security، UI و Lock evidence |
 
 ## ۳. Non-Scope قطعی V1.1
 
 - Stageهای 2 تا 7 Agent مدیریتی؛
+- اتصال زندهٔ سه Provider، فعال‌سازی Runtime INT1 و Qualification نهایی Stage 1؛ Gate `AGENT-S1-LIVE` پس از قفل V1.1 و پیش از Stage 2 طبق ADR 0033؛
 - Agent دارای SQL/Database access یا Permission بالاتر از کاربر؛
 - PMO، PMBOK، توجیه اقتصادی، متره/برآورد و Scheduling/MSP؛
 - Report Designer آزاد، Scheduled Delivery و Topic Channel پیشرفته؛
@@ -66,8 +67,12 @@ V1.1 باید PMCS را بدون شکستن حقیقت‌ها و Workflowهای 
 ## ۶. Acceptance سطح نسخه
 
 - تمام Scopeهای بالا با Checkpoint مستقل و Evidence بسته شوند؛
+- Checkpoint محدود Foundation INT1 فقط با Runtime خاموش، مجوز default-deny، Provider/Model غیرفعال، نبود Secret انتشار و شواهد منفی QA1 پذیرفته می‌شود؛ `R-AI-03` تا Gate زنده باز می‌ماند؛
 - تمام Non-Scopeها در معماری، Route و UI غایب بمانند؛
 - Migration از V1 قفل‌شده و Full Regression آن پاس شود؛
 - Permission/Tenant/Project boundary منفی اثبات شود؛
 - Design System در تمام صفحه‌های فعال یکپارچه باشد؛
 - V1.1 فقط پس از گزارش ماشینی و انسانی `Qualified` قفل شود.
+
+این تغییر زمان‌بندی، تحویل Stage 1 را `Qualified` نمی‌کند. وضعیت Stage 1 و ریسک
+اتصال زنده باید در Baseline V1.1 و handoff فاز بعدی صریح بمانند.

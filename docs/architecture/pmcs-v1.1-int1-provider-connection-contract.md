@@ -3,6 +3,8 @@
 - شناسه: `PMCS-V1.1-INT1-PROVIDER-001`
 - وضعیت: Probe، فعال‌سازی مستقل Provider و compatibility fixture؛ اتصال زنده هنوز شواهد جدا می‌خواهد.
 - Parent: `PMCS-V1.1-INT1-DOR-001` و ADR 0032
+- زمان‌بندی: ADR 0033، Gate `AGENT-S1-LIVE` پس از Baseline V1.1 و پیش از Stage 2؛
+  Probe ساختگی و Unavailable در V1.1 ادعای اتصال زنده نیستند.
 
 سه آداپتور مستقل `OpenAI`، `GoogleGemini` و `AnthropicClaude` از تنظیمات `OpenAI:*`،
 `Gemini:*` و `Anthropic:*` یا متغیر محیطی هم‌نام با حروف بزرگ استفاده می‌کنند. Model ID

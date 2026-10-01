@@ -5,6 +5,8 @@
 - Change record: `V1.1-INT1-MODEL-SELECTION`
 - Parent: `PMCS-RM-AGENT-001` و `PMCS-RM-POST-V1-001`
 - دامنه: طراحی و معیار پذیرش `V1.1-INT1` / `AGENT-S1`؛ اجرای Runtime هنوز آغاز نشده است.
+- اصلاح زمان‌بندی مصوب: [ADR 0033](0033-int1-v11-dormant-foundation-and-live-qualification.md)؛
+  Foundation خاموش در V1.1 و Qualification زندهٔ همین Stage پس از Baseline V1.1.
 
 ## زمینه
 
@@ -63,3 +65,7 @@ V1 بازنویسی نمی‌شود و وجودش اثبات چندارائه‌
 این مصوبه Foundation و سطح مدیریت محدود INT1 را تعریف می‌کند. Agent خواندنی کامل،
 RAG، رابط عملیاتی Executive Intelligence، اقدام پیشنهادی/نوشتنی و Chat عمومی تنها
 در Stageهای بعدی و Gate مستقل خود فعال می‌شوند.
+
+آزمون اتصال واقعی این ADR همچنان شرط Qualification نهایی `AGENT-S1` است. طبق
+ADR 0033، Checkpoint محدود Foundation نسخهٔ 1.1 و QA1 خاموش‌بودن Runtime را پیش
+از آن می‌پذیرند؛ هیچ نتیجهٔ `Unavailable` به‌عنوان اتصال موفق ثبت نمی‌شود.

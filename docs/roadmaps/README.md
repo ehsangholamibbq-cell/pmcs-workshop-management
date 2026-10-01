@@ -6,14 +6,16 @@
 
 | وضعیت | سند | دامنه |
 | --- | --- | --- |
-| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.188.0` | V1.1، V1.2 و V2.x |
-| Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.3.0` | هفت Stage Agent مدیریتی؛ انتخاب مدل طبق ADR 0032 |
+| Active | `pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.189.0` | V1.1، V1.2 و V2.x |
+| Active program | `pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.4.0` | هفت Stage Agent؛ انتخاب طبق ADR 0032 و زمان‌بندی طبق ADR 0033 |
 | Active program | `pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.2.0` | مسیر «مدیریت ممتاز» و بازطراحی سراسری تجربه و ظاهر محصول |
 | Completed / Historical | `pmcs-v1-development-and-qualification.md` | تکمیل، Qualification و قفل PMCS V1 |
 
 سیاست لازم‌الاجرای Version و Baseline: `../governance/pmcs-version-and-baseline-policy.md`.
 
 تصمیم انتخاب مدل INT1 در `../adr/0032-int1-controlled-multi-provider-selection.md` ثبت شده است.
+مصوبهٔ تحویل Foundation خاموش V1.1 و Gate زندهٔ پس از آن در
+`../adr/0033-int1-v11-dormant-foundation-and-live-qualification.md` ثبت شده است.
 ردیف‌های Checkpoint پایین، تاریخچهٔ اجرا در زمان ثبت هستند؛ وضعیت فعلی در جدول بالا و
 مرجع Canonical آمده است.
 
@@ -24,7 +26,7 @@
 | Locked Product Baseline | `PMCS V1` |
 | Source baseline commit | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | Active planning line | `PMCS V1.1` |
-| V1.1 state | `Development | UX2 Closed | INT1 in progress | QA1 open` |
+| V1.1 state | `Development | UX2 Closed | INT1 dormant Foundation Candidate | QA1 open` |
 | V1.1 branch | `v1.1-development` |
 | V1.1 repository start commit | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
 | V1.1 product code started | بله |
