@@ -157,6 +157,7 @@ stop_api
 ./tools/qa/verify-database.sh
 ./tools/qa/verify-files-database.sh
 ./tools/qa/verify-sync-database.sh
+./tools/qa/verify-v1.1-int1-dormant.sh
 
 # Run INT1 on the isolated QA database only after the historical baseline assertions.
 ./tools/qa/verify-int1-reference.sh

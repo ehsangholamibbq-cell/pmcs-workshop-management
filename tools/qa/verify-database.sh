@@ -141,6 +141,11 @@ expect_equal \
   "select count(*) from intelligence.provider_registrations where enabled;"
 
 expect_equal \
+  "INT1 models default disabled" \
+  "0" \
+  "select count(*) from intelligence.model_catalog where enabled;"
+
+expect_equal \
   "INT1 pinned provider and initial selection lineage migration identity" \
   "1" \
   "select count(*) from foundation.schema_migrations where module = 'intelligence' and version = '20261001-007';"

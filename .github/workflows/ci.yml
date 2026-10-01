@@ -20,6 +20,8 @@ jobs:
         with:
           node-version: 24
       - run: node tools/qa/regression-runner.mjs run architecture
+      - name: Record V1.1 candidate preflight
+        run: node tools/qa/v1.1-candidate-preflight.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -31,6 +33,12 @@ jobs:
         with:
           name: pmcs-vx-g4-consumer-inventory
           path: artifacts/qa/vx-g4-consumers.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-candidate-manifest
+          path: artifacts/qa/v1.1-evidence/candidate-manifest*
           if-no-files-found: error
 
   backend:
@@ -147,6 +155,12 @@ jobs:
         with:
           name: qa-regression-integration
           path: artifacts/qa/regression/integration.json
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-int1-dormant
+          path: artifacts/qa/v1.1-evidence/int1-dormant*
           if-no-files-found: error
       - if: failure()
         run: docker logs pmcs-integration-minio || true
