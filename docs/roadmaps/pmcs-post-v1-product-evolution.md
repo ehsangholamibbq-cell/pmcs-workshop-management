@@ -1,8 +1,8 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.193.0`
-- وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 Safe؛ INT1 Foundation خاموش Safe محدود، QA1 باز؛ اتصال زنده پس از V1.1
+- نسخه سند: `1.194.0`
+- وضعیت: `V1.1 Qualified | Final | Baseline Locked`؛ پذیرش دستی مالک و انتشار باز؛ INT1 Foundation خاموش Safe محدود، اتصال زنده پس از انتشار
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
 - مرجع پیشین: `docs/roadmaps/pmcs-v1-development-and-qualification.md`
@@ -11,7 +11,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله جاری: `V1.1-QA1`؛ DoR و نقشهٔ اجرا در `PMCS-V1.1-QA1-DOR-001` پس از Run 679 Ready است؛ Qualification، قفل فنی، پذیرش مالک و انتشار هنوز بازند
+- مرحله جاری: `PMCS-V1.1-OWNER-ACCEPTANCE-001` Planned؛ QA1 با `PMCS-V1.1-QA1-LOCK-C1` بسته، Candidate `b223fa69ee40b467a014e816b3bc021fa42e2ae0` قفل، انتشار باز
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1928,3 +1928,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.191.0` | ADR 0034 مصوبهٔ مالک محصول را ثبت می‌کند: پس از QA1 و `Qualified → Final → Baseline Locked`، مالک V1.1 را شخصاً روی Candidate ثابت می‌آزماید؛ فقط پس از پذیرش ثبت‌شده انتشار رسمی مجاز است و V1.2/`AGENT-S1-LIVE` پس از انتشار آغاز می‌شود. فرم `PMCS-V1.1-OWNER-ACCEPTANCE-001` Planned است؛ QA1 هنوز باز و اجرا نشده است. |
 | `1.192.0` | QA1 آغاز شد و DoR Candidate `PMCS-V1.1-QA1-DOR-001` شکاف گزارش مستقل V1.1، Candidate ثابت، استقرار خاموش INT1، سناریوهای Upgrade/Restore و Full Regression را به برش‌های قابل ردیابی تقسیم کرد. Run 678 پیش‌نیاز سبز است، اما QA1 یا قفل V1.1 را نمی‌بندد. |
 | `1.193.0` | DoR مرحله روی Source `1bc0e9a1b1759af5edf35e88f62a12b55d201aaf` و Run 679 (`36834619522`) با هشت Job سبز Ready شد. QA1 با گزارش fail-closed مستقل V1.1، شاهد Candidate/INT1 خاموش و Matrix واقعی مهاجرت ادامه می‌یابد؛ Source ابزار نخست `32e1a8af67aa82b3c18648a2fcab485a4a1599fe` است و نتیجهٔ CI/Artifact و همهٔ Gateهای Qualification باید مستقل بررسی شوند. هیچ Qualified، Final، Locked یا پذیرش مالک ثبت نشده است. |
+| `1.194.0` | QA1 روی Source ثابت `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7` و Run 683 (`36839494362`) هر هشت Job را سبز گذراند. گزارش مستقل V1.1 برابر `qualified`، ۱۸/۱۸ شاهد، هفت Suite Full Regression و صفر شکست است؛ Artifact گزارش `11151243256` با Digest `sha256:41bba612ed1e544fd531c4c89068375a837e1c79e797efd6c82495568487fbb8`. تصمیم `Qualified → Final → Baseline Locked` در `PMCS-V1.1-QA1-LOCK-C1` ثبت شد؛ آزمون و قبول صریح مالک، انتشار، V1.2 و `AGENT-S1-LIVE` هنوز بازند. |

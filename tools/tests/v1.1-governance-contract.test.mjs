@@ -99,7 +99,8 @@ test("V1.1 owner acceptance is a required post-lock, pre-publish gate", () => {
   assert.match(adr, /فقط پس از تأیید انجام انتشار[\s\S]*V1\.2/u);
   assert.match(release, /وضعیت: `Planned — اجرا نشده`/u);
   assert.match(roadmap, /V1\.2 فقط پس از QA1، قفل Baseline V1\.1، پذیرش کامل ثبت‌شدهٔ مالک و انتشار رسمی V1\.1/u);
-  assert.match(canonical, /DoR مرحلهٔ QA1[^\n]*Ready[^\n]*Qualification نسخهٔ 1\.1[^\n]*بازند/u);
+  assert.match(canonical, /PMCS-V1\.1-QA1-LOCK-C1[\s\S]*?۱۸\/۱۸[\s\S]*?Owner Acceptance و انتشار باز/u);
+  assert.match(canonical, /مالک محصول آزمون کامل دستی خود را روی Candidate ثابت انجام می‌دهد/u);
   assert.match(canonical, /OWNER-ACCEPTANCE → PUBLISHED → V1\.2/u);
 });
 

@@ -1,7 +1,7 @@
 # PMCS V1.1 — Development Baseline
 
 - شناسه: `PMCS-GOV-V1.1-BASELINE-001`
-- وضعیت: `Architecture Approved`
+- وضعیت: `Architecture Approved؛ V1.1 Candidate Qualified | Final | Baseline Locked` طبق `PMCS-V1.1-QA1-LOCK-C1`
 - تاریخ ثبت: ۱۴۰۵/۰۶/۲۷ (۲۰۲۶-۰۹-۱۸)
 - شاخه توسعه: `v1.1-development`
 
@@ -28,11 +28,16 @@
 | --- | --- |
 | Product line | `PMCS V1.1` |
 | SemVer target | `1.1.0` |
-| State | `Development | UX1/EXT1/DOC1/IAM1/PRJ1 Closed | RPT1 Active` |
-| Product runtime implementation | F01 تا F06 متصل؛ F07 قرارداد و Runtime Core محدود آماده، Renderer/wiring باز؛ F08–F10/UI باز |
-| Database migration | ۴۸ Migration در Safe Resume و Restore Drill متصل سبز است |
+| State | `Qualified → Final → Baseline Locked`؛ Owner Acceptance و انتشار باز |
+| Product runtime implementation | Candidate ثابت V1.1 در Source `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7` |
+| Database migration | ۷۰ Migration در Candidate؛ Upgrade نمایندهٔ V1 از ۳۸ به ۷۰، Restore، Runtime rollback و Recovery در Run 683 سبز |
 | V1 maintenance line | مستقل و بدون Feature جدید |
 | Visual direction | `مدیریت ممتاز` — Approved |
+
+Latest QA1 decision: [`PMCS-V1.1-QA1-LOCK-C1`](../checkpoints/v1.1-qa1-qualified-final-baseline-lock.md)
+با Run 683 (`36839494362`) و گزارش مستقل ۱۸/۱۸ شاهد، Candidate را قفل کرد. پاراگراف‌های
+تاریخی زیر وضعیت همان Sliceهای گذشته را در زمان ثبت خود شرح می‌دهند؛ وضعیت مؤثر
+امروز در جدول بالا و Checkpoint QA1 است. پذیرش شخصی مالک و انتشار رسمی هنوز ثبت نشده‌اند.
 
 Governance source commit `d4ac64ea818c7e48476b650b84dafe31bf1872a4` در Run 71 (`35275795712`) با هفت Suite و Qualification Report سبز تأیید شد. این Approval فقط G0 را می‌بندد و هیچ Runtime/Migration جدیدی را جزو Baseline قفل‌شده V1 نمی‌کند.
 

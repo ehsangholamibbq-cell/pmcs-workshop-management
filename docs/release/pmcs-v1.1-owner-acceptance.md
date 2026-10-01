@@ -3,8 +3,9 @@
 - شناسه Gate: `PMCS-V1.1-OWNER-ACCEPTANCE-001`
 - وضعیت: `Planned — اجرا نشده`
 - تصمیم حاکم: [ADR 0034](../adr/0034-v1.1-owner-acceptance-and-release-gate.md)
-- Candidate/Commit SHA: `ثبت می‌شود پس از قفل Baseline`
-- Artifact/Hash: `ثبت می‌شود پس از آماده‌شدن Candidate`
+- Candidate/Commit SHA: `b223fa69ee40b467a014e816b3bc021fa42e2ae0`؛ Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7`
+- Artifact/Hash: گزارش QA1 Artifact `11151243256`، `sha256:41bba612ed1e544fd531c4c89068375a837e1c79e797efd6c82495568487fbb8`؛ Build identity Artifact `11150822729`، `sha256:fd8893eae4737010e8ab52367f59927baeb541b41f45a53f1724d51649effb89`
+- مرجع قفل فنی: [`PMCS-V1.1-QA1-LOCK-C1`](../checkpoints/v1.1-qa1-qualified-final-baseline-lock.md)، Run 683 (`36839494362`)
 - محیط و زمان آزمون: `ثبت توسط مالک هنگام اجرا`
 - تصمیم مالک: `در انتظار آزمون`
 

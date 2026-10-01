@@ -1,7 +1,7 @@
 # PMCS V1.1 — DoR و نقشهٔ اجرای QA1
 
 - شناسه: `PMCS-V1.1-QA1-DOR-001`
-- وضعیت: `DoR Ready`؛ Run 679 (`36834619522`) هر هشت Job سبز؛ اجرای QA1 آغاز شده و Qualification نسخهٔ 1.1 هنوز باز است
+- وضعیت: `DoR Ready` در Run 679؛ اجرای QA1 با Run 683 `Qualified → Final → Baseline Locked` شد؛ مرجع خروج `PMCS-V1.1-QA1-LOCK-C1`
 - Parent product baseline: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Repository start: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
 - شاخه/PR: `v1.1-development` / Draft PR #2
@@ -48,13 +48,13 @@ Ready است. این Run فقط مجوز اجرای QA1 را می‌دهد و ش
 می‌خواهد؛ تا آن زمان وضعیت `failed` و `baselineLockEligible=false` است. گزارش V1
 تاریخی دست نخورده باقی می‌ماند.
 
-شاهدهای Candidate preflight، INT1 خاموش در DB تازه پیش از Fixture، شش حوزهٔ
-Regression و سه سناریوی دیتابیس خالی/تکرار/Restore از Candidate در حال اتصال به CI
-هستند. تمرین جداگانهٔ Backup نمایندهٔ Baseline V1، Upgrade و Runtime rollback نیز
-در همین مرحله اجرا می‌شود. عبور کد محلی یا Run قبلی جای نتیجهٔ CI همان Source را نمی‌گیرد.
-
-سناریوی قطع Migration، Load/Soak نسخه، مرور Artifact بصری و Digest انتشار هنوز Gate
-بازند. هیچ وضعیت `Qualified` یا Baseline lock تا بسته‌شدن همهٔ آنها ثبت نمی‌شود.
+Run 683 (`36839494362`) روی Source `b223fa69ee40b467a014e816b3bc021fa42e2ae0`
+و Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7` هر هشت Job را سبز گذراند.
+گزارش مستقل V1.1 تمام ۱۸ شاهد، هفت Suite پایه، مهاجرت خالی/تکرار/Restore، Upgrade
+از V1، Runtime rollback، قطع تراکنش و Recovery، بار، مرورگر/چاپ/دسترس‌پذیری،
+هویت ساخت و Digest را با صفر شکست تأیید کرد. تصمیم خروج و Artifact ID/Hashها در
+[`PMCS-V1.1-QA1-LOCK-C1`](../checkpoints/v1.1-qa1-qualified-final-baseline-lock.md)
+ثبت شده‌اند؛ Gate مالک و انتشار همچنان بازند.
 
 ## نقشهٔ اجرایی و معیار خروج
 

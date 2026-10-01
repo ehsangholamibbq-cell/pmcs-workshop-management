@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.151.0`
+- نسخه: `1.152.0`
 - آخرین کنترل: ۲۰۲۶-۱۰-۰۱
-- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 Foundation خاموش Safe محدود؛ QA1 DoR Candidate؛ Owner Acceptance و انتشار آتی`
+- وضعیت: `Authoritative working reference | V1 و V1.1 Baseline Locked | INT1 Foundation خاموش Safe محدود؛ Owner Acceptance و انتشار باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -18,18 +18,19 @@
 
 | مورد | مرجع معتبر |
 | --- | --- |
-| Baseline قفل‌شده محصول | `PMCS V1 — Qualified | Final | Baseline Locked` |
+| Baseline قفل‌شده محصول | `PMCS V1.1 — Qualified | Final | Baseline Locked` روی Source `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7`، Run 683؛ V1 نیز Baseline تاریخی مستقل و قفل‌شده است |
 | V1 source baseline | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
-| خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
+| خط فعال | `PMCS V1.1 — Baseline Locked` روی `v1.1-development`؛ Draft PR #2، پذیرش مالک و انتشار باز |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
-| Stage مؤثر | UX2 بسته؛ INT1 Foundation خاموش با `PMCS-V1.1-INT1-FOUNDATION-C1` و Run 676 هشت Job سبز Safe محدود؛ QA1 DoR و نقشهٔ اجرا Candidate؛ Qualification نسخهٔ 1.1 هنوز اجرا نشده |
-| آخرین Source | INT1 Runtime/لغو Client `65ec8f1814caf4f240688972f0ad7857cd134cb5`، tree `57264fed377bb69609a7c6b50130582743426080`، Run 674 (`36795510420`) هشت Job سبز؛ اتصال زندهٔ پیکربندی‌شده هنوز شاهد ندارد |
+| Stage مؤثر | QA1 با `PMCS-V1.1-QA1-LOCK-C1` بسته؛ گزارش V1.1 در Run 683 برابر ۱۸/۱۸ شاهد و صفر شکست؛ Gate دستی مالک Planned، انتشار باز؛ INT1 Foundation خاموش Safe محدود |
+| V1.1 Candidate و شاهد قفل | Source `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7`، Run `36839494362` هشت Job سبز؛ گزارش Artifact `11151243256` با `sha256:41bba612ed1e544fd531c4c89068375a837e1c79e797efd6c82495568487fbb8` |
+| آخرین Source Runtime/QA1 | `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7`، Run 683 (`36839494362`) هشت Job سبز؛ اتصال زندهٔ INT1 طبق ADR 0033 پس از انتشار باز است |
 | Current evidence-bearing source checkpoint | INT1 DoR: `241892fca22a995e31f922d35320eb771059d346`، Run 645؛ Runtime: Runs 669/672/673/674؛ تصمیم ADR 0033: Run 676 هشت Job سبز. UI-E2E Runs 670/671 شکست تقویم داشت و Source اصلاح‌شده در Runs 673/674 سبز شد؛ Checkpoint Qualification نهایی Stage 1 هنوز ثبت نشده |
 | INT1 Qualification Candidate | `PMCS-V1.1-INT1-QC1` در `docs/checkpoints/v1.1-int1-runtime-qualification-candidate.md`؛ Gate خروج باز، اتصال زندهٔ پیکربندی‌شده فاقد شاهد |
 | INT1 V1.1 Foundation safe checkpoint | `PMCS-V1.1-INT1-FOUNDATION-C1` در `docs/checkpoints/v1.1-int1-dormant-foundation-c1.md`؛ Source Runtime Run 674، تصمیم `5d48ac6d2cfd3d82622aa71785dfff42360411e9` Run 676 هر هشت Job سبز؛ تنها Foundation خاموش Safe است |
 | تصمیم زمان‌بندی INT1 | `docs/adr/0033-int1-v11-dormant-foundation-and-live-qualification.md`؛ Source Run 674 و docs Run 675 هشت Job سبز؛ `R-AI-03` باز؛ Stage 2 قبل از `AGENT-S1-LIVE` ممنوع |
 | Source lineage | MS100 از Source پایه `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac` به اصلاح شاهد چاپ `fd13282c7e71a77c5192761e127966467045f297` و docs نهایی `c950ec0f495396a9503a40de825f6c6830f73041` با Commit/fast-forward رسید؛ بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-INT1-FOUNDATION-C1`؛ Source Runtime `65ec8f1814caf4f240688972f0ad7857cd134cb5` Run 674، تصمیم ADR 0033 `5d48ac6d2cfd3d82622aa71785dfff42360411e9` Run 676، هر هشت Job سبز؛ Foundation خاموش Safe محدود، QA1 و Stage 1 زنده باز |
+| Current safe checkpoint | `PMCS-V1.1-QA1-LOCK-C1`؛ QA1 و Baseline V1.1 قفل، INT1 خاموش؛ Owner Acceptance و انتشار باز، Stage 1 زنده همچنان باز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS100-C1`؛ Source `fd13282c7e71a77c5192761e127966467045f297` Run 640؛ docs `c950ec0f495396a9503a40de825f6c6830f73041` Run 642 هشت Job سبز؛ G5/UX2 بسته |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
@@ -89,22 +90,22 @@
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS01-C1`؛ نشان رسمی در Shell/Login، Run 307 سبز |
 | COL1 predecessor safe checkpoint | `PMCS-V1.1-COL1-MS06-C1`؛ ساخت متصل و Qualification بسته، Run 305 سبز |
 | RPT1 predecessor safe checkpoint | `PMCS-V1.1-RPT1-S07-MS43-C1`؛ F01 تا F10 End-to-End متصل، UX2/Production باز |
-| Migration count | Safe Resume: `63` و Restore Drill سبز |
+| Migration count | Candidate V1.1: `70`؛ Upgrade/Restore از V1 با `38` Migration، rollback و Recovery در Run 683 سبز |
 
-PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked`
-نیست. Baseline قفل‌شده V1 نیز باز نشده است.
+PMCS V1.1 با Run 683 `Qualified → Final → Baseline Locked` شده است. مالک هنوز آزمون
+دستی را انجام نداده و انتشار رسمی ثبت نشده است؛ Baseline تاریخی V1 نیز باز نشده است.
 
 ## Effective Roadmap
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.193.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.194.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.6.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 Foundation خاموش → QA1 → Qualified → Final → Baseline Locked → OWNER-ACCEPTANCE → PUBLISHED → V1.2`.
-وضعیت فعلی: UX2 و DoR INT1 بسته، Foundation خاموش Safe محدود؛ DoR مرحلهٔ QA1 در `docs/qa/pmcs-v1.1-qa1-dor-and-execution.md` با Run 679 Ready است و QA1 اجرا می‌شود. Qualification نسخهٔ 1.1، Candidate نهایی، قفل، آزمون مالک و انتشار همگی بازند. طبق ADR 0034، V1.2 و `AGENT-S1-LIVE` تا انتشار رسمی V1.1 شروع نمی‌شوند؛ سپس `AGENT-S1-LIVE → AGENT-S2` همچنان ترتیب الزام‌آور است.
+وضعیت فعلی: QA1 با گزارش مستقل ۱۸/۱۸ و Full Regression هفت Suite در Run 683 بسته شد و Candidate `b223fa69...` قفل است. آزمون مالک در `docs/release/pmcs-v1.1-owner-acceptance.md` و انتشار بازند. طبق ADR 0034، V1.2 و `AGENT-S1-LIVE` تا انتشار رسمی V1.1 شروع نمی‌شوند؛ سپس `AGENT-S1-LIVE → AGENT-S2` همچنان ترتیب الزام‌آور است.
 
 تصمیم مالک محصول برای INT1: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و
 Anthropic/Claude با Profile نسخه‌دار، Permission مستقل مدیر ارشد و تفویض صریح محدود،
@@ -816,10 +817,10 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 
 ## Remaining Work
 
-1. خانواده‌های `RPT1-F01` تا `RPT1-F10` متصل و checkpointed هستند.
-2. گام بعدی طبق Roadmap، `V1.1-COL1` است؛ UI اختصاصی Reporting و visual regression در UX2 می‌آیند.
-3. COL1/UX2/INT1/QA1 و gateهای Production طبق ترتیب مصوب بازند.
-4. Pilot و gateهای وابسته به محیط واقعی فقط در زمان مقرر؛ Evidence فعلی مجوز Production rollout نیست.
+1. خانواده‌های `RPT1-F01` تا `RPT1-F10`، COL1، UX2 و QA1 در Candidate ثابت آزموده و بسته شده‌اند.
+2. گام بعدی آزمون کامل دستی مالک و ثبت تصمیم صریح در `PMCS-V1.1-OWNER-ACCEPTANCE-001` است.
+3. انتشار رسمی، `AGENT-S1-LIVE` و V1.2 تا پس از قبولی مالک و ثبت انتشار بازند.
+4. Pilot و Gateهای وابسته به محیط واقعی تنها در زمان مقرر؛ Qualification فنی مجوز Production rollout نیست.
 
 ## Known Gaps / Issues
 
@@ -1083,8 +1084,8 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1 Foundation خاموش با `PMCS-V1.1-INT1-FOUNDATION-C1` Safe محدود شد. Run 678 هشت Job سبز پیش‌نیاز QA1 است. DoR مرحلهٔ QA1 Candidate و شکاف گزارش مستقل V1.1 ثبت شد؛ آزمون‌های QA1 و قفل هنوز بازند. `R-AI-03` و `AGENT-S1-LIVE` پس از انتشار باز می‌مانند.**
-Agent Stage 2، Qualification نهایی Stage 1، Production و قفل V1.1 Gateهای جدا می‌مانند.
+**QA1 با `PMCS-V1.1-QA1-LOCK-C1` روی Source `b223fa69ee40b467a014e816b3bc021fa42e2ae0`، Tree `12388c888e33460f122c9cf4d4dfe65e53178eb7` و Run 683 بسته است. گام بعد آزمون کامل شخصی مالک روی همین Candidate و ثبت تصمیم صریح در `PMCS-V1.1-OWNER-ACCEPTANCE-001` است. `R-AI-03` و `AGENT-S1-LIVE` تا پس از انتشار باز می‌مانند.**
+Agent Stage 2، Qualification نهایی Stage 1 و انتشار رسمی Gateهای جدا می‌مانند.
 
 ## Resume Rule
 
@@ -1094,4 +1095,4 @@ Agent Stage 2، Qualification نهایی Stage 1، Production و قفل V1.1 Gat
 
 ## Gate پذیرش و انتشار V1.1
 
-مصوبهٔ قطعی مالک محصول در [ADR 0034](adr/0034-v1.1-owner-acceptance-and-release-gate.md) است. DoR QA1 Candidate و Qualification نهایی هنوز اجرا نشده؛ پس از آن، Qualification و قفل Baseline باید کامل شوند، سپس مالک محصول آزمون کامل دستی خود را روی Candidate ثابت انجام می‌دهد. وضعیت فرم [PMCS-V1.1-OWNER-ACCEPTANCE-001](release/pmcs-v1.1-owner-acceptance.md) در حال حاضر Planned است. انتشار رسمی فقط پس از قبولی ثبت‌شدهٔ مالک مجاز است؛ V1.2 و Gate زندهٔ `AGENT-S1-LIVE` تا ثبت انتشار شروع نمی‌شوند.
+مصوبهٔ قطعی مالک محصول در [ADR 0034](adr/0034-v1.1-owner-acceptance-and-release-gate.md) است. QA1 و قفل Baseline با [Checkpoint QA1](checkpoints/v1.1-qa1-qualified-final-baseline-lock.md) کامل شدند. مالک محصول آزمون کامل دستی خود را روی Candidate ثابت انجام می‌دهد. وضعیت فرم [PMCS-V1.1-OWNER-ACCEPTANCE-001](release/pmcs-v1.1-owner-acceptance.md) در حال حاضر Planned است. انتشار رسمی فقط پس از قبولی ثبت‌شدهٔ مالک مجاز است؛ V1.2 و Gate زندهٔ `AGENT-S1-LIVE` تا ثبت انتشار شروع نمی‌شوند.
