@@ -1,7 +1,7 @@
 # PMCS V1.1 — Risk Register
 
 - شناسه: `PMCS-GOV-V1.1-RISK-001`
-- نسخه: `1.3.0`
+- نسخه: `1.4.0`
 - وضعیت: Active از G0 تا Baseline Lock
 
 | ID | ریسک | احتمال/اثر | کنترل الزامی | مالک Gate | Evidence خروج |
@@ -25,8 +25,9 @@
 | `R-OFF-01` | قابلیت جدید در Offline duplicate/conflict بسازد | متوسط/زیاد | stable client ID، idempotency و conflict state | Feature owner | reconnect/concurrency tests |
 | `R-MIG-01` | Migration برگشت Runtime را مختل کند | کم/بحرانی | expand/migrate/verify/contract و restore drill | Data/Release | upgrade + rollback rehearsal |
 | `R-SCOPE-01` | V1.1 به بستهٔ بزرگ غیرقابل‌بستن تبدیل شود | زیاد/زیاد | Checkpoint مستقل، Non-Scope و WIP limit | Product | roadmap review در هر Gate |
+| `R-REL-01` | انتشار پیش از آزمون و پذیرش کامل مالک، یا شروع نسخهٔ بعد پیش از انتشار V1.1 | کم/بحرانی | Gate مستقل `OWNER-ACCEPTANCE` پس از Baseline Lock؛ انتشار فقط با قبولی صریح؛ V1.2 فقط پس از ثبت انتشار طبق ADR 0034 | Product/Release | فرم پذیرش دارای Candidate SHA و نتیجه + مرجع انتشار رسمی |
 
-ریسک بدون Owner، Gate و Evidence قابل پذیرش نیست. تغییر احتمال/اثر یا پذیرش Risk باید در Checkpoint بعدی نسخه‌دار ثبت شود.
+ریسک بدون Owner، Gate و Evidence قابل پذیرش نیست. `R-REL-01` باز تا قبولی دستی مالک و انتشار رسمی V1.1 باقی می‌ماند. تغییر احتمال/اثر یا پذیرش Risk باید در Checkpoint بعدی نسخه‌دار ثبت شود.
 
 مصوبهٔ ADR 0033 ریسک `R-AI-03` را نمی‌بندد؛ Release نسخهٔ 1.1 فقط در صورت
 اثبات خاموش‌ماندن INT1 و ثبت تعهد Gate زنده می‌تواند این ریسک باز را حمل کند.

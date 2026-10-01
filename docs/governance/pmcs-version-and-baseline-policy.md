@@ -1,7 +1,7 @@
 # سیاست حاکم Version، Checkpoint و Baseline در PMCS
 
 - شناسه سند: `PMCS-GOV-BASELINE-001`
-- نسخه سند: `1.1.0`
+- نسخه سند: `1.2.0`
 - وضعیت: لازم‌الاجرا برای تمام تغییرات پس از PMCS V1
 - تاریخ اجرا: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Baseline مبدأ: `PMCS V1` با Commit منبع `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
@@ -191,6 +191,21 @@ Baseline فقط وقتی قفل می‌شود که:
 8. هیچ Runtime change پس از Candidate وجود ندارد؛
 9. وضعیت‌های `Qualified → Final → Baseline Locked` به‌ترتیب ثبت شده‌اند.
 
+## ۱۲.۱. پذیرش مالک محصول و انتشار
+
+قفل Baseline پایان QA1 است، اما به‌تنهایی مجوز انتشار محصول نیست. برای هر نسخهٔ MINOR/MAJOR:
+
+1. QA1 و ترتیب `Qualified → Final → Baseline Locked` باید با Evidence کامل شوند؛
+2. مالک محصول Candidate قفل‌شده را شخصاً طبق چک‌لیست همان نسخه آزمایش و قبولی صریح خود را ثبت می‌کند؛
+3. انتشار رسمی تنها پس از پذیرش مالک مجاز است؛
+4. Runtime change پس از پذیرش Candidate تازه می‌خواهد و پذیرش قبلی منتقل نمی‌شود؛
+5. نسخهٔ بعدی/Feature line بعدی تنها پس از ثبت انتشار رسمی نسخهٔ جاری آغاز می‌شود.
+
+برای V1.1، فرم پذیرش `docs/release/pmcs-v1.1-owner-acceptance.md` و تصمیم حاکم ADR 0034 است.
+تست مالک مستقل از Qualification ماشینی QA1 است و API key/اتصال واقعی Provider شرط انتشار V1.1
+نیست، مشروط بر خاموش‌بودن INT1 طبق ADR 0033. Gateهای `OWNER-ACCEPTANCE` و `PUBLISHED`
+تا اجرای واقعی به‌صورت Planned می‌مانند.
+
 ## ۱۳. Maintenance Line برای Baseline قفل‌شده
 
 - Feature جدید روی نسخهٔ Locked ممنوع است؛
@@ -212,7 +227,7 @@ Roadmap قابل تکامل است، اما تغییر آن نیز نسخه‌د
 
 ## ۱۵. مرجع جاری
 
-تا زمان ایجاد Development Baseline V1.1، وضعیت رسمی چنین است:
+وضعیت جاری V1.1 در Roadmap و Canonical Reference نسخه‌دار ثبت می‌شود؛ V1.1 هنوز Development است:
 
 | مورد | مقدار |
 | --- | --- |

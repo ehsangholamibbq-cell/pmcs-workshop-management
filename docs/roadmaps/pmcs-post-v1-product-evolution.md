@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.190.0`
+- نسخه سند: `1.191.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 Safe؛ INT1 Foundation خاموش Safe محدود، QA1 باز؛ اتصال زنده پس از V1.1
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
@@ -11,7 +11,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله بعد: `V1.1-QA1` پس از Checkpoint محدود `PMCS-V1.1-INT1-FOUNDATION-C1`؛ قفل V1.1 جدا است
+- مرحله بعد: `V1.1-QA1` پس از Checkpoint محدود `PMCS-V1.1-INT1-FOUNDATION-C1`؛ سپس قفل فنی، پذیرش کامل مالک و انتشار رسمی به‌ترتیب؛ V1.2 پس از انتشار
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1598,7 +1598,7 @@ Suiteهای الزامی افزوده بر قرارداد V1:
 
 ## ۶. Roadmap PMCS V1.2
 
-V1.2 فقط پس از قفل Baseline V1.1 آغاز می‌شود.
+V1.2 فقط پس از QA1، قفل Baseline V1.1، پذیرش کامل ثبت‌شدهٔ مالک و انتشار رسمی V1.1 آغاز می‌شود؛ ترتیب لازم‌الاجرا در ADR 0034 است.
 
 ### Reporting Phase 2
 
@@ -1687,9 +1687,9 @@ V1 Locked Baseline
   → DOC1 Shared Documents
   → IAM1 Login/Profile ───────────────┐
   → PRJ1 Project Bootstrap ───────────┤
-  → RPT1 Reporting Core ──────────────┼→ UX2 Product UI → INT1 Agent Stage 1 → QA1 Qualification → V1.1 Locked
+  → RPT1 Reporting Core ──────────────┼→ UX2 Product UI → INT1 dormant Foundation → QA1 → V1.1 Locked → Owner Acceptance → Publish
   → COL1 Collaboration ───────────────┘
-  → V1.2 Agent Stages 2–7 + Advanced Reporting/Collaboration
+  → V1.2 after V1.1 publication: AGENT-S1-LIVE → Agent Stages 2–7 + Advanced Reporting/Collaboration
   → V2.x Domain Modules and Specialist Agents
 ```
 
@@ -1922,3 +1922,5 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.188.0` | INT1 Runtime تا Source `65ec8f1814caf4f240688972f0ad7857cd134cb5` با سه adapter، انتخاب نسخه‌دار، Tool Registry مالک، Run پیش‌فرض خاموش، fallback/مصرف محدود، لغو Client و آزمون DB ایزوله پیش رفت؛ Run 674 (`36795510420`) هر هشت Job سبز. UI-E2E Runs 670/671 در تقویم شمسیِ تازه‌خوانی‌شونده شکست خورد؛ Source `6e92844be719d3cb7590ea752d2f6473dcd11032` آزمون را با read-state جاری همگام کرد و Runs 673/674 هشت Job سبز شدند. CLI بدون Secret برای هر سه `Unavailable/allAvailable=false` گزارش می‌دهد. اتصال واقعی پیکربندی‌شده و Gate خروج ADR 0032 بازند؛ Agent Stage 2 و QA1 شروع نشده‌اند. |
 | `1.189.0` | مصوبهٔ مالک محصول در ADR 0033، Gate Foundation خاموش V1.1 را از `AGENT-S1-LIVE` پس از Baseline V1.1 جدا کرد. Source Runtime Run 674 و docs Run 675 (`36796873924`) هر هشت Job سبز؛ اتصال واقعی شاهد ندارد و `R-AI-03` باز است. پس از Checkpoint محدود Foundation، QA1 می‌تواند فقط نسخهٔ بدون INT1 فعال را ارزیابی کند؛ Stage 2 و Qualification نهایی Stage 1 تا Gate زنده بازند. این نسخهٔ Roadmap به‌تنهایی Checkpoint یا QA1 را Safe نمی‌کند. |
 | `1.190.0` | تصمیم ADR 0033 در Source `5d48ac6d2cfd3d82622aa71785dfff42360411e9` با Run 676 (`36826739227`) هشت Job سبز شد. `PMCS-V1.1-INT1-FOUNDATION-C1` فقط Foundation خاموش را با Source Runtime Run 674، قرارداد منفی و شواهد default-off/بدون Seed مجوز یا Provider/Model به‌صورت Safe محدود ثبت می‌کند. QA1 برای Candidate انتشار هنوز شروع نشده و باید نبود Credential ویژهٔ INT1، Grant راه‌انداز و Provider/Model فعال را اثبات کند؛ `R-AI-03` و `AGENT-S1-LIVE` بازند. |
+
+| `1.191.0` | ADR 0034 مصوبهٔ مالک محصول را ثبت می‌کند: پس از QA1 و `Qualified → Final → Baseline Locked`، مالک V1.1 را شخصاً روی Candidate ثابت می‌آزماید؛ فقط پس از پذیرش ثبت‌شده انتشار رسمی مجاز است و V1.2/`AGENT-S1-LIVE` پس از انتشار آغاز می‌شود. فرم `PMCS-V1.1-OWNER-ACCEPTANCE-001` Planned است؛ QA1 هنوز باز و اجرا نشده است. |

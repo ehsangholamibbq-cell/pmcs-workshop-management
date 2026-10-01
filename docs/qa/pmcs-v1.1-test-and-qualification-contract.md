@@ -1,7 +1,7 @@
 # PMCS V1.1 — Test Strategy و Qualification Contract
 
 - شناسه: `PMCS-QA-V1.1-001`
-- نسخه: `1.1.0`
+- نسخه: `1.2.0`
 - وضعیت: Governance Contract
 - Parent Qualification: Run 69 / source `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 
@@ -109,6 +109,12 @@
 
 QA1 پس از Checkpoint محدود `V1.1-INT1` می‌تواند آغاز شود. هر تنظیمی که INT1 را در
 Pilot/Production V1.1 روشن کند، یا غیاب یکی از شواهد منفی بالا، Gate نسخه را رد می‌کند.
+
+QA1 فقط Gate Qualification ماشینی/مهندسی است. پس از QA1 و قفل Baseline، مالک محصول
+شخصاً آزمون کامل پذیرش را روی Candidate ثابت انجام می‌دهد و نتیجه را در
+`docs/release/pmcs-v1.1-owner-acceptance.md` ثبت می‌کند. تا ثبت `Accepted` و سپس انتشار رسمی،
+V1.1 منتشرشده نیست و آغاز V1.2 مجاز نیست. این Gate طبق ADR 0034 مستقل است و اجرای آن
+اکنون Planned است؛ QA1 را زودتر آغاز یا با این آزمون جایگزین نمی‌کند.
 
 ## ۷. ممنوعیت کاهش پوشش
 

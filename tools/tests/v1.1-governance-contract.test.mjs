@@ -84,6 +84,24 @@ test("V1.1 INT1 release keeps live qualification as the first post-baseline Agen
   assert.doesNotMatch(defaults, /"(?:ApiKey|API_KEY|Secret)"\s*:/u);
 });
 
+test("V1.1 owner acceptance is a required post-lock, pre-publish gate", () => {
+  const adr = read("docs/adr/0034-v1.1-owner-acceptance-and-release-gate.md");
+  const policy = read("docs/governance/pmcs-version-and-baseline-policy.md");
+  const release = read("docs/release/pmcs-v1.1-owner-acceptance.md");
+  const roadmap = read("docs/roadmaps/pmcs-post-v1-product-evolution.md");
+  const canonical = read("docs/PMCS-CANONICAL-PROJECT-REFERENCE.md");
+  for (const text of [adr, policy, release, roadmap, canonical]) {
+    assert.match(text, /OWNER-ACCEPTANCE/u);
+    assert.match(text, /انتشار/u);
+  }
+  assert.match(adr, /QA1 کامل[\s\S]*Baseline Locked[\s\S]*آزمون کامل دستی مالک محصول[\s\S]*انتشار/u);
+  assert.match(adr, /فقط پس از تأیید انجام انتشار[\s\S]*V1\.2/u);
+  assert.match(release, /وضعیت: `Planned — اجرا نشده`/u);
+  assert.match(roadmap, /V1\.2 فقط پس از QA1، قفل Baseline V1\.1، پذیرش کامل ثبت‌شدهٔ مالک و انتشار رسمی V1\.1/u);
+  assert.match(canonical, /QA1 آغاز نشده/u);
+  assert.match(canonical, /OWNER-ACCEPTANCE → PUBLISHED → V1\.2/u);
+});
+
 test("login customization and project duplication retain fail-closed boundaries", () => {
   const adr = read("docs/adr/0028-configurable-login-member-profile-project-bootstrap.md");
   for (const boundary of [
