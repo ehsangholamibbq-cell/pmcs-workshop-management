@@ -98,13 +98,13 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.192.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.193.0` |
 | Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.6.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 Foundation خاموش → QA1 → Qualified → Final → Baseline Locked → OWNER-ACCEPTANCE → PUBLISHED → V1.2`.
-وضعیت فعلی: UX2 و DoR INT1 بسته، Foundation خاموش Safe محدود؛ DoR مرحلهٔ QA1 در `docs/qa/pmcs-v1.1-qa1-dor-and-execution.md` Candidate است. Qualification نسخهٔ 1.1، Candidate نهایی، قفل، آزمون مالک و انتشار همگی بازند. طبق ADR 0034، V1.2 و `AGENT-S1-LIVE` تا انتشار رسمی V1.1 شروع نمی‌شوند؛ سپس `AGENT-S1-LIVE → AGENT-S2` همچنان ترتیب الزام‌آور است.
+وضعیت فعلی: UX2 و DoR INT1 بسته، Foundation خاموش Safe محدود؛ DoR مرحلهٔ QA1 در `docs/qa/pmcs-v1.1-qa1-dor-and-execution.md` با Run 679 Ready است و QA1 اجرا می‌شود. Qualification نسخهٔ 1.1، Candidate نهایی، قفل، آزمون مالک و انتشار همگی بازند. طبق ADR 0034، V1.2 و `AGENT-S1-LIVE` تا انتشار رسمی V1.1 شروع نمی‌شوند؛ سپس `AGENT-S1-LIVE → AGENT-S2` همچنان ترتیب الزام‌آور است.
 
 تصمیم مالک محصول برای INT1: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و
 Anthropic/Claude با Profile نسخه‌دار، Permission مستقل مدیر ارشد و تفویض صریح محدود،

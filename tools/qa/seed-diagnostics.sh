@@ -107,6 +107,11 @@ start_api() {
 
 start_api true Unconfigured
 
+mkdir -p artifacts/qa/v1.1-evidence
+psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align \
+  --command "select count(*)::text || '|' || md5(string_agg(module || ':' || version, ',' order by module, version)) from foundation.schema_migrations;" \
+  > artifacts/qa/v1.1-evidence/migration-first-ledger.txt
+
 qa_base_url="http://127.0.0.1:${port}"
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- probe
 PMCS_QA_BASE_URL="${qa_base_url}" PMCS_QA_AUTH_KEY="${PMCS_QA_AUTH_KEY}" dotnet run --project src/backend/Pmcs.TestHarness/Pmcs.TestHarness.csproj --configuration Release --no-build --no-launch-profile -- verify

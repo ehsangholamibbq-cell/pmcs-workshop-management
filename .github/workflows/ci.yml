@@ -124,8 +124,13 @@ jobs:
       PGPORT: 5432
       PGUSER: pmcs
       PGPASSWORD: pmcs_integration_only
+      PMCS_V1_UPGRADE_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=pmcs_qa_v1_upgrade;Username=pmcs;Password=pmcs_integration_only
+      PMCS_V1_UPGRADE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_qa_v1_upgrade
+      PMCS_V1_RESTORE_DATABASE_URL: postgresql://pmcs:pmcs_integration_only@127.0.0.1:5432/pmcs_restore_drill_v1_upgrade
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -665,6 +670,13 @@ jobs:
           pattern: qa-regression-*
           path: artifacts/qa/regression
           merge-multiple: true
+      - name: Download V1.1 Candidate and dormant INT1 evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pmcs-v1.1-*
+          path: artifacts/qa/v1.1-evidence
+          merge-multiple: true
       - name: Generate fail-closed PMCS V1 qualification report
         env:
           PMCS_EXPECTED_COMMIT: ${{ github.sha }}
@@ -677,9 +689,20 @@ jobs:
           PMCS_JOB_RESULT_UI_E2E: ${{ needs['ui-e2e'].result }}
           PMCS_JOB_RESULT_IDENTITY_CONTAINER: ${{ needs['identity-container'].result }}
         run: node tools/qa/test-report-generator.mjs
+      - name: Link tested V1.1 domains to connected regression evidence
+        run: |
+          test -f artifacts/qa/v1.1-evidence/candidate-manifest.json
+          test -f artifacts/qa/v1.1-evidence/int1-dormant.json
+          node tools/qa/v1.1-domain-evidence.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pmcs-v1-qualification-report
           path: artifacts/qa/qualification/
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-qa1-evidence
+          path: artifacts/qa/v1.1-evidence/
           if-no-files-found: error

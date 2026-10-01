@@ -54,6 +54,10 @@ fi
 ./tools/qa/reset-database.sh
 ./tools/qa/seed-diagnostics.sh
 
+first_ledger="$(cat artifacts/qa/v1.1-evidence/migration-first-ledger.txt)"
+repeated_ledger="$(psql "${PMCS_QA_DATABASE_URL}" --no-psqlrc --set ON_ERROR_STOP=1 \
+  --tuples-only --no-align --command "select count(*)::text || '|' || md5(string_agg(module || ':' || version, ',' order by module, version)) from foundation.schema_migrations;")"
+
 temporary_backup_root="${RUNNER_TEMP:-}"
 remove_temporary_backup_root=false
 if [[ -z "${temporary_backup_root}" ]]; then
@@ -101,5 +105,18 @@ if [[ "${int1_restored}" != '1|5|true' ]]; then
   echo "INT1 migration and lineage were not restored: ${int1_restored}." >&2
   exit 1
 fi
+
+restored_ledger="$(psql "${PMCS_RESTORE_TARGET_CONNECTION_STRING}" --no-psqlrc \
+  --set ON_ERROR_STOP=1 --tuples-only --no-align \
+  --command "select count(*)::text || '|' || md5(string_agg(module || ':' || version, ',' order by module, version)) from foundation.schema_migrations;")"
+backup_sha256="$(sha256sum "${backup_file}" | cut -d' ' -f1)"
+PMCS_MIGRATION_FIRST_LEDGER="${first_ledger}" \
+PMCS_MIGRATION_REPEATED_LEDGER="${repeated_ledger}" \
+PMCS_MIGRATION_RESTORED_LEDGER="${restored_ledger}" \
+PMCS_MIGRATION_RESTORED_INT1="${int1_restored}" \
+PMCS_MIGRATION_BACKUP_SHA256="${backup_sha256}" \
+  node tools/qa/v1.1-migration-evidence.mjs
+
+./tools/qa/verify-v1.1-v1-upgrade-rollback.sh
 
 echo '{"status":"passed","stage":"connected-integration-regression"}'

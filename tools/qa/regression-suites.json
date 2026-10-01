@@ -98,6 +98,7 @@
             "tools/qa/verify-database.sh",
             "tools/qa/verify-int1-reference.sh",
             "tools/qa/verify-v1.1-int1-dormant.sh",
+            "tools/qa/verify-v1.1-v1-upgrade-rollback.sh",
             "tools/qa/verify-files-database.sh",
             "tools/qa/verify-reporting-capacity.sh",
             "tools/qa/verify-reporting-fairness.sh",

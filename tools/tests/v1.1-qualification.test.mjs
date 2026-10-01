@@ -7,6 +7,9 @@ import test from "node:test";
 import { buildV11QualificationReport, renderV11QualificationMarkdown } from "../qa/v1.1-test-report-generator.mjs";
 import { validateCandidateDefaults } from "../qa/v1.1-candidate-preflight.mjs";
 import { validateDormantProbe } from "../qa/v1.1-int1-dormant-evidence.mjs";
+import { verifyDomainSources } from "../qa/v1.1-domain-evidence.mjs";
+import { validateMigrationObservations } from "../qa/v1.1-migration-evidence.mjs";
+import { validateUpgradeObservations } from "../qa/v1.1-upgrade-evidence.mjs";
 
 const commit = "a".repeat(40);
 const tree = "b".repeat(40);
@@ -66,4 +69,44 @@ test("INT1 dormant evidence rejects active registry entries and misclassified pr
   validateDormantProbe(probe, "0|0|0|0|0");
   assert.throws(() => validateDormantProbe(probe, "0|0|0|1|0"));
   assert.throws(() => validateDormantProbe({ ...probe, liveProviderEvidence: [{ ...probe.liveProviderEvidence[0], structured: "Available" }, ...probe.liveProviderEvidence.slice(1)] }, "0|0|0|0|0"));
+});
+
+test("domain evidence is tied to a real connected command on one SHA", () => {
+  const reports = {
+    integration: {
+      contractVersion: 1, reportType: "pmcs-regression-suite", suite: "integration", commit,
+      status: "passed", plannedCommandCount: 1, executedCommandCount: 1,
+      commands: [{ id: "connected-integration-regression", status: "passed", exitCode: 0 }],
+    },
+  };
+  const sources = { integration: ["connected-integration-regression"] };
+  assert.equal(verifyDomainSources(reports, commit, sources).length, 1);
+  assert.throws(() => verifyDomainSources({ integration: { ...reports.integration, commit: tree } }, commit, sources));
+  assert.throws(() => verifyDomainSources({ integration: { ...reports.integration, commands: [] } }, commit, sources));
+  assert.throws(() => verifyDomainSources({ integration: { ...reports.integration, status: "failed" } }, commit, sources));
+});
+
+test("migration scenarios reject changed ledger, incomplete restore or missing digest", () => {
+  const observations = {
+    firstLedger: `70|${"a".repeat(32)}`,
+    repeatedLedger: `70|${"a".repeat(32)}`,
+    restoredLedger: `70|${"a".repeat(32)}`,
+    restoredInt1: "1|5|true", backupSha256: "b".repeat(64),
+  };
+  validateMigrationObservations(observations);
+  assert.throws(() => validateMigrationObservations({ ...observations, repeatedLedger: `71|${"a".repeat(32)}` }));
+  assert.throws(() => validateMigrationObservations({ ...observations, restoredLedger: `70|${"c".repeat(32)}` }));
+  assert.throws(() => validateMigrationObservations({ ...observations, restoredInt1: "1|4|true" }));
+});
+
+test("V1 upgrade and runtime rollback require preserved V1 data", () => {
+  const value = {
+    v1Count: "63", v1RestoredCount: "63", upgradeCount: "70", rollbackCount: "70",
+    v1DataCounts: "2|5", upgradeDataCounts: "2|5", rollbackDataCounts: "2|5",
+    backupSha256: "a".repeat(64),
+  };
+  validateUpgradeObservations(value);
+  assert.throws(() => validateUpgradeObservations({ ...value, v1RestoredCount: "62" }));
+  assert.throws(() => validateUpgradeObservations({ ...value, upgradeDataCounts: "1|5" }));
+  assert.throws(() => validateUpgradeObservations({ ...value, rollbackCount: "69" }));
 });

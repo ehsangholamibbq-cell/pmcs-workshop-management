@@ -1,7 +1,7 @@
 # PMCS V1.1 — DoR و نقشهٔ اجرای QA1
 
 - شناسه: `PMCS-V1.1-QA1-DOR-001`
-- وضعیت: `DoR Candidate`؛ اجرای Qualification نسخهٔ 1.1 هنوز آغاز نشده
+- وضعیت: `DoR Ready`؛ Run 679 (`36834619522`) هر هشت Job سبز؛ اجرای QA1 آغاز شده و Qualification نسخهٔ 1.1 هنوز باز است
 - Parent product baseline: `26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Repository start: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
 - شاخه/PR: `v1.1-development` / Draft PR #2
@@ -36,6 +36,25 @@ GPT، Gemini و Claude در `AGENT-S1-LIVE` پس از انتشار V1.1 می‌�
 
 سبز بودن Run 678 شرط آمادگی برای آغاز QA1 است و به‌تنهایی هیچ‌کدام از وضعیت‌های
 `Release Candidate`، `Qualified`، `Final` یا `Baseline Locked` را نمی‌سازد.
+
+Run 679 روی سند DoR هر هشت Job و گزارش Regression پایه را سبز گذراند؛ DoR مرحله
+Ready است. این Run فقط مجوز اجرای QA1 را می‌دهد و شاهد Qualification نهایی نیست.
+
+## دفتر اجرای QA1
+
+قرارداد مستقل `tools/qa/v1.1-qualification-requirements.json` هجده شاهد الزامی دارد.
+`tools/qa/v1.1-test-report-generator.mjs` روی هفت Suite کامل V1 و همهٔ این شاهدها
+یک Commit و tree، نتیجهٔ passed، Artifact با SHA-256 معتبر و نبود شاهد تکراری را
+می‌خواهد؛ تا آن زمان وضعیت `failed` و `baselineLockEligible=false` است. گزارش V1
+تاریخی دست نخورده باقی می‌ماند.
+
+شاهدهای Candidate preflight، INT1 خاموش در DB تازه پیش از Fixture، شش حوزهٔ
+Regression و سه سناریوی دیتابیس خالی/تکرار/Restore از Candidate در حال اتصال به CI
+هستند. تمرین جداگانهٔ Backup نمایندهٔ Baseline V1، Upgrade و Runtime rollback نیز
+در همین مرحله اجرا می‌شود. عبور کد محلی یا Run قبلی جای نتیجهٔ CI همان Source را نمی‌گیرد.
+
+سناریوی قطع Migration، Load/Soak نسخه، مرور Artifact بصری و Digest انتشار هنوز Gate
+بازند. هیچ وضعیت `Qualified` یا Baseline lock تا بسته‌شدن همهٔ آنها ثبت نمی‌شود.
 
 ## نقشهٔ اجرایی و معیار خروج
 

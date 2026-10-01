@@ -164,7 +164,8 @@ async function main() {
   catch (error) { errors.push(`Cannot read full regression: ${error.message}`); }
   const evidenceReports = [];
   try {
-    for (const name of readdirSync(options.evidence).filter(name => name.endsWith(".json"))) {
+    for (const name of readdirSync(options.evidence).filter(name =>
+      name.endsWith(".json") && !name.endsWith(".artifact.json") && !name.endsWith(".source.json"))) {
       try { evidenceReports.push(readJson(join(options.evidence, name))); }
       catch (error) { errors.push(`Cannot read ${basename(name)}: ${error.message}`); }
     }
