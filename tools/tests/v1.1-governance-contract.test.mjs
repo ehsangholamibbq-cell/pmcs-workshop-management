@@ -15,6 +15,7 @@ const requiredFiles = [
   "docs/governance/pmcs-v1.1-scope-and-change-control.md",
   "docs/governance/pmcs-version-and-baseline-policy.md",
   "docs/qa/pmcs-v1.1-test-and-qualification-contract.md",
+  "docs/qa/pmcs-v1.1-qa1-dor-and-execution.md",
   "docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md",
   "docs/roadmaps/pmcs-post-v1-product-evolution.md",
   "docs/roadmaps/pmcs-visual-excellence-program.md",
@@ -98,7 +99,7 @@ test("V1.1 owner acceptance is a required post-lock, pre-publish gate", () => {
   assert.match(adr, /فقط پس از تأیید انجام انتشار[\s\S]*V1\.2/u);
   assert.match(release, /وضعیت: `Planned — اجرا نشده`/u);
   assert.match(roadmap, /V1\.2 فقط پس از QA1، قفل Baseline V1\.1، پذیرش کامل ثبت‌شدهٔ مالک و انتشار رسمی V1\.1/u);
-  assert.match(canonical, /QA1 آغاز نشده/u);
+  assert.match(canonical, /DoR مرحلهٔ QA1[^\n]*Candidate[^\n]*Qualification نسخهٔ 1\.1[^\n]*بازند/u);
   assert.match(canonical, /OWNER-ACCEPTANCE → PUBLISHED → V1\.2/u);
 });
 

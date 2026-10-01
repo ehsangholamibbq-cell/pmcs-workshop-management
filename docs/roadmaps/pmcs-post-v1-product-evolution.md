@@ -1,7 +1,7 @@
 # Roadmap حاکم تکامل محصول PMCS پس از V1
 
 - شناسه سند: `PMCS-RM-POST-V1-001`
-- نسخه سند: `1.191.0`
+- نسخه سند: `1.192.0`
 - وضعیت: `V1.1 Development`؛ F01–F10 و COL1 متصل، G5/UX2 Safe؛ INT1 Foundation خاموش Safe محدود، QA1 باز؛ اتصال زنده پس از V1.1
 - تاریخ ثبت: ۱۴۰۵/۰۷/۰۷ (۲۰۲۶-۰۹-۲۹)
 - آخرین بازبینی تصمیم: ۱۴۰۵/۰۷/۰۹ (۲۰۲۶-۱۰-۰۱)
@@ -11,7 +11,7 @@
 - خط توسعه فعال بعدی: `PMCS V1.1`
 - شاخه توسعه: `v1.1-development`
 - Repository Start Commit: `0389b52cbd3385bdcc9f0e2a94411800389ae2fc`
-- مرحله بعد: `V1.1-QA1` پس از Checkpoint محدود `PMCS-V1.1-INT1-FOUNDATION-C1`؛ سپس قفل فنی، پذیرش کامل مالک و انتشار رسمی به‌ترتیب؛ V1.2 پس از انتشار
+- مرحله جاری: `V1.1-QA1`؛ DoR و نقشهٔ اجرا در `PMCS-V1.1-QA1-DOR-001` Candidate است؛ قفل فنی، پذیرش مالک و انتشار هنوز بازند
 
 ## ۱. هدف و قاعده حاکم
 
@@ -1556,6 +1556,8 @@ Scope:
 
 ### `V1.1-QA1` — Qualification and Baseline Lock
 
+DoR و نقشهٔ اجرای این Stage در `docs/qa/pmcs-v1.1-qa1-dor-and-execution.md` ثبت شده است. گزارش CI فعلی هنوز عنوان PMCS V1 دارد؛ Gate مستقل V1.1 و Candidate هم‌SHA شرط Qualification هستند.
+
 **هدف:** بستن نسخه با Evidence، نه صرفاً سبزشدن Build.
 
 Suiteهای الزامی افزوده بر قرارداد V1:
@@ -1924,3 +1926,4 @@ IAM/Profile، Project Bootstrap، Reporting و Collaboration پس از EXT1 و D
 | `1.190.0` | تصمیم ADR 0033 در Source `5d48ac6d2cfd3d82622aa71785dfff42360411e9` با Run 676 (`36826739227`) هشت Job سبز شد. `PMCS-V1.1-INT1-FOUNDATION-C1` فقط Foundation خاموش را با Source Runtime Run 674، قرارداد منفی و شواهد default-off/بدون Seed مجوز یا Provider/Model به‌صورت Safe محدود ثبت می‌کند. QA1 برای Candidate انتشار هنوز شروع نشده و باید نبود Credential ویژهٔ INT1، Grant راه‌انداز و Provider/Model فعال را اثبات کند؛ `R-AI-03` و `AGENT-S1-LIVE` بازند. |
 
 | `1.191.0` | ADR 0034 مصوبهٔ مالک محصول را ثبت می‌کند: پس از QA1 و `Qualified → Final → Baseline Locked`، مالک V1.1 را شخصاً روی Candidate ثابت می‌آزماید؛ فقط پس از پذیرش ثبت‌شده انتشار رسمی مجاز است و V1.2/`AGENT-S1-LIVE` پس از انتشار آغاز می‌شود. فرم `PMCS-V1.1-OWNER-ACCEPTANCE-001` Planned است؛ QA1 هنوز باز و اجرا نشده است. |
+| `1.192.0` | QA1 آغاز شد و DoR Candidate `PMCS-V1.1-QA1-DOR-001` شکاف گزارش مستقل V1.1، Candidate ثابت، استقرار خاموش INT1، سناریوهای Upgrade/Restore و Full Regression را به برش‌های قابل ردیابی تقسیم کرد. Run 678 پیش‌نیاز سبز است، اما QA1 یا قفل V1.1 را نمی‌بندد. |
