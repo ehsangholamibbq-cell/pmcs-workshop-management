@@ -68,7 +68,7 @@
 - عدم وجود write-domain tool.
 - Gate محدود ADR 0033: `Intelligence:INT1ReferenceEnabled` در تنظیم انتشار خاموش؛
   Reference Run و Recovery Worker در این حالت اجرا نمی‌شوند؛ Grant راه‌انداز،
-  Provider/Model فعال و Secret استقرار وجود ندارد؛ APIهای مدیریت بدون Grant مستقل
+  Provider/Model فعال در Registry INT1 و Credential ویژهٔ INT1 در استقرار وجود ندارد؛ APIهای مدیریت بدون Grant مستقل
   default-deny هستند و Advisory تاریخی V1 Regression را پاس می‌کند؛
 - نتیجهٔ Probe بدون Credential برای هر سه `Unavailable/allAvailable=false` است.
   آزمون زنده در `AGENT-S1-LIVE` پس از قفل V1.1 اجباری می‌ماند و QA1 نسخهٔ 1.1

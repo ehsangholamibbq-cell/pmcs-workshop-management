@@ -1,8 +1,8 @@
 # Roadmap هفت‌مرحله‌ای Agent مدیریتی PMCS
 
 - شناسه سند: `PMCS-RM-AGENT-001`
-- نسخه سند: `1.4.0`
-- وضعیت: مصوب و لازم‌الاجرا؛ Foundation خاموش V1.1 در Qualification، Gate زندهٔ Stage 1 باز
+- نسخه سند: `1.5.0`
+- وضعیت: مصوب و لازم‌الاجرا؛ Foundation خاموش V1.1 Safe محدود، Gate زندهٔ Stage 1 باز
 - تاریخ بازیابی و ثبت: ۱۴۰۵/۰۶/۲۶ (۲۰۲۶-۰۹-۱۷)
 - Parent product baseline: `PMCS V1 / 26bf222d44634562ca7f3fc0931f3f8b79ca04a1`
 - Parent roadmap: `pmcs-post-v1-product-evolution.md`

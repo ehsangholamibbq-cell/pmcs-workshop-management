@@ -1,9 +1,9 @@
 # PMCS — Canonical Project Reference
 
 - شناسه: `PMCS-CANONICAL-REF-001`
-- نسخه: `1.148.0`
+- نسخه: `1.149.0`
 - آخرین کنترل: ۲۰۲۶-۱۰-۰۱
-- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 Foundation Candidate؛ QA1 باز`
+- وضعیت: `Authoritative working reference | V1 locked | UX2/MS100 Safe؛ INT1 Foundation خاموش Safe محدود؛ QA1 باز`
 - هدف: مرجع واحد Resume و کنترل انطباق؛ این سند جای Roadmap/ADR/Checkpoint را نمی‌گیرد، بلکه آخرین
   وضعیت معتبر آن‌ها را یکجا مشخص می‌کند.
 
@@ -22,13 +22,15 @@
 | V1 source baseline | `26bf222d44634562ca7f3fc0931f3f8b79ca04a1` |
 | خط فعال | `PMCS V1.1 — Development` روی `v1.1-development` |
 | V1.1 repository start | `0389b52cbd3385bdcc9f0e2a94411800389ae2fc` |
-| Stage مؤثر | UX2 بسته؛ INT1 DoR و Candidate Runtime با Run 675 هشت Job سبز؛ تصمیم ADR 0033، Foundation خاموش V1.1 را از Gate زندهٔ `AGENT-S1-LIVE` پس از Baseline جدا کرد؛ Checkpoint محدود و QA1 هنوز باز |
+| Stage مؤثر | UX2 بسته؛ INT1 Foundation خاموش با `PMCS-V1.1-INT1-FOUNDATION-C1` و Run 676 هشت Job سبز Safe محدود؛ QA1 گام بعد، Gate زندهٔ `AGENT-S1-LIVE` پس از Baseline باز |
 | آخرین Source | INT1 Runtime/لغو Client `65ec8f1814caf4f240688972f0ad7857cd134cb5`، tree `57264fed377bb69609a7c6b50130582743426080`، Run 674 (`36795510420`) هشت Job سبز؛ اتصال زندهٔ پیکربندی‌شده هنوز شاهد ندارد |
-| Current evidence-bearing source checkpoint | INT1 DoR: `241892fca22a995e31f922d35320eb771059d346`، Run 645 هشت Job سبز؛ Runtime: Runs 669/672/673/674 هشت Job سبز؛ UI-E2E Runs 670/671 شکست تقویم داشت و Source اصلاح‌شده در Runs 673/674 سبز شد؛ Checkpoint خروج INT1 ثبت نشده |
+| Current evidence-bearing source checkpoint | INT1 DoR: `241892fca22a995e31f922d35320eb771059d346`، Run 645؛ Runtime: Runs 669/672/673/674؛ تصمیم ADR 0033: Run 676 هشت Job سبز. UI-E2E Runs 670/671 شکست تقویم داشت و Source اصلاح‌شده در Runs 673/674 سبز شد؛ Checkpoint Qualification نهایی Stage 1 هنوز ثبت نشده |
 | INT1 Qualification Candidate | `PMCS-V1.1-INT1-QC1` در `docs/checkpoints/v1.1-int1-runtime-qualification-candidate.md`؛ Gate خروج باز، اتصال زندهٔ پیکربندی‌شده فاقد شاهد |
+| INT1 V1.1 Foundation safe checkpoint | `PMCS-V1.1-INT1-FOUNDATION-C1` در `docs/checkpoints/v1.1-int1-dormant-foundation-c1.md`؛ Source Runtime Run 674، تصمیم `5d48ac6d2cfd3d82622aa71785dfff42360411e9` Run 676 هر هشت Job سبز؛ تنها Foundation خاموش Safe است |
 | تصمیم زمان‌بندی INT1 | `docs/adr/0033-int1-v11-dormant-foundation-and-live-qualification.md`؛ Source Run 674 و docs Run 675 هشت Job سبز؛ `R-AI-03` باز؛ Stage 2 قبل از `AGENT-S1-LIVE` ممنوع |
 | Source lineage | MS100 از Source پایه `b0ff48cc5e645a78ad20b49da9b4ac3c47f6baac` به اصلاح شاهد چاپ `fd13282c7e71a77c5192761e127966467045f297` و docs نهایی `c950ec0f495396a9503a40de825f6c6830f73041` با Commit/fast-forward رسید؛ بدون Reset/Force Push |
-| Current safe checkpoint | `PMCS-V1.1-UX2-MS100-C1`؛ Source `fd13282c7e71a77c5192761e127966467045f297`، Run 640 هشت Job سبز؛ docs `c950ec0f495396a9503a40de825f6c6830f73041`، Run 642 هشت Job سبز؛ G5/UX2 بسته |
+| Current safe checkpoint | `PMCS-V1.1-INT1-FOUNDATION-C1`؛ Source Runtime `65ec8f1814caf4f240688972f0ad7857cd134cb5` Run 674، تصمیم ADR 0033 `5d48ac6d2cfd3d82622aa71785dfff42360411e9` Run 676، هر هشت Job سبز؛ Foundation خاموش Safe محدود، QA1 و Stage 1 زنده باز |
+| UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS100-C1`؛ Source `fd13282c7e71a77c5192761e127966467045f297` Run 640؛ docs `c950ec0f495396a9503a40de825f6c6830f73041` Run 642 هشت Job سبز؛ G5/UX2 بسته |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS65-C1`؛ Source correction Run 474 و docs Run 475 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS64-C1`؛ Source Run 470، docs correction Run 472 هشت Job سبز |
 | UX2 predecessor safe checkpoint | `PMCS-V1.1-UX2-MS63-C1`؛ Run 469 هشت Job سبز، `VX-G3` فقط در محدودهٔ Contract/Prototype پذیرفته |
@@ -96,14 +98,14 @@ PMCS V1.1 هنوز `Feature Complete`، `Release Candidate`، `Qualified`، `Fin
 
 | وضعیت | سند مؤثر |
 | --- | --- |
-| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.189.0` |
-| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.4.0` |
+| Active | `docs/roadmaps/pmcs-post-v1-product-evolution.md` — `PMCS-RM-POST-V1-001 v1.190.0` |
+| Active program | `docs/roadmaps/pmcs-managerial-agent-seven-stage-roadmap.md` — `PMCS-RM-AGENT-001 v1.5.0` |
 | Active program | `docs/roadmaps/pmcs-visual-excellence-program.md` — `PMCS-RM-VISUAL-001 v1.65.0` |
 | Historical/Complete | `docs/roadmaps/pmcs-v1-development-and-qualification.md` |
 
 ترتیب مؤثر V1.1: `G0 → UX1 → EXT1 → DOC1 → IAM1/PRJ1/RPT1/COL1 → UX2 → INT1 Foundation خاموش → QA1 → V1.1 Locked`.
 پس از Baseline: `AGENT-S1-LIVE → AGENT-S2` و سپس Stageهای بعدی. وضعیت فعلی:
-UX2 بسته، DoR INT1 بسته، Foundation در Candidate؛ Checkpoint محدود، QA1 و قفل V1.1 بازند.
+UX2 و DoR INT1 بسته، Foundation خاموش Safe محدود؛ QA1 و قفل V1.1 بازند.
 
 تصمیم مالک محصول برای INT1: انتخاب کنترل‌شدهٔ OpenAI/GPT، Google/Gemini و
 Anthropic/Claude با Profile نسخه‌دار، Permission مستقل مدیر ارشد و تفویض صریح محدود،
@@ -1082,7 +1084,7 @@ F01 تا F10 End-to-End متصل‌اند؛ RPT1/UX2 و Production gateهای ج
 ## Exact Next Micro-Step
 
 در handoff تاریخی MS43، «گام بعدی طبق ترتیب Roadmap، `V1.1-COL1` با DoR مستقل Project Collaboration» بود؛ DoR و MS01–MS06 اکنون سبزند.
-**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1 DoR با Run 645 بسته شد؛ Source `65ec8f1` در Run 674 و docs Candidate در Run 675 هر هشت Job سبز دارند. ADR 0033 تحویل Foundation خاموش V1.1 را از Gate اتصال واقعی `AGENT-S1-LIVE` پس از Baseline جدا کرد. گام جاری، بازبینی و Checkpoint محدود Foundation با CI مستقل است؛ سپس QA1 می‌تواند با شرط Runtime خاموش شروع شود.**
+**UX2 با `PMCS-V1.1-UX2-MS100-C1` بسته است. INT1 Foundation خاموش با `PMCS-V1.1-INT1-FOUNDATION-C1` و Run 676 هشت Job سبز Safe محدود شد. ADR 0033 آزمون اتصال واقعی را به Gate `AGENT-S1-LIVE` پس از Baseline منتقل کرد. گام بعدی DoR و اجرای مستقل QA1 با شرط Runtime خاموش و ریسک `R-AI-03` باز است.**
 Agent Stage 2، Qualification نهایی Stage 1، Production و قفل V1.1 Gateهای جدا می‌مانند.
 
 ## Resume Rule

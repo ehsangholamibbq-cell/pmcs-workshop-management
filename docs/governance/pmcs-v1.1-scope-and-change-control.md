@@ -67,7 +67,7 @@ V1.1 باید PMCS را بدون شکستن حقیقت‌ها و Workflowهای 
 ## ۶. Acceptance سطح نسخه
 
 - تمام Scopeهای بالا با Checkpoint مستقل و Evidence بسته شوند؛
-- Checkpoint محدود Foundation INT1 فقط با Runtime خاموش، مجوز default-deny، Provider/Model غیرفعال، نبود Secret انتشار و شواهد منفی QA1 پذیرفته می‌شود؛ `R-AI-03` تا Gate زنده باز می‌ماند؛
+- Checkpoint محدود Foundation INT1 با Source/CI اثبات‌کنندهٔ پیش‌فرض خاموش، مجوز default-deny، migration بدون Seed مجوز یا Provider/Model، و نبود Credential ویژهٔ INT1 در تنظیمات کد پذیرفته می‌شود. QA1 سپس همین قیود را در Candidate انتشار و Regression می‌سنجد؛ `R-AI-03` تا Gate زنده باز می‌ماند؛
 - تمام Non-Scopeها در معماری، Route و UI غایب بمانند؛
 - Migration از V1 قفل‌شده و Full Regression آن پاس شود؛
 - Permission/Tenant/Project boundary منفی اثبات شود؛

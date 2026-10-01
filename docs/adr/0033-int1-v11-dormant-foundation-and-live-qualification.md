@@ -17,8 +17,8 @@
    آزمون‌های قراردادی، منفی، DB ایزوله و CI همان Source پذیرفته می‌شوند. این یک
    Checkpoint محدود است و `AGENT-S1` را Qualified نهایی اعلام نمی‌کند.
 2. در Baseline نسخهٔ 1.1، `Intelligence:INT1ReferenceEnabled` خاموش است؛ QA1 باید
-   غیرفعال‌بودن مسیر Reference Run، default-deny مجوزها، نبود Provider/Model فعال و
-   Secret در تنظیمات انتشار، و عدم اثر مسیر جدید بر Advisory تاریخی V1 را بررسی کند.
+   غیرفعال‌بودن مسیر Reference Run، default-deny مجوزها، نبود Provider/Model فعال در Registry INT1 و
+   Credential ویژهٔ INT1 در تنظیمات انتشار، و عدم اثر مسیر جدید بر Advisory تاریخی V1 را بررسی کند.
    روشن‌کردن INT1 یا اعطای Grant راه‌انداز در Pilot/Production نسخهٔ 1.1 مجاز نیست.
 3. `AGENT-S1-LIVE` نخستین Gate در فاز Intelligence پس از قفل Baseline نسخهٔ 1.1 است؛
    Stage تازه‌ای به برنامهٔ هفت‌مرحله‌ای اضافه نمی‌کند. در محیط امن با Credential
@@ -37,7 +37,7 @@
   (`36795510420`) و Candidate مستندات در Run 675 (`36796873924`) هر کدام هشت Job
   سبز دارند. این شواهد فقط آزمون قراردادی و fixture محلی را اثبات می‌کنند.
 - `R-AI-03` برای اتصال واقعی تا `AGENT-S1-LIVE` باز می‌ماند؛ Release نسخهٔ 1.1
-  ریسکِ قابلیت خاموش را با آزمون عدم فعال‌سازی و نبود Secret کنترل می‌کند. در صورت
+  ریسکِ قابلیت خاموش را با آزمون عدم فعال‌سازی و نبود Credential ویژهٔ INT1 کنترل می‌کند. در صورت
   شکست هر آزمون فعال‌نبودن، QA1 و Release fail-closed می‌شوند.
 - هر تغییر در Adapter، مدل/endpoint یا Policy پس از این Candidate به Source و آزمون
   دوباره نیاز دارد. هیچ کلید یا پاسخ خام Provider در مخزن یا Evidence عمومی ثبت نمی‌شود.

@@ -65,6 +65,8 @@ test("V1.1 INT1 release keeps live qualification as the first post-baseline Agen
   const endpoint = read("src/backend/Pmcs.Modules.Intelligence/Endpoints/IntelligenceReferenceRunEndpoints.cs");
   const recovery = read("src/backend/Pmcs.Modules.Intelligence/Services/ReferenceRunRecoveryWorker.cs");
   const grants = read("src/backend/Pmcs.Modules.Intelligence/Migrations/IntelligenceAdministrationGrantMigration.cs");
+  const providerMigration = read("src/backend/Pmcs.Modules.Intelligence/Migrations/IntelligenceProviderRegistrationMigration.cs");
+  const modelMigration = read("src/backend/Pmcs.Modules.Intelligence/Migrations/IntelligenceModelProfileMigration.cs");
   const defaults = read("src/backend/Pmcs.Api/appsettings.json");
   for (const contract of [adr, scope, roadmap, agent, qa, risk]) {
     assert.match(contract, /AGENT-S1-LIVE/u);
@@ -77,6 +79,7 @@ test("V1.1 INT1 release keeps live qualification as the first post-baseline Agen
   assert.match(endpoint, /bool\.TryParse\(configuration\["Intelligence:INT1ReferenceEnabled"\], out var enabled\) && enabled/u);
   assert.match(recovery, /!bool\.TryParse\(configuration\["Intelligence:INT1ReferenceEnabled"\], out var enabled\) \|\|\s*!enabled\) return/u);
   assert.doesNotMatch(grants, /insert\s+into\s+intelligence\.administration_grants/iu);
+  assert.doesNotMatch(providerMigration + modelMigration, /insert\s+into\s+intelligence\.(?:providers|models|model_catalog)/iu);
   assert.doesNotMatch(defaults, /"INT1ReferenceEnabled"\s*:\s*true/u);
   assert.doesNotMatch(defaults, /"(?:ApiKey|API_KEY|Secret)"\s*:/u);
 });
