@@ -12,6 +12,7 @@ import { validateMigrationObservations } from "../qa/v1.1-migration-evidence.mjs
 import { validateUpgradeObservations } from "../qa/v1.1-upgrade-evidence.mjs";
 import { validateInterruptionObservations } from "../qa/v1.1-interruption-evidence.mjs";
 import { validateLoadSoak } from "../qa/v1.1-load-soak-evidence.mjs";
+import { validateReleaseBuild } from "../qa/v1.1-release-build-evidence.mjs";
 
 const commit = "a".repeat(40);
 const tree = "b".repeat(40);
@@ -21,6 +22,18 @@ const regressionReport = {
   status: "qualified", baselineLockEligible: true,
   suites: ["architecture", "backend", "integration", "pilot-contract", "web", "ui-e2e", "identity-container"].map(suite => ({ suite, status: "passed" })),
 };
+
+test("V1.1 release build requires matching API, Web and image identities", () => {
+  const expected = { commit, version: "1.1.0", builtAt: "2026-10-01T00:00:00.000Z" };
+  const images = Object.fromEntries(["api", "web"].map(name => [name, {
+    id: `sha256:${"d".repeat(64)}`, revision: commit, version: expected.version,
+  }]));
+  const api = { schemaVersion: 1, artifact: "api", ...expected };
+  const web = { schemaVersion: 1, artifact: "web", ...expected };
+  validateReleaseBuild({ api, web, expected, images });
+  assert.throws(() => validateReleaseBuild({ api, web: { ...web, commit: tree }, expected, images }));
+  assert.throws(() => validateReleaseBuild({ api, web, expected, images: { ...images, api: { ...images.api, revision: tree } } }));
+});
 
 test("V1.1 qualification requires all evidence on the same commit and verifies artifact bytes", () => {
   const evidenceDirectory = mkdtempSync(join(tmpdir(), "pmcs-v11-qualification-"));

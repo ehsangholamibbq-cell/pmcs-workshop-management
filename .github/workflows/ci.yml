@@ -167,7 +167,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pmcs-v1.1-int1-dormant
-          path: artifacts/qa/v1.1-evidence/int1-dormant*
+          path: artifacts/qa/v1.1-evidence/
           if-no-files-found: error
       - if: failure()
         run: docker logs pmcs-integration-minio || true
@@ -239,6 +239,12 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y poppler-utils
           fi
+      - name: Pin V1.1 Candidate release identity
+        run: |
+          echo "PMCS_RELEASE_COMMIT=${{ github.event.pull_request.head.sha || github.sha }}" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_VERSION=1.1.0" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_BUILT_AT=$(date -u -d "$(git show -s --format=%cI HEAD)" '+%Y-%m-%dT%H:%M:%S.000Z')" >> "$GITHUB_ENV"
+          echo "PMCS_RELEASE_REQUIRED=true" >> "$GITHUB_ENV"
       - name: Start isolated full application stack
         run: docker compose up --detach --build
       - name: Wait for OIDC, API and Web readiness
@@ -253,6 +259,10 @@ jobs:
           done
           docker compose ps
           exit 1
+      - name: Verify built API and Web release identity
+        env:
+          PMCS_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/qa/v1.1-release-build-evidence.mjs
       - name: Prepare isolated OIDC browser fixture
         run: node tools/qa/prepare-ui-e2e.mjs
       - name: Verify real browser login, RTL, responsive and offline recovery
@@ -282,6 +292,12 @@ jobs:
         with:
           name: pmcs-v1.1-visual-evidence
           path: artifacts/qa/v1.1-evidence/browser-visual-print-a11y*
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-release-build
+          path: artifacts/qa/v1.1-evidence/release-build.artifact.json
           if-no-files-found: error
       - if: failure()
         uses: actions/upload-artifact@v4
@@ -706,6 +722,22 @@ jobs:
           test -f artifacts/qa/v1.1-evidence/candidate-manifest.json
           test -f artifacts/qa/v1.1-evidence/int1-dormant.json
           node tools/qa/v1.1-domain-evidence.mjs
+      - name: Download Web build budget
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: pmcs-vx-g5-build-budget
+          path: artifacts/qa/v1.1-build-budget
+      - name: Verify V1.1 artifact digests and build identity
+        run: node tools/qa/v1.1-artifact-digests.mjs
+      - name: Generate fail-closed PMCS V1.1 qualification report
+        if: always()
+        env:
+          PMCS_EXPECTED_COMMIT: ${{ github.sha }}
+          PMCS_WORKFLOW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          export PMCS_EXPECTED_TREE="$(git rev-parse HEAD^{tree})"
+          node tools/qa/v1.1-test-report-generator.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -717,4 +749,10 @@ jobs:
         with:
           name: pmcs-v1.1-qa1-evidence
           path: artifacts/qa/v1.1-evidence/
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmcs-v1.1-qualification-report
+          path: artifacts/qa/v1.1-qualification/
           if-no-files-found: error

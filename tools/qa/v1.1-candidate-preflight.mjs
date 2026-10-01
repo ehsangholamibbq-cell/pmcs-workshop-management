@@ -34,7 +34,8 @@ export function buildCandidateManifest({ commit, tree, sourceHead, migrationFile
   assert.ok(migrationFiles.length > 0);
   return {
     contractVersion: 1, reportType: "pmcs-v1.1-candidate-manifest",
-    product: "PMCS V1.1", releaseState: "candidate",
+    product: "PMCS V1.1", releaseState: "qa1-preflight",
+    targetVersion: "1.1.0", apiContractVersion: "v1",
     commit, tree, sourceHead,
     parentBaseline: "26bf222d44634562ca7f3fc0931f3f8b79ca04a1",
     generatedAt: generatedAt.toISOString(),
@@ -58,6 +59,7 @@ function main() {
   );
   const migrationFiles = git("ls-files", "src/backend").split("\n").filter(path => /\/Migrations\/.*\.cs$/u.test(path));
   const manifest = buildCandidateManifest({ commit, tree, sourceHead, migrationFiles });
+  manifest.webPackageVersion = JSON.parse(readFileSync(join(repositoryRoot, "src/web/package.json"), "utf8")).version;
   mkdirSync(output, { recursive: true });
   const artifactPath = join(output, "candidate-manifest.artifact.json");
   save(artifactPath, manifest);
